@@ -1,0 +1,88 @@
+remote_theme: "mmistakes/minimal-mistakes"
+minimal_mistakes_skin: "default"
+
+locale: "zh-CN"
+title: "毛珑珑的博客"
+title_separator: "-"
+subtitle: ""
+name: "毛珑珑"
+description: ""
+url: "https://maolonglong.tech"
+baseurl: ""
+repository: "MaoLongLong/blog"
+breadcrumbs: false
+words_per_minute: 200
+comments:
+  provider: false
+  utterances:
+    theme: "github-light"
+    issue_term: "pathname"
+search: true
+search_full_content: false
+search_provider: lunr
+
+author:
+  name: "毛珑珑"
+  avatar: "/assets/images/avatar.jpg"
+  bio: "人和代码有一个能跑就行"
+  location: "福建"
+  email: "382084620@qq.com"
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/MaoLongLong"
+
+footer:
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/MaoLongLong"
+
+include:
+  - _pages
+
+excerpt_separator: "<!-- more -->"
+permalink: /:categories/:title/
+paginate: 5
+paginate_path: /page:num/
+timezone: Asia/Shanghai
+date_format: "%Y-%m-%d"
+
+plugins:
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jekyll-feed
+  - jemoji
+  - jekyll-include-cache
+
+category_archive:
+  type: liquid
+  path: /categories/
+
+tag_archive:
+  type: liquid
+  path: /tags/
+
+compress_html:
+  clippings: all
+  ignore:
+    envs: development
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      author_profile: true
+      read_time: false
+      comments: false
+      share: false
+      related: false
+  - scope:
+      path: "_pages"
+      type: pages
+    values:
+      layout: single
+      author_profile: true
