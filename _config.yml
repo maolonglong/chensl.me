@@ -86,9 +86,9 @@ defaults:
       layout: single
       author_profile: true
       read_time: false
-      comments: false
+      comments: true
       share: false
-      related: false
+      related: true
   - scope:
       path: "_pages"
       type: pages
