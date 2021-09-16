@@ -95,3 +95,9 @@ defaults:
     values:
       layout: single
       author_profile: true
+
+analytics:
+  provider: "google-gtag"
+  google:
+    tracking_id: "G-936P58M1LL"
+    anonymize_ip: false
