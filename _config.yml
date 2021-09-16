@@ -96,6 +96,7 @@ defaults:
       layout: single
       author_profile: true
 
+google_site_verification: i1sNWQt6dMxew3UsSzc9DF9VjVrfD_nuHKzyRWa3pIM
 analytics:
   provider: "google-gtag"
   google:
