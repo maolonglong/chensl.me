@@ -13,7 +13,7 @@ repository: "MaoLongLong/blog"
 breadcrumbs: false
 words_per_minute: 200
 comments:
-  provider: false
+  provider: "utterances"
   utterances:
     theme: "github-light"
     issue_term: "pathname"
