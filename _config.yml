@@ -50,7 +50,7 @@ footer:
 include:
   - _pages
 
-excerpt_separator: "<!-- more -->"
+# excerpt_separator: "<!-- more -->"
 permalink: /:categories/:title/
 paginate: 5
 paginate_path: /page:num/

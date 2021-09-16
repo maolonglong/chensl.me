@@ -3,6 +3,8 @@ permalink: /about/
 title: "关于"
 ---
 
-Tempor velit sint sunt ipsum tempor enim ad qui ullamco. Est dolore anim ad velit duis dolore minim sunt aliquip amet commodo labore. Ut eu pariatur aute ea aute excepteur laborum. Esse ea esse excepteur minim mollit qui cillum excepteur ex dolore magna. Labore deserunt fugiat incididunt incididunt sint ea. Consequat dolore aute laboris quis proident quis non et est consectetur ex eiusmod sit culpa.
+Hi 👋，我叫陈劭珑，**毛珑珑**是高中同学给我起的外号，或者身边的朋友更亲切点一般直接叫我珑珑 😂
 
-Cupidatat ea do et in excepteur in. Ad nostrud ut est esse eu duis ea sunt eiusmod. Aliquip tempor veniam sint elit fugiat. Velit incididunt laboris amet incididunt labore dolore irure velit excepteur commodo deserunt laborum. Consectetur eu fugiat veniam veniam Lorem labore magna eiusmod. Ea occaecat reprehenderit pariatur consectetur minim labore ut aliquip.
+土生土长的福建人（但是不会说福建方言），跨越两千多公里来了辽宁上了大学，当初可能仅仅是想玩电脑才报了计算机专业，没想到自己对这个专业还是有点兴趣的。
+
+上大学前喜欢跑步，骑自行车，但是在大学校园里总感觉没时间花在这些兴趣爱好上（可能是自己懒了）
