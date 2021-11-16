@@ -5,7 +5,7 @@
 # Site
 title: 毛珑珑的博客
 subtitle: ""
-description: "只有非常努力，才能显得毫不费力"
+description: ""
 keywords:
 author: 毛珑珑
 language: zh-CN
@@ -103,3 +103,12 @@ theme: next
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: ""
+
+marked:
+  # For preserve original quotes in code blocks.
+  smartypants: false
+  lazyload: true
+
+search:
+  path: search.json
+  field: all
