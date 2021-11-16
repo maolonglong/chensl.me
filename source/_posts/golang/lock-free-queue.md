@@ -12,8 +12,6 @@ tags:
 
 <!-- more -->
 
-{% pdf 1996_PODC_queues.pdf %}
-
 ## 伪代码
 
 论文中 lock-free queue 算法的伪代码：

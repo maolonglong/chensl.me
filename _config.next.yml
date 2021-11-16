@@ -127,7 +127,7 @@ sidebar:
 # Sidebar Avatar
 avatar:
   # Replace the default image and set the url here.
-  url: /images/avatar.jpg
+  url: https://cdn.jsdelivr.net/gh/MaoLongLong/images/202111161131941.jpg
   # If true, the avatar will be displayed in circle.
   rounded: true
   # If true, the avatar will be rotated with the cursor.
@@ -472,7 +472,7 @@ exturl_icon: true
 
 # Google Webmaster tools verification.
 # See: https://developers.google.com/search
-google_site_verification: i1sNWQt6dMxew3UsSzc9DF9VjVrfD_nuHKzyRWa3pIM
+google_site_verification:
 
 # Bing Webmaster tools verification.
 # See: https://www.bing.com/webmasters
@@ -666,14 +666,14 @@ add_this_id:
 # Google Analytics
 # See: https://analytics.google.com
 google_analytics:
-  tracking_id: G-936P58M1LL # <app_id>
+  tracking_id: # <app_id>
   # By default, NexT will load an external gtag.js script on your site.
   # If you only need the pageview feature, set the following option to true to get a better performance.
   only_pageview: false
 
 # Baidu Analytics
 # See: https://tongji.baidu.com
-baidu_analytics: b88ba8bad63352d4213631c01bab502f # <app_id>
+baidu_analytics: # <app_id>
 
 # Growingio Analytics
 # See: https://www.growingio.com
