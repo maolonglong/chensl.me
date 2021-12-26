@@ -15,7 +15,7 @@ tags:
 
 ## 参考资料
 
-- [深入理解overlayfs](https://blog.csdn.net/qq_15770331/article/details/96699386)
+- [深入理解 overlayfs](https://blog.csdn.net/qq_15770331/article/details/96699386)
 - [Linux Kernel documentation](https://www.kernel.org/doc/html/latest/filesystems/overlayfs.html)
 
 ## 环境准备
