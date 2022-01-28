@@ -13,7 +13,7 @@ timezone: "Asia/Shanghai"
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://maolonglong.tech
+url: https://chensl.me
 permalink: :title/
 permalink_defaults:
 pretty_urls:
@@ -29,7 +29,6 @@ category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
 skip_render:
-  - shorten/index.html
 
 # Writing
 new_post_name: :title.md # File name of new posts
