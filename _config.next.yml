@@ -570,7 +570,7 @@ comments:
   # Setting `true` means remembering the comment system selected by the visitor.
   storage: true
   # Lazyload all comment systems.
-  lazyload: false
+  lazyload: true
   # Modify texts or order for any naves, here are some examples.
   nav:
     #disqus:
@@ -582,9 +582,9 @@ comments:
 # Disqus
 # For more information: https://disqus.com
 disqus:
-  enable: false
-  shortname:
-  count: true
+  enable: true
+  shortname: blog-t1jxgjcyhg
+  count: false
 
 # DisqusJS
 # For more information: https://disqusjs.skk.moe
@@ -629,8 +629,8 @@ gitalk:
 # Utterances
 # For more information: https://utteranc.es
 utterances:
-  enable: true
-  repo: MaoLongLong/blog # Github repository name
+  enable: false
+  repo: # Github repository name
   # Available values: pathname | url | title | og:title
   issue_term: pathname
   # Available values: github-light | github-dark | preferred-color-scheme | github-dark-orange | icy-dark | dark-blue | photon-dark | boxy-light
