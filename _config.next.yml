@@ -582,9 +582,9 @@ comments:
 # Disqus
 # For more information: https://disqus.com
 disqus:
-  enable: true
-  shortname: blog-t1jxgjcyhg
-  count: false
+  enable: false
+  shortname:
+  count: true
 
 # DisqusJS
 # For more information: https://disqusjs.skk.moe
@@ -629,8 +629,8 @@ gitalk:
 # Utterances
 # For more information: https://utteranc.es
 utterances:
-  enable: false
-  repo: # Github repository name
+  enable: true
+  repo: MaoLongLong/blog # Github repository name
   # Available values: pathname | url | title | og:title
   issue_term: pathname
   # Available values: github-light | github-dark | preferred-color-scheme | github-dark-orange | icy-dark | dark-blue | photon-dark | boxy-light
@@ -708,7 +708,7 @@ firestore:
 # Show Views / Visitors of the website / page with busuanzi.
 # For more information: http://ibruce.info/2015/04/04/busuanzi/
 busuanzi_count:
-  enable: false
+  enable: true
   total_visitors: true
   total_visitors_icon: fa fa-user
   total_views: true
@@ -844,7 +844,7 @@ motion:
 # Progress bar in the top during page loading.
 # For more information: https://github.com/CodeByZach/pace
 pace:
-  enable: false
+  enable: true
   # All available colors:
   # black | blue | green | orange | pink | purple | red | silver | white | yellow
   color: blue
