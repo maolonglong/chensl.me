@@ -50,11 +50,11 @@ darkmode: true
 # ---------------------------------------------------------------
 
 favicon:
-  small: /favicon-16x16.png
-  medium: /favicon-32x32.png
-  apple_touch_icon: /apple-touch-icon.png
-  #safari_pinned_tab: /images/logo.svg
-  android_manifest: /site.webmanifest
+  small: /images/favicon-16x16.png
+  medium: /images/favicon-32x32.png
+  apple_touch_icon: /images/apple-touch-icon.png
+  safari_pinned_tab: /images/logo.svg
+  #android_manifest: /manifest.json
 
 # Custom Logo (Warning: Do not support scheme Mist)
 custom_logo: #/uploads/custom-logo.jpg
@@ -71,6 +71,19 @@ creative_commons:
   # You can set a language value if you prefer a translated version of CC license, e.g. deed.zh
   # CC licenses are available in 39 languages, you can find the specific and correct abbreviation you need on https://creativecommons.org
   language: deed.zh
+
+# Open graph settings
+# See: https://hexo.io/docs/helpers#open-graph
+open_graph:
+  enable: true
+  options:
+    #twitter_card: <twitter:card>
+    #twitter_id: <twitter:creator>
+    #twitter_site: <twitter:site>
+    #twitter_image: <twitter:image>
+    #google_plus: <g+:profile_link>
+    #fb_admins: <fb:admin_id>
+    #fb_app_id: <fb:app_id>
 
 
 # ---------------------------------------------------------------
@@ -142,7 +155,7 @@ site_state: true
 # Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
 social:
   GitHub: https://github.com/MaoLongLong || fab fa-github
-  E-Mail: mailto:382084620@qq.com || fa fa-envelope
+  E-Mail: mailto:chensl.dev@outlook.com || fa fa-envelope
   Feed: /atom.xml || fa fa-rss
   #Weibo: https://weibo.com/yourname || fab fa-weibo
   #Google: https://plus.google.com/yourname || fab fa-google
@@ -274,23 +287,17 @@ follow_me:
   #RSS: /atom.xml || fa fa-rss
 
 # Related popular posts
-# Dependencies: https://github.com/tea3/hexo-related-popular-posts
+# Dependencies: https://github.com/sergeyzwezdin/hexo-related-posts
 related_posts:
   enable: false
   title: # Custom header, leave empty to use the default one
   display_in_home: false
-  params:
-    maxCount: 5
-    #PPMixingRate: 0.0
-    #isDate: false
-    #isImage: false
-    #isExcerpt: false
 
 # Post edit
 # Easily browse and edit blog source code online.
 post_edit:
-  enable: false
-  url: https://github.com/user-name/repo-name/tree/branch-name/subdirectory-name/ # Link for view source
+  enable: true
+  url: https://github.com/MaoLongLong/blog/tree/main/source/ # Link for view source
   #url: https://github.com/user-name/repo-name/edit/branch-name/subdirectory-name/ # Link for fork & edit
 
 # Show previous post and next post in post footer if exists
@@ -683,6 +690,10 @@ growingio_analytics: # <project_id>
 # See: https://www.cloudflare.com/web-analytics/
 cloudflare_analytics:
 
+# Microsoft Clarity Analytics
+# See: https://clarity.microsoft.com/
+clarity_analytics: # <project_id>
+
 # Show number of visitors of each article.
 # You can visit https://www.leancloud.cn to get AppID and AppKey.
 leancloud_visitors:
@@ -816,7 +827,7 @@ pdf:
 
 # Mermaid tag
 mermaid:
-  enable: false
+  enable: true
   # Available themes: default | dark | forest | neutral
   theme:
     light: default
@@ -884,5 +895,7 @@ vendors:
 
 # Assets
 # Accelerate delivery of static files using a CDN
+# The js option is only valid when vendors.internal is local.
 css: css
+js: js
 images: images
