@@ -155,7 +155,7 @@ site_state: true
 # Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
 social:
   GitHub: https://github.com/MaoLongLong || fab fa-github
-  E-Mail: mailto:chensl.dev@outlook.com || fa fa-envelope
+  E-Mail: mailto:chensl.dev@gmail.com || fa fa-envelope
   Feed: /atom.xml || fa fa-rss
   #Weibo: https://weibo.com/yourname || fab fa-weibo
   #Google: https://plus.google.com/yourname || fab fa-google
@@ -174,12 +174,13 @@ social_icons:
 # Blog rolls
 links_settings:
   icon: fa fa-globe
-  title: Links
+  title: 友链
   # Available values: block | inline
-  layout: block
+  layout: inline
 
 links:
-  #Title: https://example.com
+  Zcc: https://blog.zcchub.xyz
+  Doocs: https://doocs.github.io
 
 # Table of Contents in the Sidebar
 # Front-matter variable (nonsupport wrap expand_all).
