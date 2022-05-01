@@ -112,3 +112,5 @@ marked:
 search:
   path: search.json
   field: all
+
+all_minifier: true
