@@ -326,15 +326,15 @@ import (
 
 func TestUserDB_Add(t *testing.T) {
 	ctx := context.Background()
-	du := NewUserDB(testInstance.Conn(t))
+	ud := NewUserDB(testInstance.Conn(t))
 
 	u := &model.User{Name: "foo"}
 
-	err := du.Add(ctx, u)
+	err := ud.Add(ctx, u)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, u.ID)
 
-	err = du.Add(ctx, u)
+	err = ud.Add(ctx, u)
 	assert.True(t, isDuplicate(err))
 }
 
