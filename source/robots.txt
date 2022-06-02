@@ -1,0 +1,12 @@
+User-agent: *
+
+Allow: /
+Allow: /about/
+Allow: /tags/
+Allow: /categories/
+Allow: /archives/
+
+Disallow: /js/
+Disallow: /css/
+
+Sitemap: https://chensl.me/sitemap.xml
