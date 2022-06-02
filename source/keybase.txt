@@ -1,0 +1,56 @@
+==================================================================
+https://keybase.io/maolonglong
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://chensl.me
+  * I am maolonglong (https://keybase.io/maolonglong) on keybase.
+  * I have a public key ASD0WrziKMFihYMWzicVRuXmvPRonvGvwfHazNEnflJSAgo
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "0120f45abce228c162858316ce271546e5e6bcf4689ef1afc1f1daccd1277e5252020a",
+      "host": "keybase.io",
+      "kid": "0120f45abce228c162858316ce271546e5e6bcf4689ef1afc1f1daccd1277e5252020a",
+      "uid": "a3d8649f9659cbf0d43e786a6b0ecd19",
+      "username": "maolonglong"
+    },
+    "merkle_root": {
+      "ctime": 1654182889,
+      "hash": "4cf030ad2755ad9f33aaccbb6cc12c4d6ee354d90789dd763839dbca3f305e931a9c61c4cda162333c30d4169f37f02067910b33085deca4e7f2e77c70804fb1",
+      "hash_meta": "9c598de5a32569bfd60a259ed944149386fa0fce84854b8bda9ff5de7dc0a0dc",
+      "seqno": 22601300
+    },
+    "service": {
+      "entropy": "vc1ju7HCp4l+Fe0yCweV4zms",
+      "hostname": "chensl.me",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 2
+  },
+  "client": {
+    "name": "keybase.io go client",
+    "version": "5.9.0"
+  },
+  "ctime": 1654182912,
+  "expire_in": 504576000,
+  "prev": "3a95e4cc6f04b4e9a5d4bbe178593c38ed3f7730715b40739b04784e49b4a4ee",
+  "seqno": 16,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+hKRib2R5hqhkZXRhY2hlZMOpaGFzaF90eXBlCqNrZXnEIwEg9Fq84ijBYoWDFs4nFUbl5rz0aJ7xr8Hx2szRJ35SUgIKp3BheWxvYWTESpcCEMQgOpXkzG8EtOml1LvheFk8OO0/dzBxW0BzmwR4Tkm0pO7EIH40Ehu2hA6Qf7uqS1X32DjbVzk3NsGy+D82u3Y4sjtbAgHCo3NpZ8RAnyg6ErXa141SWiFfSAC6d7d5lIrDarNq968oSAYM3Cdj/jUfL7Naf85PGfaoZU3m3cDz/9HpYmhAk2wLxtS6BahzaWdfdHlwZSCkaGFzaIKkdHlwZQildmFsdWXEIGbzrJZ2DWS8metNpAPjSvD1brMef1TUKZiMC3ANMonjo3RhZ80CAqd2ZXJzaW9uAQ==
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/maolonglong
+
+==================================================================
