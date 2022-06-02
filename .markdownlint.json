@@ -3,5 +3,7 @@
   "line-length": false,
   "no-bare-urls": false,
   "no-alt-text": false,
-  "no-hard-tabs": false
+  "no-hard-tabs": false,
+  "no-inline-html": false,
+  "first-line-h1": false
 }
