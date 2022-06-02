@@ -30,7 +30,7 @@ tags:
 - **Open：**程序发出的请求会立即失败，并向程序返回异常。（相当于电闸跳闸了）
 - **Half-Open：**程序只能执行有限数量的请求操作，如果这些请求成功了（故障已经恢复），状态机变为 **Closed** 状态。如果请求失败了，状态机变为 **Open** 状态，并且重新启动计时器。
 
-![](https://cdn.jsdelivr.net/gh/MaoLongLong/images/202111161309094.png)
+![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150169.png)
 
 ## Golang 实现
 

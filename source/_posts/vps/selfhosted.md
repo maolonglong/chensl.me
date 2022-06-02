@@ -48,7 +48,7 @@ curl -fsSL https://get.docker.com | sh
 
 我现在部署的一些 App：
 
-![](https://cdn.jsdelivr.net/gh/MaoLongLong/images/202203271825038.png)
+![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150172.png)
 
 ### go-import-redirector
 
@@ -56,11 +56,11 @@ Golang 导包的重定向器，在[开源](https://github.com/rsc/go-import-redi
 
 能把 `go get` 从自定义域名重定向到 GitHub：
 
-![](https://cdn.jsdelivr.net/gh/MaoLongLong/images/202203271833111.png)
+![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021151668.png)
 
 或者浏览器直接打开，跳转到 GoDoc：
 
-![](https://cdn.jsdelivr.net/gh/MaoLongLong/images/202203271830848.png)
+![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150163.png)
 
 ### tinyurl
 
@@ -72,7 +72,7 @@ Golang 导包的重定向器，在[开源](https://github.com/rsc/go-import-redi
 
 Docker 的 Web 界面，结合着 CapRover 用来管理容器
 
-![](https://cdn.jsdelivr.net/gh/MaoLongLong/images/202203271855823.png)
+![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021151669.png)
 
 ### Syncthing
 
@@ -82,4 +82,4 @@ Docker 的 Web 界面，结合着 CapRover 用来管理容器
 
 结合 Syncthing 使用，在没有安装 Syncthing 的电脑上也能在线管理文件
 
-![](https://cdn.jsdelivr.net/gh/MaoLongLong/images/202203271901985.png)
+![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021151666.png)
