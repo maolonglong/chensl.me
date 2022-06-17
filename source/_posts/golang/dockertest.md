@@ -88,7 +88,7 @@ go get github.com/stretchr/testify
 
 提前预览一下项目结构：
 
-```text
+```plaintext
 .
 ├── db
 │   ├── db.go

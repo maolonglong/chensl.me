@@ -18,7 +18,7 @@ tags:
 
 正如论文的题目描述的，它非常简单，代码量很少。主要思路就是使用 [CAS](https://zh.wikipedia.org/wiki/%E6%AF%94%E8%BE%83%E5%B9%B6%E4%BA%A4%E6%8D%A2) 操作队列的头指针和尾指针，以实现线程安全。
 
-```text
+```plaintext
 structure pointer_t {ptr: pointer to node_t, count: unsigned integer}
 structure node_t {value: data type, next: pointer_t}
 structure queue_t {Head: pointer_t, Tail: pointer_t}
