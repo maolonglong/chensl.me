@@ -260,7 +260,7 @@ public class Main {
 
 从运行结果可以看出，大部分情况下，两个线程是交替运行的。
 
-```text
+```plaintext
 ...
 Thread-0 获得锁
 Thread-1 获得锁
@@ -282,7 +282,7 @@ Thread-0 获得锁
 
 但是换成非公平锁之后，会发现连续多次都是同一个线程获取锁。
 
-```text
+```plaintext
 ...
 Thread-0 获得锁
 Thread-0 获得锁

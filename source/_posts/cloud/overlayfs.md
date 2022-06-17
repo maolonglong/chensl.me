@@ -77,7 +77,7 @@ end
 
 随便拉一个镜像：
 
-```text
+```plaintext
 vagrant@vagrant:~$ docker pull alpine
 Using default tag: latest
 latest: Pulling from library/alpine
@@ -89,7 +89,7 @@ docker.io/library/alpine:latest
 
 这时，我们就能在磁盘上找到对应的目录结构：
 
-```text
+```plaintext
 vagrant@vagrant:~$ sudo su
 
 root@vagrant:/home/vagrant# cd /var/lib/docker/overlay2/
@@ -103,7 +103,7 @@ bin  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp 
 
 再开一个窗口，启动一个容器：
 
-```text
+```plaintext
 vagrant@vagrant:~$ docker run --rm -it alpine sh
 / # ls
 bin    etc    lib    mnt    proc   run    srv    tmp    var
@@ -112,7 +112,7 @@ dev    home   media  opt    root   sbin   sys    usr
 
 宿主机上的 overlay2 目录多出了一些东西：
 
-```text
+```plaintext
 root@vagrant:/var/lib/docker/overlay2# ls
 7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6       ae64cdecc41d55f445ce1bed819dd312459bc7f2a2ddc80df60c789a5e3b06dc
 7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6-init  l
@@ -174,7 +174,7 @@ mkdir diff work merged
 
 最终的目录结构：
 
-```text
+```plaintext
 root@vagrant:~# tree -L 2
 .
 ├── diff
@@ -228,7 +228,7 @@ chroot $PWD neofetch
 
 至此，我们已经通过 OverlayFS 和 chroot 实现了一个简易的容器
 
-```text
+```plaintext
 root@vagrant:~# tree -L 2
 .
 ├── diff
