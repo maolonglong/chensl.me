@@ -31,7 +31,7 @@
     "hexo-word-counter": "0.0.3"
   },
   "devDependencies": {
-    "markdownlint-cli": "^0.32.0",
+    "markdownlint-cli": "^0.32.1",
     "prettier": "2.7.1"
   }
 }
