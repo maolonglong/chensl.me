@@ -6,9 +6,7 @@
     "build": "hexo generate",
     "clean": "hexo clean",
     "deploy": "hexo deploy",
-    "server": "hexo server",
-    "format": "prettier --write source/**/*.md",
-    "lint": "markdownlint source/**/*.md"
+    "server": "hexo server"
   },
   "hexo": {
     "version": "6.2.0"
@@ -29,9 +27,5 @@
     "hexo-server": "^3.0.0",
     "hexo-theme-next": "^8.12.3",
     "hexo-word-counter": "0.0.3"
-  },
-  "devDependencies": {
-    "markdownlint-cli": "^0.32.1",
-    "prettier": "2.7.1"
   }
 }
