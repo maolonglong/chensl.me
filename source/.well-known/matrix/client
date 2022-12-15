@@ -1,5 +1,5 @@
 {
     "m.homeserver": {
-        "base_url": "https://synapse.chensl.me"
+        "base_url": "https://matrix.iferr.dev"
     }
 }
