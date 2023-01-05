@@ -9,4 +9,4 @@ Allow: /archives/
 Disallow: /js/
 Disallow: /css/
 
-Sitemap: https://iferr.dev/sitemap.xml
+Sitemap: https://chensl.me/sitemap.xml

@@ -476,7 +476,7 @@ exturl_icon: true
 
 # Google Webmaster tools verification.
 # See: https://developers.google.com/search
-google_site_verification: _3_KiH7Es1Nf7hufhxv0XS7xNG_YHb-fakHfWxnDejo
+google_site_verification: 6-Kab_SNkrPX-IWqpWNtK1ia0mI08nZFRHIVoL4mZn8
 
 # Bing Webmaster tools verification.
 # See: https://www.bing.com/webmasters
@@ -772,7 +772,7 @@ growingio_analytics: # <project_id>
 
 # Cloudflare Web Analytics
 # See: https://www.cloudflare.com/web-analytics/
-cloudflare_analytics: 5421d6cb22ac458c943d9b5390ed30a8
+cloudflare_analytics:
 
 # Microsoft Clarity Analytics
 # See: https://clarity.microsoft.com/
