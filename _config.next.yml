@@ -36,7 +36,7 @@ custom_file_path:
 # ---------------------------------------------------------------
 
 # Schemes
-# scheme: Muse
+#scheme: Muse
 #scheme: Mist
 #scheme: Pisces
 scheme: Gemini
@@ -50,10 +50,10 @@ darkmode: true
 # ---------------------------------------------------------------
 
 favicon:
-  small: /favicon-16x16.png
-  medium: /favicon-32x32.png
-  apple_touch_icon: /apple-touch-icon.png
-  safari_pinned_tab: /safari-pinned-tab.svg
+  small: /images/favicon-16x16.png
+  medium: /images/favicon-32x32.png
+  apple_touch_icon: /images/apple-touch-icon.png
+  safari_pinned_tab: /images/safari-pinned-tab.svg
   android_manifest: /site.webmanifest
 
 # Custom Logo (Warning: Do not support scheme Mist)
@@ -188,7 +188,7 @@ toc:
   # Automatically add list number to toc.
   number: true
   # If true, all words will placed on next lines if header width longer then sidebar width.
-  wrap: false
+  wrap: true
   # If true, all level of TOC in a post will be displayed, rather than the activated part of it.
   expand_all: false
   # Maximum heading depth of generated toc.
