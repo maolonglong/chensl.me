@@ -29,7 +29,11 @@ category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
 skip_render:
+  - .well-known/matrix/client
+  - .well-known/matrix/server
+  - browserconfig.xml
   - robots.txt
+  - site.webmanifest
 
 # Writing
 new_post_name: :title.md # File name of new posts
@@ -101,6 +105,12 @@ ignore:
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: next
+
+archive_generator:
+  per_page: 12
+  yearly: true
+  monthly: true
+  daily: false
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
