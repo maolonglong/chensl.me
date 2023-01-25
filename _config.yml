@@ -29,8 +29,6 @@ category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
 skip_render:
-  - .well-known/matrix/client
-  - .well-known/matrix/server
   - browserconfig.xml
   - robots.txt
   - site.webmanifest
@@ -96,8 +94,6 @@ pagination_dir: page
 # Include / Exclude file(s)
 ## include:/exclude: options only apply to the 'source/' folder
 include:
-  - .well-known/matrix/server
-  - .well-known/matrix/client
 exclude:
 ignore:
 
