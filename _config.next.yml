@@ -154,7 +154,7 @@ site_state: true
 # Key is the link label showing to end users.
 # Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
 social:
-  GitHub: https://github.com/MaoLongLong || fab fa-github
+  GitHub: https://github.com/maolonglong || fab fa-github
   E-Mail: mailto:shaolong.chen@outlook.it || fa fa-envelope
   Feed: /atom.xml || fa fa-rss
   Keyoxide: https://keyoxide.org/a7b191ea29b89a58595eedf77412e6acc445062f || fa fa-key
@@ -239,7 +239,7 @@ footer:
 # See: https://theme-next.js.org/docs/theme-settings/posts
 # ---------------------------------------------------------------
 
-# Automatically excerpt description in homepage as preamble text.
+# Use `description` in front-matter to specify post excerpt.
 excerpt_description: true
 
 # Read more button
@@ -295,7 +295,7 @@ related_posts:
 # Easily browse and edit blog source code online.
 post_edit:
   enable: true
-  url: https://github.com/MaoLongLong/blog/tree/main/source/ # Link for view source
+  url: https://github.com/maolonglong/blog/tree/main/source/ # Link for view source
   #url: https://github.com/user-name/repo-name/edit/branch-name/subdirectory-name/ # Link for fork & edit
 
 # Show previous post and next post in post footer if exists
@@ -405,7 +405,7 @@ bookmark:
 # `Follow me on GitHub` banner in the top-right corner.
 github_banner:
   enable: true
-  permalink: https://github.com/MaoLongLong/blog
+  permalink: https://github.com/maolonglong
 
 
 # ---------------------------------------------------------------
@@ -633,7 +633,7 @@ motion:
 # Progress bar in the top during page loading.
 # For more information: https://github.com/CodeByZach/pace
 pace:
-  enable: true
+  enable: false
   # All available colors:
   # black | blue | green | orange | pink | purple | red | silver | white | yellow
   color: blue
@@ -728,7 +728,7 @@ gitalk:
 # For more information: https://utteranc.es
 utterances:
   enable: true
-  repo: MaoLongLong/blog # Github repository name
+  repo: maolonglong/blog # Github repository name
   # Available values: pathname | url | title | og:title
   issue_term: pathname
   # Available values: github-light | github-dark | preferred-color-scheme | github-dark-orange | icy-dark | dark-blue | photon-dark | boxy-light
@@ -772,7 +772,7 @@ growingio_analytics: # <project_id>
 
 # Cloudflare Web Analytics
 # See: https://www.cloudflare.com/web-analytics/
-cloudflare_analytics:
+cloudflare_analytics: 36007d3b985f4553a9f78f1bc130287f
 
 # Microsoft Clarity Analytics
 # See: https://clarity.microsoft.com/
