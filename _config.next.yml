@@ -372,7 +372,7 @@ codeblock:
     dark: prism-dark
   # Add copy button on codeblock
   copy_button:
-    enable: false # issue 修复前临时关掉: https://github.com/next-theme/hexo-theme-next/issues/98
+    enable: true
     # Available values: default | flat | mac
     style:
 
