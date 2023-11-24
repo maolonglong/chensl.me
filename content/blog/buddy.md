@@ -6,6 +6,7 @@ tags:
   - 内存分配
   - vtable
   - Zig
+toc: true
 ---
 
 > 参考: <https://coolshell.org/articles/10427.html/>

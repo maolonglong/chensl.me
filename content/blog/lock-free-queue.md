@@ -6,6 +6,7 @@ tags:
   - 并发
   - CAS
   - unsafe
+toc: true
 ---
 
 谈到无锁队列，就不得不提 Michael 和 Scott 在 1996 年发表的论文 [Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms](https://www.cs.rochester.edu/u/scott/papers/1996_PODC_queues.pdf)，Java 中 `ConcurrentLinkedQueue` 也是基于该论文的算法实现。

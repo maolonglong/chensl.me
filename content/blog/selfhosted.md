@@ -9,6 +9,7 @@ tags:
   - Dokku
   - self-hosted
   - CapRover
+toc: true
 ---
 
 > 2022-05-23 更新：我又喜欢上了阿里云函数计算，比折腾 VPS 好玩得多

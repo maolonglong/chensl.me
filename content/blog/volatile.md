@@ -4,6 +4,7 @@ date: 2020-11-24 16:15:22
 tags:
   - Java
   - 并发
+toc: true
 ---
 
 ## volatile 的三个特性

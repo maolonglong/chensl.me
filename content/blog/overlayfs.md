@@ -6,6 +6,7 @@ tags:
   - Docker
   - OverlayFS
   - chroot
+toc: true
 ---
 
 因为工作需求，所以花时间了解了一下 OverlayFS。第一次知道这个概念，是使用 Docker 时，它默认使用的 Graph Driver 是 Overlay2，容器的 rootfs 就是直接以目录的形式在宿主机上组织。

@@ -3,6 +3,7 @@ title: 记录一次 Go Module 依赖关系的修复
 date: 2022-12-17 16:55:34
 tags:
   - Golang
+toc: true
 ---
 
 事情的起因：

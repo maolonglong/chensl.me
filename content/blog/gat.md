@@ -5,6 +5,7 @@ tags:
   - Rust
   - 泛型
   - GAT
+toc: true
 ---
 
 习惯了 Go 里简单无脑的泛型后，理解 Rust 的泛型还是费了点时间，尤其 GAT (Generic Associated Types)，也可以叫作**泛型关联类型**。

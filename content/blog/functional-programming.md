@@ -6,6 +6,7 @@ tags:
   - immutable
   - ADT
   - currying
+toc: true
 ---
 
 前段时间学了 Rust 之后，感觉在 Rust 的类型系统加持下，函数式编程体验真的很爽。
