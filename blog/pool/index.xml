@@ -7,7 +7,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 <blockquote>
 <p>Currently bytebufferpool is fastest and most effective buffer pool written in Go.</p>
 </blockquote>
-<!-- raw HTML omitted -->
+<!-- more -->
 <p>bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（<a href="https://github.com/valyala/fasthttp">fasthttp</a>, <a href="https://github.com/valyala/quicktemplate">quicktemplate</a>, <a href="https://github.com/panjf2000/gnet">gnet</a>）</p>
 <p>什么是字节池？在读取文件或者从 <code>io.Reader</code> 获取数据时，一般都需要创建一个字节切片 <code>[]byte</code> 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 <code>[]byte</code> ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。</p>
 

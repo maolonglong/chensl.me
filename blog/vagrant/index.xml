@@ -2,7 +2,7 @@
 需要安装的工具 VirtualBox Vagrant 入门 更具体的推荐看官方文档
 常用命令：
 vagrant init bento/ubuntu-18.04 # 创建配置文件并指定 box vagrant up # 开机 vagrant reload # 重启（重新加载配置） vagrant halt # 关机 vagrant destroy # 销毁虚拟机 vagrant box list # 显示已下载的 box vagrant suspend # 暂停 vagrant resume # 恢复 # 添加 box，具体看 vagrant box add -h vagrant box add [options] &amp;lt;name, url, or path&amp;gt; vagrant box remove &amp;lt;name&amp;gt; # 删除 box box 按照传统方法，装一台虚拟机，必须去某个 Linux 发行版的官网上下载 ISO 文件，然后打开 VMware 或者 VirtualBox，使用 ISO 一步一步创建虚拟机。而 Vagrant 提供了更简单的形式，一条命令就能从 box 创建并启动虚拟机</description><content:encoded><![CDATA[<p>其实在学校的时候就开始轻度使用 Vagrant，但也仅仅作为一个虚拟机创建或者开关机的工具。来了公司实习后发现 Vagrant 在搭建<strong>一次性</strong>使用的开发环境时真的非常非常方便</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h2 id="需要安装的工具">需要安装的工具</h2>
 <ul>
 <li><a href="https://www.virtualbox.org/">VirtualBox</a></li>

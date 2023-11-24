@@ -17,7 +17,7 @@
 
 
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">const</span> <span class="kt">int</span> <span class="n">inf</span> <span class="o">=</span> <span class="mh">0x3f3f3f3f</span><span class="p">;</span></span></span></code></pre></div>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h3 id="max-和-min-慎用">max 和 min (慎用)</h3>
 <p>如果 <code>max</code>  或 <code>min</code>  函数的两个参数类型不同，就像下面的 <code>int</code>  和 <code>long long</code> ，是会报错的，这个时候加上一个宏函数就能解决。</p>
 

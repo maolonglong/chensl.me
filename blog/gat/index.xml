@@ -4,7 +4,7 @@
 trait Foo { type Bar&amp;lt;&amp;#39;a&amp;gt;; } 简单说就是能在关联类型上定义类型或生命周期。
 假设现在需要实现一个 mutable 的滑动窗口迭代器，不用 GAT，只用标准库里的 Iterator 可能会这么写：
 struct WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { slice: &amp;amp;&amp;#39;t mut [T], start: usize, window_size: usize, } impl&amp;lt;&amp;#39;t, T&amp;gt; Iterator for WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { type Item = &amp;amp;&amp;#39;t mut [T]; fn next&amp;lt;&amp;#39;a&amp;gt;(&amp;amp;&amp;#39;a mut self) -&amp;gt; Option&amp;lt;Self::Item&amp;gt; { let retval = self.</description><content:encoded><![CDATA[<p>习惯了 Go 里简单无脑的泛型后，理解 Rust 的泛型还是费了点时间，尤其 GAT (Generic Associated Types)，也可以叫作<strong>泛型关联类型</strong>。</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h2 id="什么是-gat">什么是 GAT</h2>
 <p>引用官方博客的一段内容：</p>
 <blockquote>

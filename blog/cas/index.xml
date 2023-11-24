@@ -2,7 +2,7 @@
 伪代码 论文中 lock-free queue 算法的伪代码：
 正如论文的题目描述的，它非常简单，代码量很少。主要思路就是使用 CAS 操作队列的头指针和尾指针，以实现线程安全。
 structure pointer_t {ptr: pointer to node_t, count: unsigned integer} structure node_t {value: data type, next: pointer_t} structure queue_t {Head: pointer_t, Tail: pointer_t} initialize(Q: pointer to queue_t) node = new_node() // Allocate a free node node-&amp;gt;next.ptr = NULL // Make it the only node in the linked list Q-&amp;gt;Head.</description><content:encoded><![CDATA[<p>谈到无锁队列，就不得不提 Michael 和 Scott 在 1996 年发表的论文 <a href="https://www.cs.rochester.edu/u/scott/papers/1996_PODC_queues.pdf">Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms</a>，Java 中 <code>ConcurrentLinkedQueue</code> 也是基于该论文的算法实现。</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h2 id="伪代码">伪代码</h2>
 <p>论文中 lock-free queue 算法的伪代码：</p>
 <p>正如论文的题目描述的，它非常简单，代码量很少。主要思路就是使用 <a href="https://zh.wikipedia.org/wiki/%E6%AF%94%E8%BE%83%E5%B9%B6%E4%BA%A4%E6%8D%A2">CAS</a> 操作队列的头指针和尾指针，以实现线程安全。</p>

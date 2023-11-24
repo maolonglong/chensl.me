@@ -14,7 +14,7 @@ use anyhow::Result; use tokio::io; use tokio::net::TcpListener; #[tokio::main] a
     Server--&gt;Relay
     Relay--&gt;Client</code></pre>
 <p>最近刚把 Rust 语法和常用功能过了一遍，刚好写一个简单的 TCP relay 练练手。因为 eBPF 看起来好像有点难，还没咋学，就先实现一个用户态 copy 的版本。</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h2 id="初始化项目">初始化项目</h2>
 
 
@@ -139,7 +139,8 @@ use anyhow::Result; use tokio::io; use tokio::net::TcpListener; #[tokio::main] a
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">});</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div>
-<!-- raw HTML omitted -->
+<details>
+  <summary>Golang HTTP server code</summary>
 
 
 
@@ -162,7 +163,7 @@ use anyhow::Result; use tokio::io; use tokio::net::TcpListener; #[tokio::main] a
 </span></span><span class="line"><span class="cl">	<span class="nx">http</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">greet</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">	<span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8888&#34;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
-<!-- raw HTML omitted -->
+</details>
 <p>测试 relay 效果：</p>
 
 

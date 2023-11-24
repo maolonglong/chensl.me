@@ -6,7 +6,7 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言
 {% endnote %}</p>
 <p>好早之前就看到了 Dgraph 的那篇文章（<a href="https://dgraph.io/blog/post/manual-memory-management-golang-jemalloc/">Manual Memory Management in Go using jemalloc</a>），今天仔细读了一遍，尝试尝试 Go + jemalloc 的模式。</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h2 id="编译安装-jemalloc">编译安装 jemalloc</h2>
 <p>环境：Ubuntu 20.04.4 LTS on Windows 10 x86_64</p>
 <p>从 GitHub 上下载 jemalloc 的源码，切换到最新 release 的 tag 然后按照 <a href="https://github.com/jemalloc/jemalloc/blob/5.3.0/INSTALL.md">INSTALL.md</a> 操作：</p>

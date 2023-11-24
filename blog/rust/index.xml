@@ -14,7 +14,7 @@ use anyhow::Result; use tokio::io; use tokio::net::TcpListener; #[tokio::main] a
     Server--&gt;Relay
     Relay--&gt;Client</code></pre>
 <p>最近刚把 Rust 语法和常用功能过了一遍，刚好写一个简单的 TCP relay 练练手。因为 eBPF 看起来好像有点难，还没咋学，就先实现一个用户态 copy 的版本。</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h2 id="初始化项目">初始化项目</h2>
 
 
@@ -139,7 +139,8 @@ use anyhow::Result; use tokio::io; use tokio::net::TcpListener; #[tokio::main] a
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">});</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div>
-<!-- raw HTML omitted -->
+<details>
+  <summary>Golang HTTP server code</summary>
 
 
 
@@ -162,7 +163,7 @@ use anyhow::Result; use tokio::io; use tokio::net::TcpListener; #[tokio::main] a
 </span></span><span class="line"><span class="cl">	<span class="nx">http</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">greet</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">	<span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8888&#34;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
-<!-- raw HTML omitted -->
+</details>
 <p>测试 relay 效果：</p>
 
 
@@ -539,7 +540,7 @@ use anyhow::Result; use tokio::io; use tokio::net::TcpListener; #[tokio::main] a
 trait Foo { type Bar&amp;lt;&amp;#39;a&amp;gt;; } 简单说就是能在关联类型上定义类型或生命周期。
 假设现在需要实现一个 mutable 的滑动窗口迭代器，不用 GAT，只用标准库里的 Iterator 可能会这么写：
 struct WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { slice: &amp;amp;&amp;#39;t mut [T], start: usize, window_size: usize, } impl&amp;lt;&amp;#39;t, T&amp;gt; Iterator for WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { type Item = &amp;amp;&amp;#39;t mut [T]; fn next&amp;lt;&amp;#39;a&amp;gt;(&amp;amp;&amp;#39;a mut self) -&amp;gt; Option&amp;lt;Self::Item&amp;gt; { let retval = self.</description><content:encoded><![CDATA[<p>习惯了 Go 里简单无脑的泛型后，理解 Rust 的泛型还是费了点时间，尤其 GAT (Generic Associated Types)，也可以叫作<strong>泛型关联类型</strong>。</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h2 id="什么是-gat">什么是 GAT</h2>
 <p>引用官方博客的一段内容：</p>
 <blockquote>

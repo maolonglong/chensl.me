@@ -27,7 +27,7 @@ $ go version go version go1.17.13 darwin/arm64 $ go mod tidy example.com/... imp
 </span></span><span class="line"><span class="cl">    go mod tidy -compat<span class="o">=</span>1.17
 </span></span><span class="line"><span class="cl">For other options, see:
 </span></span><span class="line"><span class="cl">    https://golang.org/doc/modules/pruning</span></span></code></pre></div>
-<!-- raw HTML omitted -->
+<!-- more -->
 <blockquote>
 <p>这里的 <em>pruning</em> 指的是 <code>go1.17</code> 的新特性 Module graph pruning（翻译成「模块裁剪」？），它会删除 <code>go.sum</code> 里一些不必要的 <strong>间接依赖</strong>，更详细的可以看 <a href="https://go.dev/ref/mod#graph-pruning">官方文档</a>。</p>
 </blockquote>
@@ -81,7 +81,7 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言
 {% endnote %}</p>
 <p>好早之前就看到了 Dgraph 的那篇文章（<a href="https://dgraph.io/blog/post/manual-memory-management-golang-jemalloc/">Manual Memory Management in Go using jemalloc</a>），今天仔细读了一遍，尝试尝试 Go + jemalloc 的模式。</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h2 id="编译安装-jemalloc">编译安装 jemalloc</h2>
 <p>环境：Ubuntu 20.04.4 LTS on Windows 10 x86_64</p>
 <p>从 GitHub 上下载 jemalloc 的源码，切换到最新 release 的 tag 然后按照 <a href="https://github.com/jemalloc/jemalloc/blob/5.3.0/INSTALL.md">INSTALL.md</a> 操作：</p>
@@ -280,7 +280,7 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 </span></span><span class="line"><span class="cl">OffHeap: <span class="m">0</span> B</span></span></code></pre></div>
 ]]></content:encoded></item><item><title>用 Docker 解决单元测试外部依赖</title><link>https://chensl.me/dockertest/</link><pubDate>Sun, 01 May 2022 15:20:06 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/dockertest/</guid><description>搬砖时，写的大多是和数据库交互的 API 服务，当我厌倦了用 Postman 手工测试，尝试开始写一些单元测试，发现并不顺利。在 GitHub 上看到过几个项目是用 sqlmock。它的原理是实现了 database/sql 里的接口，然后单测中用正则表达式判断预期的 SQL 语句和实际执行的 SQL 语句是否匹配：
 func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err != nil { t.Fatalf(&amp;#34;an error &amp;#39;%s&amp;#39; was not expected when opening a stub database connection&amp;#34;, err) } defer db.Close() mock.ExpectBegin() mock.ExpectExec(&amp;#34;UPDATE products&amp;#34;).WillReturnResult(sqlmock.NewResult(1, 1)) mock.ExpectExec(&amp;#34;INSERT INTO product_viewers&amp;#34;).WithArgs(2, 3).WillReturnResult(sqlmock.NewResult(1, 1)) mock.ExpectCommit() // now we execute our method if err = recordStats(db, 2, 3); err != nil { t.</description><content:encoded><![CDATA[<p>搬砖时，写的大多是和数据库交互的 API 服务，当我厌倦了用 Postman 手工测试，尝试开始写一些单元测试，发现并不顺利。在 GitHub 上看到过几个项目是用 <a href="https://github.com/DATA-DOG/go-sqlmock">sqlmock</a>。它的原理是实现了 <code>database/sql</code> 里的接口，然后单测中用正则表达式判断预期的 SQL 语句和实际执行的 SQL 语句是否匹配：</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 
 
 
@@ -653,7 +653,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 <h2 id="背景和问题">背景和问题</h2>
 <p>在复杂的网络环境下，执行远程调用可能会遇到各种超时或故障，虽然大部分情况这些问题能在短时间内自动恢复，只需要重试几次就能调用成功。但是，有些问题需要很长时间来恢复时，不断重试显然不是一个很好的解决方案。相反，应用程序应该迅速接受这次操作失败，并进行相应的错误处理。</p>
 <p>此外，如果一个服务非常繁忙，系统的一个部分的故障可能会导致级联故障。例如，服务调用方设置了调用的超时时间，如果服务在这段时间内没有返回响应，调用方直接用错误消息进行回复。这种策略可能会导致许多同一操作的并发请求被阻塞，直到超时。这些被阻塞的请求会占用着大量的系统资源（内存，线程，数据库连接等），这些资源耗尽，导致系统中需要使用相同资源的其他服务出现故障。在这种情况下，最好是<strong>立即</strong>让调用失败，只有在可能成功时才尝试调用服务。</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <p>{% note warning %}
 设置一个更短的超时可能有助于解决这个问题，但是超时不应该太短，这可能会让那些本来应该成功的请求也超时。
 {% endnote %}</p>
@@ -857,7 +857,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 <blockquote>
 <p>Currently bytebufferpool is fastest and most effective buffer pool written in Go.</p>
 </blockquote>
-<!-- raw HTML omitted -->
+<!-- more -->
 <p>bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（<a href="https://github.com/valyala/fasthttp">fasthttp</a>, <a href="https://github.com/valyala/quicktemplate">quicktemplate</a>, <a href="https://github.com/panjf2000/gnet">gnet</a>）</p>
 <p>什么是字节池？在读取文件或者从 <code>io.Reader</code> 获取数据时，一般都需要创建一个字节切片 <code>[]byte</code> 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 <code>[]byte</code> ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。</p>
 
@@ -1152,7 +1152,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 伪代码 论文中 lock-free queue 算法的伪代码：
 正如论文的题目描述的，它非常简单，代码量很少。主要思路就是使用 CAS 操作队列的头指针和尾指针，以实现线程安全。
 structure pointer_t {ptr: pointer to node_t, count: unsigned integer} structure node_t {value: data type, next: pointer_t} structure queue_t {Head: pointer_t, Tail: pointer_t} initialize(Q: pointer to queue_t) node = new_node() // Allocate a free node node-&amp;gt;next.ptr = NULL // Make it the only node in the linked list Q-&amp;gt;Head.</description><content:encoded><![CDATA[<p>谈到无锁队列，就不得不提 Michael 和 Scott 在 1996 年发表的论文 <a href="https://www.cs.rochester.edu/u/scott/papers/1996_PODC_queues.pdf">Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms</a>，Java 中 <code>ConcurrentLinkedQueue</code> 也是基于该论文的算法实现。</p>
-<!-- raw HTML omitted -->
+<!-- more -->
 <h2 id="伪代码">伪代码</h2>
 <p>论文中 lock-free queue 算法的伪代码：</p>
 <p>正如论文的题目描述的，它非常简单，代码量很少。主要思路就是使用 <a href="https://zh.wikipedia.org/wiki/%E6%AF%94%E8%BE%83%E5%B9%B6%E4%BA%A4%E6%8D%A2">CAS</a> 操作队列的头指针和尾指针，以实现线程安全。</p>
