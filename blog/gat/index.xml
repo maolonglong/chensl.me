@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>GAT on 毛珑珑的博客</title><link>https://chensl.me/blog/gat/</link><description>Recent content in GAT on 毛珑珑的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-Hans</language><managingEditor>shaolong.chen@outlook.it (Shaolong Chen)</managingEditor><webMaster>shaolong.chen@outlook.it (Shaolong Chen)</webMaster><lastBuildDate>Tue, 24 Jan 2023 19:58:29 +0000</lastBuildDate><atom:link href="https://chensl.me/blog/gat/index.xml" rel="self" type="application/rss+xml"/><item><title>Rust GAT</title><link>https://chensl.me/gat/</link><pubDate>Tue, 24 Jan 2023 19:58:29 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/gat/</guid><description>习惯了 Go 里简单无脑的泛型后，理解 Rust 的泛型还是费了点时间，尤其 GAT (Generic Associated Types)，也可以叫作泛型关联类型。
+什么是 GAT 引用官方博客的一段内容：
+&amp;hellip; allow you to define type, lifetime, or const generics on associated types. Like so:
+trait Foo { type Bar&amp;lt;&amp;#39;a&amp;gt;; } 简单说就是能在关联类型上定义类型或生命周期。
+假设现在需要实现一个 mutable 的滑动窗口迭代器，不用 GAT，只用标准库里的 Iterator 可能会这么写：
+struct WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { slice: &amp;amp;&amp;#39;t mut [T], start: usize, window_size: usize, } impl&amp;lt;&amp;#39;t, T&amp;gt; Iterator for WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { type Item = &amp;amp;&amp;#39;t mut [T]; fn next&amp;lt;&amp;#39;a&amp;gt;(&amp;amp;&amp;#39;a mut self) -&amp;gt; Option&amp;lt;Self::Item&amp;gt; { let retval = self.</description><content:encoded><![CDATA[<p>习惯了 Go 里简单无脑的泛型后，理解 Rust 的泛型还是费了点时间，尤其 GAT (Generic Associated Types)，也可以叫作<strong>泛型关联类型</strong>。</p>
+<!-- raw HTML omitted -->
+<h2 id="什么是-gat">什么是 GAT</h2>
+<p>引用官方博客的一段内容：</p>
+<blockquote>
+<p>&hellip; allow you to define type, lifetime, or const generics on associated types. Like so:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">trait</span><span class="w"> </span><span class="n">Foo</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">type</span> <span class="nc">Bar</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div>
+</blockquote>
+<p>简单说就是能在关联类型上定义类型或生命周期。</p>
+<p>假设现在需要实现一个 mutable 的滑动窗口迭代器，不用 GAT，只用标准库里的 <code>Iterator</code> 可能会这么写：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">WindowsMut</span><span class="o">&lt;</span><span class="na">&#39;t</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">slice</span>: <span class="kp">&amp;</span><span class="na">&#39;t</span> <span class="nc">mut</span><span class="w"> </span><span class="p">[</span><span class="n">T</span><span class="p">],</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">start</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">window_size</span>: <span class="kt">usize</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">impl</span><span class="o">&lt;</span><span class="na">&#39;t</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="nb">Iterator</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">WindowsMut</span><span class="o">&lt;</span><span class="na">&#39;t</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">type</span> <span class="nc">Item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="na">&#39;t</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="p">[</span><span class="n">T</span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">fn</span> <span class="nf">next</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Option</span><span class="o">&lt;</span><span class="bp">Self</span>::<span class="n">Item</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">slice</span><span class="p">[</span><span class="bp">self</span><span class="p">.</span><span class="n">start</span><span class="o">..</span><span class="p">].</span><span class="n">get_mut</span><span class="p">(</span><span class="o">..</span><span class="bp">self</span><span class="p">.</span><span class="n">window_size</span><span class="p">)</span><span class="o">?</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">start</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nb">Some</span><span class="p">(</span><span class="n">retval</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div>
+<p>编译器输出：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">error: lifetime may not live long enough
+</span></span><span class="line"><span class="cl">   |
+</span></span><span class="line"><span class="cl">7  | impl&lt;&#39;t, T&gt; Iterator for WindowsMut&lt;&#39;t, T&gt; {
+</span></span><span class="line"><span class="cl">   |      -- lifetime `&#39;t` defined here
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">10 |     fn next&lt;&#39;a&gt;(&amp;&#39;a mut self) -&gt; Option&lt;Self::Item&gt; {
+</span></span><span class="line"><span class="cl">   |             -- lifetime `&#39;a` defined here
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">13 |         Some(retval)
+</span></span><span class="line"><span class="cl">   |         ^^^^^^^^^^^^ associated function was supposed to return data with lifetime `&#39;t` but it is returning data with lifetime `&#39;a`
+</span></span><span class="line"><span class="cl">   |
+</span></span><span class="line"><span class="cl">   = help: consider adding the following bound: `&#39;a: &#39;t`</span></span></code></pre></div>
+<p>预期返回的引用的生命周期是 <code>'t</code>，实际返回的 <code>retval</code> 的生命周期是 <code>'a</code>。但我们又不可能按照编译器提示添加 <code>'a: 't</code>。</p>
+<p><code>'t</code> 是 <code>WindowsMut</code> 的生命周期，<code>'a</code> 是 <code>&amp;mut WindowsMut</code> 的生命周期。通常不会让 reference 的生命周期比 owned data 还长（即 <code>'a &gt;= 't</code> 是不合理的）。</p>
+<h2 id="使用-gat">使用 GAT</h2>
+<p>要解决上面编译错误的问题，只能缩短返回的引用的生命周期，这时候就需要用到 GAT：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">trait</span><span class="w"> </span><span class="n">LendingIterator</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">type</span> <span class="nc">Item</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">where</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="bp">Self</span>: <span class="na">&#39;a</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">fn</span> <span class="nf">next</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Option</span><span class="o">&lt;</span><span class="bp">Self</span>::<span class="n">Item</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;&gt;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">impl</span><span class="o">&lt;</span><span class="na">&#39;t</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">LendingIterator</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">WindowsMut</span><span class="o">&lt;</span><span class="na">&#39;t</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">type</span> <span class="nc">Item</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="p">[</span><span class="n">T</span><span class="p">]</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="bp">Self</span>: <span class="na">&#39;a</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">fn</span> <span class="nf">next</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="na">&#39;a</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Option</span><span class="o">&lt;</span><span class="bp">Self</span>::<span class="n">Item</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">slice</span><span class="p">[</span><span class="bp">self</span><span class="p">.</span><span class="n">start</span><span class="o">..</span><span class="p">].</span><span class="n">get_mut</span><span class="p">(</span><span class="o">..</span><span class="bp">self</span><span class="p">.</span><span class="n">window_size</span><span class="p">)</span><span class="o">?</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">start</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nb">Some</span><span class="p">(</span><span class="n">retval</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div>
+<p>测试：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">Wrapper</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">T</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">impl</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Wrapper</span><span class="o">&lt;&amp;</span><span class="k">mut</span><span class="w"> </span><span class="p">[</span><span class="n">T</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">fn</span> <span class="nf">windows_mut</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">size</span>: <span class="kt">usize</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">WindowsMut</span><span class="o">&lt;</span><span class="nb">&#39;_</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">WindowsMut</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">slice</span>: <span class="nc">self</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">start</span>: <span class="mi">0</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">window_size</span>: <span class="nc">size</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">arr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Wrapper</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">arr</span><span class="p">[</span><span class="o">..</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">windows_mut</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="fm">assert_eq!</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">&#34;</span><span class="si">{:?}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">iter</span><span class="p">.</span><span class="n">next</span><span class="p">()),</span><span class="w"> </span><span class="s">&#34;Some([1, 2])&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="fm">assert_eq!</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">&#34;</span><span class="si">{:?}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">iter</span><span class="p">.</span><span class="n">next</span><span class="p">()),</span><span class="w"> </span><span class="s">&#34;Some([2, 3])&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="fm">assert_eq!</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">&#34;</span><span class="si">{:?}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">iter</span><span class="p">.</span><span class="n">next</span><span class="p">()),</span><span class="w"> </span><span class="s">&#34;None&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/589347703">Rust 的 GAT 到底是什么 - 知乎</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/580996117">Rust 中的 GAT 和高阶类型 - 知乎</a></li>
+<li><a href="https://blog.rust-lang.org/2021/08/03/GATs-stabilization-push.html">The push for GATs stabilization | Rust Blog</a></li>
+</ul>
+]]></content:encoded></item></channel></rss>

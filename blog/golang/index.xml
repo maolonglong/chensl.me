@@ -1,0 +1,1302 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Golang on 毛珑珑的博客</title><link>https://chensl.me/blog/golang/</link><description>Recent content in Golang on 毛珑珑的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-Hans</language><managingEditor>shaolong.chen@outlook.it (Shaolong Chen)</managingEditor><webMaster>shaolong.chen@outlook.it (Shaolong Chen)</webMaster><lastBuildDate>Sat, 17 Dec 2022 16:55:34 +0000</lastBuildDate><atom:link href="https://chensl.me/blog/golang/index.xml" rel="self" type="application/rss+xml"/><item><title>记录一次 Go Module 依赖关系的修复</title><link>https://chensl.me/fix-ambiguous-import/</link><pubDate>Sat, 17 Dec 2022 16:55:34 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/fix-ambiguous-import/</guid><description>事情的起因：
+$ go version go version go1.17.13 darwin/arm64 $ go mod tidy example.com/... imports example.com/... imports example.com/... imports ... example.com/... imports github.com/google/cel-go/cel imports github.com/google/cel-go/parser imports github.com/antlr/antlr4/runtime/Go/antlr loaded from github.com/antlr/antlr4/runtime/Go/antlr@v1.4.10, but go 1.16 would fail to locate it: ambiguous import: found package github.com/antlr/antlr4/runtime/Go/antlr in multiple modules: github.com/antlr/antlr4 v0.0.0-20200503195918-621b933c7a7f (/Users/xxx/go/pkg/mod/github.com/antlr/antlr4@v0.0.0-20200503195918-621b933c7a7f/runtime/Go/antlr) github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 (/Users/xxx/go/pkg/mod/github.com/antlr/antlr4/runtime/!go/antlr@v1.4.10) To proceed despite packages unresolved in go 1.16: go mod tidy -e If reproducibility with go 1.16 is not needed: go mod tidy -compat=1.</description><content:encoded><![CDATA[<p>事情的起因：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go version
+</span></span><span class="line"><span class="cl">go version go1.17.13 darwin/arm64
+</span></span><span class="line"><span class="cl">$ go mod tidy
+</span></span><span class="line"><span class="cl">example.com/... imports
+</span></span><span class="line"><span class="cl">    example.com/... imports
+</span></span><span class="line"><span class="cl">    example.com/... imports
+</span></span><span class="line"><span class="cl">    ...
+</span></span><span class="line"><span class="cl">    example.com/... imports
+</span></span><span class="line"><span class="cl">    github.com/google/cel-go/cel imports
+</span></span><span class="line"><span class="cl">    github.com/google/cel-go/parser imports
+</span></span><span class="line"><span class="cl">    github.com/antlr/antlr4/runtime/Go/antlr loaded from github.com/antlr/antlr4/runtime/Go/antlr@v1.4.10,
+</span></span><span class="line"><span class="cl">    but go 1.16 would fail to locate it:
+</span></span><span class="line"><span class="cl">    ambiguous import: found package github.com/antlr/antlr4/runtime/Go/antlr in multiple modules:
+</span></span><span class="line"><span class="cl">    github.com/antlr/antlr4 v0.0.0-20200503195918-621b933c7a7f <span class="o">(</span>/Users/xxx/go/pkg/mod/github.com/antlr/antlr4@v0.0.0-20200503195918-621b933c7a7f/runtime/Go/antlr<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 <span class="o">(</span>/Users/xxx/go/pkg/mod/github.com/antlr/antlr4/runtime/!go/antlr@v1.4.10<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">To proceed despite packages unresolved in go 1.16:
+</span></span><span class="line"><span class="cl">    go mod tidy -e
+</span></span><span class="line"><span class="cl">If reproducibility with go 1.16 is not needed:
+</span></span><span class="line"><span class="cl">    go mod tidy -compat<span class="o">=</span>1.17
+</span></span><span class="line"><span class="cl">For other options, see:
+</span></span><span class="line"><span class="cl">    https://golang.org/doc/modules/pruning</span></span></code></pre></div>
+<!-- raw HTML omitted -->
+<blockquote>
+<p>这里的 <em>pruning</em> 指的是 <code>go1.17</code> 的新特性 Module graph pruning（翻译成「模块裁剪」？），它会删除 <code>go.sum</code> 里一些不必要的 <strong>间接依赖</strong>，更详细的可以看 <a href="https://go.dev/ref/mod#graph-pruning">官方文档</a>。</p>
+</blockquote>
+<p>它提示我 <code>go1.16</code> 会存在不明确的依赖，因为我本地 <code>go</code> 版本已经是 <code>1.17</code>，所以接下来我直接运行了 <code>go mod tidy -compat=1.17</code>：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go mod tidy -compat<span class="o">=</span>1.17</span></span></code></pre></div>
+<p>没有错误提示，看起来一切正常。但是当我尝试着编译时，它又开始「搞事情」：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go build
+</span></span><span class="line"><span class="cl"><span class="c1"># github.com/google/cel-go/parser/gen</span>
+</span></span><span class="line"><span class="cl">../../../../pkg/mod/github.com/google/cel-go@v0.9.0/parser/gen/cel_lexer.go:261:31: lexerDeserializer.DeserializeFromUInt16 undefined <span class="o">(</span><span class="nb">type</span> *antlr.ATNDeserializer has no field or method DeserializeFromUInt16<span class="o">)</span>
+</span></span><span class="line"><span class="cl">../../../../pkg/mod/github.com/google/cel-go@v0.9.0/parser/gen/cel_parser.go:142:33: deserializer.DeserializeFromUInt16 undefined <span class="o">(</span><span class="nb">type</span> *antlr.ATNDeserializer has no field or method DeserializeFromUInt16<span class="o">)</span></span></span></code></pre></div>
+<p>没办法 😇，再回到一开始的输出，可以看到，两个 <strong>module</strong> 都导入了 antlr：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">ambiguous import: found package github.com/antlr/antlr4/runtime/Go/antlr in multiple modules:
+</span></span><span class="line"><span class="cl">github.com/antlr/antlr4 v0.0.0-20200503195918-621b933c7a7f (/Users/xxx/go/pkg/mod/github.com/antlr/antlr4@v0.0.0-20200503195918-621b933c7a7f/runtime/Go/antlr)
+</span></span><span class="line"><span class="cl">github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 (/Users/xxx/go/pkg/mod/github.com/antlr/antlr4/runtime/!go/antlr@v1.4.10)</span></span></code></pre></div>
+<p><a href="https://github.com/antlr/antlr4/tree/621b933c7a7f01c67ae9de15103151fa0f9d6d90/runtime/Go/antlr">v0.0.0-20200503195918-621b933c7a7f</a> 版本 antlr 还没使用 Go Module，所以和 <a href="https://github.com/antlr/antlr4/tree/runtime/Go/antlr/v1.4.10/runtime/Go/antlr">v1.4.10</a> 产生了冲突。</p>
+<p>需要继续研究为了什么同时依赖了两个不同版本的 antlr？借助 <a href="https://github.com/golang/exp/tree/master/cmd/modgraphviz">modgraphviz</a> 和 <a href="https://graphviz.org/">Graphviz</a> 生成模块依赖图：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go mod graph <span class="p">|</span> egrep <span class="s2">&#34;cel-go|antlr&#34;</span> <span class="p">|</span> modgraphviz <span class="p">|</span> dot -Tsvg -o mod-graph.svg</span></span></code></pre></div>
+<p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202212172136455.svg" alt=""></p>
+<p>从图表中很容易发现根本原因是 dep2，dep3 分别依赖 cel-go 的 v0.9.0 和 v0.5.1。<a href="https://go.dev/ref/mod#minimal-version-selection">MVS</a> 选择了 v0.9.0，实际上我们并没有使用 <a href="mailto:cel-go@v0.9.0">cel-go@v0.9.0</a> 相关的代码，所以 <strong>最终解决方法</strong>：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go mod edit -replace<span class="o">=</span>github.com/google/cel-go<span class="o">=</span>github.com/google/cel-go@v0.5.1</span></span></code></pre></div>
+]]></content:encoded></item><item><title>整活：在 Go 中手动分配内存</title><link>https://chensl.me/manual-memory-management/</link><pubDate>Sat, 07 May 2022 20:17:33 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/manual-memory-management/</guid><description>{% note warning %} 在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言 {% endnote %}
+好早之前就看到了 Dgraph 的那篇文章（Manual Memory Management in Go using jemalloc），今天仔细读了一遍，尝试尝试 Go + jemalloc 的模式。
+编译安装 jemalloc 环境：Ubuntu 20.04.4 LTS on Windows 10 x86_64
+从 GitHub 上下载 jemalloc 的源码，切换到最新 release 的 tag 然后按照 INSTALL.md 操作：
+git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemalloc git checkout 5.3.0 ./autogen.sh --with-jemalloc-prefix=je_ --with-malloc-conf=&amp;#39;background_thread:true,metadata_thp:auto&amp;#39; make -j sudo make install # 通过 sudo make uninstall 可以卸载 通过 cgo 调用 简单封装一下</description><content:encoded><![CDATA[<p>{% note warning %}
+在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言
+{% endnote %}</p>
+<p>好早之前就看到了 Dgraph 的那篇文章（<a href="https://dgraph.io/blog/post/manual-memory-management-golang-jemalloc/">Manual Memory Management in Go using jemalloc</a>），今天仔细读了一遍，尝试尝试 Go + jemalloc 的模式。</p>
+<!-- raw HTML omitted -->
+<h2 id="编译安装-jemalloc">编译安装 jemalloc</h2>
+<p>环境：Ubuntu 20.04.4 LTS on Windows 10 x86_64</p>
+<p>从 GitHub 上下载 jemalloc 的源码，切换到最新 release 的 tag 然后按照 <a href="https://github.com/jemalloc/jemalloc/blob/5.3.0/INSTALL.md">INSTALL.md</a> 操作：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/jemalloc/jemalloc.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> jemalloc
+</span></span><span class="line"><span class="cl">git checkout 5.3.0
+</span></span><span class="line"><span class="cl">./autogen.sh --with-jemalloc-prefix<span class="o">=</span>je_ --with-malloc-conf<span class="o">=</span><span class="s1">&#39;background_thread:true,metadata_thp:auto&#39;</span>
+</span></span><span class="line"><span class="cl">make -j
+</span></span><span class="line"><span class="cl">sudo make install <span class="c1"># 通过 sudo make uninstall 可以卸载</span></span></span></code></pre></div>
+<h2 id="通过-cgo-调用">通过 cgo 调用</h2>
+<p>简单封装一下</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">#cgo LDFLAGS: -L/usr/local/lib -Wl,-rpath,/usr/local/lib -ljemalloc -lm -lstdc++ -pthread -ldl
+</span></span></span><span class="line"><span class="cl"><span class="cm">#include &lt;stdlib.h&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cm">#include &lt;jemalloc/jemalloc.h&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;C&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;sync/atomic&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">const</span> <span class="nx">MaxArrayLen</span> <span class="p">=</span> <span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">50</span> <span class="o">-</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">numBytes</span> <span class="kt">int64</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//go:linkname throw runtime.throw
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">throw</span><span class="p">(</span><span class="nx">s</span> <span class="kt">string</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">Calloc</span><span class="p">(</span><span class="nx">n</span> <span class="kt">int</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">n</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">ptr</span> <span class="o">:=</span> <span class="nx">C</span><span class="p">.</span><span class="nf">je_calloc</span><span class="p">(</span><span class="nx">C</span><span class="p">.</span><span class="nf">size_t</span><span class="p">(</span><span class="nx">n</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">ptr</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;out of memory&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">numBytes</span><span class="p">,</span> <span class="nb">int64</span><span class="p">(</span><span class="nx">n</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nx">MaxArrayLen</span><span class="p">]</span><span class="kt">byte</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="nx">ptr</span><span class="p">))[:</span><span class="nx">n</span><span class="p">:</span><span class="nx">n</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">Free</span><span class="p">(</span><span class="nx">b</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">sz</span> <span class="o">:=</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">b</span><span class="p">);</span> <span class="nx">sz</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">b</span> <span class="p">=</span> <span class="nx">b</span><span class="p">[:</span><span class="nb">cap</span><span class="p">(</span><span class="nx">b</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">ptr</span> <span class="o">:=</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">C</span><span class="p">.</span><span class="nf">je_free</span><span class="p">(</span><span class="nx">ptr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">numBytes</span><span class="p">,</span> <span class="o">-</span><span class="nb">int64</span><span class="p">(</span><span class="nx">sz</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NumAllocBytes</span><span class="p">()</span> <span class="kt">int64</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">numBytes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<h2 id="用-calloc-给结构体分配内存">用 Calloc 给结构体分配内存</h2>
+<p>注意 jemalloc 分配的结构体里的指针不能引用 golang 分配的地址，被垃圾回收了之后再访问会出现段错误</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">node</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">val</span>  <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">next</span> <span class="o">*</span><span class="nx">node</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>jemalloc 版本</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//go:build jemalloc
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">nodeSz</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">node</span><span class="p">{}))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">newNode</span><span class="p">(</span><span class="nx">val</span> <span class="kt">int</span><span class="p">)</span> <span class="o">*</span><span class="nx">node</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">b</span> <span class="o">:=</span> <span class="nf">Calloc</span><span class="p">(</span><span class="nx">nodeSz</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span> <span class="o">:=</span> <span class="p">(</span><span class="o">*</span><span class="nx">node</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span><span class="p">.</span><span class="nx">val</span> <span class="p">=</span> <span class="nx">val</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">n</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">freeNode</span><span class="p">(</span><span class="nx">n</span> <span class="o">*</span><span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">b</span> <span class="o">:=</span> <span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nx">MaxArrayLen</span><span class="p">]</span><span class="kt">byte</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="nx">n</span><span class="p">))[:</span><span class="nx">nodeSz</span><span class="p">:</span><span class="nx">nodeSz</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">Free</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>golang 版本</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//go:build !jemalloc
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">newNode</span><span class="p">(</span><span class="nx">val</span> <span class="kt">int</span><span class="p">)</span> <span class="o">*</span><span class="nx">node</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">node</span><span class="p">{</span><span class="nx">val</span><span class="p">:</span> <span class="nx">val</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">freeNode</span><span class="p">(</span><span class="nx">n</span> <span class="o">*</span><span class="nx">node</span><span class="p">)</span> <span class="p">{}</span></span></span></code></pre></div>
+<p>主函数</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;runtime&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/dustin/go-humanize&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">const</span> <span class="nx">N</span> <span class="p">=</span> <span class="mi">2000001</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">root</span> <span class="o">:=</span> <span class="nf">newNode</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span> <span class="o">:=</span> <span class="nx">root</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">nn</span> <span class="o">:=</span> <span class="nf">newNode</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">n</span><span class="p">.</span><span class="nx">next</span> <span class="p">=</span> <span class="nx">nn</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">n</span> <span class="p">=</span> <span class="nx">nn</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nf">printNode</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">runtime</span><span class="p">.</span><span class="nf">GC</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printMem</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span> <span class="p">=</span> <span class="nx">root</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">n</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">left</span> <span class="o">:=</span> <span class="nx">n</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">n</span> <span class="p">=</span> <span class="nx">n</span><span class="p">.</span><span class="nx">next</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">freeNode</span><span class="p">(</span><span class="nx">left</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">runtime</span><span class="p">.</span><span class="nf">GC</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;After GC...&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printMem</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">printMem</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">ms</span> <span class="nx">runtime</span><span class="p">.</span><span class="nx">MemStats</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">runtime</span><span class="p">.</span><span class="nf">ReadMemStats</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">ms</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;HeapAlloc: %v\n&#34;</span><span class="p">,</span> <span class="nx">humanize</span><span class="p">.</span><span class="nf">IBytes</span><span class="p">(</span><span class="nx">ms</span><span class="p">.</span><span class="nx">HeapAlloc</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;OffHeap: %v\n&#34;</span><span class="p">,</span> <span class="nx">humanize</span><span class="p">.</span><span class="nf">IBytes</span><span class="p">(</span><span class="nb">uint64</span><span class="p">(</span><span class="nf">NumAllocBytes</span><span class="p">())))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">printNode</span><span class="p">(</span><span class="nx">n</span> <span class="o">*</span><span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">n</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">n</span><span class="p">.</span><span class="nx">val</span><span class="o">%</span><span class="mi">100000</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;node: %d\n&#34;</span><span class="p">,</span> <span class="nx">n</span><span class="p">.</span><span class="nx">val</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printNode</span><span class="p">(</span><span class="nx">n</span><span class="p">.</span><span class="nx">next</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>输出结果：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run .
+</span></span><span class="line"><span class="cl">node: <span class="m">0</span>
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">node: <span class="m">2000000</span>
+</span></span><span class="line"><span class="cl">HeapAlloc: <span class="m">31</span> MiB
+</span></span><span class="line"><span class="cl">OffHeap: <span class="m">0</span> B
+</span></span><span class="line"><span class="cl">After GC...
+</span></span><span class="line"><span class="cl">HeapAlloc: <span class="m">92</span> KiB
+</span></span><span class="line"><span class="cl">OffHeap: <span class="m">0</span> B
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ go run -tags jemalloc .
+</span></span><span class="line"><span class="cl">node: <span class="m">0</span>
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">node: <span class="m">2000000</span>
+</span></span><span class="line"><span class="cl">HeapAlloc: <span class="m">90</span> KiB
+</span></span><span class="line"><span class="cl">OffHeap: <span class="m">30</span> MiB
+</span></span><span class="line"><span class="cl">After GC...
+</span></span><span class="line"><span class="cl">HeapAlloc: <span class="m">92</span> KiB
+</span></span><span class="line"><span class="cl">OffHeap: <span class="m">0</span> B</span></span></code></pre></div>
+]]></content:encoded></item><item><title>用 Docker 解决单元测试外部依赖</title><link>https://chensl.me/dockertest/</link><pubDate>Sun, 01 May 2022 15:20:06 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/dockertest/</guid><description>搬砖时，写的大多是和数据库交互的 API 服务，当我厌倦了用 Postman 手工测试，尝试开始写一些单元测试，发现并不顺利。在 GitHub 上看到过几个项目是用 sqlmock。它的原理是实现了 database/sql 里的接口，然后单测中用正则表达式判断预期的 SQL 语句和实际执行的 SQL 语句是否匹配：
+func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err != nil { t.Fatalf(&amp;#34;an error &amp;#39;%s&amp;#39; was not expected when opening a stub database connection&amp;#34;, err) } defer db.Close() mock.ExpectBegin() mock.ExpectExec(&amp;#34;UPDATE products&amp;#34;).WillReturnResult(sqlmock.NewResult(1, 1)) mock.ExpectExec(&amp;#34;INSERT INTO product_viewers&amp;#34;).WithArgs(2, 3).WillReturnResult(sqlmock.NewResult(1, 1)) mock.ExpectCommit() // now we execute our method if err = recordStats(db, 2, 3); err != nil { t.</description><content:encoded><![CDATA[<p>搬砖时，写的大多是和数据库交互的 API 服务，当我厌倦了用 Postman 手工测试，尝试开始写一些单元测试，发现并不顺利。在 GitHub 上看到过几个项目是用 <a href="https://github.com/DATA-DOG/go-sqlmock">sqlmock</a>。它的原理是实现了 <code>database/sql</code> 里的接口，然后单测中用正则表达式判断预期的 SQL 语句和实际执行的 SQL 语句是否匹配：</p>
+<!-- raw HTML omitted -->
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestShouldUpdateStats</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">db</span><span class="p">,</span> <span class="nx">mock</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sqlmock</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;an error &#39;%s&#39; was not expected when opening a stub database connection&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectBegin</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectExec</span><span class="p">(</span><span class="s">&#34;UPDATE products&#34;</span><span class="p">).</span><span class="nf">WillReturnResult</span><span class="p">(</span><span class="nx">sqlmock</span><span class="p">.</span><span class="nf">NewResult</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectExec</span><span class="p">(</span><span class="s">&#34;INSERT INTO product_viewers&#34;</span><span class="p">).</span><span class="nf">WithArgs</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">).</span><span class="nf">WillReturnResult</span><span class="p">(</span><span class="nx">sqlmock</span><span class="p">.</span><span class="nf">NewResult</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectCommit</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// now we execute our method
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">recordStats</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;error was not expected while updating stats: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// we make sure that all expectations were met
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectationsWereMet</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;there were unfulfilled expectations: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>实际尝试之后发现这种方式着实有点反人类，尤其使用了 ORM 后（鬼知道 ORM 把 SQL 构造成了啥样 😅）</p>
+<h2 id="是否有必要引入-docker">是否有必要引入 Docker</h2>
+<p>除了 Docker，其实还有很多方案：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">实际开发</th>
+<th style="text-align:center">单元测试</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">MySQL</td>
+<td style="text-align:center">SQLite</td>
+</tr>
+<tr>
+<td style="text-align:center">Redis</td>
+<td style="text-align:center"><a href="https://github.com/alicebob/miniredis">Miniredis</a></td>
+</tr>
+<tr>
+<td style="text-align:center">&hellip;</td>
+<td style="text-align:center">&hellip;</td>
+</tr>
+</tbody>
+</table>
+<p>具体情况具体分析，如果问题本身很简单，自然没必要引入 Docker</p>
+<h2 id="compose--脚本">compose + 脚本</h2>
+<p>在 <code>docker-compose.yml</code> 文件中定义好外部依赖。然后写一个脚本（bash 或 python 或 &hellip;），按以下步骤执行测试：</p>
+<ol>
+<li>docker-compose up</li>
+<li>数据库初始化（表结构、测试数据）</li>
+<li>go test</li>
+<li>docker-compose down</li>
+</ol>
+<p>{% note info %}
+整体思路就是这样，比较繁琐，就不演示了
+{% endnote %}</p>
+<h2 id="dockertest">Dockertest</h2>
+<p><a href="https://github.com/ory/dockertest">Dockertest</a> 是一个简易的 Docker 客户端，提供了更便捷的方式管理单元测试的外部依赖。</p>
+<h3 id="创建示例项目">创建示例项目</h3>
+<p>先安装接下来会用到的依赖：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">DEMO</span><span class="o">=</span><span class="nv">$GOPATH</span>/src/go.chensl.me/dockertest-demo
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">mkdir -p <span class="nv">$DEMO</span>
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$DEMO</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">go mod init
+</span></span><span class="line"><span class="cl">go get github.com/go-sql-driver/mysql
+</span></span><span class="line"><span class="cl">go get github.com/golang-migrate/migrate/v4
+</span></span><span class="line"><span class="cl">go get github.com/jmoiron/sqlx
+</span></span><span class="line"><span class="cl">go get github.com/ory/dockertest/v3
+</span></span><span class="line"><span class="cl">go get github.com/stretchr/testify</span></span></code></pre></div>
+<p>提前预览一下项目结构：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">.
+</span></span><span class="line"><span class="cl">├── db
+</span></span><span class="line"><span class="cl">│   ├── db.go
+</span></span><span class="line"><span class="cl">│   ├── db_test.go
+</span></span><span class="line"><span class="cl">│   ├── user.go
+</span></span><span class="line"><span class="cl">│   └── user_test.go
+</span></span><span class="line"><span class="cl">├── go.mod
+</span></span><span class="line"><span class="cl">├── go.sum
+</span></span><span class="line"><span class="cl">├── migrations
+</span></span><span class="line"><span class="cl">│   ├── 20220501170742_init.down.sql
+</span></span><span class="line"><span class="cl">│   └── 20220501170742_init.up.sql
+</span></span><span class="line"><span class="cl">└── model
+</span></span><span class="line"><span class="cl">    └── user.go
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">3 directories, 9 files</span></span></code></pre></div>
+<h3 id="db-方法">DB 方法</h3>
+<p>用 <a href="https://github.com/golang-migrate/migrate">golang-migrate</a> 生成 migration 脚本：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">migrate create -ext sql -dir migrations -tz<span class="o">=</span>Local init</span></span></code></pre></div>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">users</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_INCREMENT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span></span></span></code></pre></div>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">users</span><span class="o">`</span><span class="p">;</span></span></span></code></pre></div>
+<p>对应的 Go 结构体：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">model</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">User</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ID</span>   <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Name</span> <span class="kt">string</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>然后是这次需要测试的方法：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;context&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/jmoiron/sqlx&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;go.chensl.me/dockertest-demo/model&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">UserDB</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">conn</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewUserDB</span><span class="p">(</span><span class="nx">conn</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="o">*</span><span class="nx">UserDB</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">UserDB</span><span class="p">{</span><span class="nx">conn</span><span class="p">:</span> <span class="nx">conn</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">UserDB</span><span class="p">)</span> <span class="nf">Add</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">u</span> <span class="o">*</span><span class="nx">model</span><span class="p">.</span><span class="nx">User</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">res</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">conn</span><span class="p">.</span><span class="nf">ExecContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">&#34;INSERT INTO users (name) VALUES (?)&#34;</span><span class="p">,</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">res</span><span class="p">.</span><span class="nf">LastInsertId</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">u</span><span class="p">.</span><span class="nx">ID</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<h3 id="testinstance">TestInstance</h3>
+<p>简单封装一下 dockertest 和 sqlx（借鉴了 <a href="https://github.com/google/exposure-notifications-server/blob/9b73ca040965e3177db3c36df211a275bf6dcfa6/pkg/database/database_util.go#L69">google/exposure-notifications-server</a> 的代码）</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;database/sql&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;strconv&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/golang-migrate/migrate/v4&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/golang-migrate/migrate/v4/database/mysql&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="s">&#34;github.com/golang-migrate/migrate/v4/source/file&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/jmoiron/sqlx&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/ory/dockertest/v3&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/ory/dockertest/v3/docker&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">TestInstance</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">pool</span>       <span class="o">*</span><span class="nx">dockertest</span><span class="p">.</span><span class="nx">Pool</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">resource</span>   <span class="o">*</span><span class="nx">dockertest</span><span class="p">.</span><span class="nx">Resource</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">conn</span>       <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">skipReason</span> <span class="kt">string</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">MustTestInstance</span><span class="p">()</span> <span class="o">*</span><span class="nx">TestInstance</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">testInstance</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewTestInstance</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stderr</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">testInstance</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewTestInstance</span><span class="p">()</span> <span class="p">(</span><span class="o">*</span><span class="nx">TestInstance</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">skip</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">ParseBool</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;SKIP_DATABASE_TESTS&#34;</span><span class="p">));</span> <span class="nx">skip</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">&amp;</span><span class="nx">TestInstance</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">skipReason</span><span class="p">:</span> <span class="s">&#34;🚧 Skipping database tests (SKIP_DATABASE_TESTS is set)!&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="p">},</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">pool</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">dockertest</span><span class="p">.</span><span class="nf">NewPool</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to create database docker pool: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">resource</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pool</span><span class="p">.</span><span class="nf">RunWithOptions</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">dockertest</span><span class="p">.</span><span class="nx">RunOptions</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Repository</span><span class="p">:</span> <span class="s">&#34;mysql&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Tag</span><span class="p">:</span>        <span class="s">&#34;5.7&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Env</span><span class="p">:</span>        <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;MYSQL_ROOT_PASSWORD=secret&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span> <span class="kd">func</span><span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">docker</span><span class="p">.</span><span class="nx">HostConfig</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nx">AutoRemove</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nx">RestartPolicy</span> <span class="p">=</span> <span class="nx">docker</span><span class="p">.</span><span class="nx">RestartPolicy</span><span class="p">{</span><span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;no&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to start database container: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">resource</span><span class="p">.</span><span class="nf">Expire</span><span class="p">(</span><span class="mi">120</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to expire database container: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">conn</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pool</span><span class="p">.</span><span class="nf">Retry</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">var</span> <span class="nx">err</span> <span class="kt">error</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">conn</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">sqlx</span><span class="p">.</span><span class="nf">Connect</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;root:secret@(localhost:%s)/mysql&#34;</span><span class="p">,</span> <span class="nx">resource</span><span class="p">.</span><span class="nf">GetPort</span><span class="p">(</span><span class="s">&#34;3306/tcp&#34;</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">	<span class="p">});</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed waiting for database container to be ready: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">migrateUp</span><span class="p">(</span><span class="nx">conn</span><span class="p">.</span><span class="nx">DB</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to migrate database: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">TestInstance</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">pool</span><span class="p">:</span>     <span class="nx">pool</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">resource</span><span class="p">:</span> <span class="nx">resource</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">conn</span><span class="p">:</span>     <span class="nx">conn</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">i</span> <span class="o">*</span><span class="nx">TestInstance</span><span class="p">)</span> <span class="nf">Conn</span><span class="p">(</span><span class="nx">tb</span> <span class="nx">testing</span><span class="p">.</span><span class="nx">TB</span><span class="p">)</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">tb</span><span class="p">.</span><span class="nf">Helper</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">i</span><span class="p">.</span><span class="nx">skipReason</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">tb</span><span class="p">.</span><span class="nf">Skip</span><span class="p">(</span><span class="nx">i</span><span class="p">.</span><span class="nx">skipReason</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">i</span><span class="p">.</span><span class="nx">conn</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">i</span> <span class="o">*</span><span class="nx">TestInstance</span><span class="p">)</span> <span class="nf">Close</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">i</span><span class="p">.</span><span class="nx">skipReason</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">i</span><span class="p">.</span><span class="nx">conn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">i</span><span class="p">.</span><span class="nx">pool</span><span class="p">.</span><span class="nf">Purge</span><span class="p">(</span><span class="nx">i</span><span class="p">.</span><span class="nx">resource</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">migrateUp</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">driver</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mysql</span><span class="p">.</span><span class="nf">WithInstance</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">mysql</span><span class="p">.</span><span class="nx">Config</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">m</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">migrate</span><span class="p">.</span><span class="nf">NewWithDatabaseInstance</span><span class="p">(</span><span class="s">&#34;file://../migrations&#34;</span><span class="p">,</span> <span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="nx">driver</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Up</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>借助 <code>TestMain</code>，在其他单测执行前，准备好环境：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">testInstance</span> <span class="o">*</span><span class="nx">TestInstance</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestMain</span><span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">M</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">testInstance</span> <span class="p">=</span> <span class="nf">MustTestInstance</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">code</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">testInstance</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="nx">code</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<h3 id="最终效果">最终效果</h3>
+<p>🎉 几乎和普通单元测试没有区别</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;context&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/stretchr/testify/assert&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;go.chensl.me/dockertest-demo/model&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestUserDB_Add</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ud</span> <span class="o">:=</span> <span class="nf">NewUserDB</span><span class="p">(</span><span class="nx">testInstance</span><span class="p">.</span><span class="nf">Conn</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">u</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">model</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;foo&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">err</span> <span class="o">:=</span> <span class="nx">ud</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">u</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">assert</span><span class="p">.</span><span class="nf">NoError</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">u</span><span class="p">.</span><span class="nx">ID</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">err</span> <span class="p">=</span> <span class="nx">ud</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">u</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nf">isDuplicate</span><span class="p">(</span><span class="nx">err</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">isDuplicate</span><span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">merr</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">err</span><span class="p">.(</span><span class="o">*</span><span class="nx">mysql</span><span class="p">.</span><span class="nx">MySQLError</span><span class="p">);</span> <span class="nx">ok</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">merr</span><span class="p">.</span><span class="nx">Number</span> <span class="o">==</span> <span class="mi">1062</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>执行单元测试，加上环境变量 <code>SKIP_DATABASE_TESTS</code> 可以跳过 dockertest：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">go <span class="nb">test</span> -v -count<span class="o">=</span><span class="m">1</span> ./...
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">SKIP_DATABASE_TESTS</span><span class="o">=</span><span class="m">1</span> go <span class="nb">test</span> -v -count<span class="o">=</span><span class="m">1</span> ./...</span></span></code></pre></div>
+]]></content:encoded></item><item><title>熔断器模式</title><link>https://chensl.me/gobreaker/</link><pubDate>Thu, 16 Sep 2021 16:21:28 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/gobreaker/</guid><description>熔断器模式提高了系统从故障恢复时的稳定性，最小化了故障对性能的影响。
+背景和问题 在复杂的网络环境下，执行远程调用可能会遇到各种超时或故障，虽然大部分情况这些问题能在短时间内自动恢复，只需要重试几次就能调用成功。但是，有些问题需要很长时间来恢复时，不断重试显然不是一个很好的解决方案。相反，应用程序应该迅速接受这次操作失败，并进行相应的错误处理。
+此外，如果一个服务非常繁忙，系统的一个部分的故障可能会导致级联故障。例如，服务调用方设置了调用的超时时间，如果服务在这段时间内没有返回响应，调用方直接用错误消息进行回复。这种策略可能会导致许多同一操作的并发请求被阻塞，直到超时。这些被阻塞的请求会占用着大量的系统资源（内存，线程，数据库连接等），这些资源耗尽，导致系统中需要使用相同资源的其他服务出现故障。在这种情况下，最好是立即让调用失败，只有在可能成功时才尝试调用服务。
+{% note warning %} 设置一个更短的超时可能有助于解决这个问题，但是超时不应该太短，这可能会让那些本来应该成功的请求也超时。 {% endnote %}
+解决 熔断器作为一个可能失败操作的代理，监控最近发生故障的数量，然后使用这些信息来决定是否允许操作继续，防止应用程序反复执行失败操作。
+熔断器本质上就是一个状态机，它具有以下状态：
+**Closed：**程序可以正常发出请求，熔断器维护最近失败的次数，如果操作调用不成功，则熔断器增加此计数。如果在给定时间内，失败次数超过了指定的阈值，状态机将变为 Open 状态。此时，启动一个计时器，在一定时间后，状态机变为 Half-Open 状态。 **Open：**程序发出的请求会立即失败，并向程序返回异常。（相当于电闸跳闸了） **Half-Open：**程序只能执行有限数量的请求操作，如果这些请求成功了（故障已经恢复），状态机变为 Closed 状态。如果请求失败了，状态机变为 Open 状态，并且重新启动计时器。 Golang 实现 使用 我们可以通过 Settings 结构体配置熔断器：
+type Settings struct { Name string MaxRequests uint32 Interval time.Duration Timeout time.Duration ReadyToTrip func(counts Counts) bool OnStateChange func(name string, from State, to State) } MaxRequests: Half-Open 状态下的最大请求次数，默认为 1 Interval: Closed 状态下清空计数器的周期，默认不清空 Timeout: Open 状态转 Half-Open 状态的时间，默认 60 秒 ReadyToTrip: 通过计数器的信息判断是否需要熔断，默认连续失败 5 次后熔断 OnStateChange: 状态变化时的回调 package main import ( &amp;#34;errors&amp;#34; &amp;#34;log&amp;#34; &amp;#34;math/rand&amp;#34; &amp;#34;time&amp;#34; &amp;#34;github.</description><content:encoded><![CDATA[<p>熔断器模式提高了系统从故障恢复时的稳定性，最小化了故障对性能的影响。</p>
+<h2 id="背景和问题">背景和问题</h2>
+<p>在复杂的网络环境下，执行远程调用可能会遇到各种超时或故障，虽然大部分情况这些问题能在短时间内自动恢复，只需要重试几次就能调用成功。但是，有些问题需要很长时间来恢复时，不断重试显然不是一个很好的解决方案。相反，应用程序应该迅速接受这次操作失败，并进行相应的错误处理。</p>
+<p>此外，如果一个服务非常繁忙，系统的一个部分的故障可能会导致级联故障。例如，服务调用方设置了调用的超时时间，如果服务在这段时间内没有返回响应，调用方直接用错误消息进行回复。这种策略可能会导致许多同一操作的并发请求被阻塞，直到超时。这些被阻塞的请求会占用着大量的系统资源（内存，线程，数据库连接等），这些资源耗尽，导致系统中需要使用相同资源的其他服务出现故障。在这种情况下，最好是<strong>立即</strong>让调用失败，只有在可能成功时才尝试调用服务。</p>
+<!-- raw HTML omitted -->
+<p>{% note warning %}
+设置一个更短的超时可能有助于解决这个问题，但是超时不应该太短，这可能会让那些本来应该成功的请求也超时。
+{% endnote %}</p>
+<h2 id="解决">解决</h2>
+<p>熔断器作为一个可能失败操作的代理，监控最近发生故障的数量，然后使用这些信息来决定是否允许操作继续，防止应用程序反复执行失败操作。</p>
+<p>熔断器本质上就是一个<strong>状态机</strong>，它具有以下状态：</p>
+<ul>
+<li>**Closed：**程序可以正常发出请求，熔断器维护最近失败的次数，如果操作调用不成功，则熔断器增加此计数。如果在给定时间内，失败次数超过了指定的阈值，状态机将变为 <strong>Open</strong> 状态。此时，启动一个计时器，在一定时间后，状态机变为 <strong>Half-Open</strong> 状态。</li>
+<li>**Open：**程序发出的请求会立即失败，并向程序返回异常。（相当于电闸跳闸了）</li>
+<li>**Half-Open：**程序只能执行有限数量的请求操作，如果这些请求成功了（故障已经恢复），状态机变为 <strong>Closed</strong> 状态。如果请求失败了，状态机变为 <strong>Open</strong> 状态，并且重新启动计时器。</li>
+</ul>
+<p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150169.png" alt=""></p>
+<h2 id="golang-实现">Golang 实现</h2>
+<p><a href="https://github.com/sony/gobreaker"><img src="https://github-readme-stats.vercel.app/api/pin/?username=sony&amp;repo=gobreaker&amp;show_owner=true" alt="gobreaker"></a></p>
+<h3 id="使用">使用</h3>
+<p>我们可以通过 <code>Settings</code> 结构体配置熔断器：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Settings</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Name</span>          <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">MaxRequests</span>   <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Interval</span>      <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Timeout</span>       <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">ReadyToTrip</span>   <span class="kd">func</span><span class="p">(</span><span class="nx">counts</span> <span class="nx">Counts</span><span class="p">)</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">OnStateChange</span> <span class="kd">func</span><span class="p">(</span><span class="nx">name</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">from</span> <span class="nx">State</span><span class="p">,</span> <span class="nx">to</span> <span class="nx">State</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<ul>
+<li><code>MaxRequests</code>: <strong>Half-Open</strong> 状态下的最大请求次数，默认为 1</li>
+<li><code>Interval</code>: <strong>Closed</strong> 状态下清空计数器的周期，默认不清空</li>
+<li><code>Timeout</code>: <strong>Open</strong> 状态转 <strong>Half-Open</strong> 状态的时间，默认 60 秒</li>
+<li><code>ReadyToTrip</code>: 通过计数器的信息判断是否需要熔断，默认连续失败 5 次后熔断</li>
+<li><code>OnStateChange</code>: 状态变化时的回调</li>
+</ul>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;errors&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;log&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;math/rand&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;time&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;github.com/sony/gobreaker&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">rand</span><span class="p">.</span><span class="nf">Seed</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">UnixNano</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nx">cb</span> <span class="o">:=</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nf">NewCircuitBreaker</span><span class="p">(</span><span class="nx">gobreaker</span><span class="p">.</span><span class="nx">Settings</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">ReadyToTrip</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">counts</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nx">Counts</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">failureRatio</span> <span class="o">:=</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">counts</span><span class="p">.</span><span class="nx">TotalFailures</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">counts</span><span class="p">.</span><span class="nx">Requests</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 失败率大于 60% 时熔断
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">return</span> <span class="nx">counts</span><span class="p">.</span><span class="nx">Requests</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="o">&amp;&amp;</span> <span class="nx">failureRatio</span> <span class="o">&gt;=</span> <span class="mf">0.6</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">OnStateChange</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">_</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="nx">to</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nx">State</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;from: %v, to: %v\n&#34;</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="nx">to</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">result</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">cb</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="kd">interface</span><span class="p">{},</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 模拟 70% 的失败率
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="nx">rand</span><span class="p">.</span><span class="nf">Float64</span><span class="p">()</span> <span class="p">&lt;</span> <span class="mf">0.7</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;some error&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="s">&#34;ok&#34;</span><span class="p">,</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">        <span class="p">})</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;result: %v, err: %v\n&#34;</span><span class="p">,</span> <span class="nx">result</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>运行结果：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run main.go
+</span></span><span class="line"><span class="cl">2021/09/16 15:23:24 result: &lt;nil&gt;, err: some error
+</span></span><span class="line"><span class="cl">2021/09/16 15:23:25 result: &lt;nil&gt;, err: some error
+</span></span><span class="line"><span class="cl">2021/09/16 15:23:26 from: closed, to: open
+</span></span><span class="line"><span class="cl">2021/09/16 15:23:26 result: &lt;nil&gt;, err: some error
+</span></span><span class="line"><span class="cl">2021/09/16 15:23:27 result: &lt;nil&gt;, err: circuit breaker is open
+</span></span><span class="line"><span class="cl">2021/09/16 15:23:28 result: &lt;nil&gt;, err: circuit breaker is open
+</span></span><span class="line"><span class="cl">2021/09/16 15:23:29 result: &lt;nil&gt;, err: circuit breaker is open
+</span></span><span class="line"><span class="cl">2021/09/16 15:23:30 result: &lt;nil&gt;, err: circuit breaker is open
+</span></span><span class="line"><span class="cl">......</span></span></code></pre></div>
+<h3 id="execute-流程">Execute 流程</h3>
+<p>简单过一遍 <code>Execute()</code> 的流程，详细代码可以看 <a href="https://github.com/sony/gobreaker/blob/master/gobreaker.go">gobreader.go</a>，不到 400 行，实现的非常简洁。</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">cb</span> <span class="o">*</span><span class="nx">CircuitBreaker</span><span class="p">)</span> <span class="nf">Execute</span><span class="p">(</span><span class="nx">req</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="kd">interface</span><span class="p">{},</span> <span class="kt">error</span><span class="p">))</span> <span class="p">(</span><span class="kd">interface</span><span class="p">{},</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 增加计数，判断状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">generation</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">cb</span><span class="p">.</span><span class="nf">beforeRequest</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 如果熔断器已经 Open，在这里就会直接返回 ErrOpenState
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// Half-Open 状态下超过最大请求数则返回 ErrTooManyRequests
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">e</span> <span class="o">:=</span> <span class="nb">recover</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">cb</span><span class="p">.</span><span class="nf">afterRequest</span><span class="p">(</span><span class="nx">generation</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">panic</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 执行真正的操作
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">result</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">req</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 增加计数，达到阈值就熔断，err 非空表示失败
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">cb</span><span class="p">.</span><span class="nf">afterRequest</span><span class="p">(</span><span class="nx">generation</span><span class="p">,</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">result</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>从上面的源码，我们可以看出，执行过程只是简单地通过 <code>err == nil</code> 判断成功，假设业务的逻辑很复杂，需要加入自定义的判断，可以用 <code>TwoStepCircuitBreaker</code>。</p>
+<h3 id="两阶段熔断">两阶段熔断</h3>
+<p>和普通熔断器的使用差不多，<code>Allow()</code> 方法只是调用了 <code>beforeRequest()</code>，然后返回回调函数 <code>done(success bool)</code> 和错误信息，通过回调函数我们能把操作成功与否告诉熔断器。</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;log&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;math/rand&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;time&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;github.com/sony/gobreaker&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">rand</span><span class="p">.</span><span class="nf">Seed</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">UnixNano</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nx">cb</span> <span class="o">:=</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nf">NewTwoStepCircuitBreaker</span><span class="p">(</span><span class="nx">gobreaker</span><span class="p">.</span><span class="nx">Settings</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">ReadyToTrip</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">counts</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nx">Counts</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">failureRatio</span> <span class="o">:=</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">counts</span><span class="p">.</span><span class="nx">TotalFailures</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">counts</span><span class="p">.</span><span class="nx">Requests</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="nx">counts</span><span class="p">.</span><span class="nx">Requests</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="o">&amp;&amp;</span> <span class="nx">failureRatio</span> <span class="o">&gt;=</span> <span class="mf">0.6</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">OnStateChange</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">_</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="nx">to</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nx">State</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;from: %v, to: %v\n&#34;</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="nx">to</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">done</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">cb</span><span class="p">.</span><span class="nf">Allow</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;err: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">continue</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">success</span> <span class="o">:=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">rand</span><span class="p">.</span><span class="nf">Float64</span><span class="p">()</span> <span class="p">&lt;</span> <span class="mf">0.7</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;failure&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">success</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;success&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">done</span><span class="p">(</span><span class="nx">success</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>运行结果：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run main.go
+</span></span><span class="line"><span class="cl">2021/09/16 16:26:49 failure
+</span></span><span class="line"><span class="cl">2021/09/16 16:26:50 failure
+</span></span><span class="line"><span class="cl">2021/09/16 16:26:51 success
+</span></span><span class="line"><span class="cl">2021/09/16 16:26:52 failure
+</span></span><span class="line"><span class="cl">2021/09/16 16:26:52 from: closed, to: open
+</span></span><span class="line"><span class="cl">2021/09/16 16:26:53 err: circuit breaker is open
+</span></span><span class="line"><span class="cl">2021/09/16 16:26:54 err: circuit breaker is open
+</span></span><span class="line"><span class="cl">2021/09/16 16:26:55 err: circuit breaker is open
+</span></span><span class="line"><span class="cl">......</span></span></code></pre></div>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://docs.microsoft.com/en-us/previous-versions/msp-n-p/dn589784(v=pandp.10)">Circuit Breaker Pattern</a></li>
+<li><a href="https://github.com/sony/gobreaker">gobreaker</a></li>
+</ul>
+]]></content:encoded></item><item><title>高性能字节池 - bytebufferpool 源码分析</title><link>https://chensl.me/bytebufferpool/</link><pubDate>Mon, 28 Jun 2021 16:19:02 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/bytebufferpool/</guid><description>简介 今天的主角是 bytebufferpool ，仓库的 README 文件是这么描述 bytebufferpool 的：
+Currently bytebufferpool is fastest and most effective buffer pool written in Go.
+bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（fasthttp, quicktemplate, gnet）
+什么是字节池？在读取文件或者从 io.Reader 获取数据时，一般都需要创建一个字节切片 []byte 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 []byte ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。
+package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&amp;#34; &amp;#34;os&amp;#34; ) func main() { r, _ := os.Open(&amp;#34;./main.go&amp;#34;) // 普通方式 buf := make([]byte, 64) for { n, err := r.Read(buf) if err != nil { if err == io.</description><content:encoded><![CDATA[<h2 id="简介">简介</h2>
+<p>今天的主角是 <a href="https://github.com/valyala/bytebufferpool">bytebufferpool</a> ，仓库的 README 文件是这么描述 bytebufferpool 的：</p>
+<blockquote>
+<p>Currently bytebufferpool is fastest and most effective buffer pool written in Go.</p>
+</blockquote>
+<!-- raw HTML omitted -->
+<p>bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（<a href="https://github.com/valyala/fasthttp">fasthttp</a>, <a href="https://github.com/valyala/quicktemplate">quicktemplate</a>, <a href="https://github.com/panjf2000/gnet">gnet</a>）</p>
+<p>什么是字节池？在读取文件或者从 <code>io.Reader</code> 获取数据时，一般都需要创建一个字节切片 <code>[]byte</code> 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 <code>[]byte</code> ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;io&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;log&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">r</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;./main.go&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 普通方式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">buf</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">n</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Read</span><span class="p">(</span><span class="nx">buf</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="nx">io</span><span class="p">.</span><span class="nx">EOF</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">break</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">buf</span><span class="p">[:</span><span class="nx">n</span><span class="p">]))</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<h2 id="简单实现">简单实现</h2>
+<h3 id="minio-bytepoolcap">MinIO BytePoolCap</h3>
+<p>MinIO 中使用 <code>channel</code> 实现了一个非常简单的<strong>有界</strong>字节池 <a href="https://github.com/minio/minio/blob/master/internal/bpool/bpool.go">bpool</a></p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">BytePoolCap</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">c</span>    <span class="kd">chan</span> <span class="p">[]</span><span class="kt">byte</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">w</span>    <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">wcap</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewBytePoolCap</span><span class="p">(</span><span class="nx">maxSize</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">width</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">capwidth</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">bp</span> <span class="o">*</span><span class="nx">BytePoolCap</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">BytePoolCap</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">c</span><span class="p">:</span>    <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">maxSize</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">w</span><span class="p">:</span>    <span class="nx">width</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">wcap</span><span class="p">:</span> <span class="nx">capwidth</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<ul>
+<li><code>c</code> 用来存放字节切片（这也就是为什么<strong>有界</strong>的原因）</li>
+<li><code>w</code> 表示创建字节切片的 <code>len</code></li>
+<li><code>wcap</code> 表示创建字节切片的 <code>cap</code></li>
+</ul>
+<p><code>Get()</code> 方法, 从池中获取字节切片：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">bp</span> <span class="o">*</span><span class="nx">BytePoolCap</span><span class="p">)</span> <span class="nf">Get</span><span class="p">()</span> <span class="p">(</span><span class="nx">b</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nx">b</span> <span class="p">=</span> <span class="o">&lt;-</span><span class="nx">bp</span><span class="p">.</span><span class="nx">c</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// channel 中存在 []byte 则复用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 否则创建 []byte
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="nx">bp</span><span class="p">.</span><span class="nx">wcap</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">b</span> <span class="p">=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">bp</span><span class="p">.</span><span class="nx">w</span><span class="p">,</span> <span class="nx">bp</span><span class="p">.</span><span class="nx">wcap</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">b</span> <span class="p">=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">bp</span><span class="p">.</span><span class="nx">w</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p><code>Put([]byte)</code> 方法，将使用完的切片放回池中，以被下一次获取：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">bp</span> <span class="o">*</span><span class="nx">BytePoolCap</span><span class="p">)</span> <span class="nf">Put</span><span class="p">(</span><span class="nx">b</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nx">bp</span><span class="p">.</span><span class="nx">c</span> <span class="o">&lt;-</span> <span class="nx">b</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// channel 放得下
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// channel 放不下的话则不进行任何操作，直接丢弃这个 []byte
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>使用示例</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// 多个 goroutine 公用一个 pool
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">var</span> <span class="nx">bp</span> <span class="p">=</span> <span class="nx">bpool</span><span class="p">.</span><span class="nf">NewBytePoolCap</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// func ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">buf</span> <span class="o">:=</span> <span class="nx">bp</span><span class="p">.</span><span class="nf">Get</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="k">defer</span> <span class="nx">bp</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">buf</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// use buf ...
+</span></span></span></code></pre></div>
+<h3 id="syncpool">sync.Pool</h3>
+<p>谈到“池”，很容易想到 Go 标准库中的 <code>sync.Pool</code>，我们可以用几行代码就实现一个简单的字节池：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">pool</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">sync</span><span class="p">.</span><span class="nx">Pool</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">New</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>然后就可以使用 <code>pool.Get().([]byte)</code> 从池中取字节切片，使用完后调用 <code>pool.Put(buf)</code> 归还到池中。</p>
+<h2 id="问题分析">问题分析</h2>
+<p>上面的两种字节池实现都存在许多问题：池中新建的字节切片的 <code>len</code> 和 <code>cap</code> 都是创建池的时候固定的，不能动态修改。另外，如果往字节切片写入了大量数据（发生多次扩容），此时再将这样的字节切片放回池中，显然会造成内存浪费。</p>
+<p>所以需要解决的问题：</p>
+<ol>
+<li>动态修改新分配字节切片的大小</li>
+<li>阻止大切片放回字节池</li>
+</ol>
+<h2 id="bytebufferpool">ByteBufferPool</h2>
+<p>ByteBufferPool 中实现了一个类似 <code>bytes.Buffer</code> 的结构（<a href="https://github.com/valyala/bytebufferpool/blob/master/bytebuffer.go">ByteBuffer</a>），它封装了一些对 <code>[]byte</code> 的复杂操作，从 benchmark 的结果可以看出它的性能比 <code>bytes.Buffer</code> 略高一些，但它不是字节池的重点，所以就不贴代码了。</p>
+<p>ByteBufferPool 是怎么解决上述问题的？</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">const</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">minBitSize</span> <span class="p">=</span> <span class="mi">6</span>  <span class="c1">// 2**6=64 is a CPU cache line size
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 将 buf 的大小划分为 20 个区间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// ==&gt; (0, 64], (64, 128], (128, 256], ... , (8388608, 16777216], (16777216, 33554432]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 超过 33554432 的也属于最后一个区间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">steps</span> <span class="p">=</span> <span class="mi">20</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nx">minSize</span> <span class="p">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="nx">minBitSize</span>               <span class="c1">// 64
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">maxSize</span> <span class="p">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="nx">minBitSize</span> <span class="o">+</span> <span class="nx">steps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">// 33554432
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="nx">calibrateCallsThreshold</span> <span class="p">=</span> <span class="mi">42000</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">maxPercentile</span>           <span class="p">=</span> <span class="mf">0.95</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Pool</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">calls</span>       <span class="p">[</span><span class="nx">steps</span><span class="p">]</span><span class="kt">uint64</span> <span class="c1">// 不同大小 buf 的使用频次
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">calibrating</span> <span class="kt">uint64</span>        <span class="c1">// 标记是否正在校准（校准过程就是调整 defaultSize 和 maxSize）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="nx">defaultSize</span> <span class="kt">uint64</span> <span class="c1">// make []byte 时的 cap
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">maxSize</span>     <span class="kt">uint64</span> <span class="c1">// 能放回池中的最大 buf 大小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="nx">pool</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Pool</span> <span class="c1">// 存储 buf
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Pool</span><span class="p">)</span> <span class="nf">Get</span><span class="p">()</span> <span class="o">*</span><span class="nx">ByteBuffer</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">v</span> <span class="o">:=</span> <span class="nx">p</span><span class="p">.</span><span class="nx">pool</span><span class="p">.</span><span class="nf">Get</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 如果池中有 buf 直接返回
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="nx">v</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nx">v</span><span class="p">.(</span><span class="o">*</span><span class="nx">ByteBuffer</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 否则新建一个 cap 为 defaultSize 的 buf
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">ByteBuffer</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">B</span><span class="p">:</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">p</span><span class="p">.</span><span class="nx">defaultSize</span><span class="p">)),</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>继续查看 <code>Put()</code>，从这就可以看出 ByteBufferPool 的主要逻辑了：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Pool</span><span class="p">)</span> <span class="nf">Put</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">ByteBuffer</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// len 所在 “区间” 的下标
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">idx</span> <span class="o">:=</span> <span class="nf">index</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">B</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 解决了问题1：动态调整 size
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 使用频次加1，如果超过了阈值（42000）则进行校准
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">AddUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">p</span><span class="p">.</span><span class="nx">calls</span><span class="p">[</span><span class="nx">idx</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span> <span class="p">&gt;</span> <span class="nx">calibrateCallsThreshold</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">p</span><span class="p">.</span><span class="nf">calibrate</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 解决了问题2：阻止大切片放回字节池
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 如果还未设置 maxSize 或 cap 小于等于 maxSize 才执行 Put
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">maxSize</span> <span class="o">:=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">p</span><span class="p">.</span><span class="nx">maxSize</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">maxSize</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nx">maxSize</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">b</span><span class="p">.</span><span class="nf">Reset</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">p</span><span class="p">.</span><span class="nx">pool</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">index</span><span class="p">(</span><span class="nx">n</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">n</span><span class="o">--</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">n</span> <span class="o">&gt;&gt;=</span> <span class="nx">minBitSize</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">idx</span> <span class="o">:=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">n</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">n</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">idx</span><span class="o">++</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">idx</span> <span class="o">&gt;=</span> <span class="nx">steps</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">idx</span> <span class="p">=</span> <span class="nx">steps</span> <span class="o">-</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">idx</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>划分区间的目的就是方便统计出程序近一段时间内<strong>最经常使用</strong>多大的 buf，从而决定 <code>defaultSize</code> 和 <code>maxSize</code>，这一块的逻辑主要在 <code>calibrate()</code> ：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Pool</span><span class="p">)</span> <span class="nf">calibrate</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 通过 CAS 确保同一时刻只有一个 goroutine 执行 calibrate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">!</span><span class="nx">atomic</span><span class="p">.</span><span class="nf">CompareAndSwapUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">p</span><span class="p">.</span><span class="nx">calibrating</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nx">a</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="nx">callSizes</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">steps</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 所有大小 buf 的总使用频次
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">var</span> <span class="nx">callsSum</span> <span class="kt">uint64</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint64</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">steps</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">calls</span> <span class="o">:=</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">SwapUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">p</span><span class="p">.</span><span class="nx">calls</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">callsSum</span> <span class="o">+=</span> <span class="nx">calls</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">a</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">callSize</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">calls</span><span class="p">:</span> <span class="nx">calls</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">size</span><span class="p">:</span>  <span class="nx">minSize</span> <span class="o">&lt;&lt;</span> <span class="nx">i</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">})</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 按照使用频次从大到小排序
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">sort</span><span class="p">.</span><span class="nf">Sort</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 将 defaultSize 设置为频次最高的 size
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">defaultSize</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">size</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">maxSize</span> <span class="o">:=</span> <span class="nx">defaultSize</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 选择 maxSize，让 95% 的 buf 都能被归还到池中，只有最大的 %5 无法归还
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">maxSum</span> <span class="o">:=</span> <span class="nb">uint64</span><span class="p">(</span><span class="nb">float64</span><span class="p">(</span><span class="nx">callsSum</span><span class="p">)</span> <span class="o">*</span> <span class="nx">maxPercentile</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">callsSum</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">steps</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">callsSum</span> <span class="p">&gt;</span> <span class="nx">maxSum</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">callsSum</span> <span class="o">+=</span> <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">calls</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">size</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">size</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">size</span> <span class="p">&gt;</span> <span class="nx">maxSize</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">maxSize</span> <span class="p">=</span> <span class="nx">size</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 因为 pool 会被多个 goroutine 访问，所以需要使用原子写入
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">atomic</span><span class="p">.</span><span class="nf">StoreUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">p</span><span class="p">.</span><span class="nx">defaultSize</span><span class="p">,</span> <span class="nx">defaultSize</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">atomic</span><span class="p">.</span><span class="nf">StoreUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">p</span><span class="p">.</span><span class="nx">maxSize</span><span class="p">,</span> <span class="nx">maxSize</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nx">atomic</span><span class="p">.</span><span class="nf">StoreUint64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">p</span><span class="p">.</span><span class="nx">calibrating</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">callSize</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">calls</span> <span class="kt">uint64</span> <span class="c1">// 使用频次
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">size</span>  <span class="kt">uint64</span> <span class="c1">// buf 大小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">callSizeSlice</span> <span class="p">[]</span><span class="nx">callSize</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="nx">callSizeSlice</span><span class="p">)</span> <span class="nf">Len</span><span class="p">()</span> <span class="kt">int</span>           <span class="p">{</span> <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="nx">callSizeSlice</span><span class="p">)</span> <span class="nf">Swap</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="nx">j</span> <span class="kt">int</span><span class="p">)</span>      <span class="p">{</span> <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="nx">a</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="p">=</span> <span class="nx">a</span><span class="p">[</span><span class="nx">j</span><span class="p">],</span> <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="nx">callSizeSlice</span><span class="p">)</span> <span class="nf">Less</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="nx">j</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">calls</span> <span class="p">&gt;</span> <span class="nx">a</span><span class="p">[</span><span class="nx">j</span><span class="p">].</span><span class="nx">calls</span> <span class="p">}</span></span></span></code></pre></div>
+<h2 id="性能测试">性能测试</h2>
+<p><a href="https://github.com/MaoLongLong/bytebufferpool/blob/main/pool_bench_test.go">pool_bench_test.go</a></p>
+<p>从上往下，分别为 ByteBufferPool, MinIO BytePoolCap 和普通 <code>[]byte</code></p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go <span class="nb">test</span> -bench<span class="o">=</span>Pool -benchmem
+</span></span><span class="line"><span class="cl">goos: linux
+</span></span><span class="line"><span class="cl">goarch: amd64
+</span></span><span class="line"><span class="cl">pkg: github.com/maolonglong/bytebufferpool
+</span></span><span class="line"><span class="cl">cpu: Intel<span class="o">(</span>R<span class="o">)</span> Core<span class="o">(</span>TM<span class="o">)</span> i7-7500U CPU @ 2.70GHz
+</span></span><span class="line"><span class="cl">BenchmarkByteBufferPoolBuf-4    <span class="m">20764896</span>                52.71 ns/op            <span class="m">0</span> B/op          <span class="m">0</span> allocs/op
+</span></span><span class="line"><span class="cl">BenchmarkBPool-4                 <span class="m">7899157</span>               156.4 ns/op             <span class="m">0</span> B/op          <span class="m">0</span> allocs/op
+</span></span><span class="line"><span class="cl">BenchmarkWithoutPool-4           <span class="m">4511701</span>               270.5 ns/op          <span class="m">1472</span> B/op          <span class="m">3</span> allocs/op
+</span></span><span class="line"><span class="cl">PASS
+</span></span><span class="line"><span class="cl">ok      github.com/maolonglong/bytebufferpool   4.091s</span></span></code></pre></div>
+<p>从测试结果可以看出，ByteBufferPool 不管在速度还是内存上都优于另外两种方案。</p>
+<h2 id="总结">总结</h2>
+<p>GitHub 上许多优秀的项目其实代码并不难，通过这些项目可以学习大佬们设计、优化代码的思想，提升自己解决实际问题的能力。</p>
+]]></content:encoded></item><item><title>无锁队列的简单实现</title><link>https://chensl.me/lock-free-queue/</link><pubDate>Fri, 25 Jun 2021 16:16:59 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/lock-free-queue/</guid><description>谈到无锁队列，就不得不提 Michael 和 Scott 在 1996 年发表的论文 Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms，Java 中 ConcurrentLinkedQueue 也是基于该论文的算法实现。
+伪代码 论文中 lock-free queue 算法的伪代码：
+正如论文的题目描述的，它非常简单，代码量很少。主要思路就是使用 CAS 操作队列的头指针和尾指针，以实现线程安全。
+structure pointer_t {ptr: pointer to node_t, count: unsigned integer} structure node_t {value: data type, next: pointer_t} structure queue_t {Head: pointer_t, Tail: pointer_t} initialize(Q: pointer to queue_t) node = new_node() // Allocate a free node node-&amp;gt;next.ptr = NULL // Make it the only node in the linked list Q-&amp;gt;Head.</description><content:encoded><![CDATA[<p>谈到无锁队列，就不得不提 Michael 和 Scott 在 1996 年发表的论文 <a href="https://www.cs.rochester.edu/u/scott/papers/1996_PODC_queues.pdf">Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms</a>，Java 中 <code>ConcurrentLinkedQueue</code> 也是基于该论文的算法实现。</p>
+<!-- raw HTML omitted -->
+<h2 id="伪代码">伪代码</h2>
+<p>论文中 lock-free queue 算法的伪代码：</p>
+<p>正如论文的题目描述的，它非常简单，代码量很少。主要思路就是使用 <a href="https://zh.wikipedia.org/wiki/%E6%AF%94%E8%BE%83%E5%B9%B6%E4%BA%A4%E6%8D%A2">CAS</a> 操作队列的头指针和尾指针，以实现线程安全。</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">structure pointer_t {ptr: pointer to node_t, count: unsigned integer}
+</span></span><span class="line"><span class="cl">structure node_t {value: data type, next: pointer_t}
+</span></span><span class="line"><span class="cl">structure queue_t {Head: pointer_t, Tail: pointer_t}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">initialize(Q: pointer to queue_t)
+</span></span><span class="line"><span class="cl">   node = new_node()		// Allocate a free node
+</span></span><span class="line"><span class="cl">   node-&gt;next.ptr = NULL	// Make it the only node in the linked list
+</span></span><span class="line"><span class="cl">   Q-&gt;Head.ptr = Q-&gt;Tail.ptr = node	// Both Head and Tail point to it
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">enqueue(Q: pointer to queue_t, value: data type)
+</span></span><span class="line"><span class="cl"> E1:   node = new_node()	// Allocate a new node from the free list
+</span></span><span class="line"><span class="cl"> E2:   node-&gt;value = value	// Copy enqueued value into node
+</span></span><span class="line"><span class="cl"> E3:   node-&gt;next.ptr = NULL	// Set next pointer of node to NULL
+</span></span><span class="line"><span class="cl"> E4:   loop			// Keep trying until Enqueue is done
+</span></span><span class="line"><span class="cl"> E5:      tail = Q-&gt;Tail	// Read Tail.ptr and Tail.count together
+</span></span><span class="line"><span class="cl"> E6:      next = tail.ptr-&gt;next	// Read next ptr and count fields together
+</span></span><span class="line"><span class="cl"> E7:      if tail == Q-&gt;Tail	// Are tail and next consistent?
+</span></span><span class="line"><span class="cl">             // Was Tail pointing to the last node?
+</span></span><span class="line"><span class="cl"> E8:         if next.ptr == NULL
+</span></span><span class="line"><span class="cl">                // Try to link node at the end of the linked list
+</span></span><span class="line"><span class="cl"> E9:            if CAS(&amp;tail.ptr-&gt;next, next, &lt;node, next.count+1&gt;)
+</span></span><span class="line"><span class="cl">E10:               break	// Enqueue is done.  Exit loop
+</span></span><span class="line"><span class="cl">E11:            endif
+</span></span><span class="line"><span class="cl">E12:         else		// Tail was not pointing to the last node
+</span></span><span class="line"><span class="cl">                // Try to swing Tail to the next node
+</span></span><span class="line"><span class="cl">E13:            CAS(&amp;Q-&gt;Tail, tail, &lt;next.ptr, tail.count+1&gt;)
+</span></span><span class="line"><span class="cl">E14:         endif
+</span></span><span class="line"><span class="cl">E15:      endif
+</span></span><span class="line"><span class="cl">E16:   endloop
+</span></span><span class="line"><span class="cl">       // Enqueue is done.  Try to swing Tail to the inserted node
+</span></span><span class="line"><span class="cl">E17:   CAS(&amp;Q-&gt;Tail, tail, &lt;node, tail.count+1&gt;)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">dequeue(Q: pointer to queue_t, pvalue: pointer to data type): boolean
+</span></span><span class="line"><span class="cl"> D1:   loop			     // Keep trying until Dequeue is done
+</span></span><span class="line"><span class="cl"> D2:      head = Q-&gt;Head	     // Read Head
+</span></span><span class="line"><span class="cl"> D3:      tail = Q-&gt;Tail	     // Read Tail
+</span></span><span class="line"><span class="cl"> D4:      next = head.ptr-&gt;next    // Read Head.ptr-&gt;next
+</span></span><span class="line"><span class="cl"> D5:      if head == Q-&gt;Head	     // Are head, tail, and next consistent?
+</span></span><span class="line"><span class="cl"> D6:         if head.ptr == tail.ptr // Is queue empty or Tail falling behind?
+</span></span><span class="line"><span class="cl"> D7:            if next.ptr == NULL  // Is queue empty?
+</span></span><span class="line"><span class="cl"> D8:               return FALSE      // Queue is empty, couldn&#39;t dequeue
+</span></span><span class="line"><span class="cl"> D9:            endif
+</span></span><span class="line"><span class="cl">                // Tail is falling behind.  Try to advance it
+</span></span><span class="line"><span class="cl">D10:            CAS(&amp;Q-&gt;Tail, tail, &lt;next.ptr, tail.count+1&gt;)
+</span></span><span class="line"><span class="cl">D11:         else		     // No need to deal with Tail
+</span></span><span class="line"><span class="cl">                // Read value before CAS
+</span></span><span class="line"><span class="cl">                // Otherwise, another dequeue might free the next node
+</span></span><span class="line"><span class="cl">D12:            *pvalue = next.ptr-&gt;value
+</span></span><span class="line"><span class="cl">                // Try to swing Head to the next node
+</span></span><span class="line"><span class="cl">D13:            if CAS(&amp;Q-&gt;Head, head, &lt;next.ptr, head.count+1&gt;)
+</span></span><span class="line"><span class="cl">D14:               break             // Dequeue is done.  Exit loop
+</span></span><span class="line"><span class="cl">D15:            endif
+</span></span><span class="line"><span class="cl">D16:         endif
+</span></span><span class="line"><span class="cl">D17:      endif
+</span></span><span class="line"><span class="cl">D18:   endloop
+</span></span><span class="line"><span class="cl">D19:   free(head.ptr)		     // It is safe now to free the old node
+</span></span><span class="line"><span class="cl">D20:   return TRUE                   // Queue was not empty, dequeue succeeded</span></span></code></pre></div>
+<h2 id="实现">实现</h2>
+<p>简单起见，不考虑 <a href="https://en.wikipedia.org/wiki/ABA_problem">ABA</a> 问题，所以没有实现带版本号的 CAS</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;sync/atomic&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">lockFreeQueue</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">head</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">tail</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">len</span>  <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">node</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">value</span> <span class="kd">interface</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">next</span>  <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewLockFreeQueue</span><span class="p">()</span> <span class="o">*</span><span class="nx">lockFreeQueue</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">n</span> <span class="o">:=</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">node</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">lockFreeQueue</span><span class="p">{</span><span class="nx">head</span><span class="p">:</span> <span class="nx">n</span><span class="p">,</span> <span class="nx">tail</span><span class="p">:</span> <span class="nx">n</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">q</span> <span class="o">*</span><span class="nx">lockFreeQueue</span><span class="p">)</span> <span class="nf">Enqueue</span><span class="p">(</span><span class="nx">v</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">n</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">node</span><span class="p">{</span><span class="nx">value</span><span class="p">:</span> <span class="nx">v</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">tail</span> <span class="o">:=</span> <span class="nf">load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">tail</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">next</span> <span class="o">:=</span> <span class="nf">load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">tail</span><span class="p">.</span><span class="nx">next</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">tail</span> <span class="o">==</span> <span class="nf">load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">tail</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nx">next</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="nf">cas</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">tail</span><span class="p">.</span><span class="nx">next</span><span class="p">,</span> <span class="nx">next</span><span class="p">,</span> <span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nf">cas</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">tail</span><span class="p">,</span> <span class="nx">tail</span><span class="p">,</span> <span class="nx">n</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt32</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">len</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">return</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nf">cas</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">tail</span><span class="p">,</span> <span class="nx">tail</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">q</span> <span class="o">*</span><span class="nx">lockFreeQueue</span><span class="p">)</span> <span class="nf">Dequeue</span><span class="p">()</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">head</span> <span class="o">:=</span> <span class="nf">load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">head</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">tail</span> <span class="o">:=</span> <span class="nf">load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">tail</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">next</span> <span class="o">:=</span> <span class="nf">load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">head</span><span class="p">.</span><span class="nx">next</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">head</span> <span class="o">==</span> <span class="nf">load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">head</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nx">head</span> <span class="o">==</span> <span class="nx">tail</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="nx">next</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="nf">cas</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">tail</span><span class="p">,</span> <span class="nx">tail</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">v</span> <span class="o">:=</span> <span class="nx">next</span><span class="p">.</span><span class="nx">value</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="nf">cas</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">head</span><span class="p">,</span> <span class="nx">head</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt32</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">len</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">return</span> <span class="nx">v</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">q</span> <span class="o">*</span><span class="nx">lockFreeQueue</span><span class="p">)</span> <span class="nf">Empty</span><span class="p">()</span> <span class="kt">bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadInt32</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">q</span><span class="p">.</span><span class="nx">len</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">load</span><span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span><span class="p">)</span> <span class="o">*</span><span class="nx">node</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="nx">node</span><span class="p">)(</span><span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadPointer</span><span class="p">(</span><span class="nx">p</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">cas</span><span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span><span class="p">,</span> <span class="nx">old</span><span class="p">,</span> <span class="nx">new</span> <span class="o">*</span><span class="nx">node</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">CompareAndSwapPointer</span><span class="p">(</span><span class="nx">p</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="nx">old</span><span class="p">),</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="nx">new</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+]]></content:encoded></item></channel></rss>

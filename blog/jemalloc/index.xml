@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>jemalloc on 毛珑珑的博客</title><link>https://chensl.me/blog/jemalloc/</link><description>Recent content in jemalloc on 毛珑珑的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-Hans</language><managingEditor>shaolong.chen@outlook.it (Shaolong Chen)</managingEditor><webMaster>shaolong.chen@outlook.it (Shaolong Chen)</webMaster><lastBuildDate>Sat, 07 May 2022 20:17:33 +0000</lastBuildDate><atom:link href="https://chensl.me/blog/jemalloc/index.xml" rel="self" type="application/rss+xml"/><item><title>整活：在 Go 中手动分配内存</title><link>https://chensl.me/manual-memory-management/</link><pubDate>Sat, 07 May 2022 20:17:33 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/manual-memory-management/</guid><description>{% note warning %} 在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言 {% endnote %}
+好早之前就看到了 Dgraph 的那篇文章（Manual Memory Management in Go using jemalloc），今天仔细读了一遍，尝试尝试 Go + jemalloc 的模式。
+编译安装 jemalloc 环境：Ubuntu 20.04.4 LTS on Windows 10 x86_64
+从 GitHub 上下载 jemalloc 的源码，切换到最新 release 的 tag 然后按照 INSTALL.md 操作：
+git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemalloc git checkout 5.3.0 ./autogen.sh --with-jemalloc-prefix=je_ --with-malloc-conf=&amp;#39;background_thread:true,metadata_thp:auto&amp;#39; make -j sudo make install # 通过 sudo make uninstall 可以卸载 通过 cgo 调用 简单封装一下</description><content:encoded><![CDATA[<p>{% note warning %}
+在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言
+{% endnote %}</p>
+<p>好早之前就看到了 Dgraph 的那篇文章（<a href="https://dgraph.io/blog/post/manual-memory-management-golang-jemalloc/">Manual Memory Management in Go using jemalloc</a>），今天仔细读了一遍，尝试尝试 Go + jemalloc 的模式。</p>
+<!-- raw HTML omitted -->
+<h2 id="编译安装-jemalloc">编译安装 jemalloc</h2>
+<p>环境：Ubuntu 20.04.4 LTS on Windows 10 x86_64</p>
+<p>从 GitHub 上下载 jemalloc 的源码，切换到最新 release 的 tag 然后按照 <a href="https://github.com/jemalloc/jemalloc/blob/5.3.0/INSTALL.md">INSTALL.md</a> 操作：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/jemalloc/jemalloc.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> jemalloc
+</span></span><span class="line"><span class="cl">git checkout 5.3.0
+</span></span><span class="line"><span class="cl">./autogen.sh --with-jemalloc-prefix<span class="o">=</span>je_ --with-malloc-conf<span class="o">=</span><span class="s1">&#39;background_thread:true,metadata_thp:auto&#39;</span>
+</span></span><span class="line"><span class="cl">make -j
+</span></span><span class="line"><span class="cl">sudo make install <span class="c1"># 通过 sudo make uninstall 可以卸载</span></span></span></code></pre></div>
+<h2 id="通过-cgo-调用">通过 cgo 调用</h2>
+<p>简单封装一下</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">#cgo LDFLAGS: -L/usr/local/lib -Wl,-rpath,/usr/local/lib -ljemalloc -lm -lstdc++ -pthread -ldl
+</span></span></span><span class="line"><span class="cl"><span class="cm">#include &lt;stdlib.h&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cm">#include &lt;jemalloc/jemalloc.h&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;C&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;sync/atomic&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">const</span> <span class="nx">MaxArrayLen</span> <span class="p">=</span> <span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">50</span> <span class="o">-</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">numBytes</span> <span class="kt">int64</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//go:linkname throw runtime.throw
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">throw</span><span class="p">(</span><span class="nx">s</span> <span class="kt">string</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">Calloc</span><span class="p">(</span><span class="nx">n</span> <span class="kt">int</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">n</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">ptr</span> <span class="o">:=</span> <span class="nx">C</span><span class="p">.</span><span class="nf">je_calloc</span><span class="p">(</span><span class="nx">C</span><span class="p">.</span><span class="nf">size_t</span><span class="p">(</span><span class="nx">n</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">ptr</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;out of memory&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">numBytes</span><span class="p">,</span> <span class="nb">int64</span><span class="p">(</span><span class="nx">n</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nx">MaxArrayLen</span><span class="p">]</span><span class="kt">byte</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="nx">ptr</span><span class="p">))[:</span><span class="nx">n</span><span class="p">:</span><span class="nx">n</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">Free</span><span class="p">(</span><span class="nx">b</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">sz</span> <span class="o">:=</span> <span class="nb">cap</span><span class="p">(</span><span class="nx">b</span><span class="p">);</span> <span class="nx">sz</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">b</span> <span class="p">=</span> <span class="nx">b</span><span class="p">[:</span><span class="nb">cap</span><span class="p">(</span><span class="nx">b</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">ptr</span> <span class="o">:=</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">C</span><span class="p">.</span><span class="nf">je_free</span><span class="p">(</span><span class="nx">ptr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">numBytes</span><span class="p">,</span> <span class="o">-</span><span class="nb">int64</span><span class="p">(</span><span class="nx">sz</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NumAllocBytes</span><span class="p">()</span> <span class="kt">int64</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">numBytes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<h2 id="用-calloc-给结构体分配内存">用 Calloc 给结构体分配内存</h2>
+<p>注意 jemalloc 分配的结构体里的指针不能引用 golang 分配的地址，被垃圾回收了之后再访问会出现段错误</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">node</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">val</span>  <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">next</span> <span class="o">*</span><span class="nx">node</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>jemalloc 版本</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//go:build jemalloc
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">nodeSz</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">node</span><span class="p">{}))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">newNode</span><span class="p">(</span><span class="nx">val</span> <span class="kt">int</span><span class="p">)</span> <span class="o">*</span><span class="nx">node</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">b</span> <span class="o">:=</span> <span class="nf">Calloc</span><span class="p">(</span><span class="nx">nodeSz</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span> <span class="o">:=</span> <span class="p">(</span><span class="o">*</span><span class="nx">node</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span><span class="p">.</span><span class="nx">val</span> <span class="p">=</span> <span class="nx">val</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">n</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">freeNode</span><span class="p">(</span><span class="nx">n</span> <span class="o">*</span><span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">b</span> <span class="o">:=</span> <span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nx">MaxArrayLen</span><span class="p">]</span><span class="kt">byte</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="nx">n</span><span class="p">))[:</span><span class="nx">nodeSz</span><span class="p">:</span><span class="nx">nodeSz</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">Free</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>golang 版本</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//go:build !jemalloc
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">newNode</span><span class="p">(</span><span class="nx">val</span> <span class="kt">int</span><span class="p">)</span> <span class="o">*</span><span class="nx">node</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">node</span><span class="p">{</span><span class="nx">val</span><span class="p">:</span> <span class="nx">val</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">freeNode</span><span class="p">(</span><span class="nx">n</span> <span class="o">*</span><span class="nx">node</span><span class="p">)</span> <span class="p">{}</span></span></span></code></pre></div>
+<p>主函数</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;runtime&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/dustin/go-humanize&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">const</span> <span class="nx">N</span> <span class="p">=</span> <span class="mi">2000001</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">root</span> <span class="o">:=</span> <span class="nf">newNode</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span> <span class="o">:=</span> <span class="nx">root</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">N</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">nn</span> <span class="o">:=</span> <span class="nf">newNode</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">n</span><span class="p">.</span><span class="nx">next</span> <span class="p">=</span> <span class="nx">nn</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">n</span> <span class="p">=</span> <span class="nx">nn</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nf">printNode</span><span class="p">(</span><span class="nx">root</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">runtime</span><span class="p">.</span><span class="nf">GC</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printMem</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span> <span class="p">=</span> <span class="nx">root</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">n</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">left</span> <span class="o">:=</span> <span class="nx">n</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">n</span> <span class="p">=</span> <span class="nx">n</span><span class="p">.</span><span class="nx">next</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">freeNode</span><span class="p">(</span><span class="nx">left</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">runtime</span><span class="p">.</span><span class="nf">GC</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;After GC...&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printMem</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">printMem</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">ms</span> <span class="nx">runtime</span><span class="p">.</span><span class="nx">MemStats</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">runtime</span><span class="p">.</span><span class="nf">ReadMemStats</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">ms</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;HeapAlloc: %v\n&#34;</span><span class="p">,</span> <span class="nx">humanize</span><span class="p">.</span><span class="nf">IBytes</span><span class="p">(</span><span class="nx">ms</span><span class="p">.</span><span class="nx">HeapAlloc</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;OffHeap: %v\n&#34;</span><span class="p">,</span> <span class="nx">humanize</span><span class="p">.</span><span class="nf">IBytes</span><span class="p">(</span><span class="nb">uint64</span><span class="p">(</span><span class="nf">NumAllocBytes</span><span class="p">())))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">printNode</span><span class="p">(</span><span class="nx">n</span> <span class="o">*</span><span class="nx">node</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">n</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">n</span><span class="p">.</span><span class="nx">val</span><span class="o">%</span><span class="mi">100000</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;node: %d\n&#34;</span><span class="p">,</span> <span class="nx">n</span><span class="p">.</span><span class="nx">val</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">printNode</span><span class="p">(</span><span class="nx">n</span><span class="p">.</span><span class="nx">next</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>输出结果：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run .
+</span></span><span class="line"><span class="cl">node: <span class="m">0</span>
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">node: <span class="m">2000000</span>
+</span></span><span class="line"><span class="cl">HeapAlloc: <span class="m">31</span> MiB
+</span></span><span class="line"><span class="cl">OffHeap: <span class="m">0</span> B
+</span></span><span class="line"><span class="cl">After GC...
+</span></span><span class="line"><span class="cl">HeapAlloc: <span class="m">92</span> KiB
+</span></span><span class="line"><span class="cl">OffHeap: <span class="m">0</span> B
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ go run -tags jemalloc .
+</span></span><span class="line"><span class="cl">node: <span class="m">0</span>
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">node: <span class="m">2000000</span>
+</span></span><span class="line"><span class="cl">HeapAlloc: <span class="m">90</span> KiB
+</span></span><span class="line"><span class="cl">OffHeap: <span class="m">30</span> MiB
+</span></span><span class="line"><span class="cl">After GC...
+</span></span><span class="line"><span class="cl">HeapAlloc: <span class="m">92</span> KiB
+</span></span><span class="line"><span class="cl">OffHeap: <span class="m">0</span> B</span></span></code></pre></div>
+]]></content:encoded></item></channel></rss>

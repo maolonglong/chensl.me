@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>OverlayFS on 毛珑珑的博客</title><link>https://chensl.me/blog/overlayfs/</link><description>Recent content in OverlayFS on 毛珑珑的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-Hans</language><managingEditor>shaolong.chen@outlook.it (Shaolong Chen)</managingEditor><webMaster>shaolong.chen@outlook.it (Shaolong Chen)</webMaster><lastBuildDate>Sun, 24 Oct 2021 13:12:42 +0000</lastBuildDate><atom:link href="https://chensl.me/blog/overlayfs/index.xml" rel="self" type="application/rss+xml"/><item><title>堆叠文件系统 OverlayFS</title><link>https://chensl.me/overlayfs/</link><pubDate>Sun, 24 Oct 2021 13:12:42 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/overlayfs/</guid><description>因为工作需求，所以花时间了解了一下 OverlayFS。第一次知道这个概念，是使用 Docker 时，它默认使用的 Graph Driver 是 Overlay2，容器的 rootfs 就是直接以目录的形式在宿主机上组织。
+参考资料 深入理解 overlayfs Linux Kernel documentation 环境准备 VirtualBox Vagrant 用 vagrant 跑一个带有 docker 的虚拟机：
+# -*- mode: ruby -*- # vi: set ft=ruby : $script = &amp;lt;&amp;lt;-&amp;#39;SCRIPT&amp;#39; sudo tee /etc/apt/sources.list &amp;lt;&amp;lt;-&amp;#39;EOF&amp;#39; deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse deb-src http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse deb http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse deb-src http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse deb http://mirrors.</description><content:encoded><![CDATA[<p>因为工作需求，所以花时间了解了一下 OverlayFS。第一次知道这个概念，是使用 Docker 时，它默认使用的 Graph Driver 是 Overlay2，容器的 rootfs 就是直接以目录的形式在宿主机上组织。</p>
+<!-- raw HTML omitted -->
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="https://blog.csdn.net/qq_15770331/article/details/96699386">深入理解 overlayfs</a></li>
+<li><a href="https://www.kernel.org/doc/html/latest/filesystems/overlayfs.html">Linux Kernel documentation</a></li>
+</ul>
+<h2 id="环境准备">环境准备</h2>
+<ul>
+<li>VirtualBox</li>
+<li>Vagrant</li>
+</ul>
+<p>用 vagrant 跑一个带有 docker 的虚拟机：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="line"><span class="cl"><span class="c1"># -*- mode: ruby -*-</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># vi: set ft=ruby :</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="vg">$script</span> <span class="o">=</span> <span class="s">&lt;&lt;-&#39;SCRIPT&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s"></span><span class="n">sudo</span> <span class="n">tee</span> <span class="sr">/etc/</span><span class="n">apt</span><span class="o">/</span><span class="n">sources</span><span class="o">.</span><span class="n">list</span> <span class="s">&lt;&lt;-&#39;EOF&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s"></span><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">security</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">security</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">updates</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">updates</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">proposed</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">proposed</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">backports</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">backports</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="no">EOF</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">update</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> <span class="n">ca</span><span class="o">-</span><span class="n">certificates</span> <span class="n">curl</span> <span class="n">software</span><span class="o">-</span><span class="n">properties</span><span class="o">-</span><span class="n">common</span>
+</span></span><span class="line"><span class="cl"><span class="n">curl</span> <span class="o">-</span><span class="n">fsSL</span> <span class="ss">https</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">docker</span><span class="o">-</span><span class="n">ce</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span><span class="n">gpg</span> <span class="o">|</span> <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">key</span> <span class="n">add</span> <span class="o">-</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="s2">&#34;deb [arch=amd64] https://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">update</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">docker</span><span class="o">-</span><span class="n">ce</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">mkdir</span> <span class="o">-</span><span class="nb">p</span> <span class="sr">/etc/</span><span class="n">docker</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">tee</span> <span class="sr">/etc/</span><span class="n">docker</span><span class="o">/</span><span class="n">daemon</span><span class="o">.</span><span class="n">json</span> <span class="s">&lt;&lt;-&#39;EOF&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s"></span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;registry-mirrors&#34;</span><span class="p">:</span> <span class="o">[</span><span class="s2">&#34;https://docker.mirrors.ustc.edu.cn/&#34;</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="no">EOF</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">restart</span> <span class="n">docker</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">docker</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Make sure we can actually use docker as the vagrant user</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">usermod</span> <span class="o">-</span><span class="n">aG</span> <span class="n">docker</span> <span class="n">vagrant</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">docker</span> <span class="o">--</span><span class="n">version</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">bash</span><span class="o">-</span><span class="n">completion</span> <span class="n">tree</span>
+</span></span><span class="line"><span class="cl"><span class="no">SCRIPT</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&#34;2&#34;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span></span><span class="line"><span class="cl">  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="s2">&#34;bento/ubuntu-18.04&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&#34;.&#34;</span><span class="p">,</span> <span class="s2">&#34;/vagrant&#34;</span><span class="p">,</span> <span class="ss">disabled</span><span class="p">:</span> <span class="kp">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&#34;shell&#34;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="vg">$script</span><span class="p">,</span> <span class="ss">privileged</span><span class="p">:</span> <span class="kp">false</span>
+</span></span><span class="line"><span class="cl"><span class="k">end</span></span></span></code></pre></div>
+<h2 id="初步认识">初步认识</h2>
+<p>随便拉一个镜像：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">vagrant@vagrant:~$ docker pull alpine
+</span></span><span class="line"><span class="cl">Using default tag: latest
+</span></span><span class="line"><span class="cl">latest: Pulling from library/alpine
+</span></span><span class="line"><span class="cl">a0d0a0d46f8b: Pull complete
+</span></span><span class="line"><span class="cl">Digest: sha256:e1c082e3d3c45cccac829840a25941e679c25d438cc8412c2fa221cf1a824e6a
+</span></span><span class="line"><span class="cl">Status: Downloaded newer image for alpine:latest
+</span></span><span class="line"><span class="cl">docker.io/library/alpine:latest</span></span></code></pre></div>
+<p>这时，我们就能在磁盘上找到对应的目录结构：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">vagrant@vagrant:~$ sudo su
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/home/vagrant# cd /var/lib/docker/overlay2/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# ls
+</span></span><span class="line"><span class="cl">ae64cdecc41d55f445ce1bed819dd312459bc7f2a2ddc80df60c789a5e3b06dc  l
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# ls ae64cdecc41d55f445ce1bed819dd312459bc7f2a2ddc80df60c789a5e3b06dc/diff/
+</span></span><span class="line"><span class="cl">bin  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var</span></span></code></pre></div>
+<p>再开一个窗口，启动一个容器：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">vagrant@vagrant:~$ docker run --rm -it alpine sh
+</span></span><span class="line"><span class="cl">/ # ls
+</span></span><span class="line"><span class="cl">bin    etc    lib    mnt    proc   run    srv    tmp    var
+</span></span><span class="line"><span class="cl">dev    home   media  opt    root   sbin   sys    usr</span></span></code></pre></div>
+<p>宿主机上的 overlay2 目录多出了一些东西：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# ls
+</span></span><span class="line"><span class="cl">7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6       ae64cdecc41d55f445ce1bed819dd312459bc7f2a2ddc80df60c789a5e3b06dc
+</span></span><span class="line"><span class="cl">7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6-init  l
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# mount | grep overlay
+</span></span><span class="line"><span class="cl">overlay on /var/lib/docker/overlay2/7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6/merged type overlay (rw,relatime,lowerdir=/var/lib/docker/overlay2/l/6ND2PL2RECUKJ3KFZYGPYCA564:/var/lib/docker/overlay2/l/FDPTXFIRIH3NAJ6N5KIKDUMC6O,upperdir=/var/lib/docker/overlay2/7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6/diff,workdir=/var/lib/docker/overlay2/7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6/work)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# ls 7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6/merged/
+</span></span><span class="line"><span class="cl">bin  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var</span></span></code></pre></div>
+<p>一个名为 <code>overlay</code> 的驱动挂载到了 <code>/var/lib/docker/overlay2/7fca3.../merged</code>，从挂载信息可以看出 merged 目录是由多个目录联合挂载而成，lowerdir 为只读层 (ro)，upperdir 为可读可写层 (rw)，当需要修改 lowerdir 中的文件时，fs 会采用<strong>写时复制</strong>的策略，将文件从 lowerdir 复制到 upperdir 进行修改。在 merged 目录中（或者说在 docker 容器中）是感知不到这些复杂逻辑的，和操作正常目录没有区别</p>
+<p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150167.jpeg" alt=""></p>
+<h2 id="实践">实践</h2>
+<p>大概了解了 OverlayFS 之后，我们抛开 Docker 仅仅用 Linux 命令行就能模拟出一个简单的容器（注意只是简单模拟，几乎谈不上什么隔离性）</p>
+<p>在开始前可以切换到 root，免得不必要的麻烦</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo su</span></span></code></pre></div>
+<h3 id="制作基础-rootfs">制作基础 rootfs</h3>
+<p>最后利用一下 Docker，导出一个 alpine 的 rootfs：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir rootfs <span class="o">&amp;&amp;</span> docker <span class="nb">export</span> <span class="k">$(</span>docker create alpine<span class="k">)</span> <span class="p">|</span> tar -C rootfs -xvf -</span></span></code></pre></div>
+<h3 id="lowerdirs">Lowerdirs</h3>
+<p>由于 lowerdir 可以配置多个，所以，我们可以利用这一特性对 rootfs 进行一些定制。</p>
+<p>替换中科大源：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p rootfs-init/etc/apk
+</span></span><span class="line"><span class="cl">cp rootfs/etc/apk/repositories rootfs-init/etc/apk/
+</span></span><span class="line"><span class="cl">sed -i <span class="s1">&#39;s/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g&#39;</span> rootfs-init/etc/apk/repositories</span></span></code></pre></div>
+<p>配置 DNS：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;nameserver 223.5.5.5&#39;</span> &gt; rootfs-init/etc/resolv.conf</span></span></code></pre></div>
+<h3 id="准备其他目录">准备其他目录</h3>
+<p>创建 upperdir，workdir 和 merged</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir diff work merged</span></span></code></pre></div>
+<p>最终的目录结构：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">root@vagrant:~# tree -L 2
+</span></span><span class="line"><span class="cl">.
+</span></span><span class="line"><span class="cl">├── diff
+</span></span><span class="line"><span class="cl">├── merged
+</span></span><span class="line"><span class="cl">├── rootfs
+</span></span><span class="line"><span class="cl">│   ├── bin
+</span></span><span class="line"><span class="cl">│   ├── dev
+</span></span><span class="line"><span class="cl">│   ├── etc
+</span></span><span class="line"><span class="cl">│   ├── home
+</span></span><span class="line"><span class="cl">│   ├── lib
+</span></span><span class="line"><span class="cl">│   ├── media
+</span></span><span class="line"><span class="cl">│   ├── mnt
+</span></span><span class="line"><span class="cl">│   ├── opt
+</span></span><span class="line"><span class="cl">│   ├── proc
+</span></span><span class="line"><span class="cl">│   ├── root
+</span></span><span class="line"><span class="cl">│   ├── run
+</span></span><span class="line"><span class="cl">│   ├── sbin
+</span></span><span class="line"><span class="cl">│   ├── srv
+</span></span><span class="line"><span class="cl">│   ├── sys
+</span></span><span class="line"><span class="cl">│   ├── tmp
+</span></span><span class="line"><span class="cl">│   ├── usr
+</span></span><span class="line"><span class="cl">│   └── var
+</span></span><span class="line"><span class="cl">├── rootfs-init
+</span></span><span class="line"><span class="cl">│   └── etc
+</span></span><span class="line"><span class="cl">└── work
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">23 directories, 0 files</span></span></code></pre></div>
+<h3 id="手动挂载">手动挂载</h3>
+<p>将准备好的目录挂在到 merged:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mount overlay -t overlay -o <span class="nv">lowerdir</span><span class="o">=</span>/root/rootfs-init:/root/rootfs,upperdir<span class="o">=</span>/root/diff,workdir<span class="o">=</span>/root/work /root/merged</span></span></code></pre></div>
+<h3 id="使用容器">使用容器</h3>
+<p>利用 chroot 改变根文件系统</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> merged
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> apk update
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> apk upgrade
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> apk add gcc
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> gcc -v
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> apk add neofetch
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> neofetch</span></span></code></pre></div>
+<p>至此，我们已经通过 OverlayFS 和 chroot 实现了一个简易的容器</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">root@vagrant:~# tree -L 2
+</span></span><span class="line"><span class="cl">.
+</span></span><span class="line"><span class="cl">├── diff
+</span></span><span class="line"><span class="cl">│   ├── bin
+</span></span><span class="line"><span class="cl">│   ├── dev
+</span></span><span class="line"><span class="cl">│   ├── etc
+</span></span><span class="line"><span class="cl">│   ├── lib
+</span></span><span class="line"><span class="cl">│   ├── root
+</span></span><span class="line"><span class="cl">│   ├── usr
+</span></span><span class="line"><span class="cl">│   └── var
+</span></span><span class="line"><span class="cl">├── merged
+</span></span><span class="line"><span class="cl">│   ├── bin
+</span></span><span class="line"><span class="cl">│   ├── dev
+</span></span><span class="line"><span class="cl">│   ├── etc
+</span></span><span class="line"><span class="cl">│   ├── home
+</span></span><span class="line"><span class="cl">│   ├── lib
+</span></span><span class="line"><span class="cl">│   ├── media
+</span></span><span class="line"><span class="cl">│   ├── mnt
+</span></span><span class="line"><span class="cl">│   ├── opt
+</span></span><span class="line"><span class="cl">│   ├── proc
+</span></span><span class="line"><span class="cl">│   ├── root
+</span></span><span class="line"><span class="cl">│   ├── run
+</span></span><span class="line"><span class="cl">│   ├── sbin
+</span></span><span class="line"><span class="cl">│   ├── srv
+</span></span><span class="line"><span class="cl">│   ├── sys
+</span></span><span class="line"><span class="cl">│   ├── tmp
+</span></span><span class="line"><span class="cl">│   ├── usr
+</span></span><span class="line"><span class="cl">│   └── var
+</span></span><span class="line"><span class="cl">├── rootfs
+</span></span><span class="line"><span class="cl">│   ├── bin
+</span></span><span class="line"><span class="cl">│   ├── dev
+</span></span><span class="line"><span class="cl">│   ├── etc
+</span></span><span class="line"><span class="cl">│   ├── home
+</span></span><span class="line"><span class="cl">│   ├── lib
+</span></span><span class="line"><span class="cl">│   ├── media
+</span></span><span class="line"><span class="cl">│   ├── mnt
+</span></span><span class="line"><span class="cl">│   ├── opt
+</span></span><span class="line"><span class="cl">│   ├── proc
+</span></span><span class="line"><span class="cl">│   ├── root
+</span></span><span class="line"><span class="cl">│   ├── run
+</span></span><span class="line"><span class="cl">│   ├── sbin
+</span></span><span class="line"><span class="cl">│   ├── srv
+</span></span><span class="line"><span class="cl">│   ├── sys
+</span></span><span class="line"><span class="cl">│   ├── tmp
+</span></span><span class="line"><span class="cl">│   ├── usr
+</span></span><span class="line"><span class="cl">│   └── var
+</span></span><span class="line"><span class="cl">├── rootfs-init
+</span></span><span class="line"><span class="cl">│   └── etc
+</span></span><span class="line"><span class="cl">└── work
+</span></span><span class="line"><span class="cl">    └── work
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">48 directories, 0 files</span></span></code></pre></div>
+]]></content:encoded></item></channel></rss>

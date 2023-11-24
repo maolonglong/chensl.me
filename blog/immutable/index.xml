@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>immutable on 毛珑珑的博客</title><link>https://chensl.me/blog/immutable/</link><description>Recent content in immutable on 毛珑珑的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-Hans</language><managingEditor>shaolong.chen@outlook.it (Shaolong Chen)</managingEditor><webMaster>shaolong.chen@outlook.it (Shaolong Chen)</webMaster><lastBuildDate>Fri, 21 Jul 2023 16:20:42 +0000</lastBuildDate><atom:link href="https://chensl.me/blog/immutable/index.xml" rel="self" type="application/rss+xml"/><item><title>函数式编程</title><link>https://chensl.me/functional-programming/</link><pubDate>Fri, 21 Jul 2023 16:20:42 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/functional-programming/</guid><description>前段时间学了 Rust 之后，感觉在 Rust 的类型系统加持下，函数式编程体验真的很爽。
+Option 配合各种 map_or， map_or_else, unwrap_or &amp;hellip; 来处理空值 表达式作为值（返回值、变量赋值） iter 配合一堆工具函数 map, filter, reduce &amp;hellip; 和 closures &amp;hellip; 为了了解一下纯粹的函数式编程究竟是什么样的，挑来挑去还是决定看一遍 cs3110，通过 OCaml 系统学习一下函数式编程。（为什么不是 Haskell？因为它看起来有点难，所以最后选了同样强类型的 OCaml）
+引用 cs3110 第一课简介中的一句话：learn how to program better.
+学习函数式编程的目的可能并不是未来在工作中使用它，但是通过学习函数式编程一定能教会你如何编写跟好的程序
+难点 如果已经习惯了命令式编程，再学习函数式，肯定会遇到很多不习惯的特性：
+变量不可变 没有 return 没有循环 (for, while) &amp;hellip; Erlang 甚至不能自定义类型（可以通过 tuple + atom 模拟结构体） 函数式编程 cs3110 还没学完，简单列举几个我学到现在，觉得非常有参考价值的函数式编程特性（不一定是函数式编程独有的）。
+Immutable 如果问小学生，怎么表达一个函数，实现对 x 加 1 的操作，他大概率会这么写：
+$$ f(x) = x + 1 $$
+可以得到：
+f(1) = 1 + 1 = 2 f(2) = 2 + 1 = 3 &amp;hellip; 但是问一个资深的 Python 研发（开个玩笑，其他命令式编程语言也差不多），他可能会说：“这需要函数吗，不就是一个赋值就搞定了？”</description><content:encoded><![CDATA[<p>前段时间学了 Rust 之后，感觉在 Rust 的类型系统加持下，函数式编程体验真的很爽。</p>
+<ul>
+<li><code>Option</code> 配合各种 <code>map_or</code>， <code>map_or_else</code>, <code>unwrap_or</code> &hellip; 来处理空值</li>
+<li>表达式作为值（返回值、变量赋值）</li>
+<li>iter 配合一堆工具函数 <code>map</code>, <code>filter</code>, <code>reduce</code> &hellip; 和 closures</li>
+<li>&hellip;</li>
+</ul>
+<p>为了了解一下纯粹的函数式编程究竟是什么样的，挑来挑去还是决定看一遍 cs3110，通过 OCaml 系统学习一下函数式编程。（为什么不是 Haskell？因为它看起来有点难，所以最后选了同样强类型的 OCaml）</p>
+<blockquote>
+<p>引用 cs3110 第一课简介中的一句话：<strong>learn how to program better.</strong></p>
+<p>学习函数式编程的目的可能并不是未来在工作中使用它，但是通过学习函数式编程一定能教会你如何编写跟好的程序</p>
+</blockquote>
+<!-- raw HTML omitted -->
+<h2 id="难点">难点</h2>
+<p>如果已经习惯了命令式编程，再学习函数式，肯定会遇到很多不习惯的特性：</p>
+<ul>
+<li>变量不可变</li>
+<li>没有 return</li>
+<li>没有循环 (<code>for</code>, <code>while</code>)</li>
+<li>&hellip;</li>
+<li>Erlang 甚至不能自定义类型（可以通过 <code>tuple</code> + <code>atom</code> 模拟结构体）</li>
+</ul>
+<h2 id="函数式编程">函数式编程</h2>
+<p>cs3110 还没学完，简单列举几个我学到现在，觉得非常有参考价值的函数式编程特性（不一定是函数式编程独有的）。</p>
+<h3 id="immutable">Immutable</h3>
+<p>如果问小学生，怎么表达一个函数，实现对 x 加 1 的操作，他大概率会这么写：</p>
+<p>$$
+f(x) = x + 1
+$$</p>
+<p>可以得到：</p>
+<ul>
+<li><code>f(1) = 1 + 1 = 2</code></li>
+<li><code>f(2) = 2 + 1 = 3</code></li>
+<li>&hellip;</li>
+</ul>
+<p>但是问一个资深的 Python 研发（开个玩笑，其他命令式编程语言也差不多），他可能会说：“这需要函数吗，不就是一个赋值就搞定了？”</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl"><span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span></span></span></code></pre></div>
+<p>但是这个表达式给不熟悉编程的人看，他们的想法可能是：“x 都加 1 了怎么还会等于 x？难道 1 加 1 等于 1？”</p>
+<p>**大多数人并不会想到，x 是个变量，x 是可变的，**这有些反直觉。</p>
+<p>另外，可变变量在并发编程中，也会引出并发读写问题，我们通常需要通过上锁，或者原子操作去解决。</p>
+<p>在大多数函数式编程中，变量都是不可变的，它只是某个值的名称而已：</p>
+<p>单个数值：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">3110</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* val x : int = 3 *)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">1</span> <span class="c">(* 等号是判断，不是赋值 *)</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : bool = false *)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">x</span> <span class="o">=</span> <span class="n">3110</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : bool = true *)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">(* 变量覆盖(variable shadowing)，看起来很像修改了变量的值，其实只是不同作用域下完全不同的两个变量 *)</span>
+</span></span><span class="line"><span class="cl"><span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">5</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl"><span class="o">(</span><span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">6</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl"> <span class="n">x</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">+</span> <span class="n">x</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : int = 11 *)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">(* 用变量覆盖和 x, y 两个变量的效果是一样的 *)</span>
+</span></span><span class="line"><span class="cl"><span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="n">5</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl"><span class="o">(</span><span class="k">let</span> <span class="n">y</span> <span class="o">=</span> <span class="n">6</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl"> <span class="n">y</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">+</span> <span class="n">x</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : int = 11 *)</span></span></span></code></pre></div>
+<p>链表（其他复杂数据结构也同理）：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="o">[</span><span class="n">1</span><span class="o">;</span> <span class="n">2</span><span class="o">;</span> <span class="n">3</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* val x : int list = [1; 2; 3] *)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c">(* 由于不可变的特性，要修改第一个元素，必须造一个新的节点，插到链表的开头 *)</span>
+</span></span><span class="line"><span class="cl"><span class="k">let</span> <span class="n">modify_first</span> <span class="o">=</span> <span class="k">function</span>
+</span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="bp">[]</span> <span class="o">-&gt;</span> <span class="bp">[]</span>
+</span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="o">_</span> <span class="o">::</span> <span class="n">tail</span> <span class="o">-&gt;</span> <span class="n">0</span> <span class="o">::</span> <span class="n">tail</span>
+</span></span><span class="line"><span class="cl"><span class="o">;;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">modify_first</span> <span class="n">x</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : int list = [0; 2; 3] *)</span></span></span></code></pre></div>
+<p>好。。。把这个思想应用到 Go，碰巧最近看到了一个并发 map 的<a href="https://pkg.go.dev/sync/atomic#example-Value-ReadMostly">例子</a>：</p>
+<p>这种实现的 map 是不可变的（不可变、只读，自然就是并发安全的），更新操作必须 clone 一个全新的 map，好处就是读操作<strong>永远</strong>不会被阻塞</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Map</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span>
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">m</span> <span class="nx">atomic</span><span class="p">.</span><span class="nx">Value</span>
+</span></span><span class="line"><span class="cl"><span class="nx">m</span><span class="p">.</span><span class="nf">Store</span><span class="p">(</span><span class="nb">make</span><span class="p">(</span><span class="nx">Map</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">mu</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span> <span class="c1">// used only by writers
+</span></span></span><span class="line"><span class="cl"><span class="c1">// read function can be used to read the data without further synchronization
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">read</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="nx">val</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">m1</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Load</span><span class="p">().(</span><span class="nx">Map</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="nx">m1</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// insert function can be used to update the data without further synchronization
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">insert</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">val</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span> <span class="c1">// synchronize with other potential writers
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">defer</span> <span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">m1</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Load</span><span class="p">().(</span><span class="nx">Map</span><span class="p">)</span> <span class="c1">// load current value of the data structure
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">m2</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="nx">Map</span><span class="p">)</span>      <span class="c1">// create a new value
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">for</span> <span class="nx">k</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">m1</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">m2</span><span class="p">[</span><span class="nx">k</span><span class="p">]</span> <span class="p">=</span> <span class="nx">v</span> <span class="c1">// copy all data from the current object to the new one
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">m2</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">val</span> <span class="c1">// do the update that we need
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">m</span><span class="p">.</span><span class="nf">Store</span><span class="p">(</span><span class="nx">m2</span><span class="p">)</span>   <span class="c1">// atomically replace the current object with the new one
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// At this point all new readers start working with the new version.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// The old version will be garbage collected once the existing readers
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// (if any) are done with it.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nx">_</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">read</span><span class="p">,</span> <span class="nx">insert</span></span></span></code></pre></div>
+<p>{% note warning %}
+这个并发 map 实现只适合 <strong>读远大于多</strong> 的场景，注意是 <strong>远大于</strong>，不是大于</p>
+<p>例：从远端获取一些配置，这些配置很少更新，但是会经常读取
+{% endnote %}</p>
+<h3 id="adt">ADT</h3>
+<p>代数数据类型 (algebraic data type)，有点像 Rust 里的 enum（或者说 Rust 就是从这里抄的，大概因为 Rust 的作者是 OCaml 的狂热粉丝吧）</p>
+<p>以最经典的 <code>option</code> 为例：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">type</span> <span class="k">&#39;</span><span class="n">a</span> <span class="n">option</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="nc">None</span>
+</span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="nc">Some</span> <span class="k">of</span> <span class="k">&#39;</span><span class="n">a</span></span></span></code></pre></div>
+<p>它是用来取代某些语言里的 <code>null</code>, <code>undefined</code>, <code>nil</code> &hellip; 适合用来表示一些不存在的，空的值。</p>
+<p>例如 OCaml 标准库的 <code>List.hd</code> 是这样实现的：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="c">(** Return the first element of the given list.
+</span></span></span><span class="line"><span class="cl"><span class="c">   @raise Failure if the list is empty.
+</span></span></span><span class="line"><span class="cl"><span class="c"> *)</span>
+</span></span><span class="line"><span class="cl"><span class="k">let</span> <span class="n">hd</span> <span class="o">=</span> <span class="k">function</span>
+</span></span><span class="line"><span class="cl">    <span class="bp">[]</span> <span class="o">-&gt;</span> <span class="n">failwith</span> <span class="s2">&#34;hd&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="n">a</span><span class="o">::_</span> <span class="o">-&gt;</span> <span class="n">a</span></span></span></code></pre></div>
+<p>如果 list 为空，它会抛出一个异常，我们用 <code>option</code> 改造一下它：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">let</span> <span class="n">hd</span> <span class="o">=</span> <span class="k">function</span>
+</span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="bp">[]</span> <span class="o">-&gt;</span> <span class="nc">None</span>
+</span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="n">a</span> <span class="o">::</span> <span class="o">_</span> <span class="o">-&gt;</span> <span class="nc">Some</span> <span class="n">a</span>
+</span></span><span class="line"><span class="cl"><span class="o">;;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">hd</span> <span class="bp">[]</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : &#39;a option = None *)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">hd</span> <span class="o">[</span><span class="n">1</span><span class="o">;</span> <span class="n">2</span><span class="o">;</span> <span class="n">3</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : int option = Some 1 *)</span></span></span></code></pre></div>
+<p>要使用被包在 <code>option</code> 里的值，必须进行一次 pattern matching，没有任何办法可以<strong>直接</strong>从 <code>option</code> 里把值取出来</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">match</span> <span class="n">hd</span> <span class="bp">[]</span> <span class="k">with</span>
+</span></span><span class="line"><span class="cl"><span class="o">|</span> <span class="nc">None</span> <span class="o">-&gt;</span> <span class="s2">&#34;empty list !!!&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">|</span> <span class="nc">Some</span> <span class="n">i</span> <span class="o">-&gt;</span> <span class="n">string_of_int</span> <span class="n">i</span></span></span></code></pre></div>
+<h3 id="pattern-matching">Pattern matching</h3>
+<p>无需多说，可以直接看 <a href="https://en.wikipedia.org/wiki/Pattern_matching">Wikipedia</a> 或者 Rust 的相关语法，可以理解成是 <code>if</code>, <code>else</code>, <code>switch</code> 的超级加强版</p>
+<h3 id="柯里化">柯里化</h3>
+<p>一开始学 OCaml 时，我就特别疑惑，为什么函数的类型定义看着像个链表，也没有明显区分出哪部分是参数，哪部分是返回值：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="c">(* 比如 int 加法，接收两个 int，返回它们相加的结果 *)</span>
+</span></span><span class="line"><span class="cl"><span class="nn">Stdlib</span><span class="p">.</span><span class="o">(</span> <span class="o">+</span> <span class="o">);;</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : int -&gt; int -&gt; int = &lt;fun&gt; *)</span></span></span></code></pre></div>
+<p>在其他语言中，同样的函数可能是这样定义的：<code>(int, int) -&gt; int</code>，而 OCaml 中是 <code>int -&gt; int -&gt; int</code></p>
+<p>直到学习了柯里化 (currying)，一切就都解释得通了。首先，函数参数可以只传一部分，或者说其实所有的函数，都只有一个参数：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">let</span> <span class="n">add3</span> <span class="o">=</span> <span class="o">((</span> <span class="o">+</span> <span class="o">)</span> <span class="n">3</span><span class="o">);;</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* val add3 : int -&gt; int = &lt;fun&gt; *)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">add3</span> <span class="n">2</span><span class="o">;;</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : int = 5 *)</span></span></span></code></pre></div>
+<p>得到一个新的函数 <code>add3</code>，不难发现函数的定义是右结合的，每给一个参数，就返回一个新的函数：</p>
+<ul>
+<li><code>int -&gt; int -&gt; int -&gt; int</code></li>
+<li><code>int -&gt; (int -&gt; (int -&gt; int))</code></li>
+</ul>
+<p>实际使用中，可以利用柯里化，对简单函数进行组合，实现复杂功能，例如实现 list 求和：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">let</span> <span class="n">sum</span> <span class="o">=</span> <span class="nn">List</span><span class="p">.</span><span class="n">fold_left</span> <span class="o">(</span> <span class="o">+</span> <span class="o">)</span> <span class="n">0</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* val sum : int list -&gt; int = &lt;fun&gt; *)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">sum</span> <span class="o">[</span><span class="n">1</span><span class="o">;</span> <span class="n">2</span><span class="o">;</span> <span class="n">3</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="c">(* - : int = 6 *)</span></span></span></code></pre></div>
+<h2 id="最后">最后</h2>
+<p>这几天，参考 <a href="http://courses.cms.caltech.edu/cs11/material/ocaml/lab5/lab5.html">Caltech 的课程</a>。用 OCaml 写了个小玩具，一个简易的 Scheme 解释器，支持了尾递归优化和宏（水平有限，宏实现得比较烂）</p>
+<p><a href="https://github.com/maolonglong/bogoscheme"><img src="https://github-readme-stats.vercel.app/api/pin/?username=maolonglong&amp;repo=bogoscheme&amp;show_owner=true" alt="bogoscheme"></a></p>
+]]></content:encoded></item></channel></rss>

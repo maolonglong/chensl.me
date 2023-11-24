@@ -1,0 +1,217 @@
+<!doctype html><html lang=zh-Hans><head><meta http-equiv=X-Clacks-Overhead content="GNU Terry Pratchett"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=https://chensl.me/images/favicon.png><title>高性能字节池 - bytebufferpool 源码分析 | 毛珑珑的博客</title>
+<meta name=title content="高性能字节池 - bytebufferpool 源码分析"><meta name=description content="简介 今天的主角是 bytebufferpool ，仓库的 README 文件是这么描述 bytebufferpool 的：
+Currently bytebufferpool is fastest and most effective buffer pool written in Go.
+bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（fasthttp, quicktemplate, gnet）
+什么是字节池？在读取文件或者从 io.Reader 获取数据时，一般都需要创建一个字节切片 []byte 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 []byte ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。
+package main import ( &#34;fmt&#34; &#34;io&#34; &#34;log&#34; &#34;os&#34; ) func main() { r, _ := os.Open(&#34;./main.go&#34;) // 普通方式 buf := make([]byte, 64) for { n, err := r.Read(buf) if err != nil { if err == io."><meta name=keywords content="Golang,pool,"><meta property="og:title" content="高性能字节池 - bytebufferpool 源码分析"><meta property="og:description" content="简介 今天的主角是 bytebufferpool ，仓库的 README 文件是这么描述 bytebufferpool 的：
+Currently bytebufferpool is fastest and most effective buffer pool written in Go.
+bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（fasthttp, quicktemplate, gnet）
+什么是字节池？在读取文件或者从 io.Reader 获取数据时，一般都需要创建一个字节切片 []byte 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 []byte ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。
+package main import ( &#34;fmt&#34; &#34;io&#34; &#34;log&#34; &#34;os&#34; ) func main() { r, _ := os.Open(&#34;./main.go&#34;) // 普通方式 buf := make([]byte, 64) for { n, err := r.Read(buf) if err != nil { if err == io."><meta property="og:type" content="article"><meta property="og:url" content="https://chensl.me/bytebufferpool/"><meta property="article:section" content="blog"><meta property="article:published_time" content="2021-06-28T16:19:02+00:00"><meta property="article:modified_time" content="2021-06-28T16:19:02+00:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="高性能字节池 - bytebufferpool 源码分析"><meta name=twitter:description content="简介 今天的主角是 bytebufferpool ，仓库的 README 文件是这么描述 bytebufferpool 的：
+Currently bytebufferpool is fastest and most effective buffer pool written in Go.
+bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（fasthttp, quicktemplate, gnet）
+什么是字节池？在读取文件或者从 io.Reader 获取数据时，一般都需要创建一个字节切片 []byte 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 []byte ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。
+package main import ( &#34;fmt&#34; &#34;io&#34; &#34;log&#34; &#34;os&#34; ) func main() { r, _ := os.Open(&#34;./main.go&#34;) // 普通方式 buf := make([]byte, 64) for { n, err := r.Read(buf) if err != nil { if err == io."><meta itemprop=name content="高性能字节池 - bytebufferpool 源码分析"><meta itemprop=description content="简介 今天的主角是 bytebufferpool ，仓库的 README 文件是这么描述 bytebufferpool 的：
+Currently bytebufferpool is fastest and most effective buffer pool written in Go.
+bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（fasthttp, quicktemplate, gnet）
+什么是字节池？在读取文件或者从 io.Reader 获取数据时，一般都需要创建一个字节切片 []byte 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 []byte ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。
+package main import ( &#34;fmt&#34; &#34;io&#34; &#34;log&#34; &#34;os&#34; ) func main() { r, _ := os.Open(&#34;./main.go&#34;) // 普通方式 buf := make([]byte, 64) for { n, err := r.Read(buf) if err != nil { if err == io."><meta itemprop=datePublished content="2021-06-28T16:19:02+00:00"><meta itemprop=dateModified content="2021-06-28T16:19:02+00:00"><meta itemprop=wordCount content="752"><meta itemprop=keywords content="Golang,pool,"><meta name=referrer content="no-referrer-when-downgrade"><link href=/simple.min.css rel=stylesheet><link href=/style.min.css rel=stylesheet><link href=/syntax.min.css rel=stylesheet></head><body><header><nav><a href=/>Home</a>
+<a href=/blog/>Blog</a>
+<a href=https://chensl.me/index.xml>RSS</a></nav><h1>高性能字节池 - bytebufferpool 源码分析</h1></header><main><p><i><time datetime=2021-06-28 pubdate>2021-06-28</time></i></p><content><h2 id=简介>简介</h2><p>今天的主角是 <a href=https://github.com/valyala/bytebufferpool>bytebufferpool</a> ，仓库的 README 文件是这么描述 bytebufferpool 的：</p><blockquote><p>Currently bytebufferpool is fastest and most effective buffer pool written in Go.</p></blockquote><p>bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（<a href=https://github.com/valyala/fasthttp>fasthttp</a>, <a href=https://github.com/valyala/quicktemplate>quicktemplate</a>, <a href=https://github.com/panjf2000/gnet>gnet</a>）</p><p>什么是字节池？在读取文件或者从 <code>io.Reader</code> 获取数据时，一般都需要创建一个字节切片 <code>[]byte</code> 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 <code>[]byte</code> ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;io&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>r</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>os</span><span class=p>.</span><span class=nf>Open</span><span class=p>(</span><span class=s>&#34;./main.go&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 普通方式
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>buf</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=mi>64</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>n</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>r</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>buf</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=nx>err</span> <span class=o>==</span> <span class=nx>io</span><span class=p>.</span><span class=nx>EOF</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=k>break</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>            <span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>fmt</span><span class=p>.</span><span class=nf>Print</span><span class=p>(</span><span class=nb>string</span><span class=p>(</span><span class=nx>buf</span><span class=p>[:</span><span class=nx>n</span><span class=p>]))</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></div><h2 id=简单实现>简单实现</h2><h3 id=minio-bytepoolcap>MinIO BytePoolCap</h3><p>MinIO 中使用 <code>channel</code> 实现了一个非常简单的<strong>有界</strong>字节池 <a href=https://github.com/minio/minio/blob/master/internal/bpool/bpool.go>bpool</a></p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>BytePoolCap</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>c</span>    <span class=kd>chan</span> <span class=p>[]</span><span class=kt>byte</span>
+</span></span><span class=line><span class=cl>    <span class=nx>w</span>    <span class=kt>int</span>
+</span></span><span class=line><span class=cl>    <span class=nx>wcap</span> <span class=kt>int</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>NewBytePoolCap</span><span class=p>(</span><span class=nx>maxSize</span> <span class=kt>int</span><span class=p>,</span> <span class=nx>width</span> <span class=kt>int</span><span class=p>,</span> <span class=nx>capwidth</span> <span class=kt>int</span><span class=p>)</span> <span class=p>(</span><span class=nx>bp</span> <span class=o>*</span><span class=nx>BytePoolCap</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=o>&amp;</span><span class=nx>BytePoolCap</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>c</span><span class=p>:</span>    <span class=nb>make</span><span class=p>(</span><span class=kd>chan</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>,</span> <span class=nx>maxSize</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>        <span class=nx>w</span><span class=p>:</span>    <span class=nx>width</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nx>wcap</span><span class=p>:</span> <span class=nx>capwidth</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></div><ul><li><code>c</code> 用来存放字节切片（这也就是为什么<strong>有界</strong>的原因）</li><li><code>w</code> 表示创建字节切片的 <code>len</code></li><li><code>wcap</code> 表示创建字节切片的 <code>cap</code></li></ul><p><code>Get()</code> 方法, 从池中获取字节切片：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>bp</span> <span class=o>*</span><span class=nx>BytePoolCap</span><span class=p>)</span> <span class=nf>Get</span><span class=p>()</span> <span class=p>(</span><span class=nx>b</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=nx>b</span> <span class=p>=</span> <span class=o>&lt;-</span><span class=nx>bp</span><span class=p>.</span><span class=nx>c</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// channel 中存在 []byte 则复用
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// 否则创建 []byte
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=k>if</span> <span class=nx>bp</span><span class=p>.</span><span class=nx>wcap</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>b</span> <span class=p>=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=nx>bp</span><span class=p>.</span><span class=nx>w</span><span class=p>,</span> <span class=nx>bp</span><span class=p>.</span><span class=nx>wcap</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>b</span> <span class=p>=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=nx>bp</span><span class=p>.</span><span class=nx>w</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></div><p><code>Put([]byte)</code> 方法，将使用完的切片放回池中，以被下一次获取：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>bp</span> <span class=o>*</span><span class=nx>BytePoolCap</span><span class=p>)</span> <span class=nf>Put</span><span class=p>(</span><span class=nx>b</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>select</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=nx>bp</span><span class=p>.</span><span class=nx>c</span> <span class=o>&lt;-</span> <span class=nx>b</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// channel 放得下
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// channel 放不下的话则不进行任何操作，直接丢弃这个 []byte
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></div><p>使用示例</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 多个 goroutine 公用一个 pool
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>var</span> <span class=nx>bp</span> <span class=p>=</span> <span class=nx>bpool</span><span class=p>.</span><span class=nf>NewBytePoolCap</span><span class=p>(</span><span class=mi>100</span><span class=p>,</span> <span class=mi>64</span><span class=p>,</span> <span class=mi>64</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// func ...
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>buf</span> <span class=o>:=</span> <span class=nx>bp</span><span class=p>.</span><span class=nf>Get</span><span class=p>()</span>
+</span></span><span class=line><span class=cl><span class=k>defer</span> <span class=nx>bp</span><span class=p>.</span><span class=nf>Put</span><span class=p>(</span><span class=nx>buf</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// use buf ...
+</span></span></span></code></pre></div><h3 id=syncpool>sync.Pool</h3><p>谈到“池”，很容易想到 Go 标准库中的 <code>sync.Pool</code>，我们可以用几行代码就实现一个简单的字节池：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>pool</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>sync</span><span class=p>.</span><span class=nx>Pool</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>New</span><span class=p>:</span> <span class=kd>func</span><span class=p>()</span> <span class=kd>interface</span><span class=p>{}</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=mi>64</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></div><p>然后就可以使用 <code>pool.Get().([]byte)</code> 从池中取字节切片，使用完后调用 <code>pool.Put(buf)</code> 归还到池中。</p><h2 id=问题分析>问题分析</h2><p>上面的两种字节池实现都存在许多问题：池中新建的字节切片的 <code>len</code> 和 <code>cap</code> 都是创建池的时候固定的，不能动态修改。另外，如果往字节切片写入了大量数据（发生多次扩容），此时再将这样的字节切片放回池中，显然会造成内存浪费。</p><p>所以需要解决的问题：</p><ol><li>动态修改新分配字节切片的大小</li><li>阻止大切片放回字节池</li></ol><h2 id=bytebufferpool>ByteBufferPool</h2><p>ByteBufferPool 中实现了一个类似 <code>bytes.Buffer</code> 的结构（<a href=https://github.com/valyala/bytebufferpool/blob/master/bytebuffer.go>ByteBuffer</a>），它封装了一些对 <code>[]byte</code> 的复杂操作，从 benchmark 的结果可以看出它的性能比 <code>bytes.Buffer</code> 略高一些，但它不是字节池的重点，所以就不贴代码了。</p><p>ByteBufferPool 是怎么解决上述问题的？</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>const</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=nx>minBitSize</span> <span class=p>=</span> <span class=mi>6</span>  <span class=c1>// 2**6=64 is a CPU cache line size
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 将 buf 的大小划分为 20 个区间
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// ==&gt; (0, 64], (64, 128], (128, 256], ... , (8388608, 16777216], (16777216, 33554432]
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// 超过 33554432 的也属于最后一个区间
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>steps</span> <span class=p>=</span> <span class=mi>20</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>minSize</span> <span class=p>=</span> <span class=mi>1</span> <span class=o>&lt;&lt;</span> <span class=nx>minBitSize</span>               <span class=c1>// 64
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>maxSize</span> <span class=p>=</span> <span class=mi>1</span> <span class=o>&lt;&lt;</span> <span class=p>(</span><span class=nx>minBitSize</span> <span class=o>+</span> <span class=nx>steps</span> <span class=o>-</span> <span class=mi>1</span><span class=p>)</span> <span class=c1>// 33554432
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=nx>calibrateCallsThreshold</span> <span class=p>=</span> <span class=mi>42000</span>
+</span></span><span class=line><span class=cl>    <span class=nx>maxPercentile</span>           <span class=p>=</span> <span class=mf>0.95</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Pool</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>calls</span>       <span class=p>[</span><span class=nx>steps</span><span class=p>]</span><span class=kt>uint64</span> <span class=c1>// 不同大小 buf 的使用频次
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>calibrating</span> <span class=kt>uint64</span>        <span class=c1>// 标记是否正在校准（校准过程就是调整 defaultSize 和 maxSize）
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=nx>defaultSize</span> <span class=kt>uint64</span> <span class=c1>// make []byte 时的 cap
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>maxSize</span>     <span class=kt>uint64</span> <span class=c1>// 能放回池中的最大 buf 大小
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>    <span class=nx>pool</span> <span class=nx>sync</span><span class=p>.</span><span class=nx>Pool</span> <span class=c1>// 存储 buf
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>Pool</span><span class=p>)</span> <span class=nf>Get</span><span class=p>()</span> <span class=o>*</span><span class=nx>ByteBuffer</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>v</span> <span class=o>:=</span> <span class=nx>p</span><span class=p>.</span><span class=nx>pool</span><span class=p>.</span><span class=nf>Get</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 如果池中有 buf 直接返回
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=nx>v</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>v</span><span class=p>.(</span><span class=o>*</span><span class=nx>ByteBuffer</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 否则新建一个 cap 为 defaultSize 的 buf
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>return</span> <span class=o>&amp;</span><span class=nx>ByteBuffer</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>B</span><span class=p>:</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=nx>atomic</span><span class=p>.</span><span class=nf>LoadUint64</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>defaultSize</span><span class=p>)),</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></div><p>继续查看 <code>Put()</code>，从这就可以看出 ByteBufferPool 的主要逻辑了：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>Pool</span><span class=p>)</span> <span class=nf>Put</span><span class=p>(</span><span class=nx>b</span> <span class=o>*</span><span class=nx>ByteBuffer</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// len 所在 “区间” 的下标
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>idx</span> <span class=o>:=</span> <span class=nf>index</span><span class=p>(</span><span class=nb>len</span><span class=p>(</span><span class=nx>b</span><span class=p>.</span><span class=nx>B</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 解决了问题1：动态调整 size
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// 使用频次加1，如果超过了阈值（42000）则进行校准
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=nx>atomic</span><span class=p>.</span><span class=nf>AddUint64</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>calls</span><span class=p>[</span><span class=nx>idx</span><span class=p>],</span> <span class=mi>1</span><span class=p>)</span> <span class=p>&gt;</span> <span class=nx>calibrateCallsThreshold</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>p</span><span class=p>.</span><span class=nf>calibrate</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 解决了问题2：阻止大切片放回字节池
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=c1>// 如果还未设置 maxSize 或 cap 小于等于 maxSize 才执行 Put
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>maxSize</span> <span class=o>:=</span> <span class=nb>int</span><span class=p>(</span><span class=nx>atomic</span><span class=p>.</span><span class=nf>LoadUint64</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>maxSize</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>maxSize</span> <span class=o>==</span> <span class=mi>0</span> <span class=o>||</span> <span class=nb>cap</span><span class=p>(</span><span class=nx>b</span><span class=p>.</span><span class=nx>B</span><span class=p>)</span> <span class=o>&lt;=</span> <span class=nx>maxSize</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>b</span><span class=p>.</span><span class=nf>Reset</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=nx>p</span><span class=p>.</span><span class=nx>pool</span><span class=p>.</span><span class=nf>Put</span><span class=p>(</span><span class=nx>b</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>index</span><span class=p>(</span><span class=nx>n</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>int</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>n</span><span class=o>--</span>
+</span></span><span class=line><span class=cl>    <span class=nx>n</span> <span class=o>&gt;&gt;=</span> <span class=nx>minBitSize</span>
+</span></span><span class=line><span class=cl>    <span class=nx>idx</span> <span class=o>:=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=nx>n</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>n</span> <span class=o>&gt;&gt;=</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>        <span class=nx>idx</span><span class=o>++</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=nx>idx</span> <span class=o>&gt;=</span> <span class=nx>steps</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>idx</span> <span class=p>=</span> <span class=nx>steps</span> <span class=o>-</span> <span class=mi>1</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>idx</span>
+</span></span><span class=line><span class=cl><span class=p>}</span></span></span></code></pre></div><p>划分区间的目的就是方便统计出程序近一段时间内<strong>最经常使用</strong>多大的 buf，从而决定 <code>defaultSize</code> 和 <code>maxSize</code>，这一块的逻辑主要在 <code>calibrate()</code> ：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>p</span> <span class=o>*</span><span class=nx>Pool</span><span class=p>)</span> <span class=nf>calibrate</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 通过 CAS 确保同一时刻只有一个 goroutine 执行 calibrate
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>if</span> <span class=p>!</span><span class=nx>atomic</span><span class=p>.</span><span class=nf>CompareAndSwapUint64</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>calibrating</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=mi>1</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>a</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>(</span><span class=nx>callSizes</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=nx>steps</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 所有大小 buf 的总使用频次
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kd>var</span> <span class=nx>callsSum</span> <span class=kt>uint64</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=nb>uint64</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span> <span class=nx>i</span> <span class=p>&lt;</span> <span class=nx>steps</span><span class=p>;</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nx>calls</span> <span class=o>:=</span> <span class=nx>atomic</span><span class=p>.</span><span class=nf>SwapUint64</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>calls</span><span class=p>[</span><span class=nx>i</span><span class=p>],</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=nx>callsSum</span> <span class=o>+=</span> <span class=nx>calls</span>
+</span></span><span class=line><span class=cl>        <span class=nx>a</span> <span class=p>=</span> <span class=nb>append</span><span class=p>(</span><span class=nx>a</span><span class=p>,</span> <span class=nx>callSize</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>calls</span><span class=p>:</span> <span class=nx>calls</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=nx>size</span><span class=p>:</span>  <span class=nx>minSize</span> <span class=o>&lt;&lt;</span> <span class=nx>i</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=p>})</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 按照使用频次从大到小排序
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>sort</span><span class=p>.</span><span class=nf>Sort</span><span class=p>(</span><span class=nx>a</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 将 defaultSize 设置为频次最高的 size
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>defaultSize</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>[</span><span class=mi>0</span><span class=p>].</span><span class=nx>size</span>
+</span></span><span class=line><span class=cl>    <span class=nx>maxSize</span> <span class=o>:=</span> <span class=nx>defaultSize</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 选择 maxSize，让 95% 的 buf 都能被归还到池中，只有最大的 %5 无法归还
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>maxSum</span> <span class=o>:=</span> <span class=nb>uint64</span><span class=p>(</span><span class=nb>float64</span><span class=p>(</span><span class=nx>callsSum</span><span class=p>)</span> <span class=o>*</span> <span class=nx>maxPercentile</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>callsSum</span> <span class=p>=</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span> <span class=p>&lt;</span> <span class=nx>steps</span><span class=p>;</span> <span class=nx>i</span><span class=o>++</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>callsSum</span> <span class=p>&gt;</span> <span class=nx>maxSum</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>break</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=nx>callsSum</span> <span class=o>+=</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>calls</span>
+</span></span><span class=line><span class=cl>        <span class=nx>size</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>size</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=nx>size</span> <span class=p>&gt;</span> <span class=nx>maxSize</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=nx>maxSize</span> <span class=p>=</span> <span class=nx>size</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>// 因为 pool 会被多个 goroutine 访问，所以需要使用原子写入
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>atomic</span><span class=p>.</span><span class=nf>StoreUint64</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>defaultSize</span><span class=p>,</span> <span class=nx>defaultSize</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nx>atomic</span><span class=p>.</span><span class=nf>StoreUint64</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>maxSize</span><span class=p>,</span> <span class=nx>maxSize</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nx>atomic</span><span class=p>.</span><span class=nf>StoreUint64</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>p</span><span class=p>.</span><span class=nx>calibrating</span><span class=p>,</span> <span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>callSize</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nx>calls</span> <span class=kt>uint64</span> <span class=c1>// 使用频次
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=nx>size</span>  <span class=kt>uint64</span> <span class=c1>// buf 大小
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>callSizeSlice</span> <span class=p>[]</span><span class=nx>callSize</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=nx>callSizeSlice</span><span class=p>)</span> <span class=nf>Len</span><span class=p>()</span> <span class=kt>int</span>           <span class=p>{</span> <span class=k>return</span> <span class=nb>len</span><span class=p>(</span><span class=nx>a</span><span class=p>)</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=nx>callSizeSlice</span><span class=p>)</span> <span class=nf>Swap</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span>      <span class=p>{</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>],</span> <span class=nx>a</span><span class=p>[</span><span class=nx>j</span><span class=p>]</span> <span class=p>=</span> <span class=nx>a</span><span class=p>[</span><span class=nx>j</span><span class=p>],</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=nx>callSizeSlice</span><span class=p>)</span> <span class=nf>Less</span><span class=p>(</span><span class=nx>i</span><span class=p>,</span> <span class=nx>j</span> <span class=kt>int</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span> <span class=k>return</span> <span class=nx>a</span><span class=p>[</span><span class=nx>i</span><span class=p>].</span><span class=nx>calls</span> <span class=p>&gt;</span> <span class=nx>a</span><span class=p>[</span><span class=nx>j</span><span class=p>].</span><span class=nx>calls</span> <span class=p>}</span></span></span></code></pre></div><h2 id=性能测试>性能测试</h2><p><a href=https://github.com/MaoLongLong/bytebufferpool/blob/main/pool_bench_test.go>pool_bench_test.go</a></p><p>从上往下，分别为 ByteBufferPool, MinIO BytePoolCap 和普通 <code>[]byte</code></p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ go <span class=nb>test</span> -bench<span class=o>=</span>Pool -benchmem
+</span></span><span class=line><span class=cl>goos: linux
+</span></span><span class=line><span class=cl>goarch: amd64
+</span></span><span class=line><span class=cl>pkg: github.com/maolonglong/bytebufferpool
+</span></span><span class=line><span class=cl>cpu: Intel<span class=o>(</span>R<span class=o>)</span> Core<span class=o>(</span>TM<span class=o>)</span> i7-7500U CPU @ 2.70GHz
+</span></span><span class=line><span class=cl>BenchmarkByteBufferPoolBuf-4    <span class=m>20764896</span>                52.71 ns/op            <span class=m>0</span> B/op          <span class=m>0</span> allocs/op
+</span></span><span class=line><span class=cl>BenchmarkBPool-4                 <span class=m>7899157</span>               156.4 ns/op             <span class=m>0</span> B/op          <span class=m>0</span> allocs/op
+</span></span><span class=line><span class=cl>BenchmarkWithoutPool-4           <span class=m>4511701</span>               270.5 ns/op          <span class=m>1472</span> B/op          <span class=m>3</span> allocs/op
+</span></span><span class=line><span class=cl>PASS
+</span></span><span class=line><span class=cl>ok      github.com/maolonglong/bytebufferpool   4.091s</span></span></code></pre></div><p>从测试结果可以看出，ByteBufferPool 不管在速度还是内存上都优于另外两种方案。</p><h2 id=总结>总结</h2><p>GitHub 上许多优秀的项目其实代码并不难，通过这些项目可以学习大佬们设计、优化代码的思想，提升自己解决实际问题的能力。</p></content><p><a href=https://chensl.me/blog/golang/>#Golang</a>&nbsp;&nbsp;
+<a href=https://chensl.me/blog/pool/>#pool</a>&nbsp;&nbsp;</p></main><footer>Made with <a href=https://github.com/maolonglong/hugo-simple/>Hugo ʕ•ᴥ•ʔ Simple</a></footer></body></html>

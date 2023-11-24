@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>PaaS on 毛珑珑的博客</title><link>https://chensl.me/blog/paas/</link><description>Recent content in PaaS on 毛珑珑的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-Hans</language><managingEditor>shaolong.chen@outlook.it (Shaolong Chen)</managingEditor><webMaster>shaolong.chen@outlook.it (Shaolong Chen)</webMaster><lastBuildDate>Sun, 27 Mar 2022 14:25:47 +0000</lastBuildDate><atom:link href="https://chensl.me/blog/paas/index.xml" rel="self" type="application/rss+xml"/><item><title>1 核 1G 的 VPS 能玩出什么花样</title><link>https://chensl.me/selfhosted/</link><pubDate>Sun, 27 Mar 2022 14:25:47 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/selfhosted/</guid><description>2022-05-23 更新：我又喜欢上了阿里云函数计算，比折腾 VPS 好玩得多
+最开始第一台阿里云服务器，在上面跑服务都是纯手工编译打包，上传到服务器，然后再用 nohup, systemd 之类的工具挂在后台。后来学了 Docker，再后来用一些 Docker 的图形界面（portainer）省去了 ssh 进服务器敲命令的过程。但是配置域名，依然需要折腾 nginx 或者 Caddy，如果是境内服务器还需要走麻烦的备案流程。所以，最近尝试了几个 PaaS 方案，它们通常能自动化编译、部署、配置域名反向代理、SSL 证书自动续期 &amp;hellip;
+免备案 没有什么歪门邪道，如果嫌备案麻烦，就老老实实多花一点钱买个香港的机子（或者新加坡，日本，洛杉矶 &amp;hellip;），跑一些个人小项目足矣。它们不仅免备案，而且在使用大部分包管理工具的时候都可以直接用默认的源，👍 速度超赞
+CapRover CapRover 是 Heroku 的 self-hosted 替代方案，它完全开源，每月 5$ 的 1C1G 机子就可以运行
+对比 其实 Dokku 也挺不错，只是我更喜欢在 Web 界面上操作，Dockerfile 也能满足大部分应用的需求。最重要的是 CapRover 有一个叫 One Click Apps 的功能，能一键部署 Gitea, Gitlab, Drone, Wordpress, Ghost 等常见应用，😅 有点像宝塔，有一说一还挺香
+CapRover Dokku Heroku 便宜 便宜 贵 只支持 Dockerfile 或 docker-compose 各种 buildpacks 各种 buildpacks 有 Web 界面 ShellScript 有 Web 界面 基于 Docker Swarm 基于 Docker - 安装 照着官网的 Getting Started 慢慢做就行，注意得提前安装好 Docker：</description><content:encoded><![CDATA[<blockquote>
+<p>2022-05-23 更新：我又喜欢上了阿里云函数计算，比折腾 VPS 好玩得多</p>
+</blockquote>
+<p>最开始第一台阿里云服务器，在上面跑服务都是纯手工编译打包，上传到服务器，然后再用 <code>nohup</code>, <code>systemd</code> 之类的工具挂在后台。后来学了 Docker，再后来用一些 Docker 的图形界面（portainer）省去了 <code>ssh</code> 进服务器敲命令的过程。但是配置域名，依然需要折腾 nginx 或者 Caddy，如果是境内服务器还需要走麻烦的备案流程。所以，最近尝试了几个 PaaS 方案，它们通常能自动化编译、部署、配置域名反向代理、SSL 证书自动续期 &hellip;</p>
+<!-- raw HTML omitted -->
+<h2 id="免备案">免备案</h2>
+<p>没有什么歪门邪道，如果嫌备案麻烦，就老老实实多花一点钱买个香港的机子（或者新加坡，日本，洛杉矶 &hellip;），跑一些个人小项目足矣。它们不仅免备案，<strong>而且</strong>在使用大部分包管理工具的时候都可以直接用默认的源，👍 速度超赞</p>
+<h2 id="caprover">CapRover</h2>
+<p><a href="https://caprover.com/">CapRover</a> 是 Heroku 的 self-hosted 替代方案，它完全开源，每月 5$ 的 1C1G 机子就可以运行</p>
+<h3 id="对比">对比</h3>
+<p>其实 <a href="https://dokku.com/">Dokku</a> 也挺不错，只是我更喜欢在 Web 界面上操作，<code>Dockerfile</code> 也能满足大部分应用的需求。最重要的是 CapRover 有一个叫 <strong>One Click Apps</strong> 的功能，能一键部署 Gitea, Gitlab, Drone, Wordpress, Ghost 等常见应用，😅 有点像宝塔，有一说一还挺香</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">CapRover</th>
+<th style="text-align:center">Dokku</th>
+<th style="text-align:center">Heroku</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">便宜</td>
+<td style="text-align:center">便宜</td>
+<td style="text-align:center">贵</td>
+</tr>
+<tr>
+<td style="text-align:center">只支持 Dockerfile 或 docker-compose</td>
+<td style="text-align:center">各种 buildpacks</td>
+<td style="text-align:center">各种 buildpacks</td>
+</tr>
+<tr>
+<td style="text-align:center">有 Web 界面</td>
+<td style="text-align:center">ShellScript</td>
+<td style="text-align:center">有 Web 界面</td>
+</tr>
+<tr>
+<td style="text-align:center">基于 Docker Swarm</td>
+<td style="text-align:center">基于 Docker</td>
+<td style="text-align:center">-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="安装">安装</h3>
+<p>照着官网的 <a href="https://caprover.com/docs/get-started.html">Getting Started</a> 慢慢做就行，注意得提前安装好 Docker：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -fsSL https://get.docker.com <span class="p">|</span> sh</span></span></code></pre></div>
+<h2 id="apps">Apps</h2>
+<p>我现在部署的一些 App：</p>
+<p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150172.png" alt=""></p>
+<h3 id="go-import-redirector">go-import-redirector</h3>
+<p>Golang 导包的重定向器，在<a href="https://github.com/rsc/go-import-redirector">开源</a>的基础上做了点改造</p>
+<p>能把 <code>go get</code> 从自定义域名重定向到 GitHub：</p>
+<p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021151668.png" alt=""></p>
+<p>或者浏览器直接打开，跳转到 GoDoc：</p>
+<p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150163.png" alt=""></p>
+<h3 id="tinyurl">tinyurl</h3>
+<p>自己写的短链接工具，没啥高级功能，<strong>能跑就行</strong></p>
+<p><a href="https://t.chensl.me/lc1016">t.chensl.me/lc1016</a></p>
+<h3 id="portainer">Portainer</h3>
+<p>Docker 的 Web 界面，结合着 CapRover 用来管理容器</p>
+<p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021151669.png" alt=""></p>
+<h3 id="syncthing">Syncthing</h3>
+<p>一个去中心化的文件同步工具，经常需要用它和室友互传一些文件（😈 不可告人的文件）</p>
+<h3 id="filebrowser">FileBrowser</h3>
+<p>结合 Syncthing 使用，在没有安装 Syncthing 的电脑上也能在线管理文件</p>
+<p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021151666.png" alt=""></p>
+]]></content:encoded></item></channel></rss>

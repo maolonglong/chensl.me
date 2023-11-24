@@ -1,0 +1,642 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Docker on 毛珑珑的博客</title><link>https://chensl.me/blog/docker/</link><description>Recent content in Docker on 毛珑珑的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-Hans</language><managingEditor>shaolong.chen@outlook.it (Shaolong Chen)</managingEditor><webMaster>shaolong.chen@outlook.it (Shaolong Chen)</webMaster><lastBuildDate>Sun, 01 May 2022 15:20:06 +0000</lastBuildDate><atom:link href="https://chensl.me/blog/docker/index.xml" rel="self" type="application/rss+xml"/><item><title>用 Docker 解决单元测试外部依赖</title><link>https://chensl.me/dockertest/</link><pubDate>Sun, 01 May 2022 15:20:06 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/dockertest/</guid><description>搬砖时，写的大多是和数据库交互的 API 服务，当我厌倦了用 Postman 手工测试，尝试开始写一些单元测试，发现并不顺利。在 GitHub 上看到过几个项目是用 sqlmock。它的原理是实现了 database/sql 里的接口，然后单测中用正则表达式判断预期的 SQL 语句和实际执行的 SQL 语句是否匹配：
+func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err != nil { t.Fatalf(&amp;#34;an error &amp;#39;%s&amp;#39; was not expected when opening a stub database connection&amp;#34;, err) } defer db.Close() mock.ExpectBegin() mock.ExpectExec(&amp;#34;UPDATE products&amp;#34;).WillReturnResult(sqlmock.NewResult(1, 1)) mock.ExpectExec(&amp;#34;INSERT INTO product_viewers&amp;#34;).WithArgs(2, 3).WillReturnResult(sqlmock.NewResult(1, 1)) mock.ExpectCommit() // now we execute our method if err = recordStats(db, 2, 3); err != nil { t.</description><content:encoded><![CDATA[<p>搬砖时，写的大多是和数据库交互的 API 服务，当我厌倦了用 Postman 手工测试，尝试开始写一些单元测试，发现并不顺利。在 GitHub 上看到过几个项目是用 <a href="https://github.com/DATA-DOG/go-sqlmock">sqlmock</a>。它的原理是实现了 <code>database/sql</code> 里的接口，然后单测中用正则表达式判断预期的 SQL 语句和实际执行的 SQL 语句是否匹配：</p>
+<!-- raw HTML omitted -->
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestShouldUpdateStats</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">db</span><span class="p">,</span> <span class="nx">mock</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sqlmock</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;an error &#39;%s&#39; was not expected when opening a stub database connection&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectBegin</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectExec</span><span class="p">(</span><span class="s">&#34;UPDATE products&#34;</span><span class="p">).</span><span class="nf">WillReturnResult</span><span class="p">(</span><span class="nx">sqlmock</span><span class="p">.</span><span class="nf">NewResult</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectExec</span><span class="p">(</span><span class="s">&#34;INSERT INTO product_viewers&#34;</span><span class="p">).</span><span class="nf">WithArgs</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">).</span><span class="nf">WillReturnResult</span><span class="p">(</span><span class="nx">sqlmock</span><span class="p">.</span><span class="nf">NewResult</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectCommit</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// now we execute our method
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">recordStats</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;error was not expected while updating stats: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// we make sure that all expectations were met
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectationsWereMet</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;there were unfulfilled expectations: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>实际尝试之后发现这种方式着实有点反人类，尤其使用了 ORM 后（鬼知道 ORM 把 SQL 构造成了啥样 😅）</p>
+<h2 id="是否有必要引入-docker">是否有必要引入 Docker</h2>
+<p>除了 Docker，其实还有很多方案：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">实际开发</th>
+<th style="text-align:center">单元测试</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">MySQL</td>
+<td style="text-align:center">SQLite</td>
+</tr>
+<tr>
+<td style="text-align:center">Redis</td>
+<td style="text-align:center"><a href="https://github.com/alicebob/miniredis">Miniredis</a></td>
+</tr>
+<tr>
+<td style="text-align:center">&hellip;</td>
+<td style="text-align:center">&hellip;</td>
+</tr>
+</tbody>
+</table>
+<p>具体情况具体分析，如果问题本身很简单，自然没必要引入 Docker</p>
+<h2 id="compose--脚本">compose + 脚本</h2>
+<p>在 <code>docker-compose.yml</code> 文件中定义好外部依赖。然后写一个脚本（bash 或 python 或 &hellip;），按以下步骤执行测试：</p>
+<ol>
+<li>docker-compose up</li>
+<li>数据库初始化（表结构、测试数据）</li>
+<li>go test</li>
+<li>docker-compose down</li>
+</ol>
+<p>{% note info %}
+整体思路就是这样，比较繁琐，就不演示了
+{% endnote %}</p>
+<h2 id="dockertest">Dockertest</h2>
+<p><a href="https://github.com/ory/dockertest">Dockertest</a> 是一个简易的 Docker 客户端，提供了更便捷的方式管理单元测试的外部依赖。</p>
+<h3 id="创建示例项目">创建示例项目</h3>
+<p>先安装接下来会用到的依赖：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">DEMO</span><span class="o">=</span><span class="nv">$GOPATH</span>/src/go.chensl.me/dockertest-demo
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">mkdir -p <span class="nv">$DEMO</span>
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$DEMO</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">go mod init
+</span></span><span class="line"><span class="cl">go get github.com/go-sql-driver/mysql
+</span></span><span class="line"><span class="cl">go get github.com/golang-migrate/migrate/v4
+</span></span><span class="line"><span class="cl">go get github.com/jmoiron/sqlx
+</span></span><span class="line"><span class="cl">go get github.com/ory/dockertest/v3
+</span></span><span class="line"><span class="cl">go get github.com/stretchr/testify</span></span></code></pre></div>
+<p>提前预览一下项目结构：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">.
+</span></span><span class="line"><span class="cl">├── db
+</span></span><span class="line"><span class="cl">│   ├── db.go
+</span></span><span class="line"><span class="cl">│   ├── db_test.go
+</span></span><span class="line"><span class="cl">│   ├── user.go
+</span></span><span class="line"><span class="cl">│   └── user_test.go
+</span></span><span class="line"><span class="cl">├── go.mod
+</span></span><span class="line"><span class="cl">├── go.sum
+</span></span><span class="line"><span class="cl">├── migrations
+</span></span><span class="line"><span class="cl">│   ├── 20220501170742_init.down.sql
+</span></span><span class="line"><span class="cl">│   └── 20220501170742_init.up.sql
+</span></span><span class="line"><span class="cl">└── model
+</span></span><span class="line"><span class="cl">    └── user.go
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">3 directories, 9 files</span></span></code></pre></div>
+<h3 id="db-方法">DB 方法</h3>
+<p>用 <a href="https://github.com/golang-migrate/migrate">golang-migrate</a> 生成 migration 脚本：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">migrate create -ext sql -dir migrations -tz<span class="o">=</span>Local init</span></span></code></pre></div>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">users</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_INCREMENT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span></span></span></code></pre></div>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">users</span><span class="o">`</span><span class="p">;</span></span></span></code></pre></div>
+<p>对应的 Go 结构体：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">model</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">User</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ID</span>   <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Name</span> <span class="kt">string</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>然后是这次需要测试的方法：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;context&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/jmoiron/sqlx&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;go.chensl.me/dockertest-demo/model&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">UserDB</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">conn</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewUserDB</span><span class="p">(</span><span class="nx">conn</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="o">*</span><span class="nx">UserDB</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">UserDB</span><span class="p">{</span><span class="nx">conn</span><span class="p">:</span> <span class="nx">conn</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">UserDB</span><span class="p">)</span> <span class="nf">Add</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">u</span> <span class="o">*</span><span class="nx">model</span><span class="p">.</span><span class="nx">User</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">res</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">conn</span><span class="p">.</span><span class="nf">ExecContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">&#34;INSERT INTO users (name) VALUES (?)&#34;</span><span class="p">,</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">res</span><span class="p">.</span><span class="nf">LastInsertId</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">u</span><span class="p">.</span><span class="nx">ID</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<h3 id="testinstance">TestInstance</h3>
+<p>简单封装一下 dockertest 和 sqlx（借鉴了 <a href="https://github.com/google/exposure-notifications-server/blob/9b73ca040965e3177db3c36df211a275bf6dcfa6/pkg/database/database_util.go#L69">google/exposure-notifications-server</a> 的代码）</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;database/sql&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;strconv&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/golang-migrate/migrate/v4&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/golang-migrate/migrate/v4/database/mysql&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="s">&#34;github.com/golang-migrate/migrate/v4/source/file&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/jmoiron/sqlx&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/ory/dockertest/v3&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/ory/dockertest/v3/docker&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">TestInstance</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">pool</span>       <span class="o">*</span><span class="nx">dockertest</span><span class="p">.</span><span class="nx">Pool</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">resource</span>   <span class="o">*</span><span class="nx">dockertest</span><span class="p">.</span><span class="nx">Resource</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">conn</span>       <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">skipReason</span> <span class="kt">string</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">MustTestInstance</span><span class="p">()</span> <span class="o">*</span><span class="nx">TestInstance</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">testInstance</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewTestInstance</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stderr</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">testInstance</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewTestInstance</span><span class="p">()</span> <span class="p">(</span><span class="o">*</span><span class="nx">TestInstance</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">skip</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">ParseBool</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;SKIP_DATABASE_TESTS&#34;</span><span class="p">));</span> <span class="nx">skip</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">&amp;</span><span class="nx">TestInstance</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">skipReason</span><span class="p">:</span> <span class="s">&#34;🚧 Skipping database tests (SKIP_DATABASE_TESTS is set)!&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="p">},</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">pool</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">dockertest</span><span class="p">.</span><span class="nf">NewPool</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to create database docker pool: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">resource</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pool</span><span class="p">.</span><span class="nf">RunWithOptions</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">dockertest</span><span class="p">.</span><span class="nx">RunOptions</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Repository</span><span class="p">:</span> <span class="s">&#34;mysql&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Tag</span><span class="p">:</span>        <span class="s">&#34;5.7&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Env</span><span class="p">:</span>        <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;MYSQL_ROOT_PASSWORD=secret&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span> <span class="kd">func</span><span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">docker</span><span class="p">.</span><span class="nx">HostConfig</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nx">AutoRemove</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nx">RestartPolicy</span> <span class="p">=</span> <span class="nx">docker</span><span class="p">.</span><span class="nx">RestartPolicy</span><span class="p">{</span><span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;no&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to start database container: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">resource</span><span class="p">.</span><span class="nf">Expire</span><span class="p">(</span><span class="mi">120</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to expire database container: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">conn</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pool</span><span class="p">.</span><span class="nf">Retry</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">var</span> <span class="nx">err</span> <span class="kt">error</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">conn</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">sqlx</span><span class="p">.</span><span class="nf">Connect</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;root:secret@(localhost:%s)/mysql&#34;</span><span class="p">,</span> <span class="nx">resource</span><span class="p">.</span><span class="nf">GetPort</span><span class="p">(</span><span class="s">&#34;3306/tcp&#34;</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">	<span class="p">});</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed waiting for database container to be ready: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">migrateUp</span><span class="p">(</span><span class="nx">conn</span><span class="p">.</span><span class="nx">DB</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to migrate database: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">TestInstance</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">pool</span><span class="p">:</span>     <span class="nx">pool</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">resource</span><span class="p">:</span> <span class="nx">resource</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">conn</span><span class="p">:</span>     <span class="nx">conn</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">i</span> <span class="o">*</span><span class="nx">TestInstance</span><span class="p">)</span> <span class="nf">Conn</span><span class="p">(</span><span class="nx">tb</span> <span class="nx">testing</span><span class="p">.</span><span class="nx">TB</span><span class="p">)</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">tb</span><span class="p">.</span><span class="nf">Helper</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">i</span><span class="p">.</span><span class="nx">skipReason</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">tb</span><span class="p">.</span><span class="nf">Skip</span><span class="p">(</span><span class="nx">i</span><span class="p">.</span><span class="nx">skipReason</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">i</span><span class="p">.</span><span class="nx">conn</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">i</span> <span class="o">*</span><span class="nx">TestInstance</span><span class="p">)</span> <span class="nf">Close</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">i</span><span class="p">.</span><span class="nx">skipReason</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">i</span><span class="p">.</span><span class="nx">conn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">i</span><span class="p">.</span><span class="nx">pool</span><span class="p">.</span><span class="nf">Purge</span><span class="p">(</span><span class="nx">i</span><span class="p">.</span><span class="nx">resource</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">migrateUp</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">driver</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mysql</span><span class="p">.</span><span class="nf">WithInstance</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">mysql</span><span class="p">.</span><span class="nx">Config</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">m</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">migrate</span><span class="p">.</span><span class="nf">NewWithDatabaseInstance</span><span class="p">(</span><span class="s">&#34;file://../migrations&#34;</span><span class="p">,</span> <span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="nx">driver</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Up</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>借助 <code>TestMain</code>，在其他单测执行前，准备好环境：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">testInstance</span> <span class="o">*</span><span class="nx">TestInstance</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestMain</span><span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">M</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">testInstance</span> <span class="p">=</span> <span class="nf">MustTestInstance</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">code</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">testInstance</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="nx">code</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<h3 id="最终效果">最终效果</h3>
+<p>🎉 几乎和普通单元测试没有区别</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;context&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/stretchr/testify/assert&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;go.chensl.me/dockertest-demo/model&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestUserDB_Add</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ud</span> <span class="o">:=</span> <span class="nf">NewUserDB</span><span class="p">(</span><span class="nx">testInstance</span><span class="p">.</span><span class="nf">Conn</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">u</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">model</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;foo&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">err</span> <span class="o">:=</span> <span class="nx">ud</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">u</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">assert</span><span class="p">.</span><span class="nf">NoError</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">u</span><span class="p">.</span><span class="nx">ID</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">err</span> <span class="p">=</span> <span class="nx">ud</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">u</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nf">isDuplicate</span><span class="p">(</span><span class="nx">err</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">isDuplicate</span><span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">merr</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">err</span><span class="p">.(</span><span class="o">*</span><span class="nx">mysql</span><span class="p">.</span><span class="nx">MySQLError</span><span class="p">);</span> <span class="nx">ok</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">merr</span><span class="p">.</span><span class="nx">Number</span> <span class="o">==</span> <span class="mi">1062</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<p>执行单元测试，加上环境变量 <code>SKIP_DATABASE_TESTS</code> 可以跳过 dockertest：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">go <span class="nb">test</span> -v -count<span class="o">=</span><span class="m">1</span> ./...
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">SKIP_DATABASE_TESTS</span><span class="o">=</span><span class="m">1</span> go <span class="nb">test</span> -v -count<span class="o">=</span><span class="m">1</span> ./...</span></span></code></pre></div>
+]]></content:encoded></item><item><title>堆叠文件系统 OverlayFS</title><link>https://chensl.me/overlayfs/</link><pubDate>Sun, 24 Oct 2021 13:12:42 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/overlayfs/</guid><description>因为工作需求，所以花时间了解了一下 OverlayFS。第一次知道这个概念，是使用 Docker 时，它默认使用的 Graph Driver 是 Overlay2，容器的 rootfs 就是直接以目录的形式在宿主机上组织。
+参考资料 深入理解 overlayfs Linux Kernel documentation 环境准备 VirtualBox Vagrant 用 vagrant 跑一个带有 docker 的虚拟机：
+# -*- mode: ruby -*- # vi: set ft=ruby : $script = &amp;lt;&amp;lt;-&amp;#39;SCRIPT&amp;#39; sudo tee /etc/apt/sources.list &amp;lt;&amp;lt;-&amp;#39;EOF&amp;#39; deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse deb-src http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse deb http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse deb-src http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse deb http://mirrors.</description><content:encoded><![CDATA[<p>因为工作需求，所以花时间了解了一下 OverlayFS。第一次知道这个概念，是使用 Docker 时，它默认使用的 Graph Driver 是 Overlay2，容器的 rootfs 就是直接以目录的形式在宿主机上组织。</p>
+<!-- raw HTML omitted -->
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="https://blog.csdn.net/qq_15770331/article/details/96699386">深入理解 overlayfs</a></li>
+<li><a href="https://www.kernel.org/doc/html/latest/filesystems/overlayfs.html">Linux Kernel documentation</a></li>
+</ul>
+<h2 id="环境准备">环境准备</h2>
+<ul>
+<li>VirtualBox</li>
+<li>Vagrant</li>
+</ul>
+<p>用 vagrant 跑一个带有 docker 的虚拟机：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="line"><span class="cl"><span class="c1"># -*- mode: ruby -*-</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># vi: set ft=ruby :</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="vg">$script</span> <span class="o">=</span> <span class="s">&lt;&lt;-&#39;SCRIPT&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s"></span><span class="n">sudo</span> <span class="n">tee</span> <span class="sr">/etc/</span><span class="n">apt</span><span class="o">/</span><span class="n">sources</span><span class="o">.</span><span class="n">list</span> <span class="s">&lt;&lt;-&#39;EOF&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s"></span><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">security</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">security</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">updates</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">updates</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">proposed</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">proposed</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">backports</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span> <span class="n">bionic</span><span class="o">-</span><span class="n">backports</span> <span class="n">main</span> <span class="n">restricted</span> <span class="n">universe</span> <span class="n">multiverse</span>
+</span></span><span class="line"><span class="cl"><span class="no">EOF</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">update</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> <span class="n">ca</span><span class="o">-</span><span class="n">certificates</span> <span class="n">curl</span> <span class="n">software</span><span class="o">-</span><span class="n">properties</span><span class="o">-</span><span class="n">common</span>
+</span></span><span class="line"><span class="cl"><span class="n">curl</span> <span class="o">-</span><span class="n">fsSL</span> <span class="ss">https</span><span class="p">:</span><span class="sr">//mi</span><span class="n">rrors</span><span class="o">.</span><span class="n">aliyun</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">docker</span><span class="o">-</span><span class="n">ce</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span><span class="n">gpg</span> <span class="o">|</span> <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">key</span> <span class="n">add</span> <span class="o">-</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="s2">&#34;deb [arch=amd64] https://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">update</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">docker</span><span class="o">-</span><span class="n">ce</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">mkdir</span> <span class="o">-</span><span class="nb">p</span> <span class="sr">/etc/</span><span class="n">docker</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">tee</span> <span class="sr">/etc/</span><span class="n">docker</span><span class="o">/</span><span class="n">daemon</span><span class="o">.</span><span class="n">json</span> <span class="s">&lt;&lt;-&#39;EOF&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s"></span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;registry-mirrors&#34;</span><span class="p">:</span> <span class="o">[</span><span class="s2">&#34;https://docker.mirrors.ustc.edu.cn/&#34;</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="no">EOF</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">restart</span> <span class="n">docker</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">docker</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Make sure we can actually use docker as the vagrant user</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">usermod</span> <span class="o">-</span><span class="n">aG</span> <span class="n">docker</span> <span class="n">vagrant</span>
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">docker</span> <span class="o">--</span><span class="n">version</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">bash</span><span class="o">-</span><span class="n">completion</span> <span class="n">tree</span>
+</span></span><span class="line"><span class="cl"><span class="no">SCRIPT</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&#34;2&#34;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span></span><span class="line"><span class="cl">  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="s2">&#34;bento/ubuntu-18.04&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&#34;.&#34;</span><span class="p">,</span> <span class="s2">&#34;/vagrant&#34;</span><span class="p">,</span> <span class="ss">disabled</span><span class="p">:</span> <span class="kp">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&#34;shell&#34;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="vg">$script</span><span class="p">,</span> <span class="ss">privileged</span><span class="p">:</span> <span class="kp">false</span>
+</span></span><span class="line"><span class="cl"><span class="k">end</span></span></span></code></pre></div>
+<h2 id="初步认识">初步认识</h2>
+<p>随便拉一个镜像：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">vagrant@vagrant:~$ docker pull alpine
+</span></span><span class="line"><span class="cl">Using default tag: latest
+</span></span><span class="line"><span class="cl">latest: Pulling from library/alpine
+</span></span><span class="line"><span class="cl">a0d0a0d46f8b: Pull complete
+</span></span><span class="line"><span class="cl">Digest: sha256:e1c082e3d3c45cccac829840a25941e679c25d438cc8412c2fa221cf1a824e6a
+</span></span><span class="line"><span class="cl">Status: Downloaded newer image for alpine:latest
+</span></span><span class="line"><span class="cl">docker.io/library/alpine:latest</span></span></code></pre></div>
+<p>这时，我们就能在磁盘上找到对应的目录结构：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">vagrant@vagrant:~$ sudo su
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/home/vagrant# cd /var/lib/docker/overlay2/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# ls
+</span></span><span class="line"><span class="cl">ae64cdecc41d55f445ce1bed819dd312459bc7f2a2ddc80df60c789a5e3b06dc  l
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# ls ae64cdecc41d55f445ce1bed819dd312459bc7f2a2ddc80df60c789a5e3b06dc/diff/
+</span></span><span class="line"><span class="cl">bin  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var</span></span></code></pre></div>
+<p>再开一个窗口，启动一个容器：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">vagrant@vagrant:~$ docker run --rm -it alpine sh
+</span></span><span class="line"><span class="cl">/ # ls
+</span></span><span class="line"><span class="cl">bin    etc    lib    mnt    proc   run    srv    tmp    var
+</span></span><span class="line"><span class="cl">dev    home   media  opt    root   sbin   sys    usr</span></span></code></pre></div>
+<p>宿主机上的 overlay2 目录多出了一些东西：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# ls
+</span></span><span class="line"><span class="cl">7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6       ae64cdecc41d55f445ce1bed819dd312459bc7f2a2ddc80df60c789a5e3b06dc
+</span></span><span class="line"><span class="cl">7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6-init  l
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# mount | grep overlay
+</span></span><span class="line"><span class="cl">overlay on /var/lib/docker/overlay2/7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6/merged type overlay (rw,relatime,lowerdir=/var/lib/docker/overlay2/l/6ND2PL2RECUKJ3KFZYGPYCA564:/var/lib/docker/overlay2/l/FDPTXFIRIH3NAJ6N5KIKDUMC6O,upperdir=/var/lib/docker/overlay2/7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6/diff,workdir=/var/lib/docker/overlay2/7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6/work)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@vagrant:/var/lib/docker/overlay2# ls 7fca31029adbb299211e702a704981f8dcf7a437d6522b565de0b11c353c78e6/merged/
+</span></span><span class="line"><span class="cl">bin  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var</span></span></code></pre></div>
+<p>一个名为 <code>overlay</code> 的驱动挂载到了 <code>/var/lib/docker/overlay2/7fca3.../merged</code>，从挂载信息可以看出 merged 目录是由多个目录联合挂载而成，lowerdir 为只读层 (ro)，upperdir 为可读可写层 (rw)，当需要修改 lowerdir 中的文件时，fs 会采用<strong>写时复制</strong>的策略，将文件从 lowerdir 复制到 upperdir 进行修改。在 merged 目录中（或者说在 docker 容器中）是感知不到这些复杂逻辑的，和操作正常目录没有区别</p>
+<p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150167.jpeg" alt=""></p>
+<h2 id="实践">实践</h2>
+<p>大概了解了 OverlayFS 之后，我们抛开 Docker 仅仅用 Linux 命令行就能模拟出一个简单的容器（注意只是简单模拟，几乎谈不上什么隔离性）</p>
+<p>在开始前可以切换到 root，免得不必要的麻烦</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo su</span></span></code></pre></div>
+<h3 id="制作基础-rootfs">制作基础 rootfs</h3>
+<p>最后利用一下 Docker，导出一个 alpine 的 rootfs：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir rootfs <span class="o">&amp;&amp;</span> docker <span class="nb">export</span> <span class="k">$(</span>docker create alpine<span class="k">)</span> <span class="p">|</span> tar -C rootfs -xvf -</span></span></code></pre></div>
+<h3 id="lowerdirs">Lowerdirs</h3>
+<p>由于 lowerdir 可以配置多个，所以，我们可以利用这一特性对 rootfs 进行一些定制。</p>
+<p>替换中科大源：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p rootfs-init/etc/apk
+</span></span><span class="line"><span class="cl">cp rootfs/etc/apk/repositories rootfs-init/etc/apk/
+</span></span><span class="line"><span class="cl">sed -i <span class="s1">&#39;s/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g&#39;</span> rootfs-init/etc/apk/repositories</span></span></code></pre></div>
+<p>配置 DNS：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;nameserver 223.5.5.5&#39;</span> &gt; rootfs-init/etc/resolv.conf</span></span></code></pre></div>
+<h3 id="准备其他目录">准备其他目录</h3>
+<p>创建 upperdir，workdir 和 merged</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir diff work merged</span></span></code></pre></div>
+<p>最终的目录结构：</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">root@vagrant:~# tree -L 2
+</span></span><span class="line"><span class="cl">.
+</span></span><span class="line"><span class="cl">├── diff
+</span></span><span class="line"><span class="cl">├── merged
+</span></span><span class="line"><span class="cl">├── rootfs
+</span></span><span class="line"><span class="cl">│   ├── bin
+</span></span><span class="line"><span class="cl">│   ├── dev
+</span></span><span class="line"><span class="cl">│   ├── etc
+</span></span><span class="line"><span class="cl">│   ├── home
+</span></span><span class="line"><span class="cl">│   ├── lib
+</span></span><span class="line"><span class="cl">│   ├── media
+</span></span><span class="line"><span class="cl">│   ├── mnt
+</span></span><span class="line"><span class="cl">│   ├── opt
+</span></span><span class="line"><span class="cl">│   ├── proc
+</span></span><span class="line"><span class="cl">│   ├── root
+</span></span><span class="line"><span class="cl">│   ├── run
+</span></span><span class="line"><span class="cl">│   ├── sbin
+</span></span><span class="line"><span class="cl">│   ├── srv
+</span></span><span class="line"><span class="cl">│   ├── sys
+</span></span><span class="line"><span class="cl">│   ├── tmp
+</span></span><span class="line"><span class="cl">│   ├── usr
+</span></span><span class="line"><span class="cl">│   └── var
+</span></span><span class="line"><span class="cl">├── rootfs-init
+</span></span><span class="line"><span class="cl">│   └── etc
+</span></span><span class="line"><span class="cl">└── work
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">23 directories, 0 files</span></span></code></pre></div>
+<h3 id="手动挂载">手动挂载</h3>
+<p>将准备好的目录挂在到 merged:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mount overlay -t overlay -o <span class="nv">lowerdir</span><span class="o">=</span>/root/rootfs-init:/root/rootfs,upperdir<span class="o">=</span>/root/diff,workdir<span class="o">=</span>/root/work /root/merged</span></span></code></pre></div>
+<h3 id="使用容器">使用容器</h3>
+<p>利用 chroot 改变根文件系统</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> merged
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> apk update
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> apk upgrade
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> apk add gcc
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> gcc -v
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> apk add neofetch
+</span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> neofetch</span></span></code></pre></div>
+<p>至此，我们已经通过 OverlayFS 和 chroot 实现了一个简易的容器</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">root@vagrant:~# tree -L 2
+</span></span><span class="line"><span class="cl">.
+</span></span><span class="line"><span class="cl">├── diff
+</span></span><span class="line"><span class="cl">│   ├── bin
+</span></span><span class="line"><span class="cl">│   ├── dev
+</span></span><span class="line"><span class="cl">│   ├── etc
+</span></span><span class="line"><span class="cl">│   ├── lib
+</span></span><span class="line"><span class="cl">│   ├── root
+</span></span><span class="line"><span class="cl">│   ├── usr
+</span></span><span class="line"><span class="cl">│   └── var
+</span></span><span class="line"><span class="cl">├── merged
+</span></span><span class="line"><span class="cl">│   ├── bin
+</span></span><span class="line"><span class="cl">│   ├── dev
+</span></span><span class="line"><span class="cl">│   ├── etc
+</span></span><span class="line"><span class="cl">│   ├── home
+</span></span><span class="line"><span class="cl">│   ├── lib
+</span></span><span class="line"><span class="cl">│   ├── media
+</span></span><span class="line"><span class="cl">│   ├── mnt
+</span></span><span class="line"><span class="cl">│   ├── opt
+</span></span><span class="line"><span class="cl">│   ├── proc
+</span></span><span class="line"><span class="cl">│   ├── root
+</span></span><span class="line"><span class="cl">│   ├── run
+</span></span><span class="line"><span class="cl">│   ├── sbin
+</span></span><span class="line"><span class="cl">│   ├── srv
+</span></span><span class="line"><span class="cl">│   ├── sys
+</span></span><span class="line"><span class="cl">│   ├── tmp
+</span></span><span class="line"><span class="cl">│   ├── usr
+</span></span><span class="line"><span class="cl">│   └── var
+</span></span><span class="line"><span class="cl">├── rootfs
+</span></span><span class="line"><span class="cl">│   ├── bin
+</span></span><span class="line"><span class="cl">│   ├── dev
+</span></span><span class="line"><span class="cl">│   ├── etc
+</span></span><span class="line"><span class="cl">│   ├── home
+</span></span><span class="line"><span class="cl">│   ├── lib
+</span></span><span class="line"><span class="cl">│   ├── media
+</span></span><span class="line"><span class="cl">│   ├── mnt
+</span></span><span class="line"><span class="cl">│   ├── opt
+</span></span><span class="line"><span class="cl">│   ├── proc
+</span></span><span class="line"><span class="cl">│   ├── root
+</span></span><span class="line"><span class="cl">│   ├── run
+</span></span><span class="line"><span class="cl">│   ├── sbin
+</span></span><span class="line"><span class="cl">│   ├── srv
+</span></span><span class="line"><span class="cl">│   ├── sys
+</span></span><span class="line"><span class="cl">│   ├── tmp
+</span></span><span class="line"><span class="cl">│   ├── usr
+</span></span><span class="line"><span class="cl">│   └── var
+</span></span><span class="line"><span class="cl">├── rootfs-init
+</span></span><span class="line"><span class="cl">│   └── etc
+</span></span><span class="line"><span class="cl">└── work
+</span></span><span class="line"><span class="cl">    └── work
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">48 directories, 0 files</span></span></code></pre></div>
+]]></content:encoded></item></channel></rss>
