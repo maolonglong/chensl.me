@@ -1,6 +1,8 @@
-yarn.lock
-package-lock.json
-node_modules/
-db.json
+.direnv/
 public/
-.DS_Store
+resources/
+
+result
+result-*
+
+.hugo_build.lock
