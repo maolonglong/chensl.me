@@ -6,6 +6,7 @@ tags:
   - Docker
   - Dockertest
   - unittest
+toc: true
 ---
 
 搬砖时，写的大多是和数据库交互的 API 服务，当我厌倦了用 Postman 手工测试，尝试开始写一些单元测试，发现并不顺利。在 GitHub 上看到过几个项目是用 [sqlmock](https://github.com/DATA-DOG/go-sqlmock)。它的原理是实现了 `database/sql` 里的接口，然后单测中用正则表达式判断预期的 SQL 语句和实际执行的 SQL 语句是否匹配：

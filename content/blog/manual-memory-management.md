@@ -5,6 +5,7 @@ tags:
   - Golang
   - cgo
   - jemalloc
+toc: true
 ---
 
 {% note warning %}

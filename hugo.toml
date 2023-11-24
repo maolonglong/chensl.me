@@ -15,6 +15,11 @@ disableKinds = ["taxonomy"]
   tags = "/blog/:slug/"
 
 [markup]
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+  [markup.goldmark.renderer]
+    unsafe= true
   [markup.highlight]
     # lineNos = true
     # lineNumbersInTable = false
@@ -43,7 +48,6 @@ disableKinds = ["taxonomy"]
 [services]
   [services.rss]
     limit = 42
-
 
 [outputs]
   # Disable section RSS
