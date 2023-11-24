@@ -43,3 +43,8 @@ disableKinds = ["taxonomy"]
 [services]
   [services.rss]
     limit = 42
+
+
+[outputs]
+  # Disable section RSS
+  section = ['html']
