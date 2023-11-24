@@ -1,0 +1,45 @@
+# Basic config
+baseURL = "https://chensl.me"
+theme = "hugo-simple"
+languageCode = "zh-Hans" # en
+
+title = "毛珑珑的博客"
+
+# Generate a nice robots.txt for SEO
+enableRobotsTXT = true
+
+# Generate "Bearblog"-like URLs !only!, see https://bearblog.dev/.
+disableKinds = ["taxonomy"]
+[permalinks]
+  blog = "/:slugorfilename/"
+  tags = "/blog/:slug/"
+
+[markup]
+  [markup.highlight]
+    # lineNos = true
+    # lineNumbersInTable = false
+    noClasses = false
+
+[params]
+  description = "毛珑珑的博客"
+  favicon = "images/favicon.png"
+  dateFormat = "2006-01-02"
+  hideMadeWithLine = false
+  [params.author]
+    name = "Shaolong Chen"
+    email = "shaolong.chen@outlook.it"
+
+
+[menu]
+  [[menu.main]]
+      name = 'Home'
+      pageRef = '/'
+      weight = 10
+  [[menu.main]]
+      name = 'Blog'
+      pageRef = '/blog'
+      weight = 20
+
+[services]
+  [services.rss]
+    limit = 42
