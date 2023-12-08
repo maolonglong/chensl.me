@@ -31,6 +31,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Settings</span> <span class="kd">struct</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">Name</span>          <span class="kt">string</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">MaxRequests</span>   <span class="kt">uint32</span>
@@ -46,6 +47,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 <li><code>ReadyToTrip</code>: 通过计数器的信息判断是否需要熔断，默认连续失败 5 次后熔断</li>
 <li><code>OnStateChange</code>: 状态变化时的回调</li>
 </ul>
+
 
 
 
@@ -94,6 +96,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run main.go
 </span></span><span class="line"><span class="cl">2021/09/16 15:23:24 result: &lt;nil&gt;, err: some error
 </span></span><span class="line"><span class="cl">2021/09/16 15:23:25 result: &lt;nil&gt;, err: some error
@@ -106,6 +109,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 </span></span><span class="line"><span class="cl">......</span></span></code></pre></div>
 <h3 id="execute-流程">Execute 流程</h3>
 <p>简单过一遍 <code>Execute()</code> 的流程，详细代码可以看 <a href="https://github.com/sony/gobreaker/blob/master/gobreaker.go">gobreader.go</a>，不到 400 行，实现的非常简洁。</p>
+
 
 
 
@@ -138,6 +142,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 <p>从上面的源码，我们可以看出，执行过程只是简单地通过 <code>err == nil</code> 判断成功，假设业务的逻辑很复杂，需要加入自定义的判断，可以用 <code>TwoStepCircuitBreaker</code>。</p>
 <h3 id="两阶段熔断">两阶段熔断</h3>
 <p>和普通熔断器的使用差不多，<code>Allow()</code> 方法只是调用了 <code>beforeRequest()</code>，然后返回回调函数 <code>done(success bool)</code> 和错误信息，通过回调函数我们能把操作成功与否告诉熔断器。</p>
+
 
 
 
@@ -184,6 +189,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>运行结果：</p>
+
 
 
 

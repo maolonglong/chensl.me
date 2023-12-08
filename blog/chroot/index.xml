@@ -18,6 +18,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="line"><span class="cl"><span class="c1"># -*- mode: ruby -*-</span>
 </span></span><span class="line"><span class="cl"><span class="c1"># vi: set ft=ruby :</span>
 </span></span><span class="line"><span class="cl">
@@ -70,6 +71,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">vagrant@vagrant:~$ docker pull alpine
 </span></span><span class="line"><span class="cl">Using default tag: latest
 </span></span><span class="line"><span class="cl">latest: Pulling from library/alpine
@@ -78,6 +80,7 @@
 </span></span><span class="line"><span class="cl">Status: Downloaded newer image for alpine:latest
 </span></span><span class="line"><span class="cl">docker.io/library/alpine:latest</span></span></code></pre></div>
 <p>这时，我们就能在磁盘上找到对应的目录结构：</p>
+
 
 
 
@@ -98,11 +101,13 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">vagrant@vagrant:~$ docker run --rm -it alpine sh
 </span></span><span class="line"><span class="cl">/ # ls
 </span></span><span class="line"><span class="cl">bin    etc    lib    mnt    proc   run    srv    tmp    var
 </span></span><span class="line"><span class="cl">dev    home   media  opt    root   sbin   sys    usr</span></span></code></pre></div>
 <p>宿主机上的 overlay2 目录多出了一些东西：</p>
+
 
 
 
@@ -127,9 +132,11 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo su</span></span></code></pre></div>
 <h3 id="制作基础-rootfs">制作基础 rootfs</h3>
 <p>最后利用一下 Docker，导出一个 alpine 的 rootfs：</p>
+
 
 
 
@@ -144,10 +151,12 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p rootfs-init/etc/apk
 </span></span><span class="line"><span class="cl">cp rootfs/etc/apk/repositories rootfs-init/etc/apk/
 </span></span><span class="line"><span class="cl">sed -i <span class="s1">&#39;s/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g&#39;</span> rootfs-init/etc/apk/repositories</span></span></code></pre></div>
 <p>配置 DNS：</p>
+
 
 
 
@@ -161,8 +170,10 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir diff work merged</span></span></code></pre></div>
 <p>最终的目录结构：</p>
+
 
 
 
@@ -202,9 +213,11 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mount overlay -t overlay -o <span class="nv">lowerdir</span><span class="o">=</span>/root/rootfs-init:/root/rootfs,upperdir<span class="o">=</span>/root/diff,workdir<span class="o">=</span>/root/work /root/merged</span></span></code></pre></div>
 <h3 id="使用容器">使用容器</h3>
 <p>利用 chroot 改变根文件系统</p>
+
 
 
 
@@ -218,6 +231,7 @@
 </span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> apk add neofetch
 </span></span><span class="line"><span class="cl">chroot <span class="nv">$PWD</span> neofetch</span></span></code></pre></div>
 <p>至此，我们已经通过 OverlayFS 和 chroot 实现了一个简易的容器</p>
+
 
 
 

@@ -14,12 +14,14 @@ struct WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { slice: &amp;amp;&amp;#39;t mut 
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">trait</span><span class="w"> </span><span class="n">Foo</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">type</span> <span class="nc">Bar</span><span class="o">&lt;</span><span class="na">&#39;a</span><span class="o">&gt;</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div>
 </blockquote>
 <p>简单说就是能在关联类型上定义类型或生命周期。</p>
 <p>假设现在需要实现一个 mutable 的滑动窗口迭代器，不用 GAT，只用标准库里的 <code>Iterator</code> 可能会这么写：</p>
+
 
 
 
@@ -46,6 +48,7 @@ struct WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { slice: &amp;amp;&amp;#39;t mut 
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">error: lifetime may not live long enough
 </span></span><span class="line"><span class="cl">   |
 </span></span><span class="line"><span class="cl">7  | impl&lt;&#39;t, T&gt; Iterator for WindowsMut&lt;&#39;t, T&gt; {
@@ -62,6 +65,7 @@ struct WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { slice: &amp;amp;&amp;#39;t mut 
 <p><code>'t</code> 是 <code>WindowsMut</code> 的生命周期，<code>'a</code> 是 <code>&amp;mut WindowsMut</code> 的生命周期。通常不会让 reference 的生命周期比 owned data 还长（即 <code>'a &gt;= 't</code> 是不合理的）。</p>
 <h2 id="使用-gat">使用 GAT</h2>
 <p>要解决上面编译错误的问题，只能缩短返回的引用的生命周期，这时候就需要用到 GAT：</p>
+
 
 
 
@@ -85,6 +89,7 @@ struct WindowsMut&amp;lt;&amp;#39;t, T&amp;gt; { slice: &amp;amp;&amp;#39;t mut 
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div>
 <p>测试：</p>
+
 
 
 

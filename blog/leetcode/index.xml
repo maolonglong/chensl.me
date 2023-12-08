@@ -29,6 +29,7 @@ Pull Request GitHub 简单的使用就不赘述了，这篇主要分享一下我
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 安装 cz-cli (前提得先装好 node.js)</span>
 </span></span><span class="line"><span class="cl">npm i -g commitizen cz-conventional-changelog
 </span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;{ &#34;path&#34;: &#34;cz-conventional-changelog&#34; }&#39;</span> &gt; ~/.czrc
@@ -37,6 +38,7 @@ Pull Request GitHub 简单的使用就不赘述了，这篇主要分享一下我
 </span></span><span class="line"><span class="cl">git add .
 </span></span><span class="line"><span class="cl">git cz</span></span></code></pre></div>
 <p>没人不喜欢这样清晰的 commits:</p>
+
 
 
 

@@ -5,6 +5,7 @@ $ go version go version go1.17.13 darwin/arm64 $ go mod tidy example.com/... imp
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go version
 </span></span><span class="line"><span class="cl">go version go1.17.13 darwin/arm64
 </span></span><span class="line"><span class="cl">$ go mod tidy
@@ -37,8 +38,10 @@ $ go version go version go1.17.13 darwin/arm64 $ go mod tidy example.com/... imp
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go mod tidy -compat<span class="o">=</span>1.17</span></span></code></pre></div>
 <p>没有错误提示，看起来一切正常。但是当我尝试着编译时，它又开始「搞事情」：</p>
+
 
 
 
@@ -54,6 +57,7 @@ $ go version go version go1.17.13 darwin/arm64 $ go mod tidy example.com/... imp
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">ambiguous import: found package github.com/antlr/antlr4/runtime/Go/antlr in multiple modules:
 </span></span><span class="line"><span class="cl">github.com/antlr/antlr4 v0.0.0-20200503195918-621b933c7a7f (/Users/xxx/go/pkg/mod/github.com/antlr/antlr4@v0.0.0-20200503195918-621b933c7a7f/runtime/Go/antlr)
 </span></span><span class="line"><span class="cl">github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 (/Users/xxx/go/pkg/mod/github.com/antlr/antlr4/runtime/!go/antlr@v1.4.10)</span></span></code></pre></div>
@@ -64,9 +68,11 @@ $ go version go version go1.17.13 darwin/arm64 $ go mod tidy example.com/... imp
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go mod graph <span class="p">|</span> egrep <span class="s2">&#34;cel-go|antlr&#34;</span> <span class="p">|</span> modgraphviz <span class="p">|</span> dot -Tsvg -o mod-graph.svg</span></span></code></pre></div>
 <p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202212172136455.svg" alt=""></p>
 <p>从图表中很容易发现根本原因是 dep2，dep3 分别依赖 cel-go 的 v0.9.0 和 v0.5.1。<a href="https://go.dev/ref/mod#minimal-version-selection">MVS</a> 选择了 v0.9.0，实际上我们并没有使用 <a href="mailto:cel-go@v0.9.0">cel-go@v0.9.0</a> 相关的代码，所以 <strong>最终解决方法</strong>：</p>
+
 
 
 
@@ -90,6 +96,7 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/jemalloc/jemalloc.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> jemalloc
 </span></span><span class="line"><span class="cl">git checkout 5.3.0
 </span></span><span class="line"><span class="cl">./autogen.sh --with-jemalloc-prefix<span class="o">=</span>je_ --with-malloc-conf<span class="o">=</span><span class="s1">&#39;background_thread:true,metadata_thp:auto&#39;</span>
@@ -97,6 +104,7 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 </span></span><span class="line"><span class="cl">sudo make install <span class="c1"># 通过 sudo make uninstall 可以卸载</span></span></span></code></pre></div>
 <h2 id="通过-cgo-调用">通过 cgo 调用</h2>
 <p>简单封装一下</p>
+
 
 
 
@@ -153,11 +161,13 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">node</span> <span class="kd">struct</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">	<span class="nx">val</span>  <span class="kt">int</span>
 </span></span><span class="line"><span class="cl">	<span class="nx">next</span> <span class="o">*</span><span class="nx">node</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>jemalloc 版本</p>
+
 
 
 
@@ -186,6 +196,7 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//go:build !jemalloc
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>
 </span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">newNode</span><span class="p">(</span><span class="nx">val</span> <span class="kt">int</span><span class="p">)</span> <span class="o">*</span><span class="nx">node</span> <span class="p">{</span>
@@ -194,6 +205,7 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">freeNode</span><span class="p">(</span><span class="nx">n</span> <span class="o">*</span><span class="nx">node</span><span class="p">)</span> <span class="p">{}</span></span></span></code></pre></div>
 <p>主函数</p>
+
 
 
 
@@ -259,6 +271,7 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run .
 </span></span><span class="line"><span class="cl">node: <span class="m">0</span>
 </span></span><span class="line"><span class="cl">...
@@ -281,6 +294,7 @@ git clone https://github.com/jemalloc/jemalloc.git &amp;amp;&amp;amp; cd jemallo
 ]]></content:encoded></item><item><title>用 Docker 解决单元测试外部依赖</title><link>https://chensl.me/dockertest/</link><pubDate>Sun, 01 May 2022 15:20:06 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/dockertest/</guid><description>搬砖时，写的大多是和数据库交互的 API 服务，当我厌倦了用 Postman 手工测试，尝试开始写一些单元测试，发现并不顺利。在 GitHub 上看到过几个项目是用 sqlmock。它的原理是实现了 database/sql 里的接口，然后单测中用正则表达式判断预期的 SQL 语句和实际执行的 SQL 语句是否匹配：
 func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err != nil { t.Fatalf(&amp;#34;an error &amp;#39;%s&amp;#39; was not expected when opening a stub database connection&amp;#34;, err) } defer db.Close() mock.ExpectBegin() mock.ExpectExec(&amp;#34;UPDATE products&amp;#34;).WillReturnResult(sqlmock.NewResult(1, 1)) mock.ExpectExec(&amp;#34;INSERT INTO product_viewers&amp;#34;).WithArgs(2, 3).WillReturnResult(sqlmock.NewResult(1, 1)) mock.ExpectCommit() // now we execute our method if err = recordStats(db, 2, 3); err != nil { t.</description><content:encoded><![CDATA[<p>搬砖时，写的大多是和数据库交互的 API 服务，当我厌倦了用 Postman 手工测试，尝试开始写一些单元测试，发现并不顺利。在 GitHub 上看到过几个项目是用 <a href="https://github.com/DATA-DOG/go-sqlmock">sqlmock</a>。它的原理是实现了 <code>database/sql</code> 里的接口，然后单测中用正则表达式判断预期的 SQL 语句和实际执行的 SQL 语句是否匹配：</p>
 <!-- more -->
+
 
 
 
@@ -354,6 +368,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">DEMO</span><span class="o">=</span><span class="nv">$GOPATH</span>/src/go.chensl.me/dockertest-demo
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">mkdir -p <span class="nv">$DEMO</span>
@@ -366,6 +381,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 </span></span><span class="line"><span class="cl">go get github.com/ory/dockertest/v3
 </span></span><span class="line"><span class="cl">go get github.com/stretchr/testify</span></span></code></pre></div>
 <p>提前预览一下项目结构：</p>
+
 
 
 
@@ -393,7 +409,9 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">migrate create -ext sql -dir migrations -tz<span class="o">=</span>Local init</span></span></code></pre></div>
+
 
 
 
@@ -408,8 +426,10 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">users</span><span class="o">`</span><span class="p">;</span></span></span></code></pre></div>
 <p>对应的 Go 结构体：</p>
+
 
 
 
@@ -422,6 +442,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 </span></span><span class="line"><span class="cl">	<span class="nx">Name</span> <span class="kt">string</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>然后是这次需要测试的方法：</p>
+
 
 
 
@@ -458,6 +479,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="testinstance">TestInstance</h3>
 <p>简单封装一下 dockertest 和 sqlx（借鉴了 <a href="https://github.com/google/exposure-notifications-server/blob/9b73ca040965e3177db3c36df211a275bf6dcfa6/pkg/database/database_util.go#L69">google/exposure-notifications-server</a> 的代码）</p>
+
 
 
 
@@ -580,6 +602,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
@@ -597,6 +620,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="最终效果">最终效果</h3>
 <p>🎉 几乎和普通单元测试没有区别</p>
+
 
 
 
@@ -639,6 +663,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">go <span class="nb">test</span> -v -count<span class="o">=</span><span class="m">1</span> ./...
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="nv">SKIP_DATABASE_TESTS</span><span class="o">=</span><span class="m">1</span> go <span class="nb">test</span> -v -count<span class="o">=</span><span class="m">1</span> ./...</span></span></code></pre></div>
@@ -675,6 +700,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Settings</span> <span class="kd">struct</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">Name</span>          <span class="kt">string</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">MaxRequests</span>   <span class="kt">uint32</span>
@@ -690,6 +716,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 <li><code>ReadyToTrip</code>: 通过计数器的信息判断是否需要熔断，默认连续失败 5 次后熔断</li>
 <li><code>OnStateChange</code>: 状态变化时的回调</li>
 </ul>
+
 
 
 
@@ -738,6 +765,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run main.go
 </span></span><span class="line"><span class="cl">2021/09/16 15:23:24 result: &lt;nil&gt;, err: some error
 </span></span><span class="line"><span class="cl">2021/09/16 15:23:25 result: &lt;nil&gt;, err: some error
@@ -750,6 +778,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 </span></span><span class="line"><span class="cl">......</span></span></code></pre></div>
 <h3 id="execute-流程">Execute 流程</h3>
 <p>简单过一遍 <code>Execute()</code> 的流程，详细代码可以看 <a href="https://github.com/sony/gobreaker/blob/master/gobreaker.go">gobreader.go</a>，不到 400 行，实现的非常简洁。</p>
+
 
 
 
@@ -782,6 +811,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 <p>从上面的源码，我们可以看出，执行过程只是简单地通过 <code>err == nil</code> 判断成功，假设业务的逻辑很复杂，需要加入自定义的判断，可以用 <code>TwoStepCircuitBreaker</code>。</p>
 <h3 id="两阶段熔断">两阶段熔断</h3>
 <p>和普通熔断器的使用差不多，<code>Allow()</code> 方法只是调用了 <code>beforeRequest()</code>，然后返回回调函数 <code>done(success bool)</code> 和错误信息，通过回调函数我们能把操作成功与否告诉熔断器。</p>
+
 
 
 
@@ -833,6 +863,7 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run main.go
 </span></span><span class="line"><span class="cl">2021/09/16 16:26:49 failure
 </span></span><span class="line"><span class="cl">2021/09/16 16:26:50 failure
@@ -860,6 +891,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 <!-- more -->
 <p>bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（<a href="https://github.com/valyala/fasthttp">fasthttp</a>, <a href="https://github.com/valyala/quicktemplate">quicktemplate</a>, <a href="https://github.com/panjf2000/gnet">gnet</a>）</p>
 <p>什么是字节池？在读取文件或者从 <code>io.Reader</code> 获取数据时，一般都需要创建一个字节切片 <code>[]byte</code> 作为缓冲，如果对于这种方法有大量的调用，就会频繁地创建 <code>[]byte</code> ，这需要太多内存的申请和释放，增大了 GC 的压力。这个时候“池化”技术就派上了用场，通过复用对象以减少内存的分配和释放。</p>
+
 
 
 
@@ -897,6 +929,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">BytePoolCap</span> <span class="kd">struct</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">c</span>    <span class="kd">chan</span> <span class="p">[]</span><span class="kt">byte</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">w</span>    <span class="kt">int</span>
@@ -916,6 +949,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 <li><code>wcap</code> 表示创建字节切片的 <code>cap</code></li>
 </ul>
 <p><code>Get()</code> 方法, 从池中获取字节切片：</p>
+
 
 
 
@@ -941,6 +975,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">bp</span> <span class="o">*</span><span class="nx">BytePoolCap</span><span class="p">)</span> <span class="nf">Put</span><span class="p">(</span><span class="nx">b</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">select</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nx">bp</span><span class="p">.</span><span class="nx">c</span> <span class="o">&lt;-</span> <span class="nx">b</span><span class="p">:</span>
@@ -950,6 +985,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>使用示例</p>
+
 
 
 
@@ -971,6 +1007,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">pool</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">sync</span><span class="p">.</span><span class="nx">Pool</span><span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">New</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
@@ -987,6 +1024,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 <h2 id="bytebufferpool">ByteBufferPool</h2>
 <p>ByteBufferPool 中实现了一个类似 <code>bytes.Buffer</code> 的结构（<a href="https://github.com/valyala/bytebufferpool/blob/master/bytebuffer.go">ByteBuffer</a>），它封装了一些对 <code>[]byte</code> 的复杂操作，从 benchmark 的结果可以看出它的性能比 <code>bytes.Buffer</code> 略高一些，但它不是字节池的重点，所以就不贴代码了。</p>
 <p>ByteBufferPool 是怎么解决上述问题的？</p>
+
 
 
 
@@ -1034,6 +1072,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Pool</span><span class="p">)</span> <span class="nf">Put</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">ByteBuffer</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="c1">// len 所在 “区间” 的下标
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">idx</span> <span class="o">:=</span> <span class="nf">index</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">B</span><span class="p">))</span>
@@ -1067,6 +1106,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">idx</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>划分区间的目的就是方便统计出程序近一段时间内<strong>最经常使用</strong>多大的 buf，从而决定 <code>defaultSize</code> 和 <code>maxSize</code>，这一块的逻辑主要在 <code>calibrate()</code> ：</p>
+
 
 
 
@@ -1135,6 +1175,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go <span class="nb">test</span> -bench<span class="o">=</span>Pool -benchmem
 </span></span><span class="line"><span class="cl">goos: linux
 </span></span><span class="line"><span class="cl">goarch: amd64
@@ -1156,6 +1197,7 @@ structure pointer_t {ptr: pointer to node_t, count: unsigned integer} structure 
 <h2 id="伪代码">伪代码</h2>
 <p>论文中 lock-free queue 算法的伪代码：</p>
 <p>正如论文的题目描述的，它非常简单，代码量很少。主要思路就是使用 <a href="https://zh.wikipedia.org/wiki/%E6%AF%94%E8%BE%83%E5%B9%B6%E4%BA%A4%E6%8D%A2">CAS</a> 操作队列的头指针和尾指针，以实现线程安全。</p>
+
 
 
 
@@ -1220,6 +1262,7 @@ structure pointer_t {ptr: pointer to node_t, count: unsigned integer} structure 
 </span></span><span class="line"><span class="cl">D20:   return TRUE                   // Queue was not empty, dequeue succeeded</span></span></code></pre></div>
 <h2 id="实现">实现</h2>
 <p>简单起见，不考虑 <a href="https://en.wikipedia.org/wiki/ABA_problem">ABA</a> 问题，所以没有实现带版本号的 CAS</p>
+
 
 
 

@@ -15,6 +15,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
@@ -47,6 +48,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">BytePoolCap</span> <span class="kd">struct</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">c</span>    <span class="kd">chan</span> <span class="p">[]</span><span class="kt">byte</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">w</span>    <span class="kt">int</span>
@@ -66,6 +68,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 <li><code>wcap</code> 表示创建字节切片的 <code>cap</code></li>
 </ul>
 <p><code>Get()</code> 方法, 从池中获取字节切片：</p>
+
 
 
 
@@ -91,6 +94,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">bp</span> <span class="o">*</span><span class="nx">BytePoolCap</span><span class="p">)</span> <span class="nf">Put</span><span class="p">(</span><span class="nx">b</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">select</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nx">bp</span><span class="p">.</span><span class="nx">c</span> <span class="o">&lt;-</span> <span class="nx">b</span><span class="p">:</span>
@@ -100,6 +104,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>使用示例</p>
+
 
 
 
@@ -121,6 +126,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">pool</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">sync</span><span class="p">.</span><span class="nx">Pool</span><span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="nx">New</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
@@ -137,6 +143,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 <h2 id="bytebufferpool">ByteBufferPool</h2>
 <p>ByteBufferPool 中实现了一个类似 <code>bytes.Buffer</code> 的结构（<a href="https://github.com/valyala/bytebufferpool/blob/master/bytebuffer.go">ByteBuffer</a>），它封装了一些对 <code>[]byte</code> 的复杂操作，从 benchmark 的结果可以看出它的性能比 <code>bytes.Buffer</code> 略高一些，但它不是字节池的重点，所以就不贴代码了。</p>
 <p>ByteBufferPool 是怎么解决上述问题的？</p>
+
 
 
 
@@ -184,6 +191,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Pool</span><span class="p">)</span> <span class="nf">Put</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">ByteBuffer</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">    <span class="c1">// len 所在 “区间” 的下标
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">idx</span> <span class="o">:=</span> <span class="nf">index</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">B</span><span class="p">))</span>
@@ -217,6 +225,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">idx</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>划分区间的目的就是方便统计出程序近一段时间内<strong>最经常使用</strong>多大的 buf，从而决定 <code>defaultSize</code> 和 <code>maxSize</code>，这一块的逻辑主要在 <code>calibrate()</code> ：</p>
+
 
 
 
@@ -280,6 +289,7 @@ package main import ( &amp;#34;fmt&amp;#34; &amp;#34;io&amp;#34; &amp;#34;log&am
 <h2 id="性能测试">性能测试</h2>
 <p><a href="https://github.com/MaoLongLong/bytebufferpool/blob/main/pool_bench_test.go">pool_bench_test.go</a></p>
 <p>从上往下，分别为 ByteBufferPool, MinIO BytePoolCap 和普通 <code>[]byte</code></p>
+
 
 
 

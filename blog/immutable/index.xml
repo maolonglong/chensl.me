@@ -48,12 +48,14 @@ $$</p>
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-py" data-lang="py"><span class="line"><span class="cl"><span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span></span></span></code></pre></div>
 <p>但是这个表达式给不熟悉编程的人看，他们的想法可能是：“x 都加 1 了怎么还会等于 x？难道 1 加 1 等于 1？”</p>
 <p>**大多数人并不会想到，x 是个变量，x 是可变的，**这有些反直觉。</p>
 <p>另外，可变变量在并发编程中，也会引出并发读写问题，我们通常需要通过上锁，或者原子操作去解决。</p>
 <p>在大多数函数式编程中，变量都是不可变的，它只是某个值的名称而已：</p>
 <p>单个数值：</p>
+
 
 
 
@@ -87,6 +89,7 @@ $$</p>
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">let</span> <span class="n">x</span> <span class="o">=</span> <span class="o">[</span><span class="n">1</span><span class="o">;</span> <span class="n">2</span><span class="o">;</span> <span class="n">3</span><span class="o">]</span>
 </span></span><span class="line"><span class="cl"><span class="c">(* val x : int list = [1; 2; 3] *)</span>
 </span></span><span class="line"><span class="cl">
@@ -100,6 +103,7 @@ $$</p>
 </span></span><span class="line"><span class="cl"><span class="c">(* - : int list = [0; 2; 3] *)</span></span></span></code></pre></div>
 <p>好。。。把这个思想应用到 Go，碰巧最近看到了一个并发 map 的<a href="https://pkg.go.dev/sync/atomic#example-Value-ReadMostly">例子</a>：</p>
 <p>这种实现的 map 是不可变的（不可变、只读，自然就是并发安全的），更新操作必须 clone 一个全新的 map，好处就是读操作<strong>永远</strong>不会被阻塞</p>
+
 
 
 
@@ -142,11 +146,13 @@ $$</p>
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">type</span> <span class="k">&#39;</span><span class="n">a</span> <span class="n">option</span> <span class="o">=</span>
 </span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="nc">None</span>
 </span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="nc">Some</span> <span class="k">of</span> <span class="k">&#39;</span><span class="n">a</span></span></span></code></pre></div>
 <p>它是用来取代某些语言里的 <code>null</code>, <code>undefined</code>, <code>nil</code> &hellip; 适合用来表示一些不存在的，空的值。</p>
 <p>例如 OCaml 标准库的 <code>List.hd</code> 是这样实现的：</p>
+
 
 
 
@@ -159,6 +165,7 @@ $$</p>
 </span></span><span class="line"><span class="cl">    <span class="bp">[]</span> <span class="o">-&gt;</span> <span class="n">failwith</span> <span class="s2">&#34;hd&#34;</span>
 </span></span><span class="line"><span class="cl">  <span class="o">|</span> <span class="n">a</span><span class="o">::_</span> <span class="o">-&gt;</span> <span class="n">a</span></span></span></code></pre></div>
 <p>如果 list 为空，它会抛出一个异常，我们用 <code>option</code> 改造一下它：</p>
+
 
 
 
@@ -180,6 +187,7 @@ $$</p>
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="k">match</span> <span class="n">hd</span> <span class="bp">[]</span> <span class="k">with</span>
 </span></span><span class="line"><span class="cl"><span class="o">|</span> <span class="nc">None</span> <span class="o">-&gt;</span> <span class="s2">&#34;empty list !!!&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="o">|</span> <span class="nc">Some</span> <span class="n">i</span> <span class="o">-&gt;</span> <span class="n">string_of_int</span> <span class="n">i</span></span></span></code></pre></div>
@@ -192,11 +200,13 @@ $$</p>
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="cl"><span class="c">(* 比如 int 加法，接收两个 int，返回它们相加的结果 *)</span>
 </span></span><span class="line"><span class="cl"><span class="nn">Stdlib</span><span class="p">.</span><span class="o">(</span> <span class="o">+</span> <span class="o">);;</span>
 </span></span><span class="line"><span class="cl"><span class="c">(* - : int -&gt; int -&gt; int = &lt;fun&gt; *)</span></span></span></code></pre></div>
 <p>在其他语言中，同样的函数可能是这样定义的：<code>(int, int) -&gt; int</code>，而 OCaml 中是 <code>int -&gt; int -&gt; int</code></p>
 <p>直到学习了柯里化 (currying)，一切就都解释得通了。首先，函数参数可以只传一部分，或者说其实所有的函数，都只有一个参数：</p>
+
 
 
 
@@ -213,6 +223,7 @@ $$</p>
 <li><code>int -&gt; (int -&gt; (int -&gt; int))</code></li>
 </ul>
 <p>实际使用中，可以利用柯里化，对简单函数进行组合，实现复杂功能，例如实现 list 求和：</p>
+
 
 
 

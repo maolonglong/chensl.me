@@ -11,6 +11,7 @@ structure pointer_t {ptr: pointer to node_t, count: unsigned integer} structure 
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">structure pointer_t {ptr: pointer to node_t, count: unsigned integer}
 </span></span><span class="line"><span class="cl">structure node_t {value: data type, next: pointer_t}
 </span></span><span class="line"><span class="cl">structure queue_t {Head: pointer_t, Tail: pointer_t}
@@ -70,6 +71,7 @@ structure pointer_t {ptr: pointer to node_t, count: unsigned integer} structure 
 </span></span><span class="line"><span class="cl">D20:   return TRUE                   // Queue was not empty, dequeue succeeded</span></span></code></pre></div>
 <h2 id="实现">实现</h2>
 <p>简单起见，不考虑 <a href="https://en.wikipedia.org/wiki/ABA_problem">ABA</a> 问题，所以没有实现带版本号的 CAS</p>
+
 
 
 
@@ -169,9 +171,11 @@ x = 1, y = 1（先执行了 a = 1 , b = 1 再执行 x = b 和 y = a） x = 0, y 
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">1</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">2</span><span class="p">;</span></span></span></code></pre></div>
 <p>一定不会重排的代码（因为第 2 行依赖第 1 行的结果）：</p>
+
 
 
 
@@ -186,6 +190,7 @@ x = 1, y = 1（先执行了 a = 1 , b = 1 再执行 x = b 和 y = a） x = 0, y 
 <li>x = 0, y = 1（先执行了 <code>a = 1</code> , <code>x = b</code> 再执行 <code>b = 1</code> 和 <code>y = a</code>）</li>
 <li>x = 1, y = 0（先执行了 <code>b = 1</code> , <code>y = a</code> 再执行 <code>a = 1</code> 和 <code>x = b</code>）</li>
 </ul>
+
 
 
 
@@ -233,6 +238,7 @@ x = 1, y = 1（先执行了 a = 1 , b = 1 再执行 x = b 和 y = a） x = 0, y 
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Main</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
@@ -247,6 +253,7 @@ x = 1, y = 1（先执行了 a = 1 , b = 1 再执行 x = b 和 y = a） x = 0, y 
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div>
 <p>执行结果应该是符合我们预期的，由于主线程修改 <code>flag = false</code> ，所以终止了另一个线程中的死循环。</p>
 <p>但是如果在 <code>flag = false</code> 前，让主线程睡一会：</p>
+
 
 
 
@@ -272,6 +279,7 @@ x = 1, y = 1（先执行了 a = 1 , b = 1 再执行 x = b 和 y = a） x = 0, y 
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Main</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">volatile</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
@@ -290,6 +298,7 @@ x = 1, y = 1（先执行了 a = 1 , b = 1 再执行 x = b 和 y = a） x = 0, y 
 public class Main { static class Test { private final ReentrantLock lock = new ReentrantLock(); public void f1() { lock.lock(); try { System.out.println(Thread.currentThread().getName()); f2(); } finally { lock.unlock(); } } public void f2() { lock.lock(); try { System.out.println(Thread.currentThread().getName()); } finally { lock.unlock(); } } } public static void main(String[] args) { Test test = new Test(); test.f1(); } } 重入锁 VS synchronized 重入锁可以完全替代 synchronized 关键字。在 JDK 5.</description><content:encoded><![CDATA[<h2 id="什么是重入">什么是“重入”</h2>
 <p>Re-Entrant-Lock 翻译成重入锁也是非常贴切的。之所以这么叫，那是因为这种锁是可以反复进入的。当然，这里的反复<strong>仅仅局限于一个线程</strong>，观察下面的代码， <code>f1</code> 锁住 <code>lock</code> 之后， <code>f2</code> 依然能继续获取到 <code>lock</code> 并执行，因为它们都属于主线程。</p>
 <!-- more -->
+
 
 
 
@@ -334,6 +343,7 @@ public class Main { static class Test { private final ReentrantLock lock = new R
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Main</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
@@ -367,6 +377,7 @@ public class Main { static class Test { private final ReentrantLock lock = new R
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Main</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
@@ -394,6 +405,7 @@ public class Main { static class Test { private final ReentrantLock lock = new R
 <h2 id="响应中断">响应中断</h2>
 <p>对于 <code>synchronized</code> 来说，如果一个线程在等待锁，那么结果只有两种情况，要么它获得这把锁继续执行，要么它就保持等待。而使用重入锁，则提供另外一种可能，那就是线程可以被中断。</p>
 <p>模拟一个死锁的场景：两个线程都需要获取 <code>lock1</code>, <code>lock2</code> 两把锁，线程 <code>t1</code> 先获取了 <code>lock1</code> ，线程 <code>t2</code> 先获取了 <code>lock2</code> ，然后它们就开始无限等待对方让出锁。但是这个时候，如果中断了线程 <code>t2</code> ，并且释放 <code>t2</code> 占有的锁， <code>t1</code> 就能正常运行：</p>
+
 
 
 
@@ -470,6 +482,7 @@ public class Main { static class Test { private final ReentrantLock lock = new R
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Main</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">ReentrantLock</span><span class="w"> </span><span class="n">lock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ReentrantLock</span><span class="p">();</span><span class="w">
@@ -505,8 +518,10 @@ public class Main { static class Test { private final ReentrantLock lock = new R
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="nf">ReentrantLock</span><span class="p">(</span><span class="kt">boolean</span><span class="w"> </span><span class="n">fair</span><span class="p">)</span></span></span></code></pre></div>
 <p>当参数 fair 为 true 时，表示锁是公平的。公平锁看起来很优美，但是要实现公平锁必然要求系统维护一个<strong>有序队列</strong>，因此公平锁的实现成本比较高，性能相对也非常低下，因此，<strong>默认情况下，锁是非公平的</strong>。如果没有特别的需求，也不需要使用公平锁。公平锁和非公平锁在线程调度表现上也是非常不一样的。下面的代码可以很好地突出公平锁的特点：</p>
+
 
 
 
@@ -543,6 +558,7 @@ public class Main { static class Test { private final ReentrantLock lock = new R
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">...
 </span></span><span class="line"><span class="cl">Thread-0 获得锁
 </span></span><span class="line"><span class="cl">Thread-1 获得锁
@@ -561,6 +577,7 @@ public class Main { static class Test { private final ReentrantLock lock = new R
 </span></span><span class="line"><span class="cl">Thread-0 获得锁
 </span></span><span class="line"><span class="cl">...</span></span></code></pre></div>
 <p>但是换成非公平锁之后，会发现连续多次都是同一个线程获取锁。</p>
+
 
 
 

@@ -8,9 +8,11 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span></span></span></code></pre></div>
 <h3 id="无穷大">无穷大</h3>
+
 
 
 
@@ -20,6 +22,7 @@
 <!-- more -->
 <h3 id="max-和-min-慎用">max 和 min (慎用)</h3>
 <p>如果 <code>max</code>  或 <code>min</code>  函数的两个参数类型不同，就像下面的 <code>int</code>  和 <code>long long</code> ，是会报错的，这个时候加上一个宏函数就能解决。</p>
+
 
 
 
@@ -46,9 +49,11 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Hello World!&#34;</span><span class="p">)</span></span></span></code></pre></div>
 <h3 id="002-打印沙漏">002 打印沙漏</h3>
 <p>可以把漏斗看成两个三角形，分开输出</p>
+
 
 
 
@@ -89,6 +94,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -113,6 +119,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -124,6 +131,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="005-考试座位号">005 考试座位号</h3>
 <p>题目意思说白了就是需要根据<code>试机座位号</code>找到对应的另外两个信息，注意一下数据大小，需要开到<code>long long</code>，其他还是挺好处理的。</p>
+
 
 
 
@@ -152,6 +160,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="006-连续因子">006 连续因子</h3>
 <p>pta 一般没那么容易超时，直接暴力枚举连续因子就好。</p>
+
 
 
 
@@ -193,6 +202,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -211,6 +221,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="008-求整数段和">008 求整数段和</h3>
 <p>输出格式控制还是 printf 方便些。这题有一个小坑：既是最后一个数，也是这一行的第五个数，别一次性换两行了。</p>
+
 
 
 
@@ -236,6 +247,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="009-n-个数求和">009 N 个数求和</h3>
 <p>有点麻烦，模拟分数加法，需要通分，也就是需要找最小公倍数（欧几里得算法）</p>
+
 
 
 
@@ -280,6 +292,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
 </span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
@@ -296,6 +309,7 @@
 <h2 id="l1-011--020">L1 011 ~ 020</h2>
 <h3 id="011-a-b">011 A-B</h3>
 <p>判断 a 中某个字符是否在 b 中出现过（判断 xxx 是否出现，基本上就是用 set），否的话输出。</p>
+
 
 
 
@@ -326,6 +340,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -337,6 +352,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="013-计算阶乘和">013 计算阶乘和</h3>
 <p>同理，这是 L1，需要啥记忆化搜索或者 dp 嘛。</p>
+
 
 
 
@@ -363,9 +379,11 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;This is a simple problem.&#39;</span><span class="p">)</span></span></span></code></pre></div>
 <h3 id="015-和奥巴马一起画方块">015 和奥巴马一起画方块</h3>
 <p>有点坑就是计算行数的时候需要四舍五入（c++的 round 函数）</p>
+
 
 
 
@@ -386,6 +404,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="016-查验身份证">016 查验身份证</h3>
 <p>水题</p>
+
 
 
 
@@ -423,6 +442,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -449,6 +469,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -469,6 +490,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="019-谁先倒">019 谁先倒</h3>
 <p>思路：谁输了就把谁的酒量减 1，最后谁的酒量变成负数，也就是谁倒了。</p>
+
 
 
 
@@ -501,6 +523,7 @@
 <h3 id="020-帅到没朋友">020 帅到没朋友</h3>
 <p>别一看完题目就想到并查集，这题还用不上。（其实这题就是水题，别想复杂了）
 思路：如果一个朋友圈人数超过一个人，也就代表着这些人都是“有朋友”的，用数组标记一下。相反，如果朋友圈就一个人（孤身一人的朋友圈。。。）就不用给标记。最后就是注意一下：<strong>同一个人可以被查询多次，但只输出一次。</strong></p>
+
 
 
 
@@ -545,10 +568,12 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;I&#39;m gonna WIN!&#34;</span><span class="p">)</span></span></span></code></pre></div>
 <h3 id="022-奇偶分家">022 奇偶分家</h3>
 <p>顺便提一下 <code>x &amp; 1</code>  可以用来判断奇数，应该是会比 <code>x % 2</code>  快一点</p>
+
 
 
 
@@ -572,6 +597,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="023-输出-gplt">023 输出 GPLT</h3>
 <p>水题</p>
+
 
 
 
@@ -621,6 +647,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -632,6 +659,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="025-正整数-ab">025 正整数 A+B</h3>
 <p>比较基础的字符串处理，用了 <code>find</code>  查找，和 <code>substr</code>  切割字符串。</p>
+
 
 
 
@@ -678,6 +706,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;&#34;&#34;I
 </span></span></span><span class="line"><span class="cl"><span class="s2">
 </span></span></span><span class="line"><span class="cl"><span class="s2">L
@@ -691,6 +720,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="s2">T&#34;&#34;&#34;</span><span class="p">)</span></span></span></code></pre></div>
 <h3 id="027-出租">027 出租</h3>
 <p>天梯赛最爱的恶心字符串处理</p>
+
 
 
 
@@ -733,6 +763,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -761,6 +792,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -772,6 +804,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="030-一帮一">030 一帮一</h3>
 <p>双指针法</p>
+
 
 
 
@@ -809,6 +842,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -839,6 +873,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -862,6 +897,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="033-出生年">033 出生年</h3>
 <p>尤其注意位数不足 4 位的年</p>
+
 
 
 
@@ -901,6 +937,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -931,6 +968,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -956,6 +994,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -966,6 +1005,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="036-a-除以-b">036 A 除以 B</h3>
+
 
 
 
@@ -994,10 +1034,12 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;&#34;&#34;Hello World
 </span></span></span><span class="line"><span class="cl"><span class="s2">Hello New World&#34;&#34;&#34;</span><span class="p">)</span></span></span></code></pre></div>
 <h3 id="039-古风排版">039 古风排版</h3>
 <p>这种题目思路很多种，我是把一行字符串先读入，然后每 n 个放进 vector，最后旋转 90° 输出 vector</p>
+
 
 
 
@@ -1035,6 +1077,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
 </span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
@@ -1063,6 +1106,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -1079,6 +1123,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>刚好看到了自己<strong>去年</strong>做这道题写的代码，简直就是 250：</p>
+
 
 
 
@@ -1126,6 +1171,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
 </span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
@@ -1137,6 +1183,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="043-阅览室">043 阅览室</h3>
 <p>题目比较坑，如果重复借同一本书，是按照最后一次的时间算。</p>
+
 
 
 
@@ -1171,6 +1218,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -1197,11 +1245,13 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">name</span> <span class="o">=</span> <span class="nb">input</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Hello&#34;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></span></span></code></pre></div>
 <h3 id="046-整除光棍">046 整除光棍</h3>
 <p>既然题目都描述了 <code>s</code>  是一个非常大的数，那就应该想到大数运算，题目要求就是需要找到一个 111111&hellip;&hellip; 能够被 <code>x</code>  整除，也就是下面的计算，用代码模拟这个过程就好了。
 <img src="https://cdn.nlark.com/yuque/0/2020/png/2775391/1604481489143-5fd47ee0-0886-4e3d-b99a-fa7eddbbdcec.png#align=left&amp;display=inline&amp;height=577&amp;margin=%5Bobject%20Object%5D&amp;name=image.png&amp;originHeight=1153&amp;originWidth=2246&amp;size=158175&amp;status=done&amp;style=none&amp;width=1123" alt="image.png"></p>
+
 
 
 
@@ -1234,6 +1284,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -1251,6 +1302,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="048-矩阵-a-乘以-b">048 矩阵 A 乘以 B</h3>
+
 
 
 
@@ -1293,6 +1345,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="049-天梯赛座位分配">049 天梯赛座位分配</h3>
+
 
 
 
@@ -1341,6 +1394,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;cmath&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stack&gt;</span><span class="cp">
@@ -1371,6 +1425,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
 </span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
@@ -1386,9 +1441,11 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;&#34;&#34;2018
 </span></span></span><span class="line"><span class="cl"><span class="s2">wo3 men2 yao4 ying2 !&#34;&#34;&#34;</span><span class="p">)</span></span></span></code></pre></div>
 <h3 id="053-电子汪">053 电子汪</h3>
+
 
 
 
@@ -1407,6 +1464,7 @@
 </span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="054-福到了">054 福到了</h3>
+
 
 
 
@@ -1454,6 +1512,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -1475,6 +1534,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="056-猜数字">056 猜数字</h3>
+
 
 
 
@@ -1512,9 +1572,11 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;PTA shi3 wo3 jing1 shen2 huan4 fa1 !&#39;</span><span class="p">)</span></span></span></code></pre></div>
 <h3 id="058-6-翻了">058 6 翻了</h3>
 <p>C++ 的正则表达式我下次讲讲</p>
+
 
 
 
@@ -1534,6 +1596,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="059-敲笨钟">059 敲笨钟</h3>
 <p>正则表达式</p>
+
 
 
 
@@ -1563,6 +1626,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -1574,6 +1638,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h2 id="l1-061--064">L1 061 ~ 064</h2>
 <h3 id="061-新胖子公式">061 新胖子公式</h3>
+
 
 
 
@@ -1594,6 +1659,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="062-幸运彩票">062 幸运彩票</h3>
+
 
 
 
@@ -1621,6 +1687,7 @@
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="063-吃鱼还是吃肉">063 吃鱼还是吃肉</h3>
+
 
 
 
@@ -1666,6 +1733,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="064-估值一亿的-ai-核心代码">064 估值一亿的 AI 核心代码</h3>
 <p>正则表达式。去年参加天梯赛遇到这题，那时候还不会正则表达式，直接当成字符串处理的话又太浪费时间，所以就没做，这题得有 L2 难度了。（真的恶心 🤢）</p>
+
 
 
 
@@ -1727,6 +1795,7 @@
 <li>sum: 当的救援队总数目</li>
 <li>pre: 最短路的前驱节点</li>
 </ul>
+
 
 
 
@@ -1817,6 +1886,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -1872,6 +1942,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -1906,6 +1977,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="004-这是二叉搜索树吗">004 这是二叉搜索树吗</h3>
 <p>按照二叉搜索树的性质建树，先试试是不是二叉搜索树，再试试是不是二叉搜索树的 “镜像”，如果最后能建成就顺便输出后序遍历。</p>
+
 
 
 
@@ -1960,6 +2032,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span>
 </span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
@@ -1990,6 +2063,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="006-树的遍历">006 树的遍历</h3>
 <p>数据结构基本功</p>
+
 
 
 
@@ -2040,6 +2114,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="007-家庭房产">007 家庭房产</h3>
 <p>并查集，这题其实不难，但是真的恶心哎。</p>
+
 
 
 
@@ -2125,6 +2200,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -2167,6 +2243,7 @@
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;bits/stdc++.h&gt;</span><span class="cp">
 </span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl">
@@ -2202,6 +2279,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="010-排座位">010 排座位</h3>
 <p>朋友关系可以传递（朋友的朋友也是朋友），所以用并查集处理，敌人关系不能传递，直接用数组标记。</p>
+
 
 
 

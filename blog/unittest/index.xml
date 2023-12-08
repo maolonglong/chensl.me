@@ -6,6 +6,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestShouldUpdateStats</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
 </span></span><span class="line"><span class="cl">	<span class="nx">db</span><span class="p">,</span> <span class="nx">mock</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sqlmock</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
@@ -74,6 +75,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">DEMO</span><span class="o">=</span><span class="nv">$GOPATH</span>/src/go.chensl.me/dockertest-demo
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">mkdir -p <span class="nv">$DEMO</span>
@@ -86,6 +88,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 </span></span><span class="line"><span class="cl">go get github.com/ory/dockertest/v3
 </span></span><span class="line"><span class="cl">go get github.com/stretchr/testify</span></span></code></pre></div>
 <p>提前预览一下项目结构：</p>
+
 
 
 
@@ -113,7 +116,9 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">migrate create -ext sql -dir migrations -tz<span class="o">=</span>Local init</span></span></code></pre></div>
+
 
 
 
@@ -128,8 +133,10 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">users</span><span class="o">`</span><span class="p">;</span></span></span></code></pre></div>
 <p>对应的 Go 结构体：</p>
+
 
 
 
@@ -142,6 +149,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 </span></span><span class="line"><span class="cl">	<span class="nx">Name</span> <span class="kt">string</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>然后是这次需要测试的方法：</p>
+
 
 
 
@@ -178,6 +186,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="testinstance">TestInstance</h3>
 <p>简单封装一下 dockertest 和 sqlx（借鉴了 <a href="https://github.com/google/exposure-notifications-server/blob/9b73ca040965e3177db3c36df211a275bf6dcfa6/pkg/database/database_util.go#L69">google/exposure-notifications-server</a> 的代码）</p>
+
 
 
 
@@ -300,6 +309,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
+
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
@@ -317,6 +327,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <h3 id="最终效果">最终效果</h3>
 <p>🎉 几乎和普通单元测试没有区别</p>
+
 
 
 
@@ -354,6 +365,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 </span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">false</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
 <p>执行单元测试，加上环境变量 <code>SKIP_DATABASE_TESTS</code> 可以跳过 dockertest：</p>
+
 
 
 
