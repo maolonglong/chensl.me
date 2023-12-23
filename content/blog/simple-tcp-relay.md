@@ -2,7 +2,7 @@
 title: 用 Rust 实现一个简单的 TCP relay
 date: 2023-03-06 12:59:24
 tags:
-  - Rust
+  - rust
   - tokio
   - async
   - clap

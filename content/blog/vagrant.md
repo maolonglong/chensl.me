@@ -2,8 +2,8 @@
 title: 使用 Vagrant 搭建开发环境
 date: 2021-10-12 16:02:32
 tags:
-  - Vagrant
-  - VirtualBox
+  - vagrant
+  - virtualbox
 toc: true
 ---
 

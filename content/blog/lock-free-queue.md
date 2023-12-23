@@ -2,9 +2,9 @@
 title: 无锁队列的简单实现
 date: 2021-06-25 16:16:59
 tags:
-  - Golang
-  - 并发
-  - CAS
+  - golang
+  - concurrency
+  - cas
   - unsafe
 toc: true
 ---

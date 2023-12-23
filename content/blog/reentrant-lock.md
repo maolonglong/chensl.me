@@ -2,8 +2,8 @@
 title: 【Java 并发】重入锁（ReentrantLock）
 date: 2020-11-24 16:13:45
 tags:
-  - Java
-  - 并发
+  - java
+  - concurrency
 toc: true
 ---
 

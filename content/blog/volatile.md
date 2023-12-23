@@ -2,8 +2,8 @@
 title: 【Java 并发】volatile 关键字基本理解与使用
 date: 2020-11-24 16:15:22
 tags:
-  - Java
-  - 并发
+  - java
+  - concurrency
 toc: true
 ---
 
