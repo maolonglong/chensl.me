@@ -10,7 +10,7 @@
 git clone https://github.com/jemalloc/jemalloc.git && cd jemalloc git checkout 5.3.0 ./autogen.sh --with-jemalloc-prefix=je_ --with-malloc-conf='background_thread:true,metadata_thp:auto' make -j sudo make install # 通过 sudo make uninstall 可以卸载 通过 cgo 调用 简单封装一下
     
   "><meta name=keywords content="
-    Golang,cgo,jemalloc,
+    golang,cgo,jemalloc,memory-allocator,
   
   "><meta property="og:title" content="整活：在 Go 中手动分配内存"><meta property="og:description" content="{% note warning %} 在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言 {% endnote %}
 好早之前就看到了 Dgraph 的那篇文章（Manual Memory Management in Go using jemalloc），今天仔细读了一遍，尝试尝试 Go + jemalloc 的模式。
@@ -24,7 +24,7 @@ git clone https://github.com/jemalloc/jemalloc.git && cd jemalloc git checkout 5
 好早之前就看到了 Dgraph 的那篇文章（Manual Memory Management in Go using jemalloc），今天仔细读了一遍，尝试尝试 Go + jemalloc 的模式。
 编译安装 jemalloc 环境：Ubuntu 20.04.4 LTS on Windows 10 x86_64
 从 GitHub 上下载 jemalloc 的源码，切换到最新 release 的 tag 然后按照 INSTALL.md 操作：
-git clone https://github.com/jemalloc/jemalloc.git && cd jemalloc git checkout 5.3.0 ./autogen.sh --with-jemalloc-prefix=je_ --with-malloc-conf='background_thread:true,metadata_thp:auto' make -j sudo make install # 通过 sudo make uninstall 可以卸载 通过 cgo 调用 简单封装一下"><meta itemprop=datePublished content="2022-05-07T20:17:33+00:00"><meta itemprop=dateModified content="2022-05-07T20:17:33+00:00"><meta itemprop=wordCount content="389"><meta itemprop=keywords content="Golang,cgo,jemalloc,"><meta name=referrer content="no-referrer-when-downgrade"><link href=/simple.min.css rel=stylesheet><link href=/style.min.css rel=stylesheet><link href=/syntax.min.css rel=stylesheet></head><body><header><nav><a href=/>Home</a>
+git clone https://github.com/jemalloc/jemalloc.git && cd jemalloc git checkout 5.3.0 ./autogen.sh --with-jemalloc-prefix=je_ --with-malloc-conf='background_thread:true,metadata_thp:auto' make -j sudo make install # 通过 sudo make uninstall 可以卸载 通过 cgo 调用 简单封装一下"><meta itemprop=datePublished content="2022-05-07T20:17:33+00:00"><meta itemprop=dateModified content="2022-05-07T20:17:33+00:00"><meta itemprop=wordCount content="389"><meta itemprop=keywords content="golang,cgo,jemalloc,memory-allocator,"><meta name=referrer content="no-referrer-when-downgrade"><link href=/simple.min.css rel=stylesheet><link href=/style.min.css rel=stylesheet><link href=/syntax.min.css rel=stylesheet></head><body><header><nav><a href=/>Home</a>
 <a href=/blog/>Blog</a>
 <a href=https://chensl.me/index.xml>RSS</a></nav><h1>整活：在 Go 中手动分配内存</h1></header><main><p><i><time datetime=2022-05-07 pubdate>2022-05-07</time></i></p><content><p>{% note warning %}
 在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言
@@ -171,7 +171,8 @@ git clone https://github.com/jemalloc/jemalloc.git && cd jemalloc git checkout 5
 </span></span><span class=line><span class=cl>OffHeap: <span class=m>30</span> MiB
 </span></span><span class=line><span class=cl>After GC...
 </span></span><span class=line><span class=cl>HeapAlloc: <span class=m>92</span> KiB
-</span></span><span class=line><span class=cl>OffHeap: <span class=m>0</span> B</span></span></code></pre></div></content><p><a href=https://chensl.me/blog/golang/>#Golang</a>&nbsp;&nbsp;
+</span></span><span class=line><span class=cl>OffHeap: <span class=m>0</span> B</span></span></code></pre></div></content><p><a href=https://chensl.me/blog/golang/>#golang</a>&nbsp;&nbsp;
 <a href=https://chensl.me/blog/cgo/>#cgo</a>&nbsp;&nbsp;
-<a href=https://chensl.me/blog/jemalloc/>#jemalloc</a>&nbsp;&nbsp;</p></main><footer>Made with
+<a href=https://chensl.me/blog/jemalloc/>#jemalloc</a>&nbsp;&nbsp;
+<a href=https://chensl.me/blog/memory-allocator/>#memory-allocator</a>&nbsp;&nbsp;</p></main><footer>Made with
 <a href=https://github.com/maolonglong/hugo-simple/>Hugo ʕ•ᴥ•ʔ Simple</a></footer></body></html>
