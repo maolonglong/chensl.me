@@ -2,9 +2,9 @@
 title: 函数式编程
 date: 2023-07-21 16:20:42
 tags:
-  - OCaml
+  - ocaml
   - immutable
-  - ADT
+  - adt
   - currying
 toc: true
 ---

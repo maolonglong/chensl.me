@@ -2,9 +2,10 @@
 title: 整活：在 Go 中手动分配内存
 date: 2022-05-07 20:17:33
 tags:
-  - Golang
+  - golang
   - cgo
   - jemalloc
+  - memory-allocator
 toc: true
 ---
 

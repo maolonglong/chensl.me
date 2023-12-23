@@ -2,8 +2,8 @@
 title: GPLT团体程序设计天梯赛题解
 date: 2020-10-27 18:22:23
 tags:
-  - ACM
-  - C++
+  - acm
+  - cpp
 toc: true
 ---
 

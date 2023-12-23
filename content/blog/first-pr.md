@@ -2,8 +2,8 @@
 title: 开始第一个 Pull Request
 date: 2021-09-18 15:52:39
 tags:
-  - GitHub
-  - LeetCode
+  - github
+  - leetcode
 toc: true
 ---
 

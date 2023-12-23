@@ -2,8 +2,8 @@
 title: 熔断器模式
 date: 2021-09-16 16:21:28
 tags:
-  - Golang
-  - 微服务
+  - golang
+  - micro-services
 toc: true
 ---
 

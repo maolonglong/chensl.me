@@ -2,9 +2,9 @@
 title: 堆叠文件系统 OverlayFS
 date: 2021-10-24 13:12:42
 tags:
-  - Linux
-  - Docker
-  - OverlayFS
+  - linux
+  - docker
+  - overlayfs
   - chroot
 toc: true
 ---

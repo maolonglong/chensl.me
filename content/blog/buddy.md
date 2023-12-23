@@ -3,9 +3,9 @@ title: Buddy memory allocation
 date: 2023-10-14 22:14:38
 tags:
   - buddy-system
-  - 内存分配
+  - memory-allocator
   - vtable
-  - Zig
+  - zig
 toc: true
 ---
 
