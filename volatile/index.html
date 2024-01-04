@@ -1,18 +1,9 @@
-<!doctype html><html lang=zh-Hans><head><meta http-equiv=X-Clacks-Overhead content="GNU Terry Pratchett"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=https://chensl.me/images/favicon.png><title>【Java 并发】volatile 关键字基本理解与使用 |毛珑珑的博客
-</title><meta name=title content="
-    【Java 并发】volatile 关键字基本理解与使用
-  "><meta name=description content="
-    
-      volatile 的三个特性 保证可见性 不保证原子性 禁止指令重排 指令重排 什么是指令重排 处理器为了提高程序运行效率，可能会对输入代码进行优化，它不保证程序中各个语句的执行先后顺序同代码中的顺序一致，但是它会保证程序最终执行结果和代码顺序执行的结果是一致的。
+<!doctype html><html lang=zh-Hans><head><meta http-equiv=X-Clacks-Overhead content="GNU Terry Pratchett"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=https://chensl.me/images/favicon.png><title>【Java 并发】volatile 关键字基本理解与使用 |毛珑珑的博客</title>
+<meta name=title content="【Java 并发】volatile 关键字基本理解与使用"><meta name=description content="volatile 的三个特性 保证可见性 不保证原子性 禁止指令重排 指令重排 什么是指令重排 处理器为了提高程序运行效率，可能会对输入代码进行优化，它不保证程序中各个语句的执行先后顺序同代码中的顺序一致，但是它会保证程序最终执行结果和代码顺序执行的结果是一致的。
 可能发生重排的代码：（意思就是第二行代码可能会先执行，听起来是不是有点匪夷所思）
 a = 1; b = 2; 一定不会重排的代码（因为第 2 行依赖第 1 行的结果）：
 a = 2; b += a; 举栗子 观察下面这段代码的运行结果，假设没有重排，那么运行结果只有可能是以下 3 种：
-x = 1, y = 1（先执行了 a = 1 , b = 1 再执行 x = b 和 y = a） x = 0, y = 1（先执行了 a = 1 , x = b 再执行 b = 1 和 y = a） x = 1, y = 0（先执行了 b = 1 , y = a 再执行 a = 1 和 x = b） public class Main { private static int x; private static int y; private static int a; private static int b; public static void main(String[] args) throws InterruptedException { for (int i = 0; i < Integer.
-    
-  "><meta name=keywords content="
-    java,concurrency,
-  
-  "><meta property="og:title" content="【Java 并发】volatile 关键字基本理解与使用"><meta property="og:description" content="volatile 的三个特性 保证可见性 不保证原子性 禁止指令重排 指令重排 什么是指令重排 处理器为了提高程序运行效率，可能会对输入代码进行优化，它不保证程序中各个语句的执行先后顺序同代码中的顺序一致，但是它会保证程序最终执行结果和代码顺序执行的结果是一致的。
+x = 1, y = 1（先执行了 a = 1 , b = 1 再执行 x = b 和 y = a） x = 0, y = 1（先执行了 a = 1 , x = b 再执行 b = 1 和 y = a） x = 1, y = 0（先执行了 b = 1 , y = a 再执行 a = 1 和 x = b） public class Main { private static int x; private static int y; private static int a; private static int b; public static void main(String[] args) throws InterruptedException { for (int i = 0; i < Integer."><meta name=keywords content="java,concurrency,"><meta property="og:title" content="【Java 并发】volatile 关键字基本理解与使用"><meta property="og:description" content="volatile 的三个特性 保证可见性 不保证原子性 禁止指令重排 指令重排 什么是指令重排 处理器为了提高程序运行效率，可能会对输入代码进行优化，它不保证程序中各个语句的执行先后顺序同代码中的顺序一致，但是它会保证程序最终执行结果和代码顺序执行的结果是一致的。
 可能发生重排的代码：（意思就是第二行代码可能会先执行，听起来是不是有点匪夷所思）
 a = 1; b = 2; 一定不会重排的代码（因为第 2 行依赖第 1 行的结果）：
 a = 2; b += a; 举栗子 观察下面这段代码的运行结果，假设没有重排，那么运行结果只有可能是以下 3 种：

@@ -1,9 +1,5 @@
-<!doctype html><html lang=zh-Hans><head><meta http-equiv=X-Clacks-Overhead content="GNU Terry Pratchett"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=https://chensl.me/images/favicon.png><title>Buddy memory allocation |毛珑珑的博客
-</title><meta name=title content="
-    Buddy memory allocation
-  "><meta name=description content="
-    
-      参考: https://coolshell.org/articles/10427.html/
+<!doctype html><html lang=zh-Hans><head><meta http-equiv=X-Clacks-Overhead content="GNU Terry Pratchett"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=https://chensl.me/images/favicon.png><title>Buddy memory allocation |毛珑珑的博客</title>
+<meta name=title content="Buddy memory allocation"><meta name=description content="参考: https://coolshell.org/articles/10427.html/
 这几天实现了一个简易 Buddy memory allocation，也算是打开了内存分配器的黑盒，了解了内存分配器的关键点和 C 风格指针 的强大（看着 unsafe 但是又还算 safe）。
 该算法分配内存的大致流程：
 alloc:
@@ -12,12 +8,7 @@ alloc:
 更完整的内容可以看 wuwenbin 的实现或 陈皓老师的 blog，这里就不赘述，接下来主要讲一下我在 wuwenbin 那份实现上，新加的东西。
 移除了对 malloc 的依赖 总觉得，已经自己动手写分配器了，还需要依赖另一个分配器，有点怪怪的。
 改写后，buddy 的底层内存由外部传入:
-pub const Buddy2 = struct { const Self = @This(); len: u8, _longest: [1]u8, pub fn init(ctx: []u8) *Self { const len = ctx.
-    
-  "><meta name=keywords content="
-    buddy-system,memory-allocator,vtable,zig,
-  
-  "><meta property="og:title" content="Buddy memory allocation"><meta property="og:description" content="参考: https://coolshell.org/articles/10427.html/
+pub const Buddy2 = struct { const Self = @This(); len: u8, _longest: [1]u8, pub fn init(ctx: []u8) *Self { const len = ctx."><meta name=keywords content="buddy-system,memory-allocator,vtable,zig,"><meta property="og:title" content="Buddy memory allocation"><meta property="og:description" content="参考: https://coolshell.org/articles/10427.html/
 这几天实现了一个简易 Buddy memory allocation，也算是打开了内存分配器的黑盒，了解了内存分配器的关键点和 C 风格指针 的强大（看着 unsafe 但是又还算 safe）。
 该算法分配内存的大致流程：
 alloc:
