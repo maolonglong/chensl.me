@@ -139,3 +139,11 @@ $ alias rm='trash --protect $(cat ~/.protected_paths | awk '\''BEGIN { ORS="," }
 $ rm -r /usr/local/bin
 trash: skipping "/usr/local/bin"
 ```
+
+> 配置了 alias 后，小心 `sudo rm`!!!
+>
+> 配置了 alias 后，小心 `sudo rm`!!!
+>
+> 配置了 alias 后，小心 `sudo rm`!!!
+>
+> `sudo` 相当于切换成 root，然后 root 又没有配置 alias，所以调用的是真正的 `rm`
