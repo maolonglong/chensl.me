@@ -145,4 +145,10 @@ $ ls &amp;#34;.&amp;#34;: Operation not permitted (os error 1) $ sudo ls ls: can
 
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ rm -r /usr/local/bin
 </span></span><span class="line"><span class="cl">trash: skipping <span class="s2">&#34;/usr/local/bin&#34;</span></span></span></code></pre></div>
+<blockquote>
+<p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p>
+<p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p>
+<p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p>
+<p><code>sudo</code> 相当于切换成 root，然后 root 又没有配置 alias，所以调用的是真正的 <code>rm</code></p>
+</blockquote>
 ]]></content:encoded></item></channel></rss>

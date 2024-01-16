@@ -145,6 +145,12 @@ $ ls &amp;#34;.&amp;#34;: Operation not permitted (os error 1) $ sudo ls ls: can
 
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ rm -r /usr/local/bin
 </span></span><span class="line"><span class="cl">trash: skipping <span class="s2">&#34;/usr/local/bin&#34;</span></span></span></code></pre></div>
+<blockquote>
+<p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p>
+<p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p>
+<p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p>
+<p><code>sudo</code> 相当于切换成 root，然后 root 又没有配置 alias，所以调用的是真正的 <code>rm</code></p>
+</blockquote>
 ]]></content:encoded></item><item><title>2023 年终总结</title><link>https://chensl.me/2023-summary/</link><pubDate>Thu, 11 Jan 2024 19:03:51 +0800</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/2023-summary/</guid><description>迟到的 2023 年终总结。。。比起在公司写特别正式的总结，我更愿意写这种没任何要求，全看自己想法的总结。
 技术相关 说来惭愧，折腾的技术比较杂，什么都玩了点，但都没有深入研究，缺乏系统的学习。
 GitHub 先看下 GitHub 的数据吧：

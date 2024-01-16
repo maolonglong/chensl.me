@@ -145,6 +145,12 @@ $ ls &amp;#34;.&amp;#34;: Operation not permitted (os error 1) $ sudo ls ls: can
 
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ rm -r /usr/local/bin
 </span></span><span class="line"><span class="cl">trash: skipping <span class="s2">&#34;/usr/local/bin&#34;</span></span></span></code></pre></div>
+<blockquote>
+<p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p>
+<p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p>
+<p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p>
+<p><code>sudo</code> 相当于切换成 root，然后 root 又没有配置 alias，所以调用的是真正的 <code>rm</code></p>
+</blockquote>
 ]]></content:encoded></item><item><title>记录一次 Go Module 依赖关系的修复</title><link>https://chensl.me/fix-ambiguous-import/</link><pubDate>Sat, 17 Dec 2022 16:55:34 +0000</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/fix-ambiguous-import/</guid><description>事情的起因：
 $ go version go version go1.17.13 darwin/arm64 $ go mod tidy example.com/... imports example.com/... imports example.com/... imports ... example.com/... imports github.com/google/cel-go/cel imports github.com/google/cel-go/parser imports github.com/antlr/antlr4/runtime/Go/antlr loaded from github.com/antlr/antlr4/runtime/Go/antlr@v1.4.10, but go 1.16 would fail to locate it: ambiguous import: found package github.com/antlr/antlr4/runtime/Go/antlr in multiple modules: github.com/antlr/antlr4 v0.0.0-20200503195918-621b933c7a7f (/Users/xxx/go/pkg/mod/github.com/antlr/antlr4@v0.0.0-20200503195918-621b933c7a7f/runtime/Go/antlr) github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 (/Users/xxx/go/pkg/mod/github.com/antlr/antlr4/runtime/!go/antlr@v1.4.10) To proceed despite packages unresolved in go 1.16: go mod tidy -e If reproducibility with go 1.16 is not needed: go mod tidy -compat=1.</description><content:encoded><![CDATA[<p>事情的起因：</p>
 
