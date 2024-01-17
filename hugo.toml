@@ -23,7 +23,8 @@ disableKinds = ["taxonomy"]
   [markup.highlight]
     # lineNos = true
     # lineNumbersInTable = false
-    noClasses = false
+    noClasses = true
+    style = "catppuccin-mocha"
 
 [params]
   description = "毛珑珑的博客"
