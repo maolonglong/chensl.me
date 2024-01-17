@@ -29,73 +29,73 @@ rm -rf <Tab><Tab><Enter> MacOS 的回收站 因为平常基本用的 MacOS，自
 思路很简单，但是 MacOS 的回收站目录 (~/.Trash) 有很奇怪的权限（没仔细研究过），似乎没办法直接用 ls, cp, mv 之类的操作：
 $ ls &#34;.&#34;: Operation not permitted (os error 1) $ sudo ls ls: cannot open directory '."><meta itemprop=datePublished content="2024-01-15T21:12:35+08:00"><meta itemprop=dateModified content="2024-01-15T21:12:35+08:00"><meta itemprop=wordCount content="329"><meta itemprop=keywords content="golang,apple-script,coreutils,"><meta name=referrer content="no-referrer-when-downgrade"><link href=/simple.min.css rel=stylesheet><link href=/style.min.css rel=stylesheet></head><body><header><nav><a href=/>Home</a>
 <a href=/blog/>Blog</a>
-<a href=https://chensl.me/index.xml><svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 448 512"><path d="M0 64C0 46.3 14.3 32 32 32c229.8.0 416 186.2 416 416 0 17.7-14.3 32-32 32s-32-14.3-32-32C384 253.6 226.4 96 32 96 14.3 96 0 81.7.0 64zM0 416a64 64 0 11128 0A64 64 0 110 416zM32 160c159.1.0 288 128.9 288 288 0 17.7-14.3 32-32 32s-32-14.3-32-32c0-123.7-100.3-224-224-224-17.7.0-32-14.3-32-32s14.3-32 32-32z"/></svg>RSS</a></nav><h1>MacOS 上更安全的 rm</h1></header><main><p><i><time datetime=2024-01-15 pubdate>2024-01-15</time></i></p><details><summary>Table of Contents</summary><nav id=TableOfContents><ul><li><a href=#真那么危险吗>真那么危险吗？</a><ul><li><a href=#错误的环境变量>错误的环境变量</a></li><li><a href=#空格>空格</a></li><li><a href=#其他手滑操作>其他手滑操作</a></li></ul></li><li><a href=#macos-的回收站>MacOS 的回收站</a></li><li><a href=#trash-cli>trash-cli</a></li></ul></nav></details><content><p><code>rm</code> 命令应该是 Unix 系统最危险的命令，没有之一。用 <code>rm</code> 删除文件后很难恢复，尤其是大家经常拿来开玩笑骗小白的 <code>rm -rf /*</code>。</p><h2 id=真那么危险吗>真那么危险吗？</h2><p>(这部分的命令千万别复制执行！！！)</p><p>真的！就身边朋友遇到的，或者听说到的，主要有两类：</p><h3 id=错误的环境变量>错误的环境变量</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 定义了某个环境变量</span>
-</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>foo</span><span class=o>=</span>xxx
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 然后由于 typo，或者变量被 unset，最终引用了一个空的值</span>
-</span></span><span class=line><span class=cl><span class=c1># 这条命令完全等价于 rm -rf /*</span>
-</span></span><span class=line><span class=cl>rm -rf <span class=si>${</span><span class=nv>bar</span><span class=si>}</span>/*</span></span></code></pre></div><h3 id=空格>空格</h3><p>乱在网上复制代码直接执行特别容易踩这个坑，浏览器上不注意看，以为是 <code>/usr/local/bin/xxx</code>，复制一执行才发现是 <code>/usr</code> <strong>和</strong> <code>/local/bin/xxx</code>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>rm -rf /usr /local/bin/xxx</span></span></code></pre></div><h3 id=其他手滑操作>其他手滑操作</h3><p>终端自动补全，还没看清补全了什么，就直接回车（我就干过，还是一个没用 git 管理的目录 😇）：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>rm -rf &lt;Tab&gt;&lt;Tab&gt;&lt;Enter&gt;</span></span></code></pre></div><h2 id=macos-的回收站>MacOS 的回收站</h2><p>因为平常基本用的 MacOS，自然很容易想到，不使用 <code>rm</code> 真正删除文件，而是把文件往回收站丢不就好了？</p><p>思路很简单，但是 MacOS 的回收站目录 (<code>~/.Trash</code>) 有很奇怪的权限（没仔细研究过），似乎没办法直接用 <code>ls</code>, <code>cp</code>, <code>mv</code> 之类的操作：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ ls
-</span></span><span class=line><span class=cl><span class=s2>&#34;.&#34;</span>: Operation not permitted <span class=o>(</span>os error 1<span class=o>)</span>
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>$ sudo ls
-</span></span><span class=line><span class=cl>ls: cannot open directory <span class=s1>&#39;.&#39;</span>: Operation not permitted</span></span></code></pre></div><p>Google 了一波，发现可以用 AppleScript 实现类似 <code>mv file ~/.Trash/</code> 的操作:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># https://apple.stackexchange.com/a/310084</span>
-</span></span><span class=line><span class=cl>osascript -e <span class=s2>&#34;tell application \&#34;Finder\&#34; to delete POSIX file \&#34;</span><span class=si>${</span><span class=nv>PWD</span><span class=si>}</span><span class=s2>/</span><span class=si>${</span><span class=nv>InputFile</span><span class=si>}</span><span class=s2>\&#34;&#34;</span></span></span></code></pre></div><h2 id=trash-cli>trash-cli</h2><p><a href=https://github.com/maolonglong/trash>完整代码</a></p><p>最后就是把它包装成一个好用的 CLI，保持了和 <code>rm</code> 差不多的选项，所以简单起见，可以直接 <code>alias rm=trash</code>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ go install github.com/maolonglong/trash@latest
-</span></span><span class=line><span class=cl>...
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>$ trash --help
-</span></span><span class=line><span class=cl>Usage: trash <span class=o>[</span>OPTION<span class=o>]</span>... <span class=o>[</span>FILE<span class=o>]</span>...
-</span></span><span class=line><span class=cl>Move FILE<span class=o>(</span>s<span class=o>)</span> to the trash.
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>  -f, --force           ignore nonexistent files and arguments, never prompt
-</span></span><span class=line><span class=cl>  -h, --help            display this <span class=nb>help</span> and <span class=nb>exit</span>
-</span></span><span class=line><span class=cl>  -p, --protect paths   protected paths, separated by comma
-</span></span><span class=line><span class=cl>  -r, --recursive       remove directories and their contents recursively
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>By default, trash does not remove directories.  Use the --recursive <span class=o>(</span>-r<span class=o>)</span>
-</span></span><span class=line><span class=cl>option to remove each listed directory, too, along with all of its contents.
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>To remove a file whose name starts with a <span class=s1>&#39;-&#39;</span>, <span class=k>for</span> example <span class=s1>&#39;-foo&#39;</span>,
-</span></span><span class=line><span class=cl>use one of these commands:
-</span></span><span class=line><span class=cl>  trash -- -foo
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>  trash ./-foo</span></span></code></pre></div><p>注意有个 <code>protect</code> 参数（可以理解成是 deny list），分享下我自己的用法：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 配置文件是可选的，位置也随意，甚至可以不需要配置文件，</span>
-</span></span><span class=line><span class=cl><span class=c1># 不管什么方式，只要传了 protect 参数就行。</span>
-</span></span><span class=line><span class=cl>$ cat ~/.protected_paths
-</span></span><span class=line><span class=cl>/
-</span></span><span class=line><span class=cl>/bin
-</span></span><span class=line><span class=cl>/boot
-</span></span><span class=line><span class=cl>/dev
-</span></span><span class=line><span class=cl>/etc
-</span></span><span class=line><span class=cl>/home
-</span></span><span class=line><span class=cl>/initrd
-</span></span><span class=line><span class=cl>/lib
-</span></span><span class=line><span class=cl>/lib32
-</span></span><span class=line><span class=cl>/lib64
-</span></span><span class=line><span class=cl>/proc
-</span></span><span class=line><span class=cl>/root
-</span></span><span class=line><span class=cl>/sbin
-</span></span><span class=line><span class=cl>/sys
-</span></span><span class=line><span class=cl>/usr
-</span></span><span class=line><span class=cl>/usr/bin
-</span></span><span class=line><span class=cl>/usr/include
-</span></span><span class=line><span class=cl>/usr/lib
-</span></span><span class=line><span class=cl>/usr/local
-</span></span><span class=line><span class=cl>/usr/local/bin
-</span></span><span class=line><span class=cl>/usr/local/include
-</span></span><span class=line><span class=cl>/usr/local/sbin
-</span></span><span class=line><span class=cl>/usr/local/share
-</span></span><span class=line><span class=cl>/usr/sbin
-</span></span><span class=line><span class=cl>/usr/share
-</span></span><span class=line><span class=cl>/usr/src
-</span></span><span class=line><span class=cl>/var
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 配置文件用换行方便编辑，传给 trash-cli 的时候用逗号拼接</span>
-</span></span><span class=line><span class=cl>$ cat ~/.protected_paths <span class=p>|</span> awk <span class=s1>&#39;BEGIN { ORS=&#34;,&#34; } { print $0 }&#39;</span> <span class=p>|</span> sed <span class=s1>&#39;s/,$//&#39;</span>
-</span></span><span class=line><span class=cl>/,/bin,/boot,/dev,/etc,/home,/initrd,/lib,/lib32,/lib64,/proc,/root,/sbin,/sys,/usr,/usr/bin,/usr/include,/usr/lib,/usr/local,/usr/local/bin,/usr/local/include,/usr/local/sbin,/usr/local/share,/usr/sbin,/usr/share,/usr/src,/var
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 可以把这行加到 ~/.zshrc 里，或者 ~/.bashrc 或者其他...</span>
-</span></span><span class=line><span class=cl>$ <span class=nb>alias</span> <span class=nv>rm</span><span class=o>=</span><span class=s1>&#39;trash --protect $(cat ~/.protected_paths | awk &#39;</span><span class=se>\&#39;</span><span class=s1>&#39;BEGIN { ORS=&#34;,&#34; } { print $0 }&#39;</span><span class=se>\&#39;</span><span class=s1>&#39; | sed &#39;</span><span class=se>\&#39;</span><span class=s1>&#39;s/,$//&#39;</span><span class=se>\&#39;</span><span class=s1>&#39;) &#39;</span></span></span></code></pre></div><p>最终效果就是 回收站 + deny list 的<strong>双重保护</strong>，再误删就。。。有点过分了</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ rm -r /usr/local/bin
-</span></span><span class=line><span class=cl>trash: skipping <span class=s2>&#34;/usr/local/bin&#34;</span></span></span></code></pre></div><blockquote><p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p><p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p><p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p><p><code>sudo</code> 相当于切换成 root，然后 root 又没有配置 alias，所以调用的是真正的 <code>rm</code></p></blockquote></content><p><a href=https://chensl.me/blog/golang/>#golang</a>&nbsp;&nbsp;
+<a href=https://chensl.me/index.xml><svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 448 512"><path d="M0 64C0 46.3 14.3 32 32 32c229.8.0 416 186.2 416 416 0 17.7-14.3 32-32 32s-32-14.3-32-32C384 253.6 226.4 96 32 96 14.3 96 0 81.7.0 64zM0 416a64 64 0 11128 0A64 64 0 110 416zM32 160c159.1.0 288 128.9 288 288 0 17.7-14.3 32-32 32s-32-14.3-32-32c0-123.7-100.3-224-224-224-17.7.0-32-14.3-32-32s14.3-32 32-32z"/></svg>RSS</a></nav><h1>MacOS 上更安全的 rm</h1></header><main><p><i><time datetime=2024-01-15 pubdate>2024-01-15</time></i></p><details><summary>Table of Contents</summary><nav id=TableOfContents><ul><li><a href=#真那么危险吗>真那么危险吗？</a><ul><li><a href=#错误的环境变量>错误的环境变量</a></li><li><a href=#空格>空格</a></li><li><a href=#其他手滑操作>其他手滑操作</a></li></ul></li><li><a href=#macos-的回收站>MacOS 的回收站</a></li><li><a href=#trash-cli>trash-cli</a></li></ul></nav></details><content><p><code>rm</code> 命令应该是 Unix 系统最危险的命令，没有之一。用 <code>rm</code> 删除文件后很难恢复，尤其是大家经常拿来开玩笑骗小白的 <code>rm -rf /*</code>。</p><h2 id=真那么危险吗>真那么危险吗？</h2><p>(这部分的命令千万别复制执行！！！)</p><p>真的！就身边朋友遇到的，或者听说到的，主要有两类：</p><h3 id=错误的环境变量>错误的环境变量</h3><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#6c7086;font-style:italic># 定义了某个环境变量</span>
+</span></span><span style=display:flex><span><span style=color:#89dceb>export</span> <span style=color:#f5e0dc>foo</span><span style=color:#89dceb;font-weight:700>=</span>xxx
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#6c7086;font-style:italic># 然后由于 typo，或者变量被 unset，最终引用了一个空的值</span>
+</span></span><span style=display:flex><span><span style=color:#6c7086;font-style:italic># 这条命令完全等价于 rm -rf /*</span>
+</span></span><span style=display:flex><span>rm -rf <span style=color:#a6e3a1>${</span><span style=color:#f5e0dc>bar</span><span style=color:#a6e3a1>}</span>/*</span></span></code></pre></div><h3 id=空格>空格</h3><p>乱在网上复制代码直接执行特别容易踩这个坑，浏览器上不注意看，以为是 <code>/usr/local/bin/xxx</code>，复制一执行才发现是 <code>/usr</code> <strong>和</strong> <code>/local/bin/xxx</code>。</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>rm -rf /usr /local/bin/xxx</span></span></code></pre></div><h3 id=其他手滑操作>其他手滑操作</h3><p>终端自动补全，还没看清补全了什么，就直接回车（我就干过，还是一个没用 git 管理的目录 😇）：</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>rm -rf &lt;Tab&gt;&lt;Tab&gt;&lt;Enter&gt;</span></span></code></pre></div><h2 id=macos-的回收站>MacOS 的回收站</h2><p>因为平常基本用的 MacOS，自然很容易想到，不使用 <code>rm</code> 真正删除文件，而是把文件往回收站丢不就好了？</p><p>思路很简单，但是 MacOS 的回收站目录 (<code>~/.Trash</code>) 有很奇怪的权限（没仔细研究过），似乎没办法直接用 <code>ls</code>, <code>cp</code>, <code>mv</code> 之类的操作：</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>$ ls
+</span></span><span style=display:flex><span><span style=color:#a6e3a1>&#34;.&#34;</span>: Operation not permitted <span style=color:#89dceb;font-weight:700>(</span>os error 1<span style=color:#89dceb;font-weight:700>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$ sudo ls
+</span></span><span style=display:flex><span>ls: cannot open directory <span style=color:#a6e3a1>&#39;.&#39;</span>: Operation not permitted</span></span></code></pre></div><p>Google 了一波，发现可以用 AppleScript 实现类似 <code>mv file ~/.Trash/</code> 的操作:</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#6c7086;font-style:italic># https://apple.stackexchange.com/a/310084</span>
+</span></span><span style=display:flex><span>osascript -e <span style=color:#a6e3a1>&#34;tell application \&#34;Finder\&#34; to delete POSIX file \&#34;</span><span style=color:#a6e3a1>${</span><span style=color:#f5e0dc>PWD</span><span style=color:#a6e3a1>}</span><span style=color:#a6e3a1>/</span><span style=color:#a6e3a1>${</span><span style=color:#f5e0dc>InputFile</span><span style=color:#a6e3a1>}</span><span style=color:#a6e3a1>\&#34;&#34;</span></span></span></code></pre></div><h2 id=trash-cli>trash-cli</h2><p><a href=https://github.com/maolonglong/trash>完整代码</a></p><p>最后就是把它包装成一个好用的 CLI，保持了和 <code>rm</code> 差不多的选项，所以简单起见，可以直接 <code>alias rm=trash</code>。</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>$ go install github.com/maolonglong/trash@latest
+</span></span><span style=display:flex><span>...
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$ trash --help
+</span></span><span style=display:flex><span>Usage: trash <span style=color:#89dceb;font-weight:700>[</span>OPTION<span style=color:#89dceb;font-weight:700>]</span>... <span style=color:#89dceb;font-weight:700>[</span>FILE<span style=color:#89dceb;font-weight:700>]</span>...
+</span></span><span style=display:flex><span>Move FILE<span style=color:#89dceb;font-weight:700>(</span>s<span style=color:#89dceb;font-weight:700>)</span> to the trash.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  -f, --force           ignore nonexistent files and arguments, never prompt
+</span></span><span style=display:flex><span>  -h, --help            display this <span style=color:#89dceb>help</span> and <span style=color:#89dceb>exit</span>
+</span></span><span style=display:flex><span>  -p, --protect paths   protected paths, separated by comma
+</span></span><span style=display:flex><span>  -r, --recursive       remove directories and their contents recursively
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>By default, trash does not remove directories.  Use the --recursive <span style=color:#89dceb;font-weight:700>(</span>-r<span style=color:#89dceb;font-weight:700>)</span>
+</span></span><span style=display:flex><span>option to remove each listed directory, too, along with all of its contents.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>To remove a file whose name starts with a <span style=color:#a6e3a1>&#39;-&#39;</span>, <span style=color:#cba6f7>for</span> example <span style=color:#a6e3a1>&#39;-foo&#39;</span>,
+</span></span><span style=display:flex><span>use one of these commands:
+</span></span><span style=display:flex><span>  trash -- -foo
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  trash ./-foo</span></span></code></pre></div><p>注意有个 <code>protect</code> 参数（可以理解成是 deny list），分享下我自己的用法：</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#6c7086;font-style:italic># 配置文件是可选的，位置也随意，甚至可以不需要配置文件，</span>
+</span></span><span style=display:flex><span><span style=color:#6c7086;font-style:italic># 不管什么方式，只要传了 protect 参数就行。</span>
+</span></span><span style=display:flex><span>$ cat ~/.protected_paths
+</span></span><span style=display:flex><span>/
+</span></span><span style=display:flex><span>/bin
+</span></span><span style=display:flex><span>/boot
+</span></span><span style=display:flex><span>/dev
+</span></span><span style=display:flex><span>/etc
+</span></span><span style=display:flex><span>/home
+</span></span><span style=display:flex><span>/initrd
+</span></span><span style=display:flex><span>/lib
+</span></span><span style=display:flex><span>/lib32
+</span></span><span style=display:flex><span>/lib64
+</span></span><span style=display:flex><span>/proc
+</span></span><span style=display:flex><span>/root
+</span></span><span style=display:flex><span>/sbin
+</span></span><span style=display:flex><span>/sys
+</span></span><span style=display:flex><span>/usr
+</span></span><span style=display:flex><span>/usr/bin
+</span></span><span style=display:flex><span>/usr/include
+</span></span><span style=display:flex><span>/usr/lib
+</span></span><span style=display:flex><span>/usr/local
+</span></span><span style=display:flex><span>/usr/local/bin
+</span></span><span style=display:flex><span>/usr/local/include
+</span></span><span style=display:flex><span>/usr/local/sbin
+</span></span><span style=display:flex><span>/usr/local/share
+</span></span><span style=display:flex><span>/usr/sbin
+</span></span><span style=display:flex><span>/usr/share
+</span></span><span style=display:flex><span>/usr/src
+</span></span><span style=display:flex><span>/var
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#6c7086;font-style:italic># 配置文件用换行方便编辑，传给 trash-cli 的时候用逗号拼接</span>
+</span></span><span style=display:flex><span>$ cat ~/.protected_paths | awk <span style=color:#a6e3a1>&#39;BEGIN { ORS=&#34;,&#34; } { print $0 }&#39;</span> | sed <span style=color:#a6e3a1>&#39;s/,$//&#39;</span>
+</span></span><span style=display:flex><span>/,/bin,/boot,/dev,/etc,/home,/initrd,/lib,/lib32,/lib64,/proc,/root,/sbin,/sys,/usr,/usr/bin,/usr/include,/usr/lib,/usr/local,/usr/local/bin,/usr/local/include,/usr/local/sbin,/usr/local/share,/usr/sbin,/usr/share,/usr/src,/var
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#6c7086;font-style:italic># 可以把这行加到 ~/.zshrc 里，或者 ~/.bashrc 或者其他...</span>
+</span></span><span style=display:flex><span>$ <span style=color:#89dceb>alias</span> <span style=color:#f5e0dc>rm</span><span style=color:#89dceb;font-weight:700>=</span><span style=color:#a6e3a1>&#39;trash --protect $(cat ~/.protected_paths | awk &#39;</span><span style=color:#89b4fa>\&#39;</span><span style=color:#a6e3a1>&#39;BEGIN { ORS=&#34;,&#34; } { print $0 }&#39;</span><span style=color:#89b4fa>\&#39;</span><span style=color:#a6e3a1>&#39; | sed &#39;</span><span style=color:#89b4fa>\&#39;</span><span style=color:#a6e3a1>&#39;s/,$//&#39;</span><span style=color:#89b4fa>\&#39;</span><span style=color:#a6e3a1>&#39;) &#39;</span></span></span></code></pre></div><p>最终效果就是 回收站 + deny list 的<strong>双重保护</strong>，再误删就。。。有点过分了</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>$ rm -r /usr/local/bin
+</span></span><span style=display:flex><span>trash: skipping <span style=color:#a6e3a1>&#34;/usr/local/bin&#34;</span></span></span></code></pre></div><blockquote><p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p><p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p><p>配置了 alias 后，小心 <code>sudo rm</code>!!!</p><p><code>sudo</code> 相当于切换成 root，然后 root 又没有配置 alias，所以调用的是真正的 <code>rm</code></p></blockquote></content><p><a href=https://chensl.me/blog/golang/>#golang</a>&nbsp;&nbsp;
 <a href=https://chensl.me/blog/apple-script/>#apple-script</a>&nbsp;&nbsp;
 <a href=https://chensl.me/blog/coreutils/>#coreutils</a>&nbsp;&nbsp;</p></main><footer>Made with
 <a href=https://github.com/maolonglong/hugo-simple/>Hugo ʕ•ᴥ•ʔ Simple</a></footer></body></html>

@@ -32,14 +32,14 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Settings</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">Name</span>          <span class="kt">string</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">MaxRequests</span>   <span class="kt">uint32</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">Interval</span>      <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">Timeout</span>       <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">ReadyToTrip</span>   <span class="kd">func</span><span class="p">(</span><span class="nx">counts</span> <span class="nx">Counts</span><span class="p">)</span> <span class="kt">bool</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">OnStateChange</span> <span class="kd">func</span><span class="p">(</span><span class="nx">name</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">from</span> <span class="nx">State</span><span class="p">,</span> <span class="nx">to</span> <span class="nx">State</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f38ba8">type</span> Settings <span style="color:#f38ba8">struct</span> {
+</span></span><span style="display:flex;"><span>    Name          <span style="color:#f38ba8">string</span>
+</span></span><span style="display:flex;"><span>    MaxRequests   <span style="color:#f38ba8">uint32</span>
+</span></span><span style="display:flex;"><span>    Interval      time.Duration
+</span></span><span style="display:flex;"><span>    Timeout       time.Duration
+</span></span><span style="display:flex;"><span>    ReadyToTrip   <span style="color:#f38ba8">func</span>(counts Counts) <span style="color:#f38ba8">bool</span>
+</span></span><span style="display:flex;"><span>    OnStateChange <span style="color:#f38ba8">func</span>(name <span style="color:#f38ba8">string</span>, from State, to State)
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <ul>
 <li><code>MaxRequests</code>: <strong>Half-Open</strong> 状态下的最大请求次数，默认为 1</li>
 <li><code>Interval</code>: <strong>Closed</strong> 状态下清空计数器的周期，默认不清空</li>
@@ -53,43 +53,43 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;errors&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;log&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;math/rand&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;time&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;github.com/sony/gobreaker&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">rand</span><span class="p">.</span><span class="nf">Seed</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">UnixNano</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nx">cb</span> <span class="o">:=</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nf">NewCircuitBreaker</span><span class="p">(</span><span class="nx">gobreaker</span><span class="p">.</span><span class="nx">Settings</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">ReadyToTrip</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">counts</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nx">Counts</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">failureRatio</span> <span class="o">:=</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">counts</span><span class="p">.</span><span class="nx">TotalFailures</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">counts</span><span class="p">.</span><span class="nx">Requests</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="c1">// 失败率大于 60% 时熔断
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">return</span> <span class="nx">counts</span><span class="p">.</span><span class="nx">Requests</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="o">&amp;&amp;</span> <span class="nx">failureRatio</span> <span class="o">&gt;=</span> <span class="mf">0.6</span>
-</span></span><span class="line"><span class="cl">        <span class="p">},</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">OnStateChange</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">_</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="nx">to</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nx">State</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;from: %v, to: %v\n&#34;</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="nx">to</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">},</span>
-</span></span><span class="line"><span class="cl">    <span class="p">})</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">result</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">cb</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="kd">interface</span><span class="p">{},</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="c1">// 模拟 70% 的失败率
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="nx">rand</span><span class="p">.</span><span class="nf">Float64</span><span class="p">()</span> <span class="p">&lt;</span> <span class="mf">0.7</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;some error&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="p">}</span>
-</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="s">&#34;ok&#34;</span><span class="p">,</span> <span class="kc">nil</span>
-</span></span><span class="line"><span class="cl">        <span class="p">})</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;result: %v, err: %v\n&#34;</span><span class="p">,</span> <span class="nx">result</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#94e2d5">package</span> main
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#94e2d5">import</span> (
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e3a1">&#34;errors&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e3a1">&#34;log&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e3a1">&#34;math/rand&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e3a1">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e3a1">&#34;github.com/sony/gobreaker&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">main</span>() {
+</span></span><span style="display:flex;"><span>    rand.<span style="color:#89b4fa">Seed</span>(time.<span style="color:#89b4fa">Now</span>().<span style="color:#89b4fa">UnixNano</span>())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cb <span style="color:#89dceb;font-weight:bold">:=</span> gobreaker.<span style="color:#89b4fa">NewCircuitBreaker</span>(gobreaker.Settings{
+</span></span><span style="display:flex;"><span>        ReadyToTrip: <span style="color:#f38ba8">func</span>(counts gobreaker.Counts) <span style="color:#f38ba8">bool</span> {
+</span></span><span style="display:flex;"><span>            failureRatio <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89dceb">float64</span>(counts.TotalFailures) <span style="color:#89dceb;font-weight:bold">/</span> <span style="color:#89dceb">float64</span>(counts.Requests)
+</span></span><span style="display:flex;"><span>            <span style="color:#6c7086;font-style:italic">// 失败率大于 60% 时熔断
+</span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>            <span style="color:#cba6f7">return</span> counts.Requests <span style="color:#89dceb;font-weight:bold">&gt;=</span> <span style="color:#fab387">3</span> <span style="color:#89dceb;font-weight:bold">&amp;&amp;</span> failureRatio <span style="color:#89dceb;font-weight:bold">&gt;=</span> <span style="color:#fab387">0.6</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        OnStateChange: <span style="color:#f38ba8">func</span>(_ <span style="color:#f38ba8">string</span>, from, to gobreaker.State) {
+</span></span><span style="display:flex;"><span>            log.<span style="color:#89b4fa">Printf</span>(<span style="color:#a6e3a1">&#34;from: %v, to: %v\n&#34;</span>, from, to)
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>    })
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">for</span> {
+</span></span><span style="display:flex;"><span>        result, err <span style="color:#89dceb;font-weight:bold">:=</span> cb.<span style="color:#89b4fa">Execute</span>(<span style="color:#f38ba8">func</span>() (<span style="color:#f38ba8">interface</span>{}, <span style="color:#f38ba8">error</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#6c7086;font-style:italic">// 模拟 70% 的失败率
+</span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>            <span style="color:#cba6f7">if</span> rand.<span style="color:#89b4fa">Float64</span>() &lt; <span style="color:#fab387">0.7</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>, errors.<span style="color:#89b4fa">New</span>(<span style="color:#a6e3a1">&#34;some error&#34;</span>)
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            <span style="color:#cba6f7">return</span> <span style="color:#a6e3a1">&#34;ok&#34;</span>, <span style="color:#fab387">nil</span>
+</span></span><span style="display:flex;"><span>        })
+</span></span><span style="display:flex;"><span>        log.<span style="color:#89b4fa">Printf</span>(<span style="color:#a6e3a1">&#34;result: %v, err: %v\n&#34;</span>, result, err)
+</span></span><span style="display:flex;"><span>        time.<span style="color:#89b4fa">Sleep</span>(time.Second)
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <p>运行结果：</p>
 
 
@@ -97,16 +97,16 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run main.go
-</span></span><span class="line"><span class="cl">2021/09/16 15:23:24 result: &lt;nil&gt;, err: some error
-</span></span><span class="line"><span class="cl">2021/09/16 15:23:25 result: &lt;nil&gt;, err: some error
-</span></span><span class="line"><span class="cl">2021/09/16 15:23:26 from: closed, to: open
-</span></span><span class="line"><span class="cl">2021/09/16 15:23:26 result: &lt;nil&gt;, err: some error
-</span></span><span class="line"><span class="cl">2021/09/16 15:23:27 result: &lt;nil&gt;, err: circuit breaker is open
-</span></span><span class="line"><span class="cl">2021/09/16 15:23:28 result: &lt;nil&gt;, err: circuit breaker is open
-</span></span><span class="line"><span class="cl">2021/09/16 15:23:29 result: &lt;nil&gt;, err: circuit breaker is open
-</span></span><span class="line"><span class="cl">2021/09/16 15:23:30 result: &lt;nil&gt;, err: circuit breaker is open
-</span></span><span class="line"><span class="cl">......</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ go run main.go
+</span></span><span style="display:flex;"><span>2021/09/16 15:23:24 result: &lt;nil&gt;, err: some error
+</span></span><span style="display:flex;"><span>2021/09/16 15:23:25 result: &lt;nil&gt;, err: some error
+</span></span><span style="display:flex;"><span>2021/09/16 15:23:26 from: closed, to: open
+</span></span><span style="display:flex;"><span>2021/09/16 15:23:26 result: &lt;nil&gt;, err: some error
+</span></span><span style="display:flex;"><span>2021/09/16 15:23:27 result: &lt;nil&gt;, err: circuit breaker is open
+</span></span><span style="display:flex;"><span>2021/09/16 15:23:28 result: &lt;nil&gt;, err: circuit breaker is open
+</span></span><span style="display:flex;"><span>2021/09/16 15:23:29 result: &lt;nil&gt;, err: circuit breaker is open
+</span></span><span style="display:flex;"><span>2021/09/16 15:23:30 result: &lt;nil&gt;, err: circuit breaker is open
+</span></span><span style="display:flex;"><span>......</span></span></code></pre></div>
 <h3 id="execute-流程">Execute 流程</h3>
 <p>简单过一遍 <code>Execute()</code> 的流程，详细代码可以看 <a href="https://github.com/sony/gobreaker/blob/master/gobreaker.go">gobreader.go</a>，不到 400 行，实现的非常简洁。</p>
 
@@ -115,30 +115,30 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">cb</span> <span class="o">*</span><span class="nx">CircuitBreaker</span><span class="p">)</span> <span class="nf">Execute</span><span class="p">(</span><span class="nx">req</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="kd">interface</span><span class="p">{},</span> <span class="kt">error</span><span class="p">))</span> <span class="p">(</span><span class="kd">interface</span><span class="p">{},</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// 增加计数，判断状态
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">generation</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">cb</span><span class="p">.</span><span class="nf">beforeRequest</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">// 如果熔断器已经 Open，在这里就会直接返回 ErrOpenState
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// Half-Open 状态下超过最大请求数则返回 ErrTooManyRequests
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">e</span> <span class="o">:=</span> <span class="nb">recover</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">cb</span><span class="p">.</span><span class="nf">afterRequest</span><span class="p">(</span><span class="nx">generation</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nb">panic</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 执行真正的操作
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">result</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">req</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 增加计数，达到阈值就熔断，err 非空表示失败
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">cb</span><span class="p">.</span><span class="nf">afterRequest</span><span class="p">(</span><span class="nx">generation</span><span class="p">,</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">result</span><span class="p">,</span> <span class="nx">err</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f38ba8">func</span> (cb <span style="color:#89dceb;font-weight:bold">*</span>CircuitBreaker) <span style="color:#89b4fa">Execute</span>(req <span style="color:#f38ba8">func</span>() (<span style="color:#f38ba8">interface</span>{}, <span style="color:#f38ba8">error</span>)) (<span style="color:#f38ba8">interface</span>{}, <span style="color:#f38ba8">error</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#6c7086;font-style:italic">// 增加计数，判断状态
+</span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>    generation, err <span style="color:#89dceb;font-weight:bold">:=</span> cb.<span style="color:#89b4fa">beforeRequest</span>()
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#6c7086;font-style:italic">// 如果熔断器已经 Open，在这里就会直接返回 ErrOpenState
+</span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>        <span style="color:#6c7086;font-style:italic">// Half-Open 状态下超过最大请求数则返回 ErrTooManyRequests
+</span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>        <span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>, err
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">defer</span> <span style="color:#f38ba8">func</span>() {
+</span></span><span style="display:flex;"><span>        e <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89dceb">recover</span>()
+</span></span><span style="display:flex;"><span>        <span style="color:#cba6f7">if</span> e <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>            cb.<span style="color:#89b4fa">afterRequest</span>(generation, <span style="color:#fab387">false</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#89dceb">panic</span>(e)
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6c7086;font-style:italic">// 执行真正的操作
+</span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>    result, err <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89b4fa">req</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6c7086;font-style:italic">// 增加计数，达到阈值就熔断，err 非空表示失败
+</span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>    cb.<span style="color:#89b4fa">afterRequest</span>(generation, err <span style="color:#89dceb;font-weight:bold">==</span> <span style="color:#fab387">nil</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">return</span> result, err
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <p>从上面的源码，我们可以看出，执行过程只是简单地通过 <code>err == nil</code> 判断成功，假设业务的逻辑很复杂，需要加入自定义的判断，可以用 <code>TwoStepCircuitBreaker</code>。</p>
 <h3 id="两阶段熔断">两阶段熔断</h3>
 <p>和普通熔断器的使用差不多，<code>Allow()</code> 方法只是调用了 <code>beforeRequest()</code>，然后返回回调函数 <code>done(success bool)</code> 和错误信息，通过回调函数我们能把操作成功与否告诉熔断器。</p>
@@ -148,46 +148,46 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;log&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;math/rand&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;time&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;github.com/sony/gobreaker&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">rand</span><span class="p">.</span><span class="nf">Seed</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">UnixNano</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nx">cb</span> <span class="o">:=</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nf">NewTwoStepCircuitBreaker</span><span class="p">(</span><span class="nx">gobreaker</span><span class="p">.</span><span class="nx">Settings</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">ReadyToTrip</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">counts</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nx">Counts</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">failureRatio</span> <span class="o">:=</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">counts</span><span class="p">.</span><span class="nx">TotalFailures</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">counts</span><span class="p">.</span><span class="nx">Requests</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="nx">counts</span><span class="p">.</span><span class="nx">Requests</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="o">&amp;&amp;</span> <span class="nx">failureRatio</span> <span class="o">&gt;=</span> <span class="mf">0.6</span>
-</span></span><span class="line"><span class="cl">        <span class="p">},</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">OnStateChange</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">_</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="nx">to</span> <span class="nx">gobreaker</span><span class="p">.</span><span class="nx">State</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;from: %v, to: %v\n&#34;</span><span class="p">,</span> <span class="nx">from</span><span class="p">,</span> <span class="nx">to</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">},</span>
-</span></span><span class="line"><span class="cl">    <span class="p">})</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">done</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">cb</span><span class="p">.</span><span class="nf">Allow</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;err: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="k">continue</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">success</span> <span class="o">:=</span> <span class="kc">true</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">rand</span><span class="p">.</span><span class="nf">Float64</span><span class="p">()</span> <span class="p">&lt;</span> <span class="mf">0.7</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;failure&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">success</span> <span class="p">=</span> <span class="kc">false</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;success&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">        <span class="nf">done</span><span class="p">(</span><span class="nx">success</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#94e2d5">package</span> main
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#94e2d5">import</span> (
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e3a1">&#34;log&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e3a1">&#34;math/rand&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e3a1">&#34;time&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e3a1">&#34;github.com/sony/gobreaker&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">main</span>() {
+</span></span><span style="display:flex;"><span>    rand.<span style="color:#89b4fa">Seed</span>(time.<span style="color:#89b4fa">Now</span>().<span style="color:#89b4fa">UnixNano</span>())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cb <span style="color:#89dceb;font-weight:bold">:=</span> gobreaker.<span style="color:#89b4fa">NewTwoStepCircuitBreaker</span>(gobreaker.Settings{
+</span></span><span style="display:flex;"><span>        ReadyToTrip: <span style="color:#f38ba8">func</span>(counts gobreaker.Counts) <span style="color:#f38ba8">bool</span> {
+</span></span><span style="display:flex;"><span>            failureRatio <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89dceb">float64</span>(counts.TotalFailures) <span style="color:#89dceb;font-weight:bold">/</span> <span style="color:#89dceb">float64</span>(counts.Requests)
+</span></span><span style="display:flex;"><span>            <span style="color:#cba6f7">return</span> counts.Requests <span style="color:#89dceb;font-weight:bold">&gt;=</span> <span style="color:#fab387">3</span> <span style="color:#89dceb;font-weight:bold">&amp;&amp;</span> failureRatio <span style="color:#89dceb;font-weight:bold">&gt;=</span> <span style="color:#fab387">0.6</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        OnStateChange: <span style="color:#f38ba8">func</span>(_ <span style="color:#f38ba8">string</span>, from, to gobreaker.State) {
+</span></span><span style="display:flex;"><span>            log.<span style="color:#89b4fa">Printf</span>(<span style="color:#a6e3a1">&#34;from: %v, to: %v\n&#34;</span>, from, to)
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>    })
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">for</span> {
+</span></span><span style="display:flex;"><span>        time.<span style="color:#89b4fa">Sleep</span>(time.Second)
+</span></span><span style="display:flex;"><span>        done, err <span style="color:#89dceb;font-weight:bold">:=</span> cb.<span style="color:#89b4fa">Allow</span>()
+</span></span><span style="display:flex;"><span>        <span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>            log.<span style="color:#89b4fa">Printf</span>(<span style="color:#a6e3a1">&#34;err: %v\n&#34;</span>, err)
+</span></span><span style="display:flex;"><span>            <span style="color:#cba6f7">continue</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        success <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#fab387">true</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cba6f7">if</span> rand.<span style="color:#89b4fa">Float64</span>() &lt; <span style="color:#fab387">0.7</span> {
+</span></span><span style="display:flex;"><span>            log.<span style="color:#89b4fa">Println</span>(<span style="color:#a6e3a1">&#34;failure&#34;</span>)
+</span></span><span style="display:flex;"><span>            success = <span style="color:#fab387">false</span>
+</span></span><span style="display:flex;"><span>        } <span style="color:#cba6f7">else</span> {
+</span></span><span style="display:flex;"><span>            log.<span style="color:#89b4fa">Println</span>(<span style="color:#a6e3a1">&#34;success&#34;</span>)
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#89b4fa">done</span>(success)
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <p>运行结果：</p>
 
 
@@ -195,16 +195,16 @@ type Settings struct { Name string MaxRequests uint32 Interval time.Duration Tim
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ go run main.go
-</span></span><span class="line"><span class="cl">2021/09/16 16:26:49 failure
-</span></span><span class="line"><span class="cl">2021/09/16 16:26:50 failure
-</span></span><span class="line"><span class="cl">2021/09/16 16:26:51 success
-</span></span><span class="line"><span class="cl">2021/09/16 16:26:52 failure
-</span></span><span class="line"><span class="cl">2021/09/16 16:26:52 from: closed, to: open
-</span></span><span class="line"><span class="cl">2021/09/16 16:26:53 err: circuit breaker is open
-</span></span><span class="line"><span class="cl">2021/09/16 16:26:54 err: circuit breaker is open
-</span></span><span class="line"><span class="cl">2021/09/16 16:26:55 err: circuit breaker is open
-</span></span><span class="line"><span class="cl">......</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ go run main.go
+</span></span><span style="display:flex;"><span>2021/09/16 16:26:49 failure
+</span></span><span style="display:flex;"><span>2021/09/16 16:26:50 failure
+</span></span><span style="display:flex;"><span>2021/09/16 16:26:51 success
+</span></span><span style="display:flex;"><span>2021/09/16 16:26:52 failure
+</span></span><span style="display:flex;"><span>2021/09/16 16:26:52 from: closed, to: open
+</span></span><span style="display:flex;"><span>2021/09/16 16:26:53 err: circuit breaker is open
+</span></span><span style="display:flex;"><span>2021/09/16 16:26:54 err: circuit breaker is open
+</span></span><span style="display:flex;"><span>2021/09/16 16:26:55 err: circuit breaker is open
+</span></span><span style="display:flex;"><span>......</span></span></code></pre></div>
 <h2 id="参考">参考</h2>
 <ul>
 <li><a href="https://docs.microsoft.com/en-us/previous-versions/msp-n-p/dn589784(v=pandp.10)">Circuit Breaker Pattern</a></li>

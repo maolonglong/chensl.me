@@ -5,229 +5,229 @@ public class Main { static class Test { private final ReentrantLock lock = new R
 public class Main { static class Test { private final ReentrantLock lock = new ReentrantLock(); public void f1() { lock.lock(); try { System.out.println(Thread.currentThread().getName()); f2(); } finally { lock.unlock(); } } public void f2() { lock.lock(); try { System.out.println(Thread.currentThread().getName()); } finally { lock.unlock(); } } } public static void main(String[] args) { Test test = new Test(); test.f1(); } } 重入锁 VS synchronized 重入锁可以完全替代 synchronized 关键字。在 JDK 5."><meta itemprop=name content="【Java 并发】重入锁（ReentrantLock）"><meta itemprop=description content="什么是“重入” Re-Entrant-Lock 翻译成重入锁也是非常贴切的。之所以这么叫，那是因为这种锁是可以反复进入的。当然，这里的反复仅仅局限于一个线程，观察下面的代码， f1 锁住 lock 之后， f2 依然能继续获取到 lock 并执行，因为它们都属于主线程。
 public class Main { static class Test { private final ReentrantLock lock = new ReentrantLock(); public void f1() { lock.lock(); try { System.out.println(Thread.currentThread().getName()); f2(); } finally { lock.unlock(); } } public void f2() { lock.lock(); try { System.out.println(Thread.currentThread().getName()); } finally { lock.unlock(); } } } public static void main(String[] args) { Test test = new Test(); test.f1(); } } 重入锁 VS synchronized 重入锁可以完全替代 synchronized 关键字。在 JDK 5."><meta itemprop=datePublished content="2020-11-24T16:13:45+00:00"><meta itemprop=dateModified content="2020-11-24T16:13:45+00:00"><meta itemprop=wordCount content="652"><meta itemprop=keywords content="java,concurrency,"><meta name=referrer content="no-referrer-when-downgrade"><link href=/simple.min.css rel=stylesheet><link href=/style.min.css rel=stylesheet></head><body><header><nav><a href=/>Home</a>
 <a href=/blog/>Blog</a>
-<a href=https://chensl.me/index.xml><svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 448 512"><path d="M0 64C0 46.3 14.3 32 32 32c229.8.0 416 186.2 416 416 0 17.7-14.3 32-32 32s-32-14.3-32-32C384 253.6 226.4 96 32 96 14.3 96 0 81.7.0 64zM0 416a64 64 0 11128 0A64 64 0 110 416zM32 160c159.1.0 288 128.9 288 288 0 17.7-14.3 32-32 32s-32-14.3-32-32c0-123.7-100.3-224-224-224-17.7.0-32-14.3-32-32s14.3-32 32-32z"/></svg>RSS</a></nav><h1>【Java 并发】重入锁（ReentrantLock）</h1></header><main><p><i><time datetime=2020-11-24 pubdate>2020-11-24</time></i></p><details><summary>Table of Contents</summary><nav id=TableOfContents><ul><li><a href=#什么是重入>什么是“重入”</a></li><li><a href=#重入锁-vs-synchronized>重入锁 VS synchronized</a><ul><li><a href=#重入锁>重入锁</a></li><li><a href=#synchronized>synchronized</a></li></ul></li><li><a href=#响应中断>响应中断</a></li><li><a href=#锁申请等待限时>锁申请等待限时</a></li><li><a href=#公平锁>公平锁</a></li></ul></nav></details><content><h2 id=什么是重入>什么是“重入”</h2><p>Re-Entrant-Lock 翻译成重入锁也是非常贴切的。之所以这么叫，那是因为这种锁是可以反复进入的。当然，这里的反复<strong>仅仅局限于一个线程</strong>，观察下面的代码， <code>f1</code> 锁住 <code>lock</code> 之后， <code>f2</code> 依然能继续获取到 <code>lock</code> 并执行，因为它们都属于主线程。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>Main</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>static</span><span class=w> </span><span class=kd>class</span> <span class=nc>Test</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>private</span><span class=w> </span><span class=kd>final</span><span class=w> </span><span class=n>ReentrantLock</span><span class=w> </span><span class=n>lock</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ReentrantLock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>public</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>f1</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>lock</span><span class=p>.</span><span class=na>lock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>getName</span><span class=p>());</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>f2</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w> </span><span class=k>finally</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>lock</span><span class=p>.</span><span class=na>unlock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>public</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>f2</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>lock</span><span class=p>.</span><span class=na>lock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>getName</span><span class=p>());</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w> </span><span class=k>finally</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>lock</span><span class=p>.</span><span class=na>unlock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>main</span><span class=p>(</span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>args</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Test</span><span class=w> </span><span class=n>test</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Test</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>test</span><span class=p>.</span><span class=na>f1</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span></span></span></code></pre></div><h2 id=重入锁-vs-synchronized>重入锁 VS synchronized</h2><p>重入锁可以完全替代 <code>synchronized</code> 关键字。在 JDK 5.0 的早期版本中，重入锁的性能远远好于 <code>synchronized</code> ，但从 JDK 6.0 开始，JDK 在 <code>synchronized</code> 上做了大量的优化，使得两者的性能差距并不大。</p><p>用两种方法分别实现 <code>num++</code>：</p><h3 id=重入锁>重入锁</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>Main</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>static</span><span class=w> </span><span class=kt>int</span><span class=w> </span><span class=n>num</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>0</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>static</span><span class=w> </span><span class=n>ReentrantLock</span><span class=w> </span><span class=n>lock</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ReentrantLock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>main</span><span class=p>(</span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>args</span><span class=p>)</span><span class=w> </span><span class=kd>throws</span><span class=w> </span><span class=n>InterruptedException</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=o>[]</span><span class=w> </span><span class=n>ts</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=o>[</span><span class=n>32</span><span class=o>]</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Runnable</span><span class=w> </span><span class=n>runnable</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>()</span><span class=w> </span><span class=o>-&gt;</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=kt>int</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>0</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>&lt;</span><span class=w> </span><span class=n>10000</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=o>++</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>lock</span><span class=p>.</span><span class=na>lock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>num</span><span class=o>++</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w> </span><span class=k>finally</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>lock</span><span class=p>.</span><span class=na>unlock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>};</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=kt>int</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>0</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>&lt;</span><span class=w> </span><span class=n>32</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=o>++</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>ts</span><span class=o>[</span><span class=n>i</span><span class=o>]</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=p>(</span><span class=n>runnable</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>ts</span><span class=o>[</span><span class=n>i</span><span class=o>]</span><span class=p>.</span><span class=na>start</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=kt>int</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>0</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>&lt;</span><span class=w> </span><span class=n>32</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=o>++</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>ts</span><span class=o>[</span><span class=n>i</span><span class=o>]</span><span class=p>.</span><span class=na>join</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=n>num</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span></span></span></code></pre></div><h3 id=synchronized>synchronized</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>Main</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>static</span><span class=w> </span><span class=kt>int</span><span class=w> </span><span class=n>num</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>0</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>static</span><span class=w> </span><span class=n>Object</span><span class=w> </span><span class=n>obj</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Object</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>main</span><span class=p>(</span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>args</span><span class=p>)</span><span class=w> </span><span class=kd>throws</span><span class=w> </span><span class=n>InterruptedException</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=o>[]</span><span class=w> </span><span class=n>ts</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=o>[</span><span class=n>32</span><span class=o>]</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Runnable</span><span class=w> </span><span class=n>runnable</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>()</span><span class=w> </span><span class=o>-&gt;</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=kt>int</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>0</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>&lt;</span><span class=w> </span><span class=n>10000</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=o>++</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=kd>synchronized</span><span class=w> </span><span class=p>(</span><span class=n>obj</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>num</span><span class=o>++</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>};</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=kt>int</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>0</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>&lt;</span><span class=w> </span><span class=n>32</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=o>++</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>ts</span><span class=o>[</span><span class=n>i</span><span class=o>]</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=p>(</span><span class=n>runnable</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>ts</span><span class=o>[</span><span class=n>i</span><span class=o>]</span><span class=p>.</span><span class=na>start</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=kt>int</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>0</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=w> </span><span class=o>&lt;</span><span class=w> </span><span class=n>32</span><span class=p>;</span><span class=w> </span><span class=n>i</span><span class=o>++</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>ts</span><span class=o>[</span><span class=n>i</span><span class=o>]</span><span class=p>.</span><span class=na>join</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=n>num</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span></span></span></code></pre></div><h2 id=响应中断>响应中断</h2><p>对于 <code>synchronized</code> 来说，如果一个线程在等待锁，那么结果只有两种情况，要么它获得这把锁继续执行，要么它就保持等待。而使用重入锁，则提供另外一种可能，那就是线程可以被中断。</p><p>模拟一个死锁的场景：两个线程都需要获取 <code>lock1</code>, <code>lock2</code> 两把锁，线程 <code>t1</code> 先获取了 <code>lock1</code> ，线程 <code>t2</code> 先获取了 <code>lock2</code> ，然后它们就开始无限等待对方让出锁。但是这个时候，如果中断了线程 <code>t2</code> ，并且释放 <code>t2</code> 占有的锁， <code>t1</code> 就能正常运行：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>Main</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>static</span><span class=w> </span><span class=kd>class</span> <span class=nc>IntLock</span><span class=w> </span><span class=kd>implements</span><span class=w> </span><span class=n>Runnable</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>private</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=n>ReentrantLock</span><span class=w> </span><span class=n>lock1</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ReentrantLock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>private</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=n>ReentrantLock</span><span class=w> </span><span class=n>lock2</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ReentrantLock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>private</span><span class=w> </span><span class=kt>int</span><span class=w> </span><span class=n>lock</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>public</span><span class=w> </span><span class=nf>IntLock</span><span class=p>(</span><span class=kt>int</span><span class=w> </span><span class=n>lock</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>this</span><span class=p>.</span><span class=na>lock</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>lock</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nd>@Override</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>public</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>run</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>lock</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=n>1</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>lock1</span><span class=p>.</span><span class=na>lockInterruptibly</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>Thread</span><span class=p>.</span><span class=na>sleep</span><span class=p>(</span><span class=n>500</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>lock2</span><span class=p>.</span><span class=na>lockInterruptibly</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                            </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=s>&#34;t1成功获取两把锁&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=p>}</span><span class=w> </span><span class=k>finally</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                            </span><span class=n>lock2</span><span class=p>.</span><span class=na>unlock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=p>}</span><span class=w> </span><span class=k>catch</span><span class=w> </span><span class=p>(</span><span class=n>InterruptedException</span><span class=w> </span><span class=n>e</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=s>&#34;t1被中断&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>interrupt</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=p>}</span><span class=w> </span><span class=k>finally</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>lock1</span><span class=p>.</span><span class=na>unlock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w> </span><span class=k>else</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>lock2</span><span class=p>.</span><span class=na>lockInterruptibly</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>Thread</span><span class=p>.</span><span class=na>sleep</span><span class=p>(</span><span class=n>500</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>lock1</span><span class=p>.</span><span class=na>lockInterruptibly</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                            </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=s>&#34;t2成功获取两把锁&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=p>}</span><span class=w> </span><span class=k>finally</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                            </span><span class=n>lock1</span><span class=p>.</span><span class=na>unlock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=p>}</span><span class=w> </span><span class=k>catch</span><span class=w> </span><span class=p>(</span><span class=n>InterruptedException</span><span class=w> </span><span class=n>e</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=s>&#34;t2被中断&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>interrupt</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=p>}</span><span class=w> </span><span class=k>finally</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=n>lock2</span><span class=p>.</span><span class=na>unlock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w> </span><span class=k>catch</span><span class=w> </span><span class=p>(</span><span class=n>InterruptedException</span><span class=w> </span><span class=n>e</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>interrupt</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>main</span><span class=p>(</span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>args</span><span class=p>)</span><span class=w> </span><span class=kd>throws</span><span class=w> </span><span class=n>InterruptedException</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>IntLock</span><span class=w> </span><span class=n>r1</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>IntLock</span><span class=p>(</span><span class=n>1</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>IntLock</span><span class=w> </span><span class=n>r2</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>IntLock</span><span class=p>(</span><span class=n>2</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=w> </span><span class=n>t1</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=p>(</span><span class=n>r1</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=w> </span><span class=n>t2</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=p>(</span><span class=n>r2</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>t1</span><span class=p>.</span><span class=na>start</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>t2</span><span class=p>.</span><span class=na>start</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=p>.</span><span class=na>sleep</span><span class=p>(</span><span class=n>1000</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>t2</span><span class=p>.</span><span class=na>interrupt</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span></span></span></code></pre></div><h2 id=锁申请等待限时>锁申请等待限时</h2><p><code>tryLock()</code> 方法接收两个参数，一个表示等待时长，另外一个表示计时单位。也可以不带参数直接运行。在这种情况下，当前线程会尝试获得锁，如果锁并未被其他线程占用，则申请锁会成功，并立即返回 <code>true</code> 。如果锁被其他线程占用，则当前线程不会进行等待，而是立即返回 <code>false</code>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>Main</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>private</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=n>ReentrantLock</span><span class=w> </span><span class=n>lock</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ReentrantLock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>main</span><span class=p>(</span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>args</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Runnable</span><span class=w> </span><span class=n>target</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>()</span><span class=w> </span><span class=o>-&gt;</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>lock</span><span class=p>.</span><span class=na>tryLock</span><span class=p>(</span><span class=n>1</span><span class=p>,</span><span class=w> </span><span class=n>TimeUnit</span><span class=p>.</span><span class=na>SECONDS</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>getName</span><span class=p>()</span><span class=w> </span><span class=o>+</span><span class=w> </span><span class=s>&#34; get lock success&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>Thread</span><span class=p>.</span><span class=na>sleep</span><span class=p>(</span><span class=n>4000</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w> </span><span class=k>else</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>getName</span><span class=p>()</span><span class=w> </span><span class=o>+</span><span class=w> </span><span class=s>&#34; get lock failed&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w> </span><span class=k>catch</span><span class=w> </span><span class=p>(</span><span class=n>InterruptedException</span><span class=w> </span><span class=n>e</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>interrupt</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w> </span><span class=k>finally</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>lock</span><span class=p>.</span><span class=na>isHeldByCurrentThread</span><span class=p>())</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>lock</span><span class=p>.</span><span class=na>unlock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>};</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=w> </span><span class=n>t1</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=p>(</span><span class=n>target</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=w> </span><span class=n>t2</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=p>(</span><span class=n>target</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>t1</span><span class=p>.</span><span class=na>start</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>t2</span><span class=p>.</span><span class=na>start</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span></span></span></code></pre></div><h2 id=公平锁>公平锁</h2><p>在大多数情况下，锁的申请都是非公平的。也就是说，线程 1 首先请求了锁 A，接着线程 2 也请求了锁 A。那么当锁 A 可用时，是线程 1 可以获得锁还是线程 2 可以获得锁呢？这是不一定的。系统只是会从这个锁的等待队列中随机挑选一个。因此不能保证其公平性。这就好比买票不排队，大家都乱哄哄得围在售票窗口前，售票员忙得焦头烂额，也顾不及谁先谁后，随便找个人出票就完事了。而公平的锁，则不是这样，它会按照时间的先后顺序，保证先到者先得，后到者后得。公平锁的一大特点是：它不会产生饥饿现象。只要你排队，最终还是可以等到资源的。如果我们使用 synchronized 关键字进行锁控制，那么产生的锁就是非公平的。而重入锁允许我们对其公平性进行设置。它有一个如下的构造函数：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>public</span><span class=w> </span><span class=nf>ReentrantLock</span><span class=p>(</span><span class=kt>boolean</span><span class=w> </span><span class=n>fair</span><span class=p>)</span></span></span></code></pre></div><p>当参数 fair 为 true 时，表示锁是公平的。公平锁看起来很优美，但是要实现公平锁必然要求系统维护一个<strong>有序队列</strong>，因此公平锁的实现成本比较高，性能相对也非常低下，因此，<strong>默认情况下，锁是非公平的</strong>。如果没有特别的需求，也不需要使用公平锁。公平锁和非公平锁在线程调度表现上也是非常不一样的。下面的代码可以很好地突出公平锁的特点：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>Main</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>private</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=n>ReentrantLock</span><span class=w> </span><span class=n>fairLock</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ReentrantLock</span><span class=p>(</span><span class=kc>true</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>main</span><span class=p>(</span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>args</span><span class=p>)</span><span class=w> </span><span class=kd>throws</span><span class=w> </span><span class=n>InterruptedException</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Runnable</span><span class=w> </span><span class=n>target</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>()</span><span class=w> </span><span class=o>-&gt;</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>while</span><span class=w> </span><span class=p>(</span><span class=o>!</span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>isInterrupted</span><span class=p>())</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>fairLock</span><span class=p>.</span><span class=na>lock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=n>Thread</span><span class=p>.</span><span class=na>currentThread</span><span class=p>().</span><span class=na>getName</span><span class=p>()</span><span class=w> </span><span class=o>+</span><span class=w> </span><span class=s>&#34; 获得锁&#34;</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w> </span><span class=k>finally</span><span class=w> </span><span class=p>{</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>fairLock</span><span class=p>.</span><span class=na>unlock</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>};</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=w> </span><span class=n>t1</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=p>(</span><span class=n>target</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=w> </span><span class=n>t2</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>Thread</span><span class=p>(</span><span class=n>target</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>t1</span><span class=p>.</span><span class=na>start</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>t2</span><span class=p>.</span><span class=na>start</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Thread</span><span class=p>.</span><span class=na>sleep</span><span class=p>(</span><span class=n>1000</span><span class=p>);</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>t1</span><span class=p>.</span><span class=na>interrupt</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>t2</span><span class=p>.</span><span class=na>interrupt</span><span class=p>();</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span></span></span></code></pre></div><p>从运行结果可以看出，大部分情况下，两个线程是交替运行的。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-plaintext data-lang=plaintext><span class=line><span class=cl>...
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>...
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>...</span></span></code></pre></div><p>但是换成非公平锁之后，会发现连续多次都是同一个线程获取锁。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-plaintext data-lang=plaintext><span class=line><span class=cl>...
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>Thread-0 获得锁
-</span></span><span class=line><span class=cl>...
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>Thread-1 获得锁
-</span></span><span class=line><span class=cl>...</span></span></code></pre></div></content><p><a href=https://chensl.me/blog/java/>#java</a>&nbsp;&nbsp;
+<a href=https://chensl.me/index.xml><svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 448 512"><path d="M0 64C0 46.3 14.3 32 32 32c229.8.0 416 186.2 416 416 0 17.7-14.3 32-32 32s-32-14.3-32-32C384 253.6 226.4 96 32 96 14.3 96 0 81.7.0 64zM0 416a64 64 0 11128 0A64 64 0 110 416zM32 160c159.1.0 288 128.9 288 288 0 17.7-14.3 32-32 32s-32-14.3-32-32c0-123.7-100.3-224-224-224-17.7.0-32-14.3-32-32s14.3-32 32-32z"/></svg>RSS</a></nav><h1>【Java 并发】重入锁（ReentrantLock）</h1></header><main><p><i><time datetime=2020-11-24 pubdate>2020-11-24</time></i></p><details><summary>Table of Contents</summary><nav id=TableOfContents><ul><li><a href=#什么是重入>什么是“重入”</a></li><li><a href=#重入锁-vs-synchronized>重入锁 VS synchronized</a><ul><li><a href=#重入锁>重入锁</a></li><li><a href=#synchronized>synchronized</a></li></ul></li><li><a href=#响应中断>响应中断</a></li><li><a href=#锁申请等待限时>锁申请等待限时</a></li><li><a href=#公平锁>公平锁</a></li></ul></nav></details><content><h2 id=什么是重入>什么是“重入”</h2><p>Re-Entrant-Lock 翻译成重入锁也是非常贴切的。之所以这么叫，那是因为这种锁是可以反复进入的。当然，这里的反复<strong>仅仅局限于一个线程</strong>，观察下面的代码， <code>f1</code> 锁住 <code>lock</code> 之后， <code>f2</code> 依然能继续获取到 <code>lock</code> 并执行，因为它们都属于主线程。</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#f38ba8>public</span> <span style=color:#f38ba8>class</span> <span style=color:#f9e2af>Main</span> {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>class</span> <span style=color:#f9e2af>Test</span> {
+</span></span><span style=display:flex><span>        <span style=color:#f38ba8>private</span> <span style=color:#f38ba8>final</span> ReentrantLock lock <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> ReentrantLock();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f38ba8>public</span> <span style=color:#f38ba8>void</span> <span style=color:#89b4fa>f1</span>() {
+</span></span><span style=display:flex><span>            lock.<span style=color:#89b4fa>lock</span>();
+</span></span><span style=display:flex><span>            <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>getName</span>());
+</span></span><span style=display:flex><span>                f2();
+</span></span><span style=display:flex><span>            } <span style=color:#cba6f7>finally</span> {
+</span></span><span style=display:flex><span>                lock.<span style=color:#89b4fa>unlock</span>();
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f38ba8>public</span> <span style=color:#f38ba8>void</span> <span style=color:#89b4fa>f2</span>() {
+</span></span><span style=display:flex><span>            lock.<span style=color:#89b4fa>lock</span>();
+</span></span><span style=display:flex><span>            <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>getName</span>());
+</span></span><span style=display:flex><span>            } <span style=color:#cba6f7>finally</span> {
+</span></span><span style=display:flex><span>                lock.<span style=color:#89b4fa>unlock</span>();
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>public</span> <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>void</span> <span style=color:#89b4fa>main</span>(String<span style=color:#89dceb;font-weight:700>[]</span> args) {
+</span></span><span style=display:flex><span>        Test test <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Test();
+</span></span><span style=display:flex><span>        test.<span style=color:#89b4fa>f1</span>();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}</span></span></code></pre></div><h2 id=重入锁-vs-synchronized>重入锁 VS synchronized</h2><p>重入锁可以完全替代 <code>synchronized</code> 关键字。在 JDK 5.0 的早期版本中，重入锁的性能远远好于 <code>synchronized</code> ，但从 JDK 6.0 开始，JDK 在 <code>synchronized</code> 上做了大量的优化，使得两者的性能差距并不大。</p><p>用两种方法分别实现 <code>num++</code>：</p><h3 id=重入锁>重入锁</h3><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#f38ba8>public</span> <span style=color:#f38ba8>class</span> <span style=color:#f9e2af>Main</span> {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>int</span> num <span style=color:#89dceb;font-weight:700>=</span> 0;
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>static</span> ReentrantLock lock <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> ReentrantLock();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>public</span> <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>void</span> <span style=color:#89b4fa>main</span>(String<span style=color:#89dceb;font-weight:700>[]</span> args) <span style=color:#f38ba8>throws</span> InterruptedException {
+</span></span><span style=display:flex><span>        Thread<span style=color:#89dceb;font-weight:700>[]</span> ts <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread<span style=color:#89dceb;font-weight:700>[</span>32<span style=color:#89dceb;font-weight:700>]</span>;
+</span></span><span style=display:flex><span>        Runnable runnable <span style=color:#89dceb;font-weight:700>=</span> () <span style=color:#89dceb;font-weight:700>-&gt;</span> {
+</span></span><span style=display:flex><span>            <span style=color:#cba6f7>for</span> (<span style=color:#f38ba8>int</span> i <span style=color:#89dceb;font-weight:700>=</span> 0; i <span style=color:#89dceb;font-weight:700>&lt;</span> 10000; i<span style=color:#89dceb;font-weight:700>++</span>) {
+</span></span><span style=display:flex><span>                lock.<span style=color:#89b4fa>lock</span>();
+</span></span><span style=display:flex><span>                <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                    num<span style=color:#89dceb;font-weight:700>++</span>;
+</span></span><span style=display:flex><span>                } <span style=color:#cba6f7>finally</span> {
+</span></span><span style=display:flex><span>                    lock.<span style=color:#89b4fa>unlock</span>();
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>        <span style=color:#cba6f7>for</span> (<span style=color:#f38ba8>int</span> i <span style=color:#89dceb;font-weight:700>=</span> 0; i <span style=color:#89dceb;font-weight:700>&lt;</span> 32; i<span style=color:#89dceb;font-weight:700>++</span>) {
+</span></span><span style=display:flex><span>            ts<span style=color:#89dceb;font-weight:700>[</span>i<span style=color:#89dceb;font-weight:700>]</span> <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread(runnable);
+</span></span><span style=display:flex><span>            ts<span style=color:#89dceb;font-weight:700>[</span>i<span style=color:#89dceb;font-weight:700>]</span>.<span style=color:#89b4fa>start</span>();
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#cba6f7>for</span> (<span style=color:#f38ba8>int</span> i <span style=color:#89dceb;font-weight:700>=</span> 0; i <span style=color:#89dceb;font-weight:700>&lt;</span> 32; i<span style=color:#89dceb;font-weight:700>++</span>) {
+</span></span><span style=display:flex><span>            ts<span style=color:#89dceb;font-weight:700>[</span>i<span style=color:#89dceb;font-weight:700>]</span>.<span style=color:#89b4fa>join</span>();
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(num);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}</span></span></code></pre></div><h3 id=synchronized>synchronized</h3><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#f38ba8>public</span> <span style=color:#f38ba8>class</span> <span style=color:#f9e2af>Main</span> {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>int</span> num <span style=color:#89dceb;font-weight:700>=</span> 0;
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>static</span> Object obj <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Object();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>public</span> <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>void</span> <span style=color:#89b4fa>main</span>(String<span style=color:#89dceb;font-weight:700>[]</span> args) <span style=color:#f38ba8>throws</span> InterruptedException {
+</span></span><span style=display:flex><span>        Thread<span style=color:#89dceb;font-weight:700>[]</span> ts <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread<span style=color:#89dceb;font-weight:700>[</span>32<span style=color:#89dceb;font-weight:700>]</span>;
+</span></span><span style=display:flex><span>        Runnable runnable <span style=color:#89dceb;font-weight:700>=</span> () <span style=color:#89dceb;font-weight:700>-&gt;</span> {
+</span></span><span style=display:flex><span>            <span style=color:#cba6f7>for</span> (<span style=color:#f38ba8>int</span> i <span style=color:#89dceb;font-weight:700>=</span> 0; i <span style=color:#89dceb;font-weight:700>&lt;</span> 10000; i<span style=color:#89dceb;font-weight:700>++</span>) {
+</span></span><span style=display:flex><span>                <span style=color:#f38ba8>synchronized</span> (obj) {
+</span></span><span style=display:flex><span>                    num<span style=color:#89dceb;font-weight:700>++</span>;
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>        <span style=color:#cba6f7>for</span> (<span style=color:#f38ba8>int</span> i <span style=color:#89dceb;font-weight:700>=</span> 0; i <span style=color:#89dceb;font-weight:700>&lt;</span> 32; i<span style=color:#89dceb;font-weight:700>++</span>) {
+</span></span><span style=display:flex><span>            ts<span style=color:#89dceb;font-weight:700>[</span>i<span style=color:#89dceb;font-weight:700>]</span> <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread(runnable);
+</span></span><span style=display:flex><span>            ts<span style=color:#89dceb;font-weight:700>[</span>i<span style=color:#89dceb;font-weight:700>]</span>.<span style=color:#89b4fa>start</span>();
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#cba6f7>for</span> (<span style=color:#f38ba8>int</span> i <span style=color:#89dceb;font-weight:700>=</span> 0; i <span style=color:#89dceb;font-weight:700>&lt;</span> 32; i<span style=color:#89dceb;font-weight:700>++</span>) {
+</span></span><span style=display:flex><span>            ts<span style=color:#89dceb;font-weight:700>[</span>i<span style=color:#89dceb;font-weight:700>]</span>.<span style=color:#89b4fa>join</span>();
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(num);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}</span></span></code></pre></div><h2 id=响应中断>响应中断</h2><p>对于 <code>synchronized</code> 来说，如果一个线程在等待锁，那么结果只有两种情况，要么它获得这把锁继续执行，要么它就保持等待。而使用重入锁，则提供另外一种可能，那就是线程可以被中断。</p><p>模拟一个死锁的场景：两个线程都需要获取 <code>lock1</code>, <code>lock2</code> 两把锁，线程 <code>t1</code> 先获取了 <code>lock1</code> ，线程 <code>t2</code> 先获取了 <code>lock2</code> ，然后它们就开始无限等待对方让出锁。但是这个时候，如果中断了线程 <code>t2</code> ，并且释放 <code>t2</code> 占有的锁， <code>t1</code> 就能正常运行：</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#f38ba8>public</span> <span style=color:#f38ba8>class</span> <span style=color:#f9e2af>Main</span> {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>class</span> <span style=color:#f9e2af>IntLock</span> <span style=color:#f38ba8>implements</span> Runnable {
+</span></span><span style=display:flex><span>        <span style=color:#f38ba8>private</span> <span style=color:#f38ba8>static</span> ReentrantLock lock1 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> ReentrantLock();
+</span></span><span style=display:flex><span>        <span style=color:#f38ba8>private</span> <span style=color:#f38ba8>static</span> ReentrantLock lock2 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> ReentrantLock();
+</span></span><span style=display:flex><span>        <span style=color:#f38ba8>private</span> <span style=color:#f38ba8>int</span> lock;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#f38ba8>public</span> <span style=color:#89b4fa>IntLock</span>(<span style=color:#f38ba8>int</span> lock) {
+</span></span><span style=display:flex><span>            <span style=color:#cba6f7>this</span>.<span style=color:#89b4fa>lock</span> <span style=color:#89dceb;font-weight:700>=</span> lock;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#89b4fa;font-weight:700>@Override</span>
+</span></span><span style=display:flex><span>        <span style=color:#f38ba8>public</span> <span style=color:#f38ba8>void</span> <span style=color:#89b4fa>run</span>() {
+</span></span><span style=display:flex><span>            <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                <span style=color:#cba6f7>if</span> (lock <span style=color:#89dceb;font-weight:700>==</span> 1) {
+</span></span><span style=display:flex><span>                    lock1.<span style=color:#89b4fa>lockInterruptibly</span>();
+</span></span><span style=display:flex><span>                    <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                        Thread.<span style=color:#89b4fa>sleep</span>(500);
+</span></span><span style=display:flex><span>                        lock2.<span style=color:#89b4fa>lockInterruptibly</span>();
+</span></span><span style=display:flex><span>                        <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                            System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(<span style=color:#a6e3a1>&#34;t1成功获取两把锁&#34;</span>);
+</span></span><span style=display:flex><span>                        } <span style=color:#cba6f7>finally</span> {
+</span></span><span style=display:flex><span>                            lock2.<span style=color:#89b4fa>unlock</span>();
+</span></span><span style=display:flex><span>                        }
+</span></span><span style=display:flex><span>                    } <span style=color:#cba6f7>catch</span> (InterruptedException e) {
+</span></span><span style=display:flex><span>                        System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(<span style=color:#a6e3a1>&#34;t1被中断&#34;</span>);
+</span></span><span style=display:flex><span>                        Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>interrupt</span>();
+</span></span><span style=display:flex><span>                    } <span style=color:#cba6f7>finally</span> {
+</span></span><span style=display:flex><span>                        lock1.<span style=color:#89b4fa>unlock</span>();
+</span></span><span style=display:flex><span>                    }
+</span></span><span style=display:flex><span>                } <span style=color:#cba6f7>else</span> {
+</span></span><span style=display:flex><span>                    lock2.<span style=color:#89b4fa>lockInterruptibly</span>();
+</span></span><span style=display:flex><span>                    <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                        Thread.<span style=color:#89b4fa>sleep</span>(500);
+</span></span><span style=display:flex><span>                        lock1.<span style=color:#89b4fa>lockInterruptibly</span>();
+</span></span><span style=display:flex><span>                        <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                            System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(<span style=color:#a6e3a1>&#34;t2成功获取两把锁&#34;</span>);
+</span></span><span style=display:flex><span>                        } <span style=color:#cba6f7>finally</span> {
+</span></span><span style=display:flex><span>                            lock1.<span style=color:#89b4fa>unlock</span>();
+</span></span><span style=display:flex><span>                        }
+</span></span><span style=display:flex><span>                    } <span style=color:#cba6f7>catch</span> (InterruptedException e) {
+</span></span><span style=display:flex><span>                        System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(<span style=color:#a6e3a1>&#34;t2被中断&#34;</span>);
+</span></span><span style=display:flex><span>                        Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>interrupt</span>();
+</span></span><span style=display:flex><span>                    } <span style=color:#cba6f7>finally</span> {
+</span></span><span style=display:flex><span>                        lock2.<span style=color:#89b4fa>unlock</span>();
+</span></span><span style=display:flex><span>                    }
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>            } <span style=color:#cba6f7>catch</span> (InterruptedException e) {
+</span></span><span style=display:flex><span>                Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>interrupt</span>();
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>public</span> <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>void</span> <span style=color:#89b4fa>main</span>(String<span style=color:#89dceb;font-weight:700>[]</span> args) <span style=color:#f38ba8>throws</span> InterruptedException {
+</span></span><span style=display:flex><span>        IntLock r1 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> IntLock(1);
+</span></span><span style=display:flex><span>        IntLock r2 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> IntLock(2);
+</span></span><span style=display:flex><span>        Thread t1 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread(r1);
+</span></span><span style=display:flex><span>        Thread t2 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread(r2);
+</span></span><span style=display:flex><span>        t1.<span style=color:#89b4fa>start</span>();
+</span></span><span style=display:flex><span>        t2.<span style=color:#89b4fa>start</span>();
+</span></span><span style=display:flex><span>        Thread.<span style=color:#89b4fa>sleep</span>(1000);
+</span></span><span style=display:flex><span>        t2.<span style=color:#89b4fa>interrupt</span>();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}</span></span></code></pre></div><h2 id=锁申请等待限时>锁申请等待限时</h2><p><code>tryLock()</code> 方法接收两个参数，一个表示等待时长，另外一个表示计时单位。也可以不带参数直接运行。在这种情况下，当前线程会尝试获得锁，如果锁并未被其他线程占用，则申请锁会成功，并立即返回 <code>true</code> 。如果锁被其他线程占用，则当前线程不会进行等待，而是立即返回 <code>false</code>。</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#f38ba8>public</span> <span style=color:#f38ba8>class</span> <span style=color:#f9e2af>Main</span> {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>private</span> <span style=color:#f38ba8>static</span> ReentrantLock lock <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> ReentrantLock();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>public</span> <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>void</span> <span style=color:#89b4fa>main</span>(String<span style=color:#89dceb;font-weight:700>[]</span> args) {
+</span></span><span style=display:flex><span>        Runnable target <span style=color:#89dceb;font-weight:700>=</span> () <span style=color:#89dceb;font-weight:700>-&gt;</span> {
+</span></span><span style=display:flex><span>            <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                <span style=color:#cba6f7>if</span> (lock.<span style=color:#89b4fa>tryLock</span>(1, TimeUnit.<span style=color:#89b4fa>SECONDS</span>)) {
+</span></span><span style=display:flex><span>                    System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>getName</span>() <span style=color:#89dceb;font-weight:700>+</span> <span style=color:#a6e3a1>&#34; get lock success&#34;</span>);
+</span></span><span style=display:flex><span>                    Thread.<span style=color:#89b4fa>sleep</span>(4000);
+</span></span><span style=display:flex><span>                } <span style=color:#cba6f7>else</span> {
+</span></span><span style=display:flex><span>                    System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>getName</span>() <span style=color:#89dceb;font-weight:700>+</span> <span style=color:#a6e3a1>&#34; get lock failed&#34;</span>);
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>            } <span style=color:#cba6f7>catch</span> (InterruptedException e) {
+</span></span><span style=display:flex><span>                Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>interrupt</span>();
+</span></span><span style=display:flex><span>            } <span style=color:#cba6f7>finally</span> {
+</span></span><span style=display:flex><span>                <span style=color:#cba6f7>if</span> (lock.<span style=color:#89b4fa>isHeldByCurrentThread</span>()) {
+</span></span><span style=display:flex><span>                    lock.<span style=color:#89b4fa>unlock</span>();
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>        Thread t1 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread(target);
+</span></span><span style=display:flex><span>        Thread t2 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread(target);
+</span></span><span style=display:flex><span>        t1.<span style=color:#89b4fa>start</span>();
+</span></span><span style=display:flex><span>        t2.<span style=color:#89b4fa>start</span>();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>}</span></span></code></pre></div><h2 id=公平锁>公平锁</h2><p>在大多数情况下，锁的申请都是非公平的。也就是说，线程 1 首先请求了锁 A，接着线程 2 也请求了锁 A。那么当锁 A 可用时，是线程 1 可以获得锁还是线程 2 可以获得锁呢？这是不一定的。系统只是会从这个锁的等待队列中随机挑选一个。因此不能保证其公平性。这就好比买票不排队，大家都乱哄哄得围在售票窗口前，售票员忙得焦头烂额，也顾不及谁先谁后，随便找个人出票就完事了。而公平的锁，则不是这样，它会按照时间的先后顺序，保证先到者先得，后到者后得。公平锁的一大特点是：它不会产生饥饿现象。只要你排队，最终还是可以等到资源的。如果我们使用 synchronized 关键字进行锁控制，那么产生的锁就是非公平的。而重入锁允许我们对其公平性进行设置。它有一个如下的构造函数：</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#f38ba8>public</span> <span style=color:#89b4fa>ReentrantLock</span>(<span style=color:#f38ba8>boolean</span> fair)</span></span></code></pre></div><p>当参数 fair 为 true 时，表示锁是公平的。公平锁看起来很优美，但是要实现公平锁必然要求系统维护一个<strong>有序队列</strong>，因此公平锁的实现成本比较高，性能相对也非常低下，因此，<strong>默认情况下，锁是非公平的</strong>。如果没有特别的需求，也不需要使用公平锁。公平锁和非公平锁在线程调度表现上也是非常不一样的。下面的代码可以很好地突出公平锁的特点：</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-java data-lang=java><span style=display:flex><span><span style=color:#f38ba8>public</span> <span style=color:#f38ba8>class</span> <span style=color:#f9e2af>Main</span> {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>private</span> <span style=color:#f38ba8>static</span> ReentrantLock fairLock <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> ReentrantLock(<span style=color:#fab387>true</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f38ba8>public</span> <span style=color:#f38ba8>static</span> <span style=color:#f38ba8>void</span> <span style=color:#89b4fa>main</span>(String<span style=color:#89dceb;font-weight:700>[]</span> args) <span style=color:#f38ba8>throws</span> InterruptedException {
+</span></span><span style=display:flex><span>        Runnable target <span style=color:#89dceb;font-weight:700>=</span> () <span style=color:#89dceb;font-weight:700>-&gt;</span> {
+</span></span><span style=display:flex><span>            <span style=color:#cba6f7>while</span> (<span style=color:#89dceb;font-weight:700>!</span>Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>isInterrupted</span>()) {
+</span></span><span style=display:flex><span>                fairLock.<span style=color:#89b4fa>lock</span>();
+</span></span><span style=display:flex><span>                <span style=color:#cba6f7>try</span> {
+</span></span><span style=display:flex><span>                    System.<span style=color:#89b4fa>out</span>.<span style=color:#89b4fa>println</span>(Thread.<span style=color:#89b4fa>currentThread</span>().<span style=color:#89b4fa>getName</span>() <span style=color:#89dceb;font-weight:700>+</span> <span style=color:#a6e3a1>&#34; 获得锁&#34;</span>);
+</span></span><span style=display:flex><span>                } <span style=color:#cba6f7>finally</span> {
+</span></span><span style=display:flex><span>                    fairLock.<span style=color:#89b4fa>unlock</span>();
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>        Thread t1 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread(target);
+</span></span><span style=display:flex><span>        Thread t2 <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#cba6f7>new</span> Thread(target);
+</span></span><span style=display:flex><span>        t1.<span style=color:#89b4fa>start</span>();
+</span></span><span style=display:flex><span>        t2.<span style=color:#89b4fa>start</span>();
+</span></span><span style=display:flex><span>        Thread.<span style=color:#89b4fa>sleep</span>(1000);
+</span></span><span style=display:flex><span>        t1.<span style=color:#89b4fa>interrupt</span>();
+</span></span><span style=display:flex><span>        t2.<span style=color:#89b4fa>interrupt</span>();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>}</span></span></code></pre></div><p>从运行结果可以看出，大部分情况下，两个线程是交替运行的。</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plaintext data-lang=plaintext><span style=display:flex><span>...
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>...
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>...</span></span></code></pre></div><p>但是换成非公平锁之后，会发现连续多次都是同一个线程获取锁。</p><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plaintext data-lang=plaintext><span style=display:flex><span>...
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>Thread-0 获得锁
+</span></span><span style=display:flex><span>...
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>Thread-1 获得锁
+</span></span><span style=display:flex><span>...</span></span></code></pre></div></content><p><a href=https://chensl.me/blog/java/>#java</a>&nbsp;&nbsp;
 <a href=https://chensl.me/blog/concurrency/>#concurrency</a>&nbsp;&nbsp;</p></main><footer>Made with
 <a href=https://github.com/maolonglong/hugo-simple/>Hugo ʕ•ᴥ•ʔ Simple</a></footer></body></html>

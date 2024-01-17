@@ -30,13 +30,13 @@ Pull Request GitHub 简单的使用就不赘述了，这篇主要分享一下我
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 安装 cz-cli (前提得先装好 node.js)</span>
-</span></span><span class="line"><span class="cl">npm i -g commitizen cz-conventional-changelog
-</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s1">&#39;{ &#34;path&#34;: &#34;cz-conventional-changelog&#34; }&#39;</span> &gt; ~/.czrc
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 像往常一样 add 然后 commit (commit 改为 cz)</span>
-</span></span><span class="line"><span class="cl">git add .
-</span></span><span class="line"><span class="cl">git cz</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"># 安装 cz-cli (前提得先装好 node.js)</span>
+</span></span><span style="display:flex;"><span>npm i -g commitizen cz-conventional-changelog
+</span></span><span style="display:flex;"><span><span style="color:#89dceb">echo</span> <span style="color:#a6e3a1">&#39;{ &#34;path&#34;: &#34;cz-conventional-changelog&#34; }&#39;</span> &gt; ~/.czrc
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"># 像往常一样 add 然后 commit (commit 改为 cz)</span>
+</span></span><span style="display:flex;"><span>git add .
+</span></span><span style="display:flex;"><span>git cz</span></span></code></pre></div>
 <p>没人不喜欢这样清晰的 commits:</p>
 
 
@@ -44,19 +44,19 @@ Pull Request GitHub 简单的使用就不赘述了，这篇主要分享一下我
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ git log --oneline
-</span></span><span class="line"><span class="cl"><span class="m">007059963</span> <span class="o">(</span>HEAD -&gt; main, origin/main, origin/HEAD<span class="o">)</span> feat: add solutions to lc/lcof2 problem: Asteroid Collision
-</span></span><span class="line"><span class="cl">92e73c337 chore: update contributors to @doocs/leetcode
-</span></span><span class="line"><span class="cl">8453df21d feat: add solutions to lc problem: No.0825.Friends Of Appropriate Ages
-</span></span><span class="line"><span class="cl">f8ea6eb9d feat: add solutions to lcof2 problem:No.075
-</span></span><span class="line"><span class="cl">362159f22 feat: add solutions to lc problems: No.0912,1122
-</span></span><span class="line"><span class="cl">89d6e7117 feat: add solutions to lc problem: No.1869.Longer Contiguous Segments of Ones than Zeros
-</span></span><span class="line"><span class="cl">b680b612c feat: add solutions to lc problem: No.1051.Height Checker
-</span></span><span class="line"><span class="cl">f4ccd19bd feat: add solutions to lc problem: No.0912.Sort an Array
-</span></span><span class="line"><span class="cl">2e803a22b feat: add solutions to lcof2 problem: No.046
-</span></span><span class="line"><span class="cl">6421c40d3 chore: update contributors to @doocs/leetcode
-</span></span><span class="line"><span class="cl">f41bad246 feat: add cpp solution to lcof2 problem: NO.046 <span class="o">(</span><span class="c1">#567)</span>
-</span></span><span class="line"><span class="cl">......</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ git log --oneline
+</span></span><span style="display:flex;"><span><span style="color:#fab387">007059963</span> <span style="color:#89dceb;font-weight:bold">(</span>HEAD -&gt; main, origin/main, origin/HEAD<span style="color:#89dceb;font-weight:bold">)</span> feat: add solutions to lc/lcof2 problem: Asteroid Collision
+</span></span><span style="display:flex;"><span>92e73c337 chore: update contributors to @doocs/leetcode
+</span></span><span style="display:flex;"><span>8453df21d feat: add solutions to lc problem: No.0825.Friends Of Appropriate Ages
+</span></span><span style="display:flex;"><span>f8ea6eb9d feat: add solutions to lcof2 problem:No.075
+</span></span><span style="display:flex;"><span>362159f22 feat: add solutions to lc problems: No.0912,1122
+</span></span><span style="display:flex;"><span>89d6e7117 feat: add solutions to lc problem: No.1869.Longer Contiguous Segments of Ones than Zeros
+</span></span><span style="display:flex;"><span>b680b612c feat: add solutions to lc problem: No.1051.Height Checker
+</span></span><span style="display:flex;"><span>f4ccd19bd feat: add solutions to lc problem: No.0912.Sort an Array
+</span></span><span style="display:flex;"><span>2e803a22b feat: add solutions to lcof2 problem: No.046
+</span></span><span style="display:flex;"><span>6421c40d3 chore: update contributors to @doocs/leetcode
+</span></span><span style="display:flex;"><span>f41bad246 feat: add cpp solution to lcof2 problem: NO.046 <span style="color:#89dceb;font-weight:bold">(</span><span style="color:#6c7086;font-style:italic">#567)</span>
+</span></span><span style="display:flex;"><span>......</span></span></code></pre></div>
 <h2 id="最后">最后</h2>
 <p>打一波广告，欢迎喜欢刷题的小伙伴加入我们</p>
 <p><a href="https://github.com/doocs/leetcode"><img src="https://github-readme-stats.vercel.app/api/pin/?username=doocs&amp;repo=leetcode&amp;show_owner=true" alt="leetcode"></a></p>

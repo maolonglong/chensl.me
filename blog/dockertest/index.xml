@@ -7,28 +7,28 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestShouldUpdateStats</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">db</span><span class="p">,</span> <span class="nx">mock</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sqlmock</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;an error &#39;%s&#39; was not expected when opening a stub database connection&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectBegin</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectExec</span><span class="p">(</span><span class="s">&#34;UPDATE products&#34;</span><span class="p">).</span><span class="nf">WillReturnResult</span><span class="p">(</span><span class="nx">sqlmock</span><span class="p">.</span><span class="nf">NewResult</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectExec</span><span class="p">(</span><span class="s">&#34;INSERT INTO product_viewers&#34;</span><span class="p">).</span><span class="nf">WithArgs</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">).</span><span class="nf">WillReturnResult</span><span class="p">(</span><span class="nx">sqlmock</span><span class="p">.</span><span class="nf">NewResult</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectCommit</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// now we execute our method
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">recordStats</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;error was not expected while updating stats: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="c1">// we make sure that all expectations were met
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mock</span><span class="p">.</span><span class="nf">ExpectationsWereMet</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;there were unfulfilled expectations: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">TestShouldUpdateStats</span>(t <span style="color:#89dceb;font-weight:bold">*</span>testing.T) {
+</span></span><span style="display:flex;"><span>	db, mock, err <span style="color:#89dceb;font-weight:bold">:=</span> sqlmock.<span style="color:#89b4fa">New</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		t.<span style="color:#89b4fa">Fatalf</span>(<span style="color:#a6e3a1">&#34;an error &#39;%s&#39; was not expected when opening a stub database connection&#34;</span>, err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">defer</span> db.<span style="color:#89b4fa">Close</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	mock.<span style="color:#89b4fa">ExpectBegin</span>()
+</span></span><span style="display:flex;"><span>	mock.<span style="color:#89b4fa">ExpectExec</span>(<span style="color:#a6e3a1">&#34;UPDATE products&#34;</span>).<span style="color:#89b4fa">WillReturnResult</span>(sqlmock.<span style="color:#89b4fa">NewResult</span>(<span style="color:#fab387">1</span>, <span style="color:#fab387">1</span>))
+</span></span><span style="display:flex;"><span>	mock.<span style="color:#89b4fa">ExpectExec</span>(<span style="color:#a6e3a1">&#34;INSERT INTO product_viewers&#34;</span>).<span style="color:#89b4fa">WithArgs</span>(<span style="color:#fab387">2</span>, <span style="color:#fab387">3</span>).<span style="color:#89b4fa">WillReturnResult</span>(sqlmock.<span style="color:#89b4fa">NewResult</span>(<span style="color:#fab387">1</span>, <span style="color:#fab387">1</span>))
+</span></span><span style="display:flex;"><span>	mock.<span style="color:#89b4fa">ExpectCommit</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#6c7086;font-style:italic">// now we execute our method
+</span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>	<span style="color:#cba6f7">if</span> err = <span style="color:#89b4fa">recordStats</span>(db, <span style="color:#fab387">2</span>, <span style="color:#fab387">3</span>); err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		t.<span style="color:#89b4fa">Errorf</span>(<span style="color:#a6e3a1">&#34;error was not expected while updating stats: %s&#34;</span>, err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#6c7086;font-style:italic">// we make sure that all expectations were met
+</span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">:=</span> mock.<span style="color:#89b4fa">ExpectationsWereMet</span>(); err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		t.<span style="color:#89b4fa">Errorf</span>(<span style="color:#a6e3a1">&#34;there were unfulfilled expectations: %s&#34;</span>, err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <p>实际尝试之后发现这种方式着实有点反人类，尤其使用了 ORM 后（鬼知道 ORM 把 SQL 构造成了啥样 😅）</p>
 <h2 id="是否有必要引入-docker">是否有必要引入 Docker</h2>
 <p>除了 Docker，其实还有很多方案：</p>
@@ -76,17 +76,17 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">DEMO</span><span class="o">=</span><span class="nv">$GOPATH</span>/src/go.chensl.me/dockertest-demo
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">mkdir -p <span class="nv">$DEMO</span>
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> <span class="nv">$DEMO</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">go mod init
-</span></span><span class="line"><span class="cl">go get github.com/go-sql-driver/mysql
-</span></span><span class="line"><span class="cl">go get github.com/golang-migrate/migrate/v4
-</span></span><span class="line"><span class="cl">go get github.com/jmoiron/sqlx
-</span></span><span class="line"><span class="cl">go get github.com/ory/dockertest/v3
-</span></span><span class="line"><span class="cl">go get github.com/stretchr/testify</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#89dceb">export</span> <span style="color:#f5e0dc">DEMO</span><span style="color:#89dceb;font-weight:bold">=</span><span style="color:#f5e0dc">$GOPATH</span>/src/go.chensl.me/dockertest-demo
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mkdir -p <span style="color:#f5e0dc">$DEMO</span>
+</span></span><span style="display:flex;"><span><span style="color:#89dceb">cd</span> <span style="color:#f5e0dc">$DEMO</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>go mod init
+</span></span><span style="display:flex;"><span>go get github.com/go-sql-driver/mysql
+</span></span><span style="display:flex;"><span>go get github.com/golang-migrate/migrate/v4
+</span></span><span style="display:flex;"><span>go get github.com/jmoiron/sqlx
+</span></span><span style="display:flex;"><span>go get github.com/ory/dockertest/v3
+</span></span><span style="display:flex;"><span>go get github.com/stretchr/testify</span></span></code></pre></div>
 <p>提前预览一下项目结构：</p>
 
 
@@ -94,21 +94,21 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-plaintext" data-lang="plaintext"><span class="line"><span class="cl">.
-</span></span><span class="line"><span class="cl">├── db
-</span></span><span class="line"><span class="cl">│   ├── db.go
-</span></span><span class="line"><span class="cl">│   ├── db_test.go
-</span></span><span class="line"><span class="cl">│   ├── user.go
-</span></span><span class="line"><span class="cl">│   └── user_test.go
-</span></span><span class="line"><span class="cl">├── go.mod
-</span></span><span class="line"><span class="cl">├── go.sum
-</span></span><span class="line"><span class="cl">├── migrations
-</span></span><span class="line"><span class="cl">│   ├── 20220501170742_init.down.sql
-</span></span><span class="line"><span class="cl">│   └── 20220501170742_init.up.sql
-</span></span><span class="line"><span class="cl">└── model
-</span></span><span class="line"><span class="cl">    └── user.go
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">3 directories, 9 files</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-plaintext" data-lang="plaintext"><span style="display:flex;"><span>.
+</span></span><span style="display:flex;"><span>├── db
+</span></span><span style="display:flex;"><span>│   ├── db.go
+</span></span><span style="display:flex;"><span>│   ├── db_test.go
+</span></span><span style="display:flex;"><span>│   ├── user.go
+</span></span><span style="display:flex;"><span>│   └── user_test.go
+</span></span><span style="display:flex;"><span>├── go.mod
+</span></span><span style="display:flex;"><span>├── go.sum
+</span></span><span style="display:flex;"><span>├── migrations
+</span></span><span style="display:flex;"><span>│   ├── 20220501170742_init.down.sql
+</span></span><span style="display:flex;"><span>│   └── 20220501170742_init.up.sql
+</span></span><span style="display:flex;"><span>└── model
+</span></span><span style="display:flex;"><span>    └── user.go
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>3 directories, 9 files</span></span></code></pre></div>
 <h3 id="db-方法">DB 方法</h3>
 <p>用 <a href="https://github.com/golang-migrate/migrate">golang-migrate</a> 生成 migration 脚本：</p>
 
@@ -117,24 +117,24 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">migrate create -ext sql -dir migrations -tz<span class="o">=</span>Local init</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>migrate create -ext sql -dir migrations -tz<span style="color:#89dceb;font-weight:bold">=</span>Local init</span></span></code></pre></div>
 
 
 
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">users</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_INCREMENT</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#cba6f7">CREATE</span> <span style="color:#cba6f7">TABLE</span> <span style="color:#cba6f7">IF</span> <span style="color:#cba6f7">NOT</span> <span style="color:#cba6f7">EXISTS</span> <span style="color:#89dceb;font-weight:bold">`</span>users<span style="color:#89dceb;font-weight:bold">`</span> (
+</span></span><span style="display:flex;"><span>  <span style="color:#89dceb;font-weight:bold">`</span>id<span style="color:#89dceb;font-weight:bold">`</span> <span style="color:#89dceb">INT</span> <span style="color:#cba6f7">PRIMARY</span> <span style="color:#cba6f7">KEY</span> AUTO_INCREMENT,
+</span></span><span style="display:flex;"><span>  <span style="color:#89dceb;font-weight:bold">`</span>name<span style="color:#89dceb;font-weight:bold">`</span> <span style="color:#89dceb">VARCHAR</span>(<span style="color:#fab387">255</span>) <span style="color:#cba6f7">UNIQUE</span> <span style="color:#cba6f7">NOT</span> <span style="color:#cba6f7">NULL</span>
+</span></span><span style="display:flex;"><span>);</span></span></code></pre></div>
 
 
 
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">users</span><span class="o">`</span><span class="p">;</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#cba6f7">DROP</span> <span style="color:#cba6f7">TABLE</span> <span style="color:#cba6f7">IF</span> <span style="color:#cba6f7">EXISTS</span> <span style="color:#89dceb;font-weight:bold">`</span>users<span style="color:#89dceb;font-weight:bold">`</span>;</span></span></code></pre></div>
 <p>对应的 Go 结构体：</p>
 
 
@@ -142,12 +142,12 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">model</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">User</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">ID</span>   <span class="kt">int</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Name</span> <span class="kt">string</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#94e2d5">package</span> model
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">type</span> User <span style="color:#f38ba8">struct</span> {
+</span></span><span style="display:flex;"><span>	ID   <span style="color:#f38ba8">int</span>
+</span></span><span style="display:flex;"><span>	Name <span style="color:#f38ba8">string</span>
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <p>然后是这次需要测试的方法：</p>
 
 
@@ -155,35 +155,35 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;context&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/jmoiron/sqlx&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;go.chensl.me/dockertest-demo/model&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">UserDB</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">conn</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewUserDB</span><span class="p">(</span><span class="nx">conn</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="o">*</span><span class="nx">UserDB</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">UserDB</span><span class="p">{</span><span class="nx">conn</span><span class="p">:</span> <span class="nx">conn</span><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">UserDB</span><span class="p">)</span> <span class="nf">Add</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">u</span> <span class="o">*</span><span class="nx">model</span><span class="p">.</span><span class="nx">User</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">res</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">db</span><span class="p">.</span><span class="nx">conn</span><span class="p">.</span><span class="nf">ExecContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">&#34;INSERT INTO users (name) VALUES (?)&#34;</span><span class="p">,</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Name</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">res</span><span class="p">.</span><span class="nf">LastInsertId</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">u</span><span class="p">.</span><span class="nx">ID</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#94e2d5">package</span> db
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#94e2d5">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;github.com/jmoiron/sqlx&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;go.chensl.me/dockertest-demo/model&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">type</span> UserDB <span style="color:#f38ba8">struct</span> {
+</span></span><span style="display:flex;"><span>	conn <span style="color:#89dceb;font-weight:bold">*</span>sqlx.DB
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">NewUserDB</span>(conn <span style="color:#89dceb;font-weight:bold">*</span>sqlx.DB) <span style="color:#89dceb;font-weight:bold">*</span>UserDB {
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">return</span> <span style="color:#89dceb;font-weight:bold">&amp;</span>UserDB{conn: conn}
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> (db <span style="color:#89dceb;font-weight:bold">*</span>UserDB) <span style="color:#89b4fa">Add</span>(ctx context.Context, u <span style="color:#89dceb;font-weight:bold">*</span>model.User) <span style="color:#f38ba8">error</span> {
+</span></span><span style="display:flex;"><span>	res, err <span style="color:#89dceb;font-weight:bold">:=</span> db.conn.<span style="color:#89b4fa">ExecContext</span>(ctx, <span style="color:#a6e3a1">&#34;INSERT INTO users (name) VALUES (?)&#34;</span>, u.Name)
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> err
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	id, err <span style="color:#89dceb;font-weight:bold">:=</span> res.<span style="color:#89b4fa">LastInsertId</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> err
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	u.ID = <span style="color:#89dceb">int</span>(id)
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <h3 id="testinstance">TestInstance</h3>
 <p>简单封装一下 dockertest 和 sqlx（借鉴了 <a href="https://github.com/google/exposure-notifications-server/blob/9b73ca040965e3177db3c36df211a275bf6dcfa6/pkg/database/database_util.go#L69">google/exposure-notifications-server</a> 的代码）</p>
 
@@ -192,117 +192,117 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;database/sql&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;strconv&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/golang-migrate/migrate/v4&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/golang-migrate/migrate/v4/database/mysql&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="s">&#34;github.com/golang-migrate/migrate/v4/source/file&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/jmoiron/sqlx&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/ory/dockertest/v3&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/ory/dockertest/v3/docker&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">TestInstance</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">pool</span>       <span class="o">*</span><span class="nx">dockertest</span><span class="p">.</span><span class="nx">Pool</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">resource</span>   <span class="o">*</span><span class="nx">dockertest</span><span class="p">.</span><span class="nx">Resource</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">conn</span>       <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">skipReason</span> <span class="kt">string</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">MustTestInstance</span><span class="p">()</span> <span class="o">*</span><span class="nx">TestInstance</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">testInstance</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewTestInstance</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stderr</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">testInstance</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewTestInstance</span><span class="p">()</span> <span class="p">(</span><span class="o">*</span><span class="nx">TestInstance</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">skip</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">ParseBool</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;SKIP_DATABASE_TESTS&#34;</span><span class="p">));</span> <span class="nx">skip</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">&amp;</span><span class="nx">TestInstance</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="nx">skipReason</span><span class="p">:</span> <span class="s">&#34;🚧 Skipping database tests (SKIP_DATABASE_TESTS is set)!&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="p">},</span> <span class="kc">nil</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">pool</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">dockertest</span><span class="p">.</span><span class="nf">NewPool</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to create database docker pool: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">resource</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pool</span><span class="p">.</span><span class="nf">RunWithOptions</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">dockertest</span><span class="p">.</span><span class="nx">RunOptions</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">Repository</span><span class="p">:</span> <span class="s">&#34;mysql&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">Tag</span><span class="p">:</span>        <span class="s">&#34;5.7&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">Env</span><span class="p">:</span>        <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;MYSQL_ROOT_PASSWORD=secret&#34;</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl">	<span class="p">},</span> <span class="kd">func</span><span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">docker</span><span class="p">.</span><span class="nx">HostConfig</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nx">AutoRemove</span> <span class="p">=</span> <span class="kc">true</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nx">RestartPolicy</span> <span class="p">=</span> <span class="nx">docker</span><span class="p">.</span><span class="nx">RestartPolicy</span><span class="p">{</span><span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;no&#34;</span><span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="p">})</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to start database container: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">resource</span><span class="p">.</span><span class="nf">Expire</span><span class="p">(</span><span class="mi">120</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to expire database container: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">conn</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pool</span><span class="p">.</span><span class="nf">Retry</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="kd">var</span> <span class="nx">err</span> <span class="kt">error</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">conn</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">sqlx</span><span class="p">.</span><span class="nf">Connect</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;root:secret@(localhost:%s)/mysql&#34;</span><span class="p">,</span> <span class="nx">resource</span><span class="p">.</span><span class="nf">GetPort</span><span class="p">(</span><span class="s">&#34;3306/tcp&#34;</span><span class="p">)))</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">err</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span>
-</span></span><span class="line"><span class="cl">	<span class="p">});</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed waiting for database container to be ready: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">migrateUp</span><span class="p">(</span><span class="nx">conn</span><span class="p">.</span><span class="nx">DB</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;failed to migrate database: %w&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">TestInstance</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">pool</span><span class="p">:</span>     <span class="nx">pool</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">resource</span><span class="p">:</span> <span class="nx">resource</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">conn</span><span class="p">:</span>     <span class="nx">conn</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">	<span class="p">},</span> <span class="kc">nil</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">i</span> <span class="o">*</span><span class="nx">TestInstance</span><span class="p">)</span> <span class="nf">Conn</span><span class="p">(</span><span class="nx">tb</span> <span class="nx">testing</span><span class="p">.</span><span class="nx">TB</span><span class="p">)</span> <span class="o">*</span><span class="nx">sqlx</span><span class="p">.</span><span class="nx">DB</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">tb</span><span class="p">.</span><span class="nf">Helper</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">i</span><span class="p">.</span><span class="nx">skipReason</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">tb</span><span class="p">.</span><span class="nf">Skip</span><span class="p">(</span><span class="nx">i</span><span class="p">.</span><span class="nx">skipReason</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">i</span><span class="p">.</span><span class="nx">conn</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">i</span> <span class="o">*</span><span class="nx">TestInstance</span><span class="p">)</span> <span class="nf">Close</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">i</span><span class="p">.</span><span class="nx">skipReason</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">i</span><span class="p">.</span><span class="nx">conn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">i</span><span class="p">.</span><span class="nx">pool</span><span class="p">.</span><span class="nf">Purge</span><span class="p">(</span><span class="nx">i</span><span class="p">.</span><span class="nx">resource</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">migrateUp</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">driver</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mysql</span><span class="p">.</span><span class="nf">WithInstance</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">mysql</span><span class="p">.</span><span class="nx">Config</span><span class="p">{})</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">m</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">migrate</span><span class="p">.</span><span class="nf">NewWithDatabaseInstance</span><span class="p">(</span><span class="s">&#34;file://../migrations&#34;</span><span class="p">,</span> <span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="nx">driver</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Up</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#94e2d5">package</span> db
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#94e2d5">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;database/sql&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;os&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;strconv&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;testing&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	_ <span style="color:#a6e3a1">&#34;github.com/go-sql-driver/mysql&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;github.com/golang-migrate/migrate/v4&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;github.com/golang-migrate/migrate/v4/database/mysql&#34;</span>
+</span></span><span style="display:flex;"><span>	_ <span style="color:#a6e3a1">&#34;github.com/golang-migrate/migrate/v4/source/file&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;github.com/jmoiron/sqlx&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;github.com/ory/dockertest/v3&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;github.com/ory/dockertest/v3/docker&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">type</span> TestInstance <span style="color:#f38ba8">struct</span> {
+</span></span><span style="display:flex;"><span>	pool       <span style="color:#89dceb;font-weight:bold">*</span>dockertest.Pool
+</span></span><span style="display:flex;"><span>	resource   <span style="color:#89dceb;font-weight:bold">*</span>dockertest.Resource
+</span></span><span style="display:flex;"><span>	conn       <span style="color:#89dceb;font-weight:bold">*</span>sqlx.DB
+</span></span><span style="display:flex;"><span>	skipReason <span style="color:#f38ba8">string</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">MustTestInstance</span>() <span style="color:#89dceb;font-weight:bold">*</span>TestInstance {
+</span></span><span style="display:flex;"><span>	testInstance, err <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89b4fa">NewTestInstance</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		fmt.<span style="color:#89b4fa">Fprintln</span>(os.Stderr, err.<span style="color:#89b4fa">Error</span>())
+</span></span><span style="display:flex;"><span>		os.<span style="color:#89b4fa">Exit</span>(<span style="color:#fab387">1</span>)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">return</span> testInstance
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">NewTestInstance</span>() (<span style="color:#89dceb;font-weight:bold">*</span>TestInstance, <span style="color:#f38ba8">error</span>) {
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> skip, _ <span style="color:#89dceb;font-weight:bold">:=</span> strconv.<span style="color:#89b4fa">ParseBool</span>(os.<span style="color:#89b4fa">Getenv</span>(<span style="color:#a6e3a1">&#34;SKIP_DATABASE_TESTS&#34;</span>)); skip {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> <span style="color:#89dceb;font-weight:bold">&amp;</span>TestInstance{
+</span></span><span style="display:flex;"><span>			skipReason: <span style="color:#a6e3a1">&#34;🚧 Skipping database tests (SKIP_DATABASE_TESTS is set)!&#34;</span>,
+</span></span><span style="display:flex;"><span>		}, <span style="color:#fab387">nil</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	pool, err <span style="color:#89dceb;font-weight:bold">:=</span> dockertest.<span style="color:#89b4fa">NewPool</span>(<span style="color:#a6e3a1">&#34;&#34;</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>, fmt.<span style="color:#89b4fa">Errorf</span>(<span style="color:#a6e3a1">&#34;failed to create database docker pool: %w&#34;</span>, err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	resource, err <span style="color:#89dceb;font-weight:bold">:=</span> pool.<span style="color:#89b4fa">RunWithOptions</span>(<span style="color:#89dceb;font-weight:bold">&amp;</span>dockertest.RunOptions{
+</span></span><span style="display:flex;"><span>		Repository: <span style="color:#a6e3a1">&#34;mysql&#34;</span>,
+</span></span><span style="display:flex;"><span>		Tag:        <span style="color:#a6e3a1">&#34;5.7&#34;</span>,
+</span></span><span style="display:flex;"><span>		Env:        []<span style="color:#f38ba8">string</span>{<span style="color:#a6e3a1">&#34;MYSQL_ROOT_PASSWORD=secret&#34;</span>},
+</span></span><span style="display:flex;"><span>	}, <span style="color:#f38ba8">func</span>(c <span style="color:#89dceb;font-weight:bold">*</span>docker.HostConfig) {
+</span></span><span style="display:flex;"><span>		c.AutoRemove = <span style="color:#fab387">true</span>
+</span></span><span style="display:flex;"><span>		c.RestartPolicy = docker.RestartPolicy{Name: <span style="color:#a6e3a1">&#34;no&#34;</span>}
+</span></span><span style="display:flex;"><span>	})
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>, fmt.<span style="color:#89b4fa">Errorf</span>(<span style="color:#a6e3a1">&#34;failed to start database container: %w&#34;</span>, err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">:=</span> resource.<span style="color:#89b4fa">Expire</span>(<span style="color:#fab387">120</span>); err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>, fmt.<span style="color:#89b4fa">Errorf</span>(<span style="color:#a6e3a1">&#34;failed to expire database container: %w&#34;</span>, err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#f38ba8">var</span> conn <span style="color:#89dceb;font-weight:bold">*</span>sqlx.DB
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">:=</span> pool.<span style="color:#89b4fa">Retry</span>(<span style="color:#f38ba8">func</span>() <span style="color:#f38ba8">error</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#f38ba8">var</span> err <span style="color:#f38ba8">error</span>
+</span></span><span style="display:flex;"><span>		conn, err = sqlx.<span style="color:#89b4fa">Connect</span>(<span style="color:#a6e3a1">&#34;mysql&#34;</span>, fmt.<span style="color:#89b4fa">Sprintf</span>(<span style="color:#a6e3a1">&#34;root:secret@(localhost:%s)/mysql&#34;</span>, resource.<span style="color:#89b4fa">GetPort</span>(<span style="color:#a6e3a1">&#34;3306/tcp&#34;</span>)))
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#cba6f7">return</span> err
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>
+</span></span><span style="display:flex;"><span>	}); err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>, fmt.<span style="color:#89b4fa">Errorf</span>(<span style="color:#a6e3a1">&#34;failed waiting for database container to be ready: %w&#34;</span>, err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89b4fa">migrateUp</span>(conn.DB); err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>, fmt.<span style="color:#89b4fa">Errorf</span>(<span style="color:#a6e3a1">&#34;failed to migrate database: %w&#34;</span>, err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">return</span> <span style="color:#89dceb;font-weight:bold">&amp;</span>TestInstance{
+</span></span><span style="display:flex;"><span>		pool:     pool,
+</span></span><span style="display:flex;"><span>		resource: resource,
+</span></span><span style="display:flex;"><span>		conn:     conn,
+</span></span><span style="display:flex;"><span>	}, <span style="color:#fab387">nil</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> (i <span style="color:#89dceb;font-weight:bold">*</span>TestInstance) <span style="color:#89b4fa">Conn</span>(tb testing.TB) <span style="color:#89dceb;font-weight:bold">*</span>sqlx.DB {
+</span></span><span style="display:flex;"><span>	tb.<span style="color:#89b4fa">Helper</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> i.skipReason <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#a6e3a1">&#34;&#34;</span> {
+</span></span><span style="display:flex;"><span>		tb.<span style="color:#89b4fa">Skip</span>(i.skipReason)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">return</span> i.conn
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> (i <span style="color:#89dceb;font-weight:bold">*</span>TestInstance) <span style="color:#89b4fa">Close</span>() <span style="color:#f38ba8">error</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> i.skipReason <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#a6e3a1">&#34;&#34;</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	i.conn.<span style="color:#89b4fa">Close</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">return</span> i.pool.<span style="color:#89b4fa">Purge</span>(i.resource)
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">migrateUp</span>(db <span style="color:#89dceb;font-weight:bold">*</span>sql.DB) <span style="color:#f38ba8">error</span> {
+</span></span><span style="display:flex;"><span>	driver, err <span style="color:#89dceb;font-weight:bold">:=</span> mysql.<span style="color:#89b4fa">WithInstance</span>(db, <span style="color:#89dceb;font-weight:bold">&amp;</span>mysql.Config{})
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> err <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> err
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	m, err <span style="color:#89dceb;font-weight:bold">:=</span> migrate.<span style="color:#89b4fa">NewWithDatabaseInstance</span>(<span style="color:#a6e3a1">&#34;file://../migrations&#34;</span>, <span style="color:#a6e3a1">&#34;mysql&#34;</span>, driver)
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">return</span> m.<span style="color:#89b4fa">Up</span>()
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <p>借助 <code>TestMain</code>，在其他单测执行前，准备好环境：</p>
 
 
@@ -310,21 +310,21 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">testInstance</span> <span class="o">*</span><span class="nx">TestInstance</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestMain</span><span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">M</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">testInstance</span> <span class="p">=</span> <span class="nf">MustTestInstance</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">code</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Run</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">testInstance</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="nx">code</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#94e2d5">package</span> db
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#94e2d5">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;os&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;testing&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">var</span> testInstance <span style="color:#89dceb;font-weight:bold">*</span>TestInstance
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">TestMain</span>(m <span style="color:#89dceb;font-weight:bold">*</span>testing.M) {
+</span></span><span style="display:flex;"><span>	testInstance = <span style="color:#89b4fa">MustTestInstance</span>()
+</span></span><span style="display:flex;"><span>	code <span style="color:#89dceb;font-weight:bold">:=</span> m.<span style="color:#89b4fa">Run</span>()
+</span></span><span style="display:flex;"><span>	testInstance.<span style="color:#89b4fa">Close</span>()
+</span></span><span style="display:flex;"><span>	os.<span style="color:#89b4fa">Exit</span>(code)
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <h3 id="最终效果">最终效果</h3>
 <p>🎉 几乎和普通单元测试没有区别</p>
 
@@ -333,37 +333,37 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">db</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;context&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/stretchr/testify/assert&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;go.chensl.me/dockertest-demo/model&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestUserDB_Add</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">ud</span> <span class="o">:=</span> <span class="nf">NewUserDB</span><span class="p">(</span><span class="nx">testInstance</span><span class="p">.</span><span class="nf">Conn</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">u</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">model</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;foo&#34;</span><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">err</span> <span class="o">:=</span> <span class="nx">ud</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">u</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">assert</span><span class="p">.</span><span class="nf">NoError</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">u</span><span class="p">.</span><span class="nx">ID</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">err</span> <span class="p">=</span> <span class="nx">ud</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">u</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nf">isDuplicate</span><span class="p">(</span><span class="nx">err</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">isDuplicate</span><span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">merr</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">err</span><span class="p">.(</span><span class="o">*</span><span class="nx">mysql</span><span class="p">.</span><span class="nx">MySQLError</span><span class="p">);</span> <span class="nx">ok</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">merr</span><span class="p">.</span><span class="nx">Number</span> <span class="o">==</span> <span class="mi">1062</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">false</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#94e2d5">package</span> db
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#94e2d5">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;testing&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;github.com/go-sql-driver/mysql&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;github.com/stretchr/testify/assert&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e3a1">&#34;go.chensl.me/dockertest-demo/model&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">TestUserDB_Add</span>(t <span style="color:#89dceb;font-weight:bold">*</span>testing.T) {
+</span></span><span style="display:flex;"><span>	ctx <span style="color:#89dceb;font-weight:bold">:=</span> context.<span style="color:#89b4fa">Background</span>()
+</span></span><span style="display:flex;"><span>	ud <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89b4fa">NewUserDB</span>(testInstance.<span style="color:#89b4fa">Conn</span>(t))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	u <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89dceb;font-weight:bold">&amp;</span>model.User{Name: <span style="color:#a6e3a1">&#34;foo&#34;</span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	err <span style="color:#89dceb;font-weight:bold">:=</span> ud.<span style="color:#89b4fa">Add</span>(ctx, u)
+</span></span><span style="display:flex;"><span>	assert.<span style="color:#89b4fa">NoError</span>(t, err)
+</span></span><span style="display:flex;"><span>	assert.<span style="color:#89b4fa">Equal</span>(t, <span style="color:#fab387">1</span>, u.ID)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	err = ud.<span style="color:#89b4fa">Add</span>(ctx, u)
+</span></span><span style="display:flex;"><span>	assert.<span style="color:#89b4fa">True</span>(t, <span style="color:#89b4fa">isDuplicate</span>(err))
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">isDuplicate</span>(err <span style="color:#f38ba8">error</span>) <span style="color:#f38ba8">bool</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">if</span> merr, ok <span style="color:#89dceb;font-weight:bold">:=</span> err.(<span style="color:#89dceb;font-weight:bold">*</span>mysql.MySQLError); ok {
+</span></span><span style="display:flex;"><span>		<span style="color:#cba6f7">return</span> merr.Number <span style="color:#89dceb;font-weight:bold">==</span> <span style="color:#fab387">1062</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#cba6f7">return</span> <span style="color:#fab387">false</span>
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
 <p>执行单元测试，加上环境变量 <code>SKIP_DATABASE_TESTS</code> 可以跳过 dockertest：</p>
 
 
@@ -371,7 +371,7 @@ func TestShouldUpdateStats(t *testing.T) { db, mock, err := sqlmock.New() if err
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">go <span class="nb">test</span> -v -count<span class="o">=</span><span class="m">1</span> ./...
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">SKIP_DATABASE_TESTS</span><span class="o">=</span><span class="m">1</span> go <span class="nb">test</span> -v -count<span class="o">=</span><span class="m">1</span> ./...</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go <span style="color:#89dceb">test</span> -v -count<span style="color:#89dceb;font-weight:bold">=</span><span style="color:#fab387">1</span> ./...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f5e0dc">SKIP_DATABASE_TESTS</span><span style="color:#89dceb;font-weight:bold">=</span><span style="color:#fab387">1</span> go <span style="color:#89dceb">test</span> -v -count<span style="color:#89dceb;font-weight:bold">=</span><span style="color:#fab387">1</span> ./...</span></span></code></pre></div>
 ]]></content:encoded></item></channel></rss>

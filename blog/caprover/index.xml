@@ -53,7 +53,7 @@ CapRover Dokku Heroku 便宜 便宜 贵 只支持 Dockerfile 或 docker-compose 
 
 
 
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -fsSL https://get.docker.com <span class="p">|</span> sh</span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl -fsSL https://get.docker.com | sh</span></span></code></pre></div>
 <h2 id="apps">Apps</h2>
 <p>我现在部署的一些 App：</p>
 <p><img src="https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150172.png" alt=""></p>
