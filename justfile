@@ -6,6 +6,7 @@ default:
   just --list
 
 server:
+  [ "{{os()}}" = "macos" ] && open http://localhost:1313/
   hugo server -D
 
 build:

@@ -1,9 +1,25 @@
 +++
 title = "ᕦʕ •ᴥ•ʔᕤ"
+description = "A little more about me..."
 +++
 
-Hi，这是我的中文博客，为什么它的页面看起来这么素（简约）？
+[![GitHub](https://img.shields.io/github/followers/maolonglong?label=follow&style=social)](https://github.com/maolonglong)
 
-大概是某天，我打开我之前用 Hexo + Next 整的博客，看着它慢悠悠的打开，加载一堆 JavaScript，而且还需要等待页面动画结束。
+```scheme
+`((pronouns ("he" "him"))
+  (code ("Go" "Rust" "Zig" "Nix" ...))
+  (architecture ("microservices" "network-programming"))
+  (current-focus "Learning skills related to system programming and database system"))
+```
 
-我开始思考，真的有必要这么复杂吗，刚好那天看到了 [Bear Blog](https://bearblog.dev/)，受它启发，我直接自己用 Hugo + Simple.css 整了个模板。也就是现在你看到的网页，它真的**非常非常快，没有任何 JavaScript**。依赖于 Simple.css，我在实现时几乎不用留意样式，只需要使用正确的 HTML 标签，整个网站的自定义 CSS 只有 3 处。
+## Projects
+
+- [async-waitgroup](https://github.com/maolonglong/async-waitgroup): Golang like WaitGroup implementation that supports both sync and async Rust
+- [bfjit-x86_64](https://github.com/maolonglong/bfjit-x86_64): Just-In-Time compiler for [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck)
+- [bogoscheme](https://github.com/maolonglong/bogoscheme): Subset of [Scheme](https://www.scheme.org/)
+- [evio-lite.zig](https://github.com/maolonglong/evio-lite.zig): Zig port of [evio-lite](https://github.com/tidwall/evio-lite) (fast event-loop networking for Zig)
+- [identicon](https://github.com/maolonglong/identicon): Generate identicon style avatars.
+- [llrb](https://github.com/maolonglong/llrb): LLRB-Tree provides a simple, ordered, in-memory data structure for Go programs
+- [redglob](https://github.com/maolonglong/redglob): Simple glob-style pattern matcher library for Go, inspired by Redis's pattern matching implementation.
+- [spsc_queue](https://github.com/maolonglong/spsc_queue): Wait-free ringbuffer
+- [zig-buddy2](https://github.com/maolonglong/zig-buddy2): Simple buddy memory allocation library
