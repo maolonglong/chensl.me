@@ -261,7 +261,7 @@ const Instruction = union(enum) { add: u8, move: i32, input, output, jump_right,
 </span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>    <span style="color:#fab387">0x41</span>, <span style="color:#fab387">0x5d</span>, <span style="color:#6c7086;font-style:italic">// pop %r13
 </span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>    <span style="color:#fab387">0xc3</span>, <span style="color:#6c7086;font-style:italic">// ret
 </span></span></span><span style="display:flex;"><span><span style="color:#6c7086;font-style:italic"></span>});</span></span></code></pre></div>
-<h2 id="运行">运行</h2>
+<h2 id="执行-machine-code">执行 machine code</h2>
 <p>因为操作系统对不同的内存块有不同的限制，例如可读？可写？可执行？&hellip; 一般默认的权限是可读可写，不能执行代码。</p>
 <p>所以，生成 machine code 后，我们还需要用 <code>mmap</code> 和 <code>mprotect</code> 申请一块可用于代码执行的内存：</p>
 
