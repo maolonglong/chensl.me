@@ -26,6 +26,7 @@
 
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
+            bun
             hugo
             just
           ];
