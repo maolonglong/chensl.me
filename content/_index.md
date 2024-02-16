@@ -1,6 +1,5 @@
 +++
-title = "ᕦʕ •ᴥ•ʔᕤ"
-description = "A little more about me..."
+title = "About Me"
 +++
 
 [![GitHub](https://img.shields.io/github/followers/maolonglong?label=follow&style=social)](https://github.com/maolonglong)
