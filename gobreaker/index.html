@@ -1,4 +1,4 @@
-<!doctype html><html lang=zh-Hans><head><meta http-equiv=X-Clacks-Overhead content="GNU Terry Pratchett"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=https://chensl.me/images/favicon.png><title>熔断器模式 |毛珑珑的博客</title>
+<!doctype html><html lang=zh-Hans><head><meta http-equiv=X-Clacks-Overhead content="GNU Terry Pratchett"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel="shortcut icon" href=https://chensl.me/images/favicon.png><title>熔断器模式&nbsp;|&nbsp;毛珑珑的博客</title>
 <meta name=title content="熔断器模式"><meta name=description content="熔断器模式提高了系统从故障恢复时的稳定性，最小化了故障对性能的影响。
 背景和问题 在复杂的网络环境下，执行远程调用可能会遇到各种超时或故障，虽然大部分情况这些问题能在短时间内自动恢复，只需要重试几次就能调用成功。但是，有些问题需要很长时间来恢复时，不断重试显然不是一个很好的解决方案。相反，应用程序应该迅速接受这次操作失败，并进行相应的错误处理。
 此外，如果一个服务非常繁忙，系统的一个部分的故障可能会导致级联故障。例如，服务调用方设置了调用的超时时间，如果服务在这段时间内没有返回响应，调用方直接用错误消息进行回复。这种策略可能会导致许多同一操作的并发请求被阻塞，直到超时。这些被阻塞的请求会占用着大量的系统资源（内存，线程，数据库连接等），这些资源耗尽，导致系统中需要使用相同资源的其他服务出现故障。在这种情况下，最好是立即让调用失败，只有在可能成功时才尝试调用服务。
