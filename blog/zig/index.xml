@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>毛珑珑的博客</title><link>https://chensl.me/blog/zig/</link><description>Recent content in zig on 毛珑珑的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-Hans</language><managingEditor>shaolong.chen@outlook.it (Shaolong Chen)</managingEditor><webMaster>shaolong.chen@outlook.it (Shaolong Chen)</webMaster><lastBuildDate>Thu, 22 Feb 2024 19:44:09 +0800</lastBuildDate><atom:link href="https://chensl.me/blog/zig/index.xml" rel="self" type="application/rss+xml"/><item><title>10 亿行挑战</title><link>https://chensl.me/1brc-in-zig/</link><pubDate>Thu, 22 Feb 2024 19:44:09 +0800</pubDate><author>shaolong.chen@outlook.it (Shaolong Chen)</author><guid>https://chensl.me/1brc-in-zig/</guid><description>前段时间外网有个很火的 10 亿行挑战，感觉挺有趣，动手试了下。其实之前八股文里就有看过，多少多少行的大文件，需要排序（最大值、最小值、品均值之类的），然后怎么拆分，怎么处理。。。
 但是这个挑战，没有八股文里的限制（文件太大，无法全部装进内存等等），可以用你知道的所有优化技术
 多线程 虚拟线程/coroutine SIMD Branchless &amp;hellip; 这里记录几个我能想到并实现的优化：
-mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后在 copy 到用户程序，用 mmap 能避免 page cache -&amp;gt; 用户程序 的拷贝。
+mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后再 copy 到用户程序，用 mmap 能避免 page cache -&amp;gt; 用户程序 的拷贝。
 不安全的 Number Parser 正常标准库里的浮点数解析，肯定非常复杂，但是测试数据里的数字，基本只有 xx.x, x.x 两种。可以自己写一个更简陋（更快速）的浮点数解析。
 用整数计算代替浮点数计算 因为测试数据的小数都只有一位，所以可以乘 10 之后当做整数，能略微提高计算速度。
 预分配 最多会有 10_000 个不同的气象站名称，所以可以按照这个数量级，预分配 hash_map 的容量，避免扩容带来的 rehash。
-多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会发成竞争。
+多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会有竞争。
 thread-local 每个线程，都只读写自己的 Result (存放结果的 hash_map)，最后再由主线程合并，避免竞争。
 计算过程零拷贝 例如，计算时需要使用气象站的名称，可以直接引用原始数据的内存，无需重复分配。
 最后 另外可能还可以用 SIMD 指令，用来索引换行符，或者特殊符号 ;，我还没折腾。
@@ -20,7 +20,7 @@ thread-local 每个线程，都只读写自己的 Result (存放结果的 hash_m
 </ul>
 <p>这里记录几个我能想到并实现的优化：</p>
 <h2 id="mmap">mmap</h2>
-<p>正常 <code>read</code> syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后在 copy 到用户程序，用 <code>mmap</code> 能避免 <code>page cache -&gt; 用户程序</code> 的拷贝。</p>
+<p>正常 <code>read</code> syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后再 copy 到用户程序，用 <code>mmap</code> 能避免 <code>page cache -&gt; 用户程序</code> 的拷贝。</p>
 <h2 id="不安全的-number-parser">不安全的 Number Parser</h2>
 <p>正常标准库里的浮点数解析，肯定非常复杂，但是测试数据里的数字，基本只有 <code>xx.x</code>, <code>x.x</code> 两种。可以自己写一个更简陋（更快速）的浮点数解析。</p>
 <h2 id="用整数计算代替浮点数计算">用整数计算代替浮点数计算</h2>
@@ -28,7 +28,7 @@ thread-local 每个线程，都只读写自己的 Result (存放结果的 hash_m
 <h2 id="预分配">预分配</h2>
 <p>最多会有 <code>10_000</code> 个不同的气象站名称，所以可以按照这个数量级，预分配 <code>hash_map</code> 的容量，避免扩容带来的 rehash。</p>
 <h2 id="多线程计算">多线程计算</h2>
-<p>一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会发成竞争。</p>
+<p>一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会有竞争。</p>
 <h2 id="thread-local">thread-local</h2>
 <p>每个线程，都只读写自己的 <code>Result</code> (存放结果的 <code>hash_map</code>)，最后再由主线程合并，避免竞争。</p>
 <h2 id="计算过程零拷贝">计算过程零拷贝</h2>

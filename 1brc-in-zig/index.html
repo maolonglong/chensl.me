@@ -2,51 +2,51 @@
 <meta name=title content="10 亿行挑战"><meta name=description content="前段时间外网有个很火的 10 亿行挑战，感觉挺有趣，动手试了下。其实之前八股文里就有看过，多少多少行的大文件，需要排序（最大值、最小值、品均值之类的），然后怎么拆分，怎么处理。。。
 但是这个挑战，没有八股文里的限制（文件太大，无法全部装进内存等等），可以用你知道的所有优化技术
 多线程 虚拟线程/coroutine SIMD Branchless &mldr; 这里记录几个我能想到并实现的优化：
-mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后在 copy 到用户程序，用 mmap 能避免 page cache -> 用户程序 的拷贝。
+mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后再 copy 到用户程序，用 mmap 能避免 page cache -> 用户程序 的拷贝。
 不安全的 Number Parser 正常标准库里的浮点数解析，肯定非常复杂，但是测试数据里的数字，基本只有 xx.x, x.x 两种。可以自己写一个更简陋（更快速）的浮点数解析。
 用整数计算代替浮点数计算 因为测试数据的小数都只有一位，所以可以乘 10 之后当做整数，能略微提高计算速度。
 预分配 最多会有 10_000 个不同的气象站名称，所以可以按照这个数量级，预分配 hash_map 的容量，避免扩容带来的 rehash。
-多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会发成竞争。
+多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会有竞争。
 thread-local 每个线程，都只读写自己的 Result (存放结果的 hash_map)，最后再由主线程合并，避免竞争。
 计算过程零拷贝 例如，计算时需要使用气象站的名称，可以直接引用原始数据的内存，无需重复分配。
 最后 另外可能还可以用 SIMD 指令，用来索引换行符，或者特殊符号 ;，我还没折腾。
 完整代码 const std = @import(&#34;std&#34;); const assert = std."><meta name=keywords content="zig,mmap,"><meta property="og:title" content="10 亿行挑战"><meta property="og:description" content="前段时间外网有个很火的 10 亿行挑战，感觉挺有趣，动手试了下。其实之前八股文里就有看过，多少多少行的大文件，需要排序（最大值、最小值、品均值之类的），然后怎么拆分，怎么处理。。。
 但是这个挑战，没有八股文里的限制（文件太大，无法全部装进内存等等），可以用你知道的所有优化技术
 多线程 虚拟线程/coroutine SIMD Branchless &mldr; 这里记录几个我能想到并实现的优化：
-mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后在 copy 到用户程序，用 mmap 能避免 page cache -> 用户程序 的拷贝。
+mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后再 copy 到用户程序，用 mmap 能避免 page cache -> 用户程序 的拷贝。
 不安全的 Number Parser 正常标准库里的浮点数解析，肯定非常复杂，但是测试数据里的数字，基本只有 xx.x, x.x 两种。可以自己写一个更简陋（更快速）的浮点数解析。
 用整数计算代替浮点数计算 因为测试数据的小数都只有一位，所以可以乘 10 之后当做整数，能略微提高计算速度。
 预分配 最多会有 10_000 个不同的气象站名称，所以可以按照这个数量级，预分配 hash_map 的容量，避免扩容带来的 rehash。
-多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会发成竞争。
+多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会有竞争。
 thread-local 每个线程，都只读写自己的 Result (存放结果的 hash_map)，最后再由主线程合并，避免竞争。
 计算过程零拷贝 例如，计算时需要使用气象站的名称，可以直接引用原始数据的内存，无需重复分配。
 最后 另外可能还可以用 SIMD 指令，用来索引换行符，或者特殊符号 ;，我还没折腾。
 完整代码 const std = @import(&#34;std&#34;); const assert = std."><meta property="og:type" content="article"><meta property="og:url" content="https://chensl.me/1brc-in-zig/"><meta property="article:section" content="blog"><meta property="article:published_time" content="2024-02-22T19:44:09+08:00"><meta property="article:modified_time" content="2024-02-22T19:44:09+08:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="10 亿行挑战"><meta name=twitter:description content="前段时间外网有个很火的 10 亿行挑战，感觉挺有趣，动手试了下。其实之前八股文里就有看过，多少多少行的大文件，需要排序（最大值、最小值、品均值之类的），然后怎么拆分，怎么处理。。。
 但是这个挑战，没有八股文里的限制（文件太大，无法全部装进内存等等），可以用你知道的所有优化技术
 多线程 虚拟线程/coroutine SIMD Branchless &mldr; 这里记录几个我能想到并实现的优化：
-mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后在 copy 到用户程序，用 mmap 能避免 page cache -> 用户程序 的拷贝。
+mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后再 copy 到用户程序，用 mmap 能避免 page cache -> 用户程序 的拷贝。
 不安全的 Number Parser 正常标准库里的浮点数解析，肯定非常复杂，但是测试数据里的数字，基本只有 xx.x, x.x 两种。可以自己写一个更简陋（更快速）的浮点数解析。
 用整数计算代替浮点数计算 因为测试数据的小数都只有一位，所以可以乘 10 之后当做整数，能略微提高计算速度。
 预分配 最多会有 10_000 个不同的气象站名称，所以可以按照这个数量级，预分配 hash_map 的容量，避免扩容带来的 rehash。
-多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会发成竞争。
+多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会有竞争。
 thread-local 每个线程，都只读写自己的 Result (存放结果的 hash_map)，最后再由主线程合并，避免竞争。
 计算过程零拷贝 例如，计算时需要使用气象站的名称，可以直接引用原始数据的内存，无需重复分配。
 最后 另外可能还可以用 SIMD 指令，用来索引换行符，或者特殊符号 ;，我还没折腾。
 完整代码 const std = @import(&#34;std&#34;); const assert = std."><meta itemprop=name content="10 亿行挑战"><meta itemprop=description content="前段时间外网有个很火的 10 亿行挑战，感觉挺有趣，动手试了下。其实之前八股文里就有看过，多少多少行的大文件，需要排序（最大值、最小值、品均值之类的），然后怎么拆分，怎么处理。。。
 但是这个挑战，没有八股文里的限制（文件太大，无法全部装进内存等等），可以用你知道的所有优化技术
 多线程 虚拟线程/coroutine SIMD Branchless &mldr; 这里记录几个我能想到并实现的优化：
-mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后在 copy 到用户程序，用 mmap 能避免 page cache -> 用户程序 的拷贝。
+mmap 正常 read syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后再 copy 到用户程序，用 mmap 能避免 page cache -> 用户程序 的拷贝。
 不安全的 Number Parser 正常标准库里的浮点数解析，肯定非常复杂，但是测试数据里的数字，基本只有 xx.x, x.x 两种。可以自己写一个更简陋（更快速）的浮点数解析。
 用整数计算代替浮点数计算 因为测试数据的小数都只有一位，所以可以乘 10 之后当做整数，能略微提高计算速度。
 预分配 最多会有 10_000 个不同的气象站名称，所以可以按照这个数量级，预分配 hash_map 的容量，避免扩容带来的 rehash。
-多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会发成竞争。
+多线程计算 一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会有竞争。
 thread-local 每个线程，都只读写自己的 Result (存放结果的 hash_map)，最后再由主线程合并，避免竞争。
 计算过程零拷贝 例如，计算时需要使用气象站的名称，可以直接引用原始数据的内存，无需重复分配。
 最后 另外可能还可以用 SIMD 指令，用来索引换行符，或者特殊符号 ;，我还没折腾。
 完整代码 const std = @import(&#34;std&#34;); const assert = std."><meta itemprop=datePublished content="2024-02-22T19:44:09+08:00"><meta itemprop=dateModified content="2024-02-22T19:44:09+08:00"><meta itemprop=wordCount content="672"><meta itemprop=keywords content="zig,mmap,"><meta name=referrer content="no-referrer-when-downgrade"><link href=/simple.min.css rel=stylesheet><link href=/style.min.css rel=stylesheet></head><body><header><nav><a href=/>Home</a>
 <a href=/blog/>Blog</a>
 <a href=https://chensl.me/index.xml><svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 448 512"><path d="M0 64C0 46.3 14.3 32 32 32c229.8.0 416 186.2 416 416 0 17.7-14.3 32-32 32s-32-14.3-32-32C384 253.6 226.4 96 32 96 14.3 96 0 81.7.0 64zM0 416a64 64 0 11128 0A64 64 0 110 416zM32 160c159.1.0 288 128.9 288 288 0 17.7-14.3 32-32 32s-32-14.3-32-32c0-123.7-100.3-224-224-224-17.7.0-32-14.3-32-32s14.3-32 32-32z"/></svg>
-RSS</a></nav><h1>10 亿行挑战</h1></header><main><p><i><time datetime=2024-02-22 pubdate>2024-02-22</time></i></p><content><p>前段时间外网有个很火的 <a href=https://github.com/gunnarmorling/1brc>10 亿行挑战</a>，感觉挺有趣，动手试了下。其实之前八股文里就有看过，多少多少行的大文件，需要排序（最大值、最小值、品均值之类的），然后怎么拆分，怎么处理。。。</p><p>但是这个挑战，没有八股文里的限制（文件太大，无法全部装进内存等等），可以用你知道的所有优化技术</p><ul><li>多线程</li><li>虚拟线程/coroutine</li><li>SIMD</li><li>Branchless</li><li>&mldr;</li></ul><p>这里记录几个我能想到并实现的优化：</p><h2 id=mmap>mmap</h2><p>正常 <code>read</code> syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后在 copy 到用户程序，用 <code>mmap</code> 能避免 <code>page cache -> 用户程序</code> 的拷贝。</p><h2 id=不安全的-number-parser>不安全的 Number Parser</h2><p>正常标准库里的浮点数解析，肯定非常复杂，但是测试数据里的数字，基本只有 <code>xx.x</code>, <code>x.x</code> 两种。可以自己写一个更简陋（更快速）的浮点数解析。</p><h2 id=用整数计算代替浮点数计算>用整数计算代替浮点数计算</h2><p>因为测试数据的小数都只有一位，所以可以乘 10 之后当做整数，能略微提高计算速度。</p><h2 id=预分配>预分配</h2><p>最多会有 <code>10_000</code> 个不同的气象站名称，所以可以按照这个数量级，预分配 <code>hash_map</code> 的容量，避免扩容带来的 rehash。</p><h2 id=多线程计算>多线程计算</h2><p>一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会发成竞争。</p><h2 id=thread-local>thread-local</h2><p>每个线程，都只读写自己的 <code>Result</code> (存放结果的 <code>hash_map</code>)，最后再由主线程合并，避免竞争。</p><h2 id=计算过程零拷贝>计算过程零拷贝</h2><p>例如，计算时需要使用气象站的名称，可以直接引用原始数据的内存，无需重复分配。</p><h2 id=最后>最后</h2><p>另外可能还可以用 SIMD 指令，用来索引换行符，或者特殊符号 <code>;</code>，我还没折腾。</p><details><summary>完整代码</summary><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-zig data-lang=zig><span style=display:flex><span><span style=color:#cba6f7>const</span> std <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#89dceb>@import</span>(<span style=color:#a6e3a1>&#34;std&#34;</span>);
+RSS</a></nav><h1>10 亿行挑战</h1></header><main><p><i><time datetime=2024-02-22 pubdate>2024-02-22</time></i></p><content><p>前段时间外网有个很火的 <a href=https://github.com/gunnarmorling/1brc>10 亿行挑战</a>，感觉挺有趣，动手试了下。其实之前八股文里就有看过，多少多少行的大文件，需要排序（最大值、最小值、品均值之类的），然后怎么拆分，怎么处理。。。</p><p>但是这个挑战，没有八股文里的限制（文件太大，无法全部装进内存等等），可以用你知道的所有优化技术</p><ul><li>多线程</li><li>虚拟线程/coroutine</li><li>SIMD</li><li>Branchless</li><li>&mldr;</li></ul><p>这里记录几个我能想到并实现的优化：</p><h2 id=mmap>mmap</h2><p>正常 <code>read</code> syscall 从文件读取，需要将数据从磁盘 copy 到内核的 page cache 然后再 copy 到用户程序，用 <code>mmap</code> 能避免 <code>page cache -> 用户程序</code> 的拷贝。</p><h2 id=不安全的-number-parser>不安全的 Number Parser</h2><p>正常标准库里的浮点数解析，肯定非常复杂，但是测试数据里的数字，基本只有 <code>xx.x</code>, <code>x.x</code> 两种。可以自己写一个更简陋（更快速）的浮点数解析。</p><h2 id=用整数计算代替浮点数计算>用整数计算代替浮点数计算</h2><p>因为测试数据的小数都只有一位，所以可以乘 10 之后当做整数，能略微提高计算速度。</p><h2 id=预分配>预分配</h2><p>最多会有 <code>10_000</code> 个不同的气象站名称，所以可以按照这个数量级，预分配 <code>hash_map</code> 的容量，避免扩容带来的 rehash。</p><h2 id=多线程计算>多线程计算</h2><p>一般计算密集型的程序，分配和 CPU 个数一样的线程数就行，多了反而会有竞争。</p><h2 id=thread-local>thread-local</h2><p>每个线程，都只读写自己的 <code>Result</code> (存放结果的 <code>hash_map</code>)，最后再由主线程合并，避免竞争。</p><h2 id=计算过程零拷贝>计算过程零拷贝</h2><p>例如，计算时需要使用气象站的名称，可以直接引用原始数据的内存，无需重复分配。</p><h2 id=最后>最后</h2><p>另外可能还可以用 SIMD 指令，用来索引换行符，或者特殊符号 <code>;</code>，我还没折腾。</p><details><summary>完整代码</summary><div class=highlight><pre tabindex=0 style=color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-zig data-lang=zig><span style=display:flex><span><span style=color:#cba6f7>const</span> std <span style=color:#89dceb;font-weight:700>=</span> <span style=color:#89dceb>@import</span>(<span style=color:#a6e3a1>&#34;std&#34;</span>);
 </span></span><span style=display:flex><span><span style=color:#cba6f7>const</span> assert <span style=color:#89dceb;font-weight:700>=</span> std.debug.assert;
 </span></span><span style=display:flex><span><span style=color:#cba6f7>const</span> testing <span style=color:#89dceb;font-weight:700>=</span> std.testing;
 </span></span><span style=display:flex><span><span style=color:#cba6f7>const</span> Allocator <span style=color:#89dceb;font-weight:700>=</span> std.mem.Allocator;
