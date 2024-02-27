@@ -88,5 +88,7 @@ RSS</a></nav><h1>【Java 并发】volatile 关键字基本理解与使用</h1></
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>}</span></span></code></pre></div><p>程序成功退出。原因是主线程把 <code>flag</code> 刷到主存的同时会使其他线程的 <code>flag</code> 副本失效，下一次再判断 <code>while (flag)</code> 的时候就会重新从主存读取。</p></content><p><a href=https://chensl.me/blog/java/>#java</a>&nbsp;&nbsp;
-<a href=https://chensl.me/blog/concurrency/>#concurrency</a>&nbsp;&nbsp;</p></main><footer>Made with
-<a href=https://github.com/maolonglong/hugo-simple/>Hugo ʕ•ᴥ•ʔ Simple</a></footer></body></html>
+<a href=https://chensl.me/blog/concurrency/>#concurrency</a>&nbsp;&nbsp;</p></main><footer><span>© 2024 Shaolong Chen</span>
+<span>|
+Made with
+<a href=https://github.com/maolonglong/hugo-simple/>Hugo ʕ•ᴥ•ʔ Simple</a></span></footer></body></html>
