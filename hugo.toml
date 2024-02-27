@@ -2,11 +2,14 @@
 baseURL = "https://chensl.me"
 theme = "hugo-simple"
 languageCode = "zh-Hans"      # en
-
 title = "毛珑珑的博客"
+copyright = "© 2024 Shaolong Chen"
 
 # Generate a nice robots.txt for SEO
 enableRobotsTXT = true
+
+# https://github.com/gohugoio/hugo/issues/12152
+capitalizeListTitles = false
 
 # Generate "Bearblog"-like URLs !only!, see https://bearblog.dev/.
 disableKinds = ["taxonomy"]
@@ -29,6 +32,7 @@ noClasses = true
 style = "catppuccin-mocha"
 
 [params]
+title = "毛珑珑的博客"
 description = "毛珑珑的博客"
 favicon = "images/favicon.png"
 dateFormat = "2006-01-02"
@@ -51,5 +55,7 @@ weight = 20
 limit = 42
 
 [outputs]
-# Disable section RSS
-section = ['html']
+# Generate RSS for home only.
+section = ["html"]
+taxonomy = ["html"]
+term = ["html"]
