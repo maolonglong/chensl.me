@@ -9,7 +9,7 @@ GitHub 先看下 GitHub 的数据吧：
 最重要的是，实现了宏！！！
 最重要的是，实现了宏！！！
 拥有了直接操作语法树的黑魔法，比如我可以基于 if 创造一个 and 语法:
-;; (and) -> #t ;; (and x) -> x ;; (and x y) -> (if x y #f) ;; (and x y z) -> (if x (and y z) #f) (define-macro and (lambda (exp) (if (null? (cdr exp)) #t (if (null?"><meta name=keywords content><meta property="og:title" content="2023 年终总结"><meta property="og:description" content="迟到的 2023 年终总结。。。比起在公司写特别正式的总结，我更愿意写这种没任何要求，全看自己想法的总结。
+;; (and) -> #t ;; (and x) -> x ;; (and x y) -> (if x y #f) ;; (and x y z) -> (if x (and y z) #f) (define-macro and (lambda (exp) (if (null? (cdr exp)) #t (if (null?"><meta name=keywords content><meta name=author content="Shaolong Chen"><meta property="og:title" content="2023 年终总结"><meta property="og:description" content="迟到的 2023 年终总结。。。比起在公司写特别正式的总结，我更愿意写这种没任何要求，全看自己想法的总结。
 技术相关 说来惭愧，折腾的技术比较杂，什么都玩了点，但都没有深入研究，缺乏系统的学习。
 GitHub 先看下 GitHub 的数据吧：
 还算绿，但基本都是自己的玩具项目，社区的贡献只有 nixpkgs。
