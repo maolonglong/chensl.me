@@ -21,7 +21,7 @@ git 几乎是所有程序员必须掌握的一个工具，但是始终在本地�
 
 玩 GitHub 的程序员肯定多多少少希望自己的仓库能有很多 ⭐，我也不例外，但是无奈技术还没达到大佬的级别，写不出什么好的项目或者框架。一次逛 GitHub 发现别人整理的力扣热门问题的 Go 语言题解，获得了挺多星星，于是就想自己也整理一个 Java 版本的。但也是三分热度，写了几周就没坚持下去，后来偶然看到了[杨立滨](https://github.com/yanglbme)大佬维护的 [doocs/leetcode](https://github.com/doocs/leetcode)，被 README 里的[加入我们](https://github.com/doocs/leetcode#%E5%8A%A0%E5%85%A5%E6%88%91%E4%BB%AC)吸引到了：
 
-![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150168.png)
+![](./202206021150168.png)
 
 迈出第一步确实挺紧张，查了好多资料，然后照着 README 里的步骤打开了人生第一次 pr ([#359](https://github.com/doocs/leetcode/pull/359))，虽然有些错误，但是在大佬的指点下还是改正了过来，成功被合并。
 

@@ -67,7 +67,7 @@ github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 (/Users/xxx/go/pkg/mod/github.c
 $ go mod graph | egrep "cel-go|antlr" | modgraphviz | dot -Tsvg -o mod-graph.svg
 ```
 
-![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202212172136455.svg)
+![](./202212172136455.svg)
 
 从图表中很容易发现根本原因是 dep2，dep3 分别依赖 cel-go 的 v0.9.0 和 v0.5.1。[MVS](https://go.dev/ref/mod#minimal-version-selection) 选择了 v0.9.0，实际上我们并没有使用 cel-go@v0.9.0 相关的代码，所以 **最终解决方法**：
 
