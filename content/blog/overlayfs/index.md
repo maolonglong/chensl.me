@@ -126,7 +126,7 @@ bin  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp 
 
 一个名为 `overlay` 的驱动挂载到了 `/var/lib/docker/overlay2/7fca3.../merged`，从挂载信息可以看出 merged 目录是由多个目录联合挂载而成，lowerdir 为只读层 (ro)，upperdir 为可读可写层 (rw)，当需要修改 lowerdir 中的文件时，fs 会采用**写时复制**的策略，将文件从 lowerdir 复制到 upperdir 进行修改。在 merged 目录中（或者说在 docker 容器中）是感知不到这些复杂逻辑的，和操作正常目录没有区别
 
-![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202206021150167.jpeg)
+![](./202206021150167.jpeg)
 
 ## 实践
 

@@ -21,7 +21,7 @@ tags:
 
 ## 小工具推荐
 
-![](https://chensl-picgo.oss-cn-hangzhou.aliyuncs.com/202208072331543.png)
+![](./202208072331543.png)
 
 [NetNewsWire](https://netnewswire.com/)
 
