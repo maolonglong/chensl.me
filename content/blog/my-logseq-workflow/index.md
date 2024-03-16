@@ -79,10 +79,15 @@ Logseq 里没有「目录」的概念，所有 md 文件都放在 `pages/` 下�
             :in $ ?start ?today
             :where
             [?b :block/marker ?marker]
-            [(contains? #{"NOW" "LATER" "TODO" "DOING"} ?marker)]
-            (or-join [?b ?d]
-                     [?b :block/deadline ?d]
-                     [?b :block/scheduled ?d])
+            (or-join [?b ?marker ?d]
+                     (and
+                      [(contains? #{"LATER" "TODO"} ?marker)]
+                      (or-join [?b ?d]
+                               [?b :block/deadline ?d]
+                               [?b :block/scheduled ?d]))
+                     (and
+                      [(contains? #{"NOW" "DOING"} ?marker)]
+                      [?b :block/deadline ?d]))
             [(>= ?d ?start)]
             [(< ?d ?today)]]
     :inputs [:-56d :today]
