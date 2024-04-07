@@ -21,7 +21,7 @@ tags:
 
 ## 小工具推荐
 
-![](./202208072331543.png)
+![](./202208072331543.webp)
 
 [NetNewsWire](https://netnewswire.com/)
 
