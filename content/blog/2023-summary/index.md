@@ -15,7 +15,7 @@ draft = false
 
 先看下 GitHub 的数据吧：
 
-![](./Snipaste_2024-01-11_19-06-15.png)
+![](./Snipaste_2024-01-11_19-06-15.webp)
 
 还算绿，但基本都是自己的玩具项目，社区的贡献只有 [nixpkgs](https://github.com/NixOS/nixpkgs)。
 
@@ -72,7 +72,7 @@ draft = false
 
 并且年底新买了一台 MacBook Air，大概花了半小时，就直接从 dotfiles 恢复了熟悉的开发环境。
 
-![](./Snipaste_2024-01-11_20-14-34.png)
+![](./Snipaste_2024-01-11_20-14-34.webp)
 
 安装大概就这样，在任何一台有 Nix 的 Mac 都能复现**一样**的环境：
 
@@ -106,4 +106,4 @@ nix --experimental-features 'nix-command flakes' run nix-darwin -- switch --flak
 
 最后，晒一下我的猫：
 
-![](./20240111-201041.jpeg)
+![](./20240111-201041.webp)

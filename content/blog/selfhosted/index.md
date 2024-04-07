@@ -49,7 +49,7 @@ curl -fsSL https://get.docker.com | sh
 
 我现在部署的一些 App：
 
-![](./202206021150172.png)
+![](./202206021150172.webp)
 
 ### go-import-redirector
 
@@ -57,11 +57,11 @@ Golang 导包的重定向器，在[开源](https://github.com/rsc/go-import-redi
 
 能把 `go get` 从自定义域名重定向到 GitHub：
 
-![](./202206021151668.png)
+![](./202206021151668.webp)
 
 或者浏览器直接打开，跳转到 GoDoc：
 
-![](./202206021150163.png)
+![](./202206021150163.webp)
 
 ### tinyurl
 
@@ -73,7 +73,7 @@ Golang 导包的重定向器，在[开源](https://github.com/rsc/go-import-redi
 
 Docker 的 Web 界面，结合着 CapRover 用来管理容器
 
-![](./202206021151669.png)
+![](./202206021151669.webp)
 
 ### Syncthing
 
@@ -83,4 +83,4 @@ Docker 的 Web 界面，结合着 CapRover 用来管理容器
 
 结合 Syncthing 使用，在没有安装 Syncthing 的电脑上也能在线管理文件
 
-![](./202206021151666.png)
+![](./202206021151666.webp)
