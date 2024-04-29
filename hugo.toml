@@ -1,8 +1,8 @@
 # Basic config
 baseURL = "https://chensl.me"
 theme = "hugo-simple"
-languageCode = "zh-Hans"      # en
-title = "毛珑珑的博客"
+languageCode = "zh-Hans"           # en
+title = "Chensl's Blog"
 copyright = "© 2024 Shaolong Chen"
 
 # Generate a nice robots.txt for SEO
@@ -32,9 +32,9 @@ noClasses = true
 style = "catppuccin-mocha"
 
 [params]
-title = "毛珑珑的博客"
-description = "毛珑珑的博客"
-favicon = "images/favicon.png"
+title = "Chensl's Blog"
+description = "只有非常努力，才能显得毫不费力"
+# favicon = "images/favicon.png"
 dateFormat = "2006-01-02"
 hideMadeWithLine = false
 [params.author]
