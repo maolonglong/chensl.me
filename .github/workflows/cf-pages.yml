@@ -17,6 +17,7 @@ jobs:
         with:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           # fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+          lfs: true
 
       - name: Setup Nix
         uses: cachix/install-nix-action@v23
