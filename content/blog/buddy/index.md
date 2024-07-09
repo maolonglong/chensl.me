@@ -4,7 +4,6 @@ date: 2023-10-14 22:14:38
 tags:
   - buddy-system
   - memory-allocator
-  - vtable
   - zig
 toc: true
 ---

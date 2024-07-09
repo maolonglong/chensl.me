@@ -2,7 +2,7 @@
 title = 'MacOS 上更安全的 rm'
 date = 2024-01-15T21:12:35+08:00
 draft = false
-tags = ['golang', 'apple-script', 'coreutils']
+tags = ['go', 'apple-script']
 toc = true
 +++
 

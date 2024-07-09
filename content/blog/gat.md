@@ -4,7 +4,6 @@ date: 2023-01-24 19:58:29
 tags:
   - rust
   - generics
-  - gat
 toc: true
 ---
 

@@ -2,7 +2,7 @@
 title: 熔断器模式
 date: 2021-09-16 16:21:28
 tags:
-  - golang
+  - go
   - micro-services
 toc: true
 ---

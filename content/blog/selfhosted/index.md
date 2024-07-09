@@ -3,12 +3,7 @@ title: 1 核 1G 的 VPS 能玩出什么花样
 date: 2022-03-27 14:25:47
 tags:
   - vps
-  - vultr
-  - paas
-  - heroku
-  - dokku
   - self-hosted
-  - caprover
 toc: true
 ---
 

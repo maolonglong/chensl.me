@@ -4,8 +4,6 @@ date: 2021-10-24 13:12:42
 tags:
   - linux
   - docker
-  - overlayfs
-  - chroot
 toc: true
 ---
 

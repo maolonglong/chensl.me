@@ -2,8 +2,7 @@
 title: 高性能字节池 - bytebufferpool 源码分析
 date: 2021-06-28 16:19:02
 tags:
-  - golang
-  - pool
+  - go
 toc: true
 ---
 

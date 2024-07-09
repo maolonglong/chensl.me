@@ -2,9 +2,8 @@
 title: 用 Docker 解决单元测试外部依赖
 date: 2022-05-01 15:20:06
 tags:
-  - golang
+  - go
   - docker
-  - dockertest
   - unittest
 toc: true
 ---
