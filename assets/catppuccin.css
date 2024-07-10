@@ -22,13 +22,8 @@
   }
 }
 
-code {
+code:not(pre code) {
   padding: 2px 5px;
   border-radius: var(--standard-border-radius);
   background-color: var(--accent-bg);
-}
-
-pre code,
-pre span {
-  color: #cdd6f4;
 }
