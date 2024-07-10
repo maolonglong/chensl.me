@@ -37,6 +37,8 @@ description = "只有非常努力，才能显得毫不费力"
 # favicon = "images/favicon.png"
 dateFormat = "2006-01-02"
 hideMadeWithLine = false
+mainSections = ["blog"]
+
 [params.author]
 name = "Shaolong Chen"
 email = "shaolong.chen@outlook.it"
@@ -53,6 +55,9 @@ weight = 20
 
 [services.rss]
 limit = 42
+
+[pagination]
+pagerSize = 16
 
 [outputs]
 # Generate RSS for home only.
