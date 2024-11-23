@@ -6,8 +6,6 @@
   --border: #898ea4;
   --accent: #8839ef;
   --accent-hover: var(--accent);
-  --accent-text: var(--bg);
-  --code: var(--text);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,12 +16,5 @@
     --text-light: #bac2de;
     --accent: #cba6f7;
     --accent-hover: var(--accent);
-    --code: var(--text);
   }
-}
-
-code:not(pre code) {
-  padding: 2px 5px;
-  border-radius: var(--standard-border-radius);
-  background-color: var(--accent-bg);
 }
