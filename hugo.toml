@@ -2,11 +2,19 @@
 baseURL = "https://chensl.me"
 theme = "hugo-simple"
 languageCode = "zh-Hans"           # en
+defaultContentLanguage = "zh"
+hasCJKLanguage = true
 title = "Chensl's Blog"
 copyright = "© 2024 Shaolong Chen"
 
 # Generate a nice robots.txt for SEO
 enableRobotsTXT = true
+
+enableInlineShortcodes = true
+buildDrafts = false
+buildFuture = false
+buildExpired = false
+enableEmoji = true
 
 # https://github.com/gohugoio/hugo/issues/12152
 capitalizeListTitles = false
