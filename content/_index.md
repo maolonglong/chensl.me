@@ -2,14 +2,17 @@
 title = "About Me"
 +++
 
-[![GitHub](https://img.shields.io/github/followers/maolonglong?label=follow&style=social)](https://github.com/maolonglong)
-
 ```scheme
 `((pronouns ("he" "him"))
   (code ("Go" "Rust" "Zig" "Nix" ...))
   (architecture ("microservices" "network-programming"))
   (current-focus "Learning skills related to system programming and database system"))
 ```
+
+## Identity
+
+- GitHub: [github.com/maolonglong](https://github.com/maolonglong)
+- Fediverse: <a rel="me" href="https://gts.purr.onl/@chensl">@chensl@purr.onl</a>
 
 ## Projects
 
