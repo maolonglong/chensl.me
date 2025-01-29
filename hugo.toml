@@ -50,7 +50,7 @@ mainSections = ["blog"]
 [params.author]
 name = "Shaolong Chen"
 email = "shaolong.chen@outlook.it"
-
+fediverse = "@chensl@purr.onl"
 
 [[menu.main]]
 name = 'Home'
