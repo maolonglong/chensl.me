@@ -70,6 +70,7 @@ a {
 	color: var(--link-color);
 	cursor: pointer;
 	text-decoration: none;
+	text-underline-offset: 3px;
 }
 
 a:hover {
@@ -174,6 +175,12 @@ ul.blog-posts li span {
 
 ul.blog-posts li a:visited {
 	color: var(--visited-color);
+}
+
+.tags {
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: 0.5em;
 }
 
 svg.iconify-emoji {

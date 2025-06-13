@@ -1,5 +1,6 @@
 ---
 import { SITE_TITLE } from '../consts';
+import HeaderLink from './HeaderLink.astro';
 ---
 
 <header>
@@ -8,9 +9,9 @@ import { SITE_TITLE } from '../consts';
 	</a>
 	<nav>
 		<p>
-			<a href="/">主页</a>
-			<a href="/blog/">博客</a>
-			<a href="/rss.xml">RSS</a>
+			<HeaderLink href="/">主页</HeaderLink>
+			<HeaderLink href="/blog/">博客</HeaderLink>
+			<HeaderLink href="/rss.xml">RSS</HeaderLink>
 		</p>
 	</nav>
 </header>

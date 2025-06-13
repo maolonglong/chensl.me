@@ -15,13 +15,6 @@ const { postId, title, description, pubDate, tags } = Astro.props;
 <html lang="zh-CN">
 	<head>
 		<BaseHead title={`${title} | ${SITE_TITLE}`} description={description} />
-		<style>
-			.tags {
-				display: flex;
-				flex-wrap: wrap;
-				column-gap: 0.5em;
-			}
-		</style>
 	</head>
 	<body>
 		<Header />
