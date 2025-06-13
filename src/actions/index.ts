@@ -7,14 +7,16 @@ export const server = {
 			postId: z.string(),
 		}),
 		handler: async ({ postId }, context) => {
+			const session = context.session!;
 			const kv = context.locals.runtime.env.COUNTER;
-			const count = (await kv.get(postId)) || '0';
 
-			const upvotedPosts = (await context.session?.get('upvotedPosts')) || [];
+			const [r0, r1] = await Promise.all([kv.get(postId), session.get('upvotedPosts')]);
+			const count = parseInt(r0 || '0');
+			const upvotedPosts = r1 || [];
 
 			return {
 				postId,
-				count: parseInt(count, 10),
+				count,
 				upvoted: upvotedPosts.includes(postId),
 				success: true,
 			};
@@ -26,29 +28,27 @@ export const server = {
 			postId: z.string(),
 		}),
 		handler: async ({ postId }, context) => {
+			const session = context.session!;
 			const kv = context.locals.runtime.env.COUNTER;
-			let count = parseInt((await kv.get(postId)) || '0', 10);
 
-			const upvotedPosts = (await context.session?.get('upvotedPosts')) || [];
+			const upvotedPosts = (await session.get('upvotedPosts')) || [];
 			if (upvotedPosts.includes(postId)) {
-				return {
-					postId,
-					count,
-					success: false,
-				};
+				return { postId, success: false };
 			}
 
-			count++;
-			await kv.put(postId, count.toString());
+			// Perform work without blocking returning a response.
+			context.locals.runtime.ctx.waitUntil(
+				(async () => {
+					let count = parseInt((await kv.get(postId)) || '0');
+					count++;
+					await kv.put(postId, count.toString());
+				})()
+			);
 
 			upvotedPosts.push(postId);
-			context.session?.set('upvotedPosts', upvotedPosts);
+			session.set('upvotedPosts', upvotedPosts);
 
-			return {
-				postId,
-				count,
-				success: true,
-			};
+			return { postId, success: true };
 		},
 	}),
 };
