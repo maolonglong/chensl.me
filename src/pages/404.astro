@@ -1,0 +1,31 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+---
+
+<html lang="zh-CN">
+	<head>
+		<BaseHead title="404" description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<header>
+			<a class="title" href="/">
+				<h1>{SITE_TITLE}</h1>
+			</a>
+		</header>
+		<main>
+			<div
+				style="text-align: center; display: flex; flex-flow: column; justify-content: center; height: calc(100vh - 110px);"
+			>
+				<h1>404</h1>
+				<h2>ʕノ•ᴥ•ʔノ ︵ ┻━┻</h2>
+				<p>
+					It looks like this page doesn't exist.
+					<br />
+					Let's get you
+					<a href="/">back home</a>.
+				</p>
+			</div>
+		</main>
+	</body>
+</html>

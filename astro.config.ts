@@ -1,0 +1,57 @@
+import { defineConfig } from 'astro/config';
+import cloudflare from '@astrojs/cloudflare';
+import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
+import react from '@astrojs/react';
+import icon from 'astro-icon';
+import { remarkDescription } from './src/plugins/remark-description';
+import rehypeExternalLinks from 'rehype-external-links';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+
+// https://astro.build/config
+export default defineConfig({
+	site: 'https://chensl.me',
+	trailingSlash: 'always',
+	adapter: cloudflare({
+		imageService: 'compile',
+	}),
+	integrations: [mdx(), sitemap(), icon(), react()],
+
+	markdown: {
+		remarkPlugins: [remarkDescription, remarkMath],
+		remarkRehype: { footnoteLabel: '脚注' },
+		rehypePlugins: [
+			[
+				rehypeKatex,
+				{
+					output: 'mathml',
+				},
+			],
+			[rehypeExternalLinks, { rel: ['nofollow'], target: '_blank' }],
+		],
+		syntaxHighlight: {
+			excludeLangs: ['math'],
+		},
+		shikiConfig: {
+			themes: {
+				light: 'github-light-default',
+				dark: 'github-dark-dimmed',
+			},
+		},
+	},
+
+	vite: {
+		resolve: {
+			// https://github.com/withastro/astro/issues/12824
+			//
+			// Use react-dom/server.edge instead of react-dom/server.browser for React 19.
+			// Without this, MessageChannel from node:worker_threads needs to be polyfilled.
+			alias: import.meta.env.PROD
+				? {
+						'react-dom/server': 'react-dom/server.edge',
+					}
+				: undefined,
+		},
+	},
+});

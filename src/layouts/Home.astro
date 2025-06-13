@@ -1,0 +1,36 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getAllPosts } from '../utils';
+
+const posts = (await getAllPosts()).slice(0, 5);
+---
+
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<slot />
+			{
+				posts.length > 0 && (
+					<>
+						<h3>最近的文章</h3>
+						<ul>
+							{posts.map((post) => (
+								<li>
+									<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+								</li>
+							))}
+						</ul>
+					</>
+				)
+			}
+		</main>
+		<Footer />
+	</body>
+</html>

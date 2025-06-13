@@ -1,0 +1,49 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import { SITE_TITLE } from '../consts';
+import Upvote from '../components/Upvote';
+
+type Props = CollectionEntry<'blog'>['data'] & { postId: string };
+
+const { postId, title, description, pubDate, tags } = Astro.props;
+---
+
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={`${title} | ${SITE_TITLE}`} description={description} />
+		<style>
+			.tags {
+				display: flex;
+				flex-wrap: wrap;
+				column-gap: 0.5em;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>{title}</h1>
+			<p>
+				<i>
+					<FormattedDate date={pubDate} />
+				</i>
+			</p>
+			<slot />
+			{
+				tags && tags.length > 0 && (
+					<p class="tags">
+						{tags.sort().map((tag) => (
+							<a href={`/tags/${tag}/`}>#{tag}</a>
+						))}
+					</p>
+				)
+			}
+			<Upvote client:load postId={postId} />
+		</main>
+		<Footer />
+	</body>
+</html>
