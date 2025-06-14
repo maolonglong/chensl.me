@@ -1,0 +1,57 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import Twemoji from '../components/Twemoji.astro';
+import { getAllPosts } from '../utils';
+import PopularPosts from '../components/PopularPosts.astro';
+
+const latestPosts = (await getAllPosts()).slice(0, 5);
+---
+
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1><Twemoji name="waving-hand" /> Hi! 我是陈劭珑</h1>
+			<p>
+				目前在 <Twemoji name="globe-showing-asia-australia" /> 工作的软件工程师, 为了 <Twemoji
+					name="house"
+				/>
+				<Twemoji name="automobile" />
+				<Twemoji name="money-bag" /> 而写代码
+			</p>
+
+			<h3>社交媒体链接</h3>
+			<ul>
+				<li>
+					GitHub: <a href="https://github.com/maolonglong" rel="nofollow" target="_blank"
+						>github.com/maolonglong</a
+					>
+				</li>
+				<li>
+					Fediverse: <a href="https://gts.purr.onl/@chensl" rel="me" target="_blank"
+						>@chensl@purr.onl</a
+					>
+				</li>
+			</ul>
+			<h3>最近的文章</h3>
+			<ul>
+				{
+					latestPosts.map((post) => (
+						<li>
+							<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+						</li>
+					))
+				}
+			</ul>
+			<h3>最受欢迎的文章</h3>
+			<PopularPosts server:defer />
+		</main>
+		<Footer />
+	</body>
+</html>

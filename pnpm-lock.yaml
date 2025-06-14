@@ -10,13 +10,13 @@ importers:
     dependencies:
       '@astrojs/cloudflare':
         specifier: ^12.5.4
-        version: 12.5.4(@types/node@24.0.1)(astro@5.9.2(@types/node@24.0.1)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(yaml@2.8.0)
+        version: 12.5.4(@types/node@24.0.1)(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(yaml@2.8.0)
       '@astrojs/markdown-remark':
         specifier: ^6.3.2
         version: 6.3.2
       '@astrojs/mdx':
         specifier: ^4.3.0
-        version: 4.3.0(astro@5.9.2(@types/node@24.0.1)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))
+        version: 4.3.0(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))
       '@astrojs/react':
         specifier: ^4.3.0
         version: 4.3.0(@types/node@24.0.1)(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(yaml@2.8.0)
@@ -29,9 +29,12 @@ importers:
       '@iconify-json/twemoji':
         specifier: ^1.2.2
         version: 1.2.2
+      '@upstash/redis':
+        specifier: ^1.35.0
+        version: 1.35.0
       astro:
         specifier: ^5.9.2
-        version: 5.9.2(@types/node@24.0.1)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
+        version: 5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
       astro-icon:
         specifier: ^1.1.5
         version: 1.1.5
@@ -1127,6 +1130,9 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+
+  '@upstash/redis@1.35.0':
+    resolution: {integrity: sha512-WUm0Jz1xN4DBDGeJIi2Y0kVsolWRB2tsVds4SExaiLg4wBdHFMB+8IfZtBWr+BP0FvhuBr5G1/VLrJ9xzIWHsg==}
 
   '@vitejs/plugin-react@4.5.2':
     resolution: {integrity: sha512-QNVT3/Lxx99nMQWJWF7K4N6apUEuT0KlZA3mx/mVaoGj3smm/8rc8ezz15J1pcbcjDK0V15rpHetVfya08r76Q==}
@@ -3144,12 +3150,12 @@ snapshots:
       - prettier
       - prettier-plugin-astro
 
-  '@astrojs/cloudflare@12.5.4(@types/node@24.0.1)(astro@5.9.2(@types/node@24.0.1)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(yaml@2.8.0)':
+  '@astrojs/cloudflare@12.5.4(@types/node@24.0.1)(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(yaml@2.8.0)':
     dependencies:
       '@astrojs/internal-helpers': 0.6.1
       '@astrojs/underscore-redirects': 0.6.1
       '@cloudflare/workers-types': 4.20250613.0
-      astro: 5.9.2(@types/node@24.0.1)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
+      astro: 5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
       tinyglobby: 0.2.14
       vite: 6.3.5(@types/node@24.0.1)(yaml@2.8.0)
       wrangler: 4.20.0(@cloudflare/workers-types@4.20250613.0)
@@ -3224,12 +3230,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/mdx@4.3.0(astro@5.9.2(@types/node@24.0.1)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))':
+  '@astrojs/mdx@4.3.0(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))':
     dependencies:
       '@astrojs/markdown-remark': 6.3.2
       '@mdx-js/mdx': 3.1.0(acorn@8.15.0)
       acorn: 8.15.0
-      astro: 5.9.2(@types/node@24.0.1)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
+      astro: 5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
       es-module-lexer: 1.7.0
       estree-util-visit: 2.0.0
       hast-util-to-html: 9.0.5
@@ -4084,6 +4090,10 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
+  '@upstash/redis@1.35.0':
+    dependencies:
+      uncrypto: 0.1.3
+
   '@vitejs/plugin-react@4.5.2(vite@6.3.5(@types/node@24.0.1)(yaml@2.8.0))':
     dependencies:
       '@babel/core': 7.27.4
@@ -4205,7 +4215,7 @@ snapshots:
       - debug
       - supports-color
 
-  astro@5.9.2(@types/node@24.0.1)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0):
+  astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0):
     dependencies:
       '@astrojs/compiler': 2.12.2
       '@astrojs/internal-helpers': 0.6.1
@@ -4258,7 +4268,7 @@ snapshots:
       ultrahtml: 1.6.0
       unifont: 0.5.0
       unist-util-visit: 5.0.0
-      unstorage: 1.16.0
+      unstorage: 1.16.0(@upstash/redis@1.35.0)
       vfile: 6.0.3
       vite: 6.3.5(@types/node@24.0.1)(yaml@2.8.0)
       vitefu: 1.0.6(vite@6.3.5(@types/node@24.0.1)(yaml@2.8.0))
@@ -6411,7 +6421,7 @@ snapshots:
       unist-util-is: 6.0.0
       unist-util-visit-parents: 6.0.1
 
-  unstorage@1.16.0:
+  unstorage@1.16.0(@upstash/redis@1.35.0):
     dependencies:
       anymatch: 3.1.3
       chokidar: 4.0.3
@@ -6421,6 +6431,8 @@ snapshots:
       node-fetch-native: 1.6.6
       ofetch: 1.4.1
       ufo: 1.6.1
+    optionalDependencies:
+      '@upstash/redis': 1.35.0
 
   update-browserslist-db@1.1.3(browserslist@4.25.0):
     dependencies:

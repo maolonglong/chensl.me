@@ -1,5 +1,7 @@
 import { defineAction } from 'astro:actions';
 import { z } from 'astro:schema';
+import { Redis } from '@upstash/redis/cloudflare';
+import { REDIS_UPVOTE_KEY } from '../consts';
 
 export const server = {
 	getPostUpvotes: defineAction({
@@ -8,10 +10,13 @@ export const server = {
 		}),
 		handler: async ({ postId }, context) => {
 			const session = context.session!;
-			const kv = context.locals.runtime.env.COUNTER;
+			const redis = Redis.fromEnv(context.locals.runtime.env);
 
-			const [r0, r1] = await Promise.all([kv.get(postId), session.get('upvotedPosts')]);
-			const count = parseInt(r0 || '0');
+			const [r0, r1] = await Promise.all([
+				redis.zscore(REDIS_UPVOTE_KEY, postId),
+				session.get('upvotedPosts'),
+			]);
+			const count = r0 || 0;
 			const upvotedPosts = r1 || [];
 
 			return {
@@ -29,7 +34,7 @@ export const server = {
 		}),
 		handler: async ({ postId }, context) => {
 			const session = context.session!;
-			const kv = context.locals.runtime.env.COUNTER;
+			const { ctx, env } = context.locals.runtime;
 
 			const upvotedPosts = (await session.get('upvotedPosts')) || [];
 			if (upvotedPosts.includes(postId)) {
@@ -37,11 +42,10 @@ export const server = {
 			}
 
 			// Perform work without blocking returning a response.
-			context.locals.runtime.ctx.waitUntil(
+			ctx.waitUntil(
 				(async () => {
-					let count = parseInt((await kv.get(postId)) || '0');
-					count++;
-					await kv.put(postId, count.toString());
+					const redis = Redis.fromEnv(env);
+					await redis.zincrby(REDIS_UPVOTE_KEY, 1, postId);
 				})()
 			);
 

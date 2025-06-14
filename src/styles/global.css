@@ -163,18 +163,18 @@ footer {
 ul.blog-posts {
 	list-style-type: none;
 	padding: unset;
+}
 
-	li {
-		display: flex;
+ul.blog-posts li {
+	display: flex;
+}
 
-		span {
-			flex: 0 0 130px;
-		}
+ul.blog-posts li span {
+	flex: 0 0 130px;
+}
 
-		a:visited {
-			color: var(--visited-color);
-		}
-	}
+ul.blog-posts li a:visited {
+	color: var(--visited-color);
 }
 
 .tags {
@@ -197,23 +197,21 @@ svg.iconify-emoji {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-
-	&.upvoted {
-		color: salmon;
-	}
-
-	.upvote-count {
-		margin-top: -3px;
-	}
 }
 
-.anchor {
-	.anchor-link {
-		margin-left: 0.2em;
-		opacity: 0;
-	}
+.upvote-button.upvoted {
+	color: salmon;
+}
 
-	&:hover > .anchor-link {
-		opacity: 1;
-	}
+.upvote-count {
+	margin-top: -3px;
+}
+
+.anchor > .anchor-link {
+	margin-left: 0.2em;
+	opacity: 0;
+}
+
+.anchor:hover > .anchor-link {
+	opacity: 1;
 }

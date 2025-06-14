@@ -17,9 +17,5 @@
       "binding": "SESSION",
       "id": "28d9d59a96bd45338d23149ed74400ff",
     },
-    {
-      "binding": "COUNTER",
-      "id": "32696d7ca0c94d1780c7bbcf88730393",
-    },
   ],
 }

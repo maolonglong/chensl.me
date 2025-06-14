@@ -27,7 +27,7 @@ export default function Upvote({ postId }: { postId: string }) {
 	};
 
 	return (
-		<div>
+		<div style={{ display: 'inline' }}>
 			<button
 				className={clsx('upvote-button', { upvoted })}
 				title="Toast this post"
