@@ -8,6 +8,8 @@ import { remarkDescription } from './src/plugins/remark-description';
 import rehypeExternalLinks from 'rehype-external-links';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { rehypeHeadingIds } from '@astrojs/markdown-remark';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 
 // https://astro.build/config
 export default defineConfig({
@@ -29,6 +31,23 @@ export default defineConfig({
 				},
 			],
 			[rehypeExternalLinks, { rel: ['nofollow'], target: '_blank' }],
+			rehypeHeadingIds,
+			[
+				rehypeAutolinkHeadings,
+				{
+					behavior: 'append',
+					content: {
+						type: 'text',
+						value: '#',
+					},
+					headingProperties: {
+						className: ['anchor'],
+					},
+					properties: {
+						className: ['anchor-link'],
+					},
+				},
+			],
 		],
 		syntaxHighlight: {
 			excludeLangs: ['math'],
