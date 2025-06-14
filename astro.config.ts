@@ -3,6 +3,7 @@ import cloudflare from '@astrojs/cloudflare';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
+import purgecss from 'astro-purgecss';
 import icon from 'astro-icon';
 import { remarkDescription } from './src/plugins/remark-description';
 import rehypeExternalLinks from 'rehype-external-links';
@@ -18,7 +19,15 @@ export default defineConfig({
 	adapter: cloudflare({
 		imageService: 'compile',
 	}),
-	integrations: [mdx(), sitemap(), icon(), react()],
+	integrations: [
+		mdx(),
+		sitemap(),
+		icon(),
+		react(),
+		purgecss({
+			content: ['./src/**/*.{astro,js,jsx,ts,tsx,vue,svelte}'],
+		}),
+	],
 
 	markdown: {
 		remarkPlugins: [remarkDescription, remarkMath],
@@ -58,6 +67,10 @@ export default defineConfig({
 				dark: 'github-dark-dimmed',
 			},
 		},
+	},
+
+	build: {
+		inlineStylesheets: 'never',
 	},
 
 	vite: {
