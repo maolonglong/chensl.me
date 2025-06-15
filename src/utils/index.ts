@@ -1,6 +1,6 @@
 import type { MarkdownHeading } from 'astro';
 import { type CollectionEntry, getCollection } from 'astro:content';
-import type { TocHeading } from '../types';
+import type { TocHeading } from '@/types';
 
 type Post = CollectionEntry<'blog'>;
 

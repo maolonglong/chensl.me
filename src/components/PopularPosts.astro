@@ -1,7 +1,7 @@
 ---
 import { Redis } from '@upstash/redis/cloudflare';
-import { getAllPosts } from '../utils';
-import { REDIS_UPVOTE_KEY } from '../consts';
+import { getAllPosts } from '@/utils';
+import { REDIS_UPVOTE_KEY } from '@/consts';
 
 const redis = Redis.fromEnv(Astro.locals.runtime.env);
 const posts = await getAllPosts();

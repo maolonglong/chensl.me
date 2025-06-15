@@ -1,7 +1,7 @@
 import { defineAction } from 'astro:actions';
 import { z } from 'astro:schema';
 import { Redis } from '@upstash/redis/cloudflare';
-import { REDIS_UPVOTE_KEY } from '../consts';
+import { REDIS_UPVOTE_KEY } from '@/consts';
 
 export const server = {
 	getPostUpvotes: defineAction({
