@@ -1,4 +1,6 @@
+import type { MarkdownHeading } from 'astro';
 import { type CollectionEntry, getCollection } from 'astro:content';
+import type { TocHeading } from '../types';
 
 type Post = CollectionEntry<'blog'>;
 
@@ -21,4 +23,21 @@ export async function getAllTags(posts?: Post[]) {
 				.map((tag) => tag.toLowerCase())
 		),
 	].sort();
+}
+
+export function buildHierarchy(headings: MarkdownHeading[]) {
+	const tocHeadings: TocHeading[] = [];
+	let parent: TocHeading | null = null;
+
+	headings.forEach((h) => {
+		const heading = { ...h, subheadings: [] };
+		if (heading.depth === 2) {
+			tocHeadings.push(heading);
+			parent = heading;
+		} else if (heading.depth == 3) {
+			parent?.subheadings.push(heading);
+		}
+	});
+
+	return tocHeadings;
 }

@@ -6,10 +6,17 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import { SITE_TITLE } from '../consts';
 import Upvote from '../components/Upvote';
+import type { MarkdownHeading } from 'astro';
+import TocItem from '../components/TocItem.astro';
+import { buildHierarchy } from '../utils';
 
-type Props = CollectionEntry<'blog'>['data'] & { postId: string };
+type Props = CollectionEntry<'blog'>['data'] & {
+	postId: string;
+	headings: MarkdownHeading[];
+};
 
-const { postId, title, description, pubDate, tags } = Astro.props;
+const { postId, title, description, pubDate, tags, toc, headings } = Astro.props;
+const tocHeadings = buildHierarchy(headings);
 ---
 
 <html lang="zh-CN">
@@ -25,6 +32,18 @@ const { postId, title, description, pubDate, tags } = Astro.props;
 					<FormattedDate date={pubDate} />
 				</i>
 			</p>
+			{
+				toc && tocHeadings.length > 0 && (
+					<details>
+						<summary>目录</summary>
+						<ul>
+							{tocHeadings.map((h) => (
+								<TocItem heading={h} />
+							))}
+						</ul>
+					</details>
+				)
+			}
 			<slot />
 			{
 				tags && tags.length > 0 && (
