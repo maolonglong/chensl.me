@@ -10,13 +10,13 @@ importers:
     dependencies:
       '@astrojs/cloudflare':
         specifier: ^12.5.4
-        version: 12.5.4(@types/node@24.0.1)(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(yaml@2.8.0)
+        version: 12.5.4(@types/node@24.0.1)(astro@5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(yaml@2.8.0)
       '@astrojs/markdown-remark':
         specifier: ^6.3.2
         version: 6.3.2
       '@astrojs/mdx':
         specifier: ^4.3.0
-        version: 4.3.0(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))
+        version: 4.3.0(astro@5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))
       '@astrojs/react':
         specifier: ^4.3.0
         version: 4.3.0(@types/node@24.0.1)(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(yaml@2.8.0)
@@ -33,14 +33,14 @@ importers:
         specifier: ^1.35.0
         version: 1.35.0
       astro:
-        specifier: ^5.9.2
-        version: 5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
+        specifier: ^5.9.3
+        version: 5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
       astro-icon:
         specifier: ^1.1.5
         version: 1.1.5
       astro-purgecss:
         specifier: ^5.2.3
-        version: 5.2.3(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(purgecss@7.0.2)
+        version: 5.2.3(astro@5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(purgecss@7.0.2)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1258,8 +1258,8 @@ packages:
       astro: ^5.0.0
       purgecss: ^7.0.0
 
-  astro@5.9.2:
-    resolution: {integrity: sha512-K/zZlQOWMpamfLDOls5jvG7lrsjH1gkk3ESRZyZDCkVBtKHMF4LbjwCicm/iBb3mX3V/PerqRYzLbOy3/4JLCQ==}
+  astro@5.9.3:
+    resolution: {integrity: sha512-VReZrpUa/3rfeiVvsQ1A2M3ujDPI+pDGIYOMtXPEZwut8tZoEyealXXLjitgCsJ+3dunKGZbg4Eak6i+r0vniw==}
     engines: {node: 18.20.8 || ^20.3.0 || >=22.0.0, npm: '>=9.6.5', pnpm: '>=7.1.0'}
     hasBin: true
 
@@ -2428,6 +2428,10 @@ packages:
     resolution: {integrity: sha512-QSa9EBe+uwlGTFmHsPKokv3B/oEMQZxfqW0QqNCyhpa6mB1afzulwn8hihglqAb2pOw+BJgNlmXQ8la2VeHB7w==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postcss@8.5.5:
+    resolution: {integrity: sha512-d/jtm+rdNT8tpXuHY5MMtcbJFBkhXE6593XVR9UoGCH8jSFGci7jGvMGH5RYd5PBJW+00NZQt6gf7CbagJCrhg==}
+    engines: {node: ^10 || ^12 || >=14}
+
   prettier-plugin-astro@0.14.1:
     resolution: {integrity: sha512-RiBETaaP9veVstE4vUwSIcdATj6dKmXljouXc/DDNwBSPTp8FRkLGDSGFClKsAFeeg+13SB0Z1JZvbD76bigJw==}
     engines: {node: ^14.15.0 || >=16.0.0}
@@ -3235,6 +3239,9 @@ packages:
   zod@3.25.61:
     resolution: {integrity: sha512-fzfJgUw78LTNnHujj9re1Ov/JJQkRZZGDMcYqSx7Hp4rPOkKywaFHq0S6GoHeXs0wGNE/sIOutkXgnwzrVOGCQ==}
 
+  zod@3.25.64:
+    resolution: {integrity: sha512-hbP9FpSZf7pkS7hRVUrOjhwKJNyampPgtXKc3AN6DsWtoHsg2Sb4SQaS4Tcay380zSwd2VPo9G9180emBACp5g==}
+
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
@@ -3263,12 +3270,12 @@ snapshots:
       - prettier
       - prettier-plugin-astro
 
-  '@astrojs/cloudflare@12.5.4(@types/node@24.0.1)(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(yaml@2.8.0)':
+  '@astrojs/cloudflare@12.5.4(@types/node@24.0.1)(astro@5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(yaml@2.8.0)':
     dependencies:
       '@astrojs/internal-helpers': 0.6.1
       '@astrojs/underscore-redirects': 0.6.1
       '@cloudflare/workers-types': 4.20250613.0
-      astro: 5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
+      astro: 5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
       tinyglobby: 0.2.14
       vite: 6.3.5(@types/node@24.0.1)(yaml@2.8.0)
       wrangler: 4.20.0(@cloudflare/workers-types@4.20250613.0)
@@ -3343,12 +3350,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/mdx@4.3.0(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))':
+  '@astrojs/mdx@4.3.0(astro@5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))':
     dependencies:
       '@astrojs/markdown-remark': 6.3.2
       '@mdx-js/mdx': 3.1.0(acorn@8.15.0)
       acorn: 8.15.0
-      astro: 5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
+      astro: 5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
       es-module-lexer: 1.7.0
       estree-util-visit: 2.0.0
       hast-util-to-html: 9.0.5
@@ -4343,12 +4350,12 @@ snapshots:
       - debug
       - supports-color
 
-  astro-purgecss@5.2.3(astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(purgecss@7.0.2):
+  astro-purgecss@5.2.3(astro@5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0))(purgecss@7.0.2):
     dependencies:
-      astro: 5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
+      astro: 5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0)
       purgecss: 7.0.2
 
-  astro@5.9.2(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0):
+  astro@5.9.3(@types/node@24.0.1)(@upstash/redis@1.35.0)(rollup@4.43.0)(typescript@5.8.3)(yaml@2.8.0):
     dependencies:
       '@astrojs/compiler': 2.12.2
       '@astrojs/internal-helpers': 0.6.1
@@ -4408,9 +4415,9 @@ snapshots:
       xxhash-wasm: 1.1.0
       yargs-parser: 21.1.1
       yocto-spinner: 0.2.3
-      zod: 3.25.61
-      zod-to-json-schema: 3.24.5(zod@3.25.61)
-      zod-to-ts: 1.2.0(typescript@5.8.3)(zod@3.25.61)
+      zod: 3.25.64
+      zod-to-json-schema: 3.24.5(zod@3.25.64)
+      zod-to-ts: 1.2.0(typescript@5.8.3)(zod@3.25.64)
     optionalDependencies:
       sharp: 0.33.5
     transitivePeerDependencies:
@@ -6021,6 +6028,12 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
+  postcss@8.5.5:
+    dependencies:
+      nanoid: 3.3.11
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+
   prettier-plugin-astro@0.14.1:
     dependencies:
       '@astrojs/compiler': 2.12.2
@@ -6670,7 +6683,7 @@ snapshots:
       esbuild: 0.25.5
       fdir: 6.4.6(picomatch@4.0.2)
       picomatch: 4.0.2
-      postcss: 8.5.4
+      postcss: 8.5.5
       rollup: 4.43.0
       tinyglobby: 0.2.14
     optionalDependencies:
@@ -6922,17 +6935,19 @@ snapshots:
       mustache: 4.2.0
       stacktracey: 2.1.8
 
-  zod-to-json-schema@3.24.5(zod@3.25.61):
+  zod-to-json-schema@3.24.5(zod@3.25.64):
     dependencies:
-      zod: 3.25.61
+      zod: 3.25.64
 
-  zod-to-ts@1.2.0(typescript@5.8.3)(zod@3.25.61):
+  zod-to-ts@1.2.0(typescript@5.8.3)(zod@3.25.64):
     dependencies:
       typescript: 5.8.3
-      zod: 3.25.61
+      zod: 3.25.64
 
   zod@3.22.3: {}
 
   zod@3.25.61: {}
+
+  zod@3.25.64: {}
 
   zwitch@2.0.4: {}
