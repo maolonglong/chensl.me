@@ -4,6 +4,9 @@
   "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2025-06-12",
   "compatibility_flags": ["nodejs_compat"],
+  "placement": {
+    "mode": "smart",
+  },
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist",
