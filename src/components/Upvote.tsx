@@ -1,5 +1,5 @@
-import { actions } from 'astro:actions';
 import { useEffect, useState } from 'react';
+import { actions } from 'astro:actions';
 import { clsx } from 'clsx';
 
 export default function Upvote({ postId }: { postId: string }) {

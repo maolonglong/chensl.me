@@ -1,5 +1,5 @@
-import { visit, EXIT } from 'unist-util-visit';
 import { toString } from 'mdast-util-to-string';
+import { EXIT, visit } from 'unist-util-visit';
 
 export function remarkDescription() {
 	return (tree, { data }) => {

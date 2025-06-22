@@ -1,8 +1,10 @@
 import rss from '@astrojs/rss';
-import { SITE_TITLE, SITE_DESCRIPTION } from '@/consts';
-import sanitizeHtml from 'sanitize-html';
 import MarkdownIt from 'markdown-it';
+import sanitizeHtml from 'sanitize-html';
+
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { getAllPosts } from '@/utils';
+
 const parser = new MarkdownIt();
 
 export async function GET(context) {

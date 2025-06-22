@@ -1,13 +1,14 @@
 ---
+import type { MarkdownHeading } from 'astro';
 import type { CollectionEntry } from 'astro:content';
+
+import { SITE_TITLE } from '@/consts';
 import BaseHead from '@/components/BaseHead.astro';
-import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import FormattedDate from '@/components/FormattedDate.astro';
-import { SITE_TITLE } from '@/consts';
-import Upvote from '@/components/Upvote';
-import type { MarkdownHeading } from 'astro';
+import Header from '@/components/Header.astro';
 import TocItem from '@/components/TocItem.astro';
+import Upvote from '@/components/Upvote';
 import { buildHierarchy } from '@/utils';
 
 type Props = CollectionEntry<'blog'>['data'] & {

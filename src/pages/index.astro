@@ -1,11 +1,11 @@
 ---
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import BaseHead from '@/components/BaseHead.astro';
 import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
+import PopularPosts from '@/components/PopularPosts.astro';
 import Twemoji from '@/components/Twemoji.astro';
 import { getAllPosts } from '@/utils';
-import PopularPosts from '@/components/PopularPosts.astro';
 
 const latestPosts = (await getAllPosts()).slice(0, 5);
 ---
