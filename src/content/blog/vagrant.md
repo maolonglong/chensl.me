@@ -50,7 +50,7 @@ vagrant box remove <name> # 删除 box
 
 一个最简单的配置文件就是仅指定 box，其他默认：
 
-```rb Vagrantfile
+```rb title="Vagrantfile"
 Vagrant.configure("2") do |config|
   config.vm.box = "bento/ubuntu-18.04"
 end
@@ -64,7 +64,7 @@ end
 
 shell 脚本默认情况下只会在第一次 `vagrant up` 的时候执行
 
-```rb Vagrantfile
+```rb title="Vagrantfile"
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 

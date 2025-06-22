@@ -23,7 +23,7 @@ toc: true
 
 用 vagrant 跑一个带有 docker 的虚拟机：
 
-```rb Vagrantfile
+```rb title="Vagrantfile"
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 

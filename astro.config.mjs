@@ -1,9 +1,11 @@
+// @ts-check
 import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
 import purgecss from 'astro-purgecss';
+import expressiveCode from 'astro-expressive-code';
 import icon from 'astro-icon';
 import { remarkDescription } from './src/plugins/remark-description';
 import rehypeExternalLinks from 'rehype-external-links';
@@ -20,6 +22,7 @@ export default defineConfig({
 		imageService: 'compile',
 	}),
 	integrations: [
+		expressiveCode(),
 		mdx(),
 		sitemap(),
 		icon(),
@@ -59,13 +62,7 @@ export default defineConfig({
 			],
 		],
 		syntaxHighlight: {
-			excludeLangs: ['math'],
-		},
-		shikiConfig: {
-			themes: {
-				light: 'github-light-default',
-				dark: 'github-dark-dimmed',
-			},
+			excludeLangs: ['mermaid', 'math'],
 		},
 	},
 
