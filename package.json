@@ -11,7 +11,7 @@
     "format": "prettier -w . --cache"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.5.4",
+    "@astrojs/cloudflare": "^12.6.0",
     "@astrojs/markdown-remark": "^6.3.2",
     "@astrojs/mdx": "^4.3.0",
     "@astrojs/react": "^4.3.0",
