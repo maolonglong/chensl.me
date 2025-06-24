@@ -39,7 +39,7 @@ For other options, see:
 它提示我 `go1.16` 会存在不明确的依赖，因为我本地 `go` 版本已经是 `1.17`，所以接下来我直接运行了 `go mod tidy -compat=1.17`：
 
 ```bash
-$ go mod tidy -compat=1.17
+go mod tidy -compat=1.17
 ```
 
 没有错误提示，看起来一切正常。但是当我尝试着编译时，它又开始「搞事情」：
@@ -64,7 +64,7 @@ github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 (/Users/xxx/go/pkg/mod/github.c
 需要继续研究为了什么同时依赖了两个不同版本的 antlr？借助 [modgraphviz](https://github.com/golang/exp/tree/master/cmd/modgraphviz) 和 [Graphviz](https://graphviz.org/) 生成模块依赖图：
 
 ```bash
-$ go mod graph | egrep "cel-go|antlr" | modgraphviz | dot -Tsvg -o mod-graph.svg
+go mod graph | egrep "cel-go|antlr" | modgraphviz | dot -Tsvg -o mod-graph.svg
 ```
 
 ![](./202212172136455.svg)
@@ -72,5 +72,5 @@ $ go mod graph | egrep "cel-go|antlr" | modgraphviz | dot -Tsvg -o mod-graph.svg
 从图表中很容易发现根本原因是 dep2，dep3 分别依赖 cel-go 的 v0.9.0 和 v0.5.1。[MVS](https://go.dev/ref/mod#minimal-version-selection) 选择了 v0.9.0，实际上我们并没有使用 cel-go@v0.9.0 相关的代码，所以 **最终解决方法**：
 
 ```bash
-$ go mod edit -replace=github.com/google/cel-go=github.com/google/cel-go@v0.5.1
+go mod edit -replace=github.com/google/cel-go=github.com/google/cel-go@v0.5.1
 ```
