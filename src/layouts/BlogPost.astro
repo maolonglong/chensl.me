@@ -22,7 +22,11 @@ const tocHeadings = buildHierarchy(headings);
 
 <html lang="zh-CN">
 	<head>
-		<BaseHead title={`${title} | ${SITE_TITLE}`} description={description} />
+		<BaseHead
+			title={`${title} | ${SITE_TITLE}`}
+			description={description}
+			ogImage={`/blog/${postId}/og.png`}
+		/>
 	</head>
 	<body>
 		<Header />

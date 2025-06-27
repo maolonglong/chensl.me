@@ -83,5 +83,8 @@ export default defineConfig({
 					}
 				: undefined,
 		},
+		ssr: {
+			external: ['fs/promises'],
+		},
 	},
 });

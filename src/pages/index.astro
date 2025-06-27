@@ -26,7 +26,7 @@ const latestPosts = (await getAllPosts()).slice(0, 5);
 				<Twemoji name="money-bag" /> 而写代码
 			</p>
 
-			<h3>社交媒体链接</h3>
+			<h2>社交媒体链接</h2>
 			<ul>
 				<li>
 					GitHub: <a href="https://github.com/maolonglong" rel="nofollow" target="_blank"
@@ -39,7 +39,7 @@ const latestPosts = (await getAllPosts()).slice(0, 5);
 					>
 				</li>
 			</ul>
-			<h3>最近的文章</h3>
+			<h2>最近的文章</h2>
 			<ul>
 				{
 					latestPosts.map((post) => (
@@ -49,7 +49,7 @@ const latestPosts = (await getAllPosts()).slice(0, 5);
 					))
 				}
 			</ul>
-			<h3>最受欢迎的文章</h3>
+			<h2>最受欢迎的文章</h2>
 			<PopularPosts server:defer />
 		</main>
 		<Footer />

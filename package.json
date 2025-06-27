@@ -36,6 +36,7 @@
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "sanitize-html": "^2.17.0",
+    "satori": "^0.15.2",
     "sharp": "^0.34.2",
     "unist-util-visit": "^5.0.0"
   },
