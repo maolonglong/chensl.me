@@ -3,6 +3,8 @@
 // all pages through the use of the <BaseHead /> component.
 import '@/styles/global.css';
 
+import { ClientRouter } from 'astro:transitions';
+
 import { SITE_TITLE } from '@/consts';
 
 // import FallbackImage from '@/assets/blog-placeholder-1.jpg';
@@ -50,14 +52,16 @@ const { title, description, ogImage = fallbackOgImage } = Astro.props;
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:image" content={new URL(ogImage, Astro.site)} />
+<meta property="og:image" content={new URL(ogImage, Astro.url)} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={new URL(ogImage, Astro.site)} />
+<meta property="twitter:image" content={new URL(ogImage, Astro.url)} />
 
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#212830" media="(prefers-color-scheme: dark)" />
+
+<ClientRouter />
