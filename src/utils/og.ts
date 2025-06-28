@@ -63,7 +63,9 @@ function toCodePoint(unicodeSurrogates: string) {
 const emojiCache: Record<string, Promise<any>> = {};
 
 function loadEmoji(code: string) {
-	if (code in emojiCache) return emojiCache[code];
+	if (code in emojiCache) {
+		return emojiCache[code];
+	}
 
 	const url =
 		'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/' + code.toLowerCase() + '.svg';

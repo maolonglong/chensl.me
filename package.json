@@ -28,6 +28,7 @@
     "date-fns": "^4.1.0",
     "markdown-it": "^14.1.0",
     "mdast-util-to-string": "^4.0.0",
+    "node-html-parser": "^7.0.1",
     "purgecss": "^7.0.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
