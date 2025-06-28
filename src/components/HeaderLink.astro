@@ -10,7 +10,6 @@ const isActive =
 	href === '/' ? currentPath === '/' : typeof href === 'string' && currentPath.startsWith(href);
 ---
 
-<!-- prettier-ignore -->
 <a href={href} class:list={[className, { active: isActive }]} {...props}><slot /></a>
 
 <style>
