@@ -50,7 +50,9 @@ const latestPosts = (await getAllPosts()).slice(0, 5);
 				}
 			</ul>
 			<h2>最受欢迎的文章</h2>
-			<PopularPosts server:defer />
+			<PopularPosts server:defer>
+				<span slot="fallback">加载中...</span>
+			</PopularPosts>
 		</main>
 		<Footer />
 	</body>
