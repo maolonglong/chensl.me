@@ -3,6 +3,7 @@ title: 记录一次 Go Module 依赖关系的修复
 pubDate: 2022-12-17T16:55:34+08:00
 tags:
   - go
+description: '解决 Go Module 依赖冲突问题：通过模块替换修复因不同版本 antlr 依赖导致的编译错误。'
 ---
 
 事情的起因：

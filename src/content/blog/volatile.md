@@ -5,6 +5,7 @@ tags:
   - java
   - concurrency
 toc: true
+description: 本文介绍了 Java 中 volatile 关键字的三个特性：保证可见性、不保证原子性和禁止指令重排，并通过代码示例展示了其实际应用。
 ---
 
 ## volatile 的三个特性

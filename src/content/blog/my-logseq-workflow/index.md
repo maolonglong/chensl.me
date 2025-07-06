@@ -4,6 +4,7 @@ pubDate = 2024-03-02T14:47:13+08:00
 draft = false
 tags = ["logseq", "clojure", "gtd", "para"]
 toc = true
+description = "分享我在 Logseq 中的工作流，包括无压记录、GTD 任务管理和 PARA 知识管理方法，强调适合自己最重要。"
 +++
 
 22 年底开始用 Logseq 记笔记，到现在一年多了，终于攒了一个「乱七八糟」的图谱：

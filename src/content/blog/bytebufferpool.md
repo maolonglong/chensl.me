@@ -4,6 +4,7 @@ pubDate: 2021-06-28T16:19:02+08:00
 tags:
   - go
 toc: true
+description: '分析 bytebufferpool 的设计与实现，探讨高性能字节池的优化策略。'
 ---
 
 ## 简介

@@ -5,6 +5,7 @@ tags:
   - vps
   - self-hosted
 toc: true
+description: 探索如何在 1 核 1G 的 VPS 上高效部署和管理自托管应用，包括免备案方案、CapRover 的使用以及常见应用的部署。
 ---
 
 > 2022-05-23 更新：我又喜欢上了阿里云函数计算，比折腾 VPS 好玩得多

@@ -5,6 +5,7 @@ tags:
   - java
   - concurrency
 toc: true
+description: '本文介绍了 Java 中的重入锁（ReentrantLock），包括其基本概念、使用方法、与 synchronized 关键字的对比、响应中断特性、锁申请等待限时以及公平锁与非公平锁的区别。'
 ---
 
 ## 什么是“重入”

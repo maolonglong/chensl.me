@@ -7,6 +7,7 @@ tags:
   - jemalloc
   - memory-allocator
 toc: true
+description: '探索在 Go 中通过 jemalloc 手动管理内存的方法，对比其与 Go 原生内存管理的性能差异。'
 ---
 
 {% note warning %}

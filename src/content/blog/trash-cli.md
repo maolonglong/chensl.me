@@ -4,6 +4,7 @@ pubDate = 2024-01-15T21:12:35+08:00
 draft = false
 tags = ['go', 'apple-script']
 toc = true
+description = "介绍如何在 MacOS 上使用 `trash-cli` 替代 `rm` 命令，避免误删文件，并提供双重保护机制。"
 +++
 
 `rm` 命令应该是 Unix 系统最危险的命令，没有之一。用 `rm` 删除文件后很难恢复，尤其是大家经常拿来开玩笑骗小白的 `rm -rf /*`。

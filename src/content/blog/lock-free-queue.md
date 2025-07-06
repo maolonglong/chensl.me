@@ -7,6 +7,7 @@ tags:
   - cas
   - unsafe
 toc: true
+description: 本文介绍了基于 Michael 和 Scott 1996 年论文的无锁队列实现，重点探讨了如何使用 CAS 操作实现线程安全。
 ---
 
 谈到无锁队列，就不得不提 Michael 和 Scott 在 1996 年发表的论文 [Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms](https://www.cs.rochester.edu/u/scott/papers/1996_PODC_queues.pdf)，Java 中 `ConcurrentLinkedQueue` 也是基于该论文的算法实现。

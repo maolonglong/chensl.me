@@ -5,6 +5,7 @@ tags:
   - github
   - leetcode
 toc: true
+description: '分享第一次提交 GitHub Pull Request 的经历与注意事项。'
 ---
 
 git 几乎是所有程序员必须掌握的一个工具，但是始终在本地练习似乎发现不了它真正的强大，于是目光就转向了 GitHub 这个提供了仓库托管服务的网站。在 GitHub 上我们能利用 git 和世界各地的程序员协作开发，分享有趣的代码。

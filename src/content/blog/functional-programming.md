@@ -7,6 +7,7 @@ tags:
   - adt
   - currying
 toc: true
+description: '探讨函数式编程的核心概念，包括不可变性、代数数据类型和柯里化。'
 ---
 
 前段时间学了 Rust 之后，感觉在 Rust 的类型系统加持下，函数式编程体验真的很爽。

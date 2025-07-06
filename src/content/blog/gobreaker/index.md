@@ -5,6 +5,7 @@ tags:
   - go
   - micro-services
 toc: true
+description: '介绍熔断器模式及其在微服务中的应用，分析 gobreaker 的实现。'
 ---
 
 熔断器模式提高了系统从故障恢复时的稳定性，最小化了故障对性能的影响。

@@ -13,8 +13,6 @@ import rehypeExternalLinks from 'rehype-external-links';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 
-import { remarkDescription } from './src/plugins/remark-description';
-
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://chensl.me',
@@ -34,7 +32,7 @@ export default defineConfig({
 	],
 
 	markdown: {
-		remarkPlugins: [remarkDescription, remarkMath],
+		remarkPlugins: [remarkMath],
 		remarkRehype: { footnoteLabel: '脚注' },
 		rehypePlugins: [
 			[

@@ -6,6 +6,7 @@ tags:
   - tokio
   - async
 toc: true
+description: 本文介绍了如何使用 Rust 和 Tokio 实现一个简单的 TCP relay，包括基础实现、错误处理、日志记录和优雅关闭功能。
 ---
 
 [完整代码](https://github.com/maolonglong/tproxy)

@@ -5,6 +5,7 @@ tags:
   - vagrant
   - virtualbox
 toc: true
+description: 本文介绍了如何使用 Vagrant 快速搭建一次性开发环境，包括常用命令、box 的使用、Vagrantfile 配置以及更复杂的配置示例。
 ---
 
 其实在学校的时候就开始轻度使用 Vagrant，但也仅仅作为一个虚拟机创建或者开关机的工具。来了公司实习后发现 Vagrant 在搭建**一次性**使用的开发环境时真的非常非常方便
