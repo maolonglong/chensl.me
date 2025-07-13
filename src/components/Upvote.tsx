@@ -9,11 +9,16 @@ export default function Upvote({ postId }: { postId: string }) {
 	useEffect(() => {
 		(async () => {
 			const { data, error } = await actions.getPostUpvotes({ postId });
-			// TODO: error handle
-			if (!error && data.success) {
-				setCount(data.count);
-				setUpvoted(data.upvoted);
+			if (error) {
+				console.error('Failed to get post upvotes:', error);
+				return;
 			}
+			if (!data.success) {
+				console.error('Get post upvotes failed:', data);
+				return;
+			}
+			setCount(data.count);
+			setUpvoted(data.upvoted);
 		})();
 	}, [postId]);
 
@@ -23,7 +28,10 @@ export default function Upvote({ postId }: { postId: string }) {
 		}
 		setUpvoted(true);
 		setCount(count + 1);
-		await actions.upvotePost({ postId });
+		const { error } = await actions.upvotePost({ postId });
+		if (error) {
+			console.error('Failed to upvote post:', error);
+		}
 	};
 
 	return (
