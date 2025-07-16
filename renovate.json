@@ -7,7 +7,8 @@
     ":rebaseStalePrs",
     ":respectLatest",
     ":prHourlyLimitNone",
-    "group:allNonMajor"
+    "group:allNonMajor",
+    "schedule:weekly"
   ],
   "timezone": "Asia/Shanghai"
 }
