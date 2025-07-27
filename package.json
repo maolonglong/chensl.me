@@ -36,7 +36,7 @@
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "sanitize-html": "^2.17.0",
-    "satori": "^0.15.2",
+    "satori": "^0.16.0",
     "sharp": "^0.34.2"
   },
   "devDependencies": {
