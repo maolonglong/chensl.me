@@ -14,7 +14,7 @@ export async function GET({ params }: { params: { slug: string } }) {
 
 	const element = PostOgImage({ title: post.data.title });
 	const png = await satoriPNG(element);
-	return new Response(png, {
+	return new Response(new Uint8Array(png), {
 		headers: {
 			'Content-Type': 'image/png',
 		},
