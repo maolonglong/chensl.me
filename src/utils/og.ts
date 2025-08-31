@@ -1,5 +1,7 @@
 import fs from 'fs/promises';
 import type { ReactNode } from 'react';
+import { chars, icons } from '@iconify-json/twemoji';
+import { getIconData, iconToHTML, iconToSVG, replaceIDs } from '@iconify/utils';
 import satori from 'satori';
 import sharp from 'sharp';
 
@@ -19,7 +21,7 @@ async function satoriSVG(element: ReactNode) {
 		],
 		loadAdditionalAsset: async (code: string, segment: string) => {
 			if (code === 'emoji') {
-				return `data:image/svg+xml;base64,` + btoa(await loadEmoji(getIconCode(segment)));
+				return `data:image/svg+xml;base64,` + btoa(loadEmoji(getIconCode(segment)));
 			}
 
 			return [];
@@ -60,14 +62,27 @@ function toCodePoint(unicodeSurrogates: string) {
 	return r.join('-');
 }
 
-const emojiCache: Record<string, Promise<any>> = {};
+const emojiCache: Record<string, string> = {};
 
 function loadEmoji(code: string) {
 	if (code in emojiCache) {
 		return emojiCache[code];
 	}
 
-	const url =
-		'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/' + code.toLowerCase() + '.svg';
-	return (emojiCache[code] = fetch(url).then((r) => r.text()));
+	const iconName = chars[code];
+	if (!iconName) {
+		throw new Error(`Emoji not found for code: ${code}`);
+	}
+
+	const iconData = getIconData(icons, iconName);
+	if (!iconData) {
+		throw new Error(`Icon data not found for: ${iconName}`);
+	}
+
+	const renderData = iconToSVG(iconData, {
+		height: 'auto',
+	});
+	const svgContent = iconToHTML(replaceIDs(renderData.body), renderData.attributes);
+
+	return (emojiCache[code] = svgContent);
 }
