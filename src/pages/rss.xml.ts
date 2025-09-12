@@ -1,10 +1,8 @@
 import type { APIRoute } from 'astro';
 import { getImage } from 'astro:assets';
 import rss, { type RSSFeedItem } from '@astrojs/rss';
-// @ts-ignore
 import MarkdownIt from 'markdown-it';
 import { parse as htmlParser } from 'node-html-parser';
-// @ts-ignore
 import sanitizeHtml from 'sanitize-html';
 
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
@@ -24,7 +22,7 @@ export const GET: APIRoute = async (context) => {
 	const items: RSSFeedItem[] = [];
 
 	for (const post of posts) {
-		const body = markdownParser.render(post.body);
+		const body = markdownParser.render(post.body!);
 		const html = htmlParser.parse(body);
 		const elements = html.querySelectorAll('img');
 		for (const elem of elements) {
