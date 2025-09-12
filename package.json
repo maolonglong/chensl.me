@@ -11,17 +11,17 @@
     "format": "prettier -w . --cache"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.6.5",
+    "@astrojs/cloudflare": "^12.6.8",
     "@astrojs/markdown-remark": "^6.3.6",
-    "@astrojs/mdx": "^4.3.4",
-    "@astrojs/react": "^4.3.0",
+    "@astrojs/mdx": "^4.3.5",
+    "@astrojs/react": "^4.3.1",
     "@astrojs/rss": "^4.0.12",
     "@astrojs/sitemap": "^3.5.1",
     "@iconify-json/twemoji": "^1.2.4",
     "@iconify/utils": "^3.0.1",
-    "@shikijs/colorized-brackets": "^3.12.0",
+    "@shikijs/colorized-brackets": "^3.12.2",
     "@upstash/redis": "^1.35.3",
-    "astro": "^5.13.3",
+    "astro": "^5.13.7",
     "astro-expressive-code": "^0.41.3",
     "astro-icon": "^1.1.5",
     "astro-purgecss": "^5.3.0",
@@ -37,20 +37,20 @@
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "sanitize-html": "^2.17.0",
-    "satori": "^0.18.0",
+    "satori": "^0.18.2",
     "sharp": "^0.34.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "@ianvs/prettier-plugin-sort-imports": "^4.6.2",
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
     "@types/markdown-it": "^14.1.2",
-    "@types/node": "^24.3.0",
-    "@types/react": "^19.1.11",
-    "@types/react-dom": "^19.1.8",
+    "@types/node": "^24.3.1",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
     "@types/sanitize-html": "^2.16.0",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.2",
-    "wrangler": "^4.33.0"
+    "wrangler": "^4.35.0"
   }
 }
