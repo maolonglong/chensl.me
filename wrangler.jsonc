@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blog",
   "main": "./dist/_worker.js/index.js",
-  "compatibility_date": "2025-06-04",
+  "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],
   "placement": {
     "mode": "smart",
