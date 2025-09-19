@@ -3,8 +3,6 @@
 // all pages through the use of the <BaseHead /> component.
 import '@/styles/global.css';
 
-import { ClientRouter } from 'astro:transitions';
-
 import { SITE_TITLE } from '@/consts';
 
 // import FallbackImage from '@/assets/blog-placeholder-1.jpg';
@@ -71,4 +69,20 @@ const { title, description, ogImage = fallbackOgImage } = Astro.props;
 	href={new URL('rss.xml', Astro.site)}
 />
 
-<ClientRouter />
+<script>
+	import mediumZoom from 'medium-zoom';
+
+	function init() {
+		const zoom = mediumZoom('main img');
+
+		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+			if (event.matches) {
+				zoom.update({ background: '#212830' });
+			} else {
+				zoom.update({ background: '#fff' });
+			}
+		});
+	}
+
+	document.addEventListener("DOMContentLoaded", () => init());
+</script>
