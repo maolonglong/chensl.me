@@ -214,3 +214,58 @@ svg.iconify-emoji {
 .anchor:hover > .anchor-link {
 	opacity: 1;
 }
+
+/* ai_generated start - Back to Top Button */
+.back-to-top {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	width: 44px;
+	height: 44px;
+	border: 1px solid var(--border-color);
+	border-radius: 50%;
+	background-color: var(--background-color);
+	color: var(--text-color);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(20px);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	z-index: 1000;
+}
+
+.back-to-top:hover {
+	transform: translateY(0) scale(1.05);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	color: var(--heading-color);
+}
+
+.back-to-top:active {
+	transform: translateY(0) scale(0.95);
+}
+
+.back-to-top.visible {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+.back-to-top:focus {
+	outline: 2px solid var(--link-color);
+	outline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+	.back-to-top {
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
+
+	.back-to-top:hover {
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	}
+}
+/* ai_generated end */

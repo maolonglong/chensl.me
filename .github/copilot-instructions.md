@@ -79,6 +79,99 @@ Actions in `src/actions/index.ts` handle server-side logic:
 - `buildHierarchy()`: TOC generation for h2/h3 headings
 - `satoriPNG()`: OG image generation wrapper
 
+## AI Code Generation Marking Guidelines
+
+When generating or modifying code, always mark AI-generated changes to maintain code traceability and enable easier maintenance.
+
+### Basic Usage
+
+#### Single Line Changes
+
+For single line changes, add the comment at the end of the line:
+
+```typescript
+const newFeature = true; // ai_generated
+```
+
+#### Multi-line Changes
+
+For multiple consecutive lines, wrap them with start/end comments:
+
+```typescript
+// ai_generated start
+const handleUpvote = async () => {
+  await upvotePost(postId);
+  setUpvoteCount((prev) => prev + 1);
+};
+// ai_generated end
+```
+
+### Language-Specific Examples
+
+#### HTML/JSX/TSX (Astro components)
+
+Always use multi-line comment format for these file types:
+
+```astro
+{/* ai_generated start */}
+<button onclick={handleClick}>Click me</button>
+{/* ai_generated end */}
+```
+
+#### CSS
+
+```css
+/* ai_generated */
+.ai-enhanced-style {
+  display: flex;
+  align-items: center;
+}
+
+/* ai_generated start */
+.complex-layout {
+  grid-template-areas: "header content";
+  gap: 1rem;
+}
+/* ai_generated end */}
+```
+
+#### Markdown Content
+
+For blog posts and documentation:
+
+```markdown
+<!-- ai_generated start -->
+
+## New Section Title
+
+This content was generated to enhance the article structure.
+
+<!-- ai_generated end -->
+```
+
+### Special Cases
+
+#### New Files
+
+If creating a completely new file, add this comment at the top:
+
+```javascript
+// ai_generated - new file
+```
+
+#### AI-Specific Components/Features
+
+If the entire component or feature is AI-generated, no individual line marking is required, just mark the file as new.
+
+#### Configuration Files
+
+```json
+{
+  "newConfig": "value", // ai_generated
+  "existingConfig": "unchanged"
+}
+```
+
 ## Special Considerations
 
 - **React 19**: Uses edge server rendering to avoid polyfill issues

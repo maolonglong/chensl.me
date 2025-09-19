@@ -3,6 +3,7 @@ import type { MarkdownHeading } from 'astro';
 import type { CollectionEntry } from 'astro:content';
 
 import { SITE_TITLE } from '@/consts';
+import BackToTop from '@/components/BackToTop'; // ai_generated
 import BaseHead from '@/components/BaseHead.astro';
 import Footer from '@/components/Footer.astro';
 import FormattedDate from '@/components/FormattedDate.astro';
@@ -61,6 +62,9 @@ const tocHeadings = buildHierarchy(headings);
 			}
 			<Upvote client:load postId={postId} />
 		</main>
+		{/* ai_generated start */}
+		<BackToTop client:load />
+		{/* ai_generated end */}
 		<Footer />
 	</body>
 </html>
