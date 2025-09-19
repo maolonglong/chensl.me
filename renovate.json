@@ -10,5 +10,6 @@
     "group:allNonMajor",
     "schedule:weekly"
   ],
+  "minimumReleaseAge": "14 days",
   "timezone": "Asia/Shanghai"
 }
