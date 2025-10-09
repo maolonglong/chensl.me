@@ -1,6 +1,6 @@
 // ai_generated - new file
-import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
+import clsx from 'clsx';
 
 export default function BackToTop() {
 	const [isVisible, setIsVisible] = useState(false);
