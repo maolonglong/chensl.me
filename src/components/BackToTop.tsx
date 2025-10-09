@@ -1,88 +1,112 @@
 // ai_generated - new file
-import { useCallback, useEffect, useState } from 'react';
+import clsx from 'clsx';
+import { useEffect, useRef, useState } from 'react';
 
 export default function BackToTop() {
 	const [isVisible, setIsVisible] = useState(false);
-	const [isScrolling, setIsScrolling] = useState(false);
-
-	// 节流函数，优化滚动事件性能
-	const throttle = useCallback((func: Function, limit: number) => {
-		let inThrottle: boolean;
-		return function (this: any, ...args: any[]) {
-			if (!inThrottle) {
-				func.apply(this, args);
-				inThrottle = true;
-				setTimeout(() => (inThrottle = false), limit);
-			}
-		};
-	}, []);
-
-	// 处理滚动事件
-	const handleScroll = useCallback(
-		throttle(() => {
-			const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-			// 如果滚动到顶部，重置滚动状态
-			if (scrollTop === 0 && isScrolling) {
-				setIsScrolling(false);
-			}
-
-			// 如果正在执行返回顶部滚动，不更新按钮状态
-			if (!isScrolling) {
-				setIsVisible(scrollTop > 300);
-			}
-		}, 100),
-		[throttle, isScrolling]
-	);
+	const buttonRef = useRef<HTMLButtonElement>(null);
+	const fallbackTimer = useRef<number | null>(null);
 
 	// 返回顶部函数
-	const scrollToTop = useCallback(() => {
-		setIsScrolling(true); // 标记开始滚动
-		setIsVisible(false); // 立即隐藏按钮
+	const scrollToTop = () => {
+		if (typeof window === 'undefined') {
+			return;
+		}
+
+		const distance = window.scrollY;
+		const prefersReducedMotion =
+			typeof window.matchMedia === 'function' &&
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const behavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
 
 		window.scrollTo({
 			top: 0,
-			behavior: 'smooth',
+			left: 0,
+			behavior,
 		});
 
-		// 等待滚动动画完成后重置状态
-		setTimeout(() => {
-			setIsScrolling(false);
-		}, 1500); // 增加到1500ms，适应超长页面的平滑滚动
-	}, []);
-
-	// 键盘事件处理
-	const handleKeyDown = useCallback(
-		(event: React.KeyboardEvent) => {
-			if (event.key === 'Enter' || event.key === ' ') {
-				event.preventDefault();
-				scrollToTop();
+		if (!prefersReducedMotion) {
+			if (fallbackTimer.current !== null) {
+				window.clearTimeout(fallbackTimer.current);
 			}
-		},
-		[scrollToTop]
-	);
+
+			const duration = Math.min(1200, Math.max(300, distance / 1.5));
+
+			fallbackTimer.current = window.setTimeout(() => {
+				if (window.scrollY > 0) {
+					window.scrollTo({
+						top: 0,
+						left: 0,
+						behavior: 'auto',
+					});
+				}
+
+				fallbackTimer.current = null;
+			}, duration);
+		}
+
+		buttonRef.current?.blur();
+	};
 
 	useEffect(() => {
-		// 添加滚动事件监听
+		return () => {
+			if (fallbackTimer.current !== null && typeof window !== 'undefined') {
+				window.clearTimeout(fallbackTimer.current);
+				fallbackTimer.current = null;
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		if (typeof window === 'undefined') {
+			return;
+		}
+
+		const threshold = 300;
+		let ticking = false;
+		let frameId: number | null = null;
+
+		const updateVisibility = () => {
+			setIsVisible(window.scrollY > threshold);
+			ticking = false;
+			frameId = null;
+		};
+
+		const handleScroll = () => {
+			if (!ticking) {
+				frameId = window.requestAnimationFrame(updateVisibility);
+				ticking = true;
+			}
+		};
+
 		window.addEventListener('scroll', handleScroll, { passive: true });
 
 		// 初始检查
-		handleScroll();
+		updateVisibility();
 
 		// 清理事件监听
 		return () => {
+			if (frameId !== null) {
+				window.cancelAnimationFrame(frameId);
+			}
 			window.removeEventListener('scroll', handleScroll);
+			if (fallbackTimer.current !== null) {
+				window.clearTimeout(fallbackTimer.current);
+				fallbackTimer.current = null;
+			}
 		};
-	}, [handleScroll]);
+	}, []);
 
 	return (
 		<button
-			className={`back-to-top ${isVisible ? 'visible' : ''}`}
+			ref={buttonRef}
+			className={clsx('back-to-top', { visible: isVisible })}
 			onClick={scrollToTop}
-			onKeyDown={handleKeyDown}
 			aria-label="返回顶部"
 			title="返回顶部"
+			type="button"
 			tabIndex={isVisible ? 0 : -1}
+			aria-hidden={!isVisible}
 		>
 			<svg
 				width="20"
