@@ -4,7 +4,6 @@ import { transformerColorizedBrackets } from '@shikijs/colorized-brackets';
 
 export default defineEcConfig({
 	themes: ['github-dark-dimmed', 'github-light-default'],
-	frames: false,
 	styleOverrides: {
 		borderRadius: '0.2rem',
 		frames: {
