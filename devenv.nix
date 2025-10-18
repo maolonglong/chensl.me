@@ -1,5 +1,8 @@
 {pkgs, ...}: {
-  packages = [pkgs.git];
+  packages = with pkgs; [
+    git
+    gitleaks
+  ];
 
   languages = {
     nix.enable = true;
@@ -23,6 +26,13 @@
         MD045 = false;
       };
       files = "src/content/.*\\.md";
+    };
+    gitleaks = {
+      enable = true;
+      name = "Detect hardcoded secrets";
+      entry = "gitleaks git --pre-commit --redact --staged --verbose";
+      language = "golang";
+      pass_filenames = false;
     };
   };
 }

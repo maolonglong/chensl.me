@@ -58,10 +58,6 @@ pnpm run format   # Prettier formatting
 
 ## AI Contribution Checklist
 
-- Always annotate AI-authored code or content:
-  - Single line: append `// ai_generated`
-  - Multi-line blocks: wrap with `ai_generated start` / `ai_generated end` comments (Astro/JSX use `{/* */}`)
-  - New files: add a top-level `// ai_generated - new file` (or Markdown/JSON equivalent)
 - Prefer incremental changes with clear diffs; align with existing formatting rules (`pnpm run format`)
 - Keep translations and localized strings accurate; avoid altering human-written prose without context
 - Verify interactive features still hydrate correctly when introducing React changes
