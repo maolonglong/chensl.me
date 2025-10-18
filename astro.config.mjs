@@ -7,7 +7,6 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import expressiveCode from 'astro-expressive-code';
 import icon from 'astro-icon';
-import purgecss from 'astro-purgecss';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeExternalLinks from 'rehype-external-links';
 import rehypeKatex from 'rehype-katex';
@@ -26,9 +25,6 @@ export default defineConfig({
 		sitemap(),
 		icon(),
 		react(),
-		purgecss({
-			content: ['./src/**/*.{astro,js,jsx,ts,tsx,vue,svelte}'],
-		}),
 	],
 
 	markdown: {
@@ -63,10 +59,6 @@ export default defineConfig({
 		syntaxHighlight: {
 			excludeLangs: ['mermaid', 'math'],
 		},
-	},
-
-	build: {
-		inlineStylesheets: 'never',
 	},
 
 	vite: {
