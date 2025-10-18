@@ -1,4 +1,3 @@
-// ai_generated - new file
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 

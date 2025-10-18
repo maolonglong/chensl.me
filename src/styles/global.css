@@ -46,7 +46,7 @@ html {
 
 html,
 body {
-	min-height: 100%; /* ai_generated */
+	min-height: 100%;
 }
 
 body {
@@ -61,7 +61,7 @@ body {
 	overflow-wrap: break-word;
 	line-height: 1.5;
 	color: var(--text-color);
-	box-sizing: border-box; /* ai_generated */
+	box-sizing: border-box;
 }
 
 h1,
@@ -105,7 +105,7 @@ time {
 	font-size: 15px;
 }
 
-/* ai_generated start - Table overflow handling */
+/* Table overflow handling */
 main {
 	line-height: 1.6;
 	overflow-x: auto;
@@ -123,7 +123,6 @@ main td {
 	vertical-align: top;
 	word-break: break-word;
 }
-/* ai_generated end */
 
 table {
 	width: 100%;
@@ -231,7 +230,7 @@ svg.iconify-emoji {
 	opacity: 1;
 }
 
-/* ai_generated start - Back to Top Button */
+/* Back to Top button */
 .back-to-top {
 	position: fixed;
 	bottom: 20px;
@@ -303,4 +302,3 @@ svg.iconify-emoji {
 			border-color 0s;
 	}
 }
-/* ai_generated end */
