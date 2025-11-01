@@ -19,13 +19,7 @@ export default defineConfig({
 	adapter: cloudflare({
 		imageService: 'compile',
 	}),
-	integrations: [
-		expressiveCode(),
-		mdx(),
-		sitemap(),
-		icon(),
-		react(),
-	],
+	integrations: [expressiveCode(), mdx(), sitemap(), icon(), react()],
 
 	markdown: {
 		remarkPlugins: [remarkMath],

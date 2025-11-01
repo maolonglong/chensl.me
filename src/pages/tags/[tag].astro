@@ -11,7 +11,9 @@ export async function getStaticPaths() {
 	const allTags = await getAllTags(posts);
 
 	return allTags.map((tag) => {
-		const filteredPosts = posts.filter((post) => post.data.tags && post.data.tags.includes(tag));
+		const filteredPosts = posts.filter(
+			(post) => post.data.tags && post.data.tags.map((t) => t.toLowerCase()).includes(tag)
+		);
 		return {
 			params: { tag },
 			props: { posts: filteredPosts },

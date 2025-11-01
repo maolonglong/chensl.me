@@ -36,7 +36,7 @@ export function buildHierarchy(headings: MarkdownHeading[]) {
 		if (heading.depth === 2) {
 			tocHeadings.push(heading);
 			parent = heading;
-		} else if (heading.depth == 3) {
+		} else if (heading.depth === 3) {
 			parent?.subheadings.push(heading);
 		}
 	});
