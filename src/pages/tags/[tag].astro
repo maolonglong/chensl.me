@@ -12,7 +12,7 @@ export async function getStaticPaths() {
 
 	return allTags.map((tag) => {
 		const filteredPosts = posts.filter(
-			(post) => post.data.tags && post.data.tags.map((t) => t.toLowerCase()).includes(tag)
+			(post) => post.data.tags && post.data.tags.some((t) => t.trim().toLowerCase() === tag)
 		);
 		return {
 			params: { tag },

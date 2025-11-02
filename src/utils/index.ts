@@ -20,8 +20,8 @@ export async function getAllTags(posts?: Post[]) {
 		...new Set(
 			posts
 				.flatMap((post) => post.data.tags || [])
-				.filter((tag) => tag)
-				.map((tag) => tag.toLowerCase())
+				.filter((tag) => tag && tag.trim().length > 0)
+				.map((tag) => tag.trim().toLowerCase())
 		),
 	].sort();
 }

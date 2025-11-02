@@ -56,7 +56,7 @@ const tocHeadings = buildHierarchy(headings);
 				tags && tags.length > 0 && (
 					<p class="tags">
 						{tags.sort().map((tag) => (
-							<a href={`/tags/${tag}/`}>#{tag}</a>
+							<a href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>
 						))}
 					</p>
 				)

@@ -24,7 +24,7 @@ const allTags = await getAllTags(posts);
 					<small>
 						<div class="tags">
 							{allTags.map((tag) => (
-								<a rel="nofollow" href={`/tags/${tag}/`}>{`#${tag}`}</a>
+								<a rel="nofollow" href={`/tags/${encodeURIComponent(tag)}/`}>{`#${tag}`}</a>
 							))}
 						</div>
 					</small>
