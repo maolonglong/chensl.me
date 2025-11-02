@@ -2,8 +2,8 @@
 title: Buddy memory allocation
 pubDate: 2023-10-14T22:14:38+08:00
 tags:
-  - buddy-system
   - memory-allocator
+  - algorithms
   - zig
 toc: true
 description: '使用 Zig 实现 Buddy 内存分配算法，探讨其核心原理与优化点。'

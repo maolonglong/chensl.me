@@ -2,7 +2,6 @@
 title: 1 核 1G 的 VPS 能玩出什么花样
 pubDate: 2022-03-27T14:25:47+08:00
 tags:
-  - vps
   - self-hosted
 toc: true
 description: 探索如何在 1 核 1G 的 VPS 上高效部署和管理自托管应用，包括免备案方案、CapRover 的使用以及常见应用的部署。

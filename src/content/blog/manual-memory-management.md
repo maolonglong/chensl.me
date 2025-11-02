@@ -3,9 +3,9 @@ title: 整活：在 Go 中手动分配内存
 pubDate: 2022-05-07T20:17:33+08:00
 tags:
   - go
-  - cgo
-  - jemalloc
   - memory-allocator
+  - ffi
+  - performance
 toc: true
 description: '探索在 Go 中通过 jemalloc 手动管理内存的方法，对比其与 Go 原生内存管理的性能差异。'
 ---

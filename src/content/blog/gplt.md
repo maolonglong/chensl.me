@@ -3,8 +3,8 @@ title: GPLT团体程序设计天梯赛题解
 description: 本文提供了GPLT团体程序设计天梯赛的详细题解，包括各类编程问题的解决思路和代码实现，涵盖基础算法和数据结构。
 pubDate: 2020-10-27T18:22:23+08:00
 tags:
-  - acm
-  - cpp
+  - algorithms
+  - c++
 toc: true
 ---
 

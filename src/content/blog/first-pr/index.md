@@ -3,7 +3,7 @@ title: 开始第一个 Pull Request
 pubDate: 2021-09-18T15:52:39+08:00
 tags:
   - github
-  - leetcode
+  - algorithms
 toc: true
 description: '分享第一次提交 GitHub Pull Request 的经历与注意事项。'
 ---

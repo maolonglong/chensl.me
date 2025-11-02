@@ -2,8 +2,7 @@
 title: 使用 Vagrant 搭建开发环境
 pubDate: 2021-10-12T16:02:32+08:00
 tags:
-  - vagrant
-  - virtualbox
+  - virtualization
 toc: true
 description: 本文介绍了如何使用 Vagrant 快速搭建一次性开发环境，包括常用命令、box 的使用、Vagrantfile 配置以及更复杂的配置示例。
 ---
