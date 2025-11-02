@@ -4,7 +4,6 @@ import clsx from 'clsx';
 export default function BackToTop() {
 	const [isVisible, setIsVisible] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
-	const fallbackTimer = useRef<number | null>(null);
 
 	// 返回顶部函数
 	const scrollToTop = () => {
@@ -12,7 +11,6 @@ export default function BackToTop() {
 			return;
 		}
 
-		const distance = window.scrollY;
 		const prefersReducedMotion =
 			typeof window.matchMedia === 'function' &&
 			window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -24,37 +22,8 @@ export default function BackToTop() {
 			behavior,
 		});
 
-		if (!prefersReducedMotion) {
-			if (fallbackTimer.current !== null) {
-				window.clearTimeout(fallbackTimer.current);
-			}
-
-			const duration = Math.min(1200, Math.max(300, distance / 1.5));
-
-			fallbackTimer.current = window.setTimeout(() => {
-				if (window.scrollY > 0) {
-					window.scrollTo({
-						top: 0,
-						left: 0,
-						behavior: 'auto',
-					});
-				}
-
-				fallbackTimer.current = null;
-			}, duration);
-		}
-
 		buttonRef.current?.blur();
 	};
-
-	useEffect(() => {
-		return () => {
-			if (fallbackTimer.current !== null && typeof window !== 'undefined') {
-				window.clearTimeout(fallbackTimer.current);
-				fallbackTimer.current = null;
-			}
-		};
-	}, []);
 
 	useEffect(() => {
 		if (typeof window === 'undefined') {
@@ -63,7 +32,7 @@ export default function BackToTop() {
 
 		const threshold = 300;
 		let ticking = false;
-		let frameId: number | null = null;
+		let frameId: ReturnType<typeof requestAnimationFrame> | null = null;
 
 		const updateVisibility = () => {
 			setIsVisible(window.scrollY > threshold);
@@ -89,10 +58,6 @@ export default function BackToTop() {
 				window.cancelAnimationFrame(frameId);
 			}
 			window.removeEventListener('scroll', handleScroll);
-			if (fallbackTimer.current !== null) {
-				window.clearTimeout(fallbackTimer.current);
-				fallbackTimer.current = null;
-			}
 		};
 	}, []);
 
@@ -105,7 +70,6 @@ export default function BackToTop() {
 			title="返回顶部"
 			type="button"
 			tabIndex={isVisible ? 0 : -1}
-			aria-hidden={!isVisible}
 		>
 			<svg
 				width="20"

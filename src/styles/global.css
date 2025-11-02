@@ -257,13 +257,13 @@ svg.iconify-emoji {
 	z-index: 1000;
 }
 
-.back-to-top:hover {
-	transform: translateY(0);
+.back-to-top.visible:hover {
+	transform: translateY(-2px);
 	color: var(--heading-color);
-	border-color: var(--muted-border-color, var(--border-color));
+	border-color: var(--border-color);
 }
 
-.back-to-top:active {
+.back-to-top.visible:active {
 	transform: translateY(0);
 }
 
@@ -274,12 +274,12 @@ svg.iconify-emoji {
 }
 
 .back-to-top:focus {
-	outline: 2px solid var(--muted-border-color, var(--border-color));
+	outline: 2px solid var(--border-color);
 	outline-offset: 2px;
 }
 
 .back-to-top:focus-visible {
-	outline: 2px solid var(--muted-border-color, var(--border-color));
+	outline: 2px solid var(--border-color);
 	outline-offset: 2px;
 }
 
@@ -288,7 +288,7 @@ svg.iconify-emoji {
 		box-shadow: none;
 	}
 
-	.back-to-top:hover {
+	.back-to-top.visible:hover {
 		color: var(--text-color);
 	}
 }
