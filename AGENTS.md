@@ -15,7 +15,16 @@ pnpm run dev      # Local development server
 pnpm run build    # Production build
 pnpm run preview  # Cloudflare Wrangler preview
 pnpm run format   # Prettier formatting
+pnpm run astro check # TypeScript checking
 ```
+
+## Code Style Guidelines
+
+- **Formatting**: Prettier with tabs (except JSON/MD), 100 char width, single quotes, trailing commas
+- **Imports**: Sorted by React → Astro → third-party → local (@/\*) → relative imports
+- **TypeScript**: Strict mode enabled, use `@/*` path aliases, React JSX with `react-jsx`
+- **Naming**: PascalCase for components, camelCase for functions/variables, kebab-case for files
+- **Error Handling**: Use try/catch with proper typing, prefer early returns, validate with Zod in actions
 
 ## Content Workflow
 
