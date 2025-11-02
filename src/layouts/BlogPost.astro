@@ -19,6 +19,10 @@ type Props = CollectionEntry<'blog'>['data'] & {
 
 const { postId, title, description, pubDate, tags, toc, headings } = Astro.props;
 const tocHeadings = buildHierarchy(headings);
+const normalizedTags = tags
+	?.map((tag) => tag.trim().toLowerCase())
+	.filter((tag) => tag.length > 0)
+	.sort();
 ---
 
 <!doctype html>
@@ -53,9 +57,9 @@ const tocHeadings = buildHierarchy(headings);
 			}
 			<slot />
 			{
-				tags && tags.length > 0 && (
+				normalizedTags && normalizedTags.length > 0 && (
 					<p class="tags">
-						{tags.sort().map((tag) => (
+						{normalizedTags.map((tag) => (
 							<a href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>
 						))}
 					</p>
