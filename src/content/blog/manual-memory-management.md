@@ -10,9 +10,8 @@ toc: true
 description: '探索在 Go 中通过 jemalloc 手动管理内存的方法，对比其与 Go 原生内存管理的性能差异。'
 ---
 
-{% note warning %}
-在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言
-{% endnote %}
+> [!WARNING]
+> 在 Go 中手动分配内存的实际意义不大，真有需求不如换门语言
 
 好早之前就看到了 Dgraph 的那篇文章（[Manual Memory Management in Go using jemalloc](https://dgraph.io/blog/post/manual-memory-management-golang-jemalloc/)），今天仔细读了一遍，尝试尝试 Go + jemalloc 的模式。
 

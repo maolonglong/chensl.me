@@ -61,9 +61,8 @@ func TestShouldUpdateStats(t *testing.T) {
 3. go test
 4. docker-compose down
 
-{% note info %}
-整体思路就是这样，比较繁琐，就不演示了
-{% endnote %}
+> [!NOTE]
+> 整体思路就是这样，比较繁琐，就不演示了
 
 ## Dockertest
 

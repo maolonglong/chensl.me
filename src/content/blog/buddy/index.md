@@ -251,13 +251,11 @@ pub const Buddy2Allocator = struct {
 }
 ```
 
-{% note info %}
-这个库有两个主要 API：
-
-- Buddy2: 纯算法实现，不负责实际内存分配
-- Buddy2Allocator: 基于 Buddy2 实现内存分配
-
-{% endnote %}
+> [!NOTE]
+> 这个库有两个主要 API：
+>
+> - Buddy2: 纯算法实现，不负责实际内存分配
+> - Buddy2Allocator: 基于 Buddy2 实现内存分配
 
 ## 优先分配小内存块
 

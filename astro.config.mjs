@@ -10,6 +10,7 @@ import icon from 'astro-icon';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeExternalLinks from 'rehype-external-links';
 import rehypeKatex from 'rehype-katex';
+import { remarkAlert } from 'remark-github-blockquote-alert';
 import remarkMath from 'remark-math';
 
 // https://astro.build/config
@@ -22,7 +23,7 @@ export default defineConfig({
 	integrations: [expressiveCode(), mdx(), sitemap(), icon(), react()],
 
 	markdown: {
-		remarkPlugins: [remarkMath],
+		remarkPlugins: [remarkMath, remarkAlert],
 		remarkRehype: { footnoteLabel: '脚注' },
 		rehypePlugins: [
 			[
