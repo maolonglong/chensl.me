@@ -18,6 +18,27 @@ pnpm run format   # Prettier formatting
 pnpm run astro check # TypeScript checking
 ```
 
+## Git Commit Guidelines
+
+- **Language**: All commit messages must be in English
+- **Format**: Follow [Conventional Commits](https://www.conventionalcommits.org/) specification
+  - `feat:` New features
+  - `fix:` Bug fixes
+  - `docs:` Documentation changes
+  - `style:` Code style changes (formatting, etc.)
+  - `refactor:` Code refactoring without behavior changes
+  - `test:` Adding or updating tests
+  - `chore:` Maintenance tasks, dependency updates
+- **Scope**: Optional scope in parentheses, e.g., `feat(og): add new image generator`
+- **Body**: Add detailed description if needed, wrapped at 100 characters
+- **Examples**:
+  ```
+  feat: add GitHub-style alert blocks
+  fix: resolve hydration mismatch in Upvote component
+  chore(deps): update astro to v5.15.6
+  docs: update deployment instructions
+  ```
+
 ## Code Style Guidelines
 
 - **Formatting**: Prettier with tabs (except JSON/MD), 100 char width, single quotes, trailing commas
