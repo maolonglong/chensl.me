@@ -21,8 +21,6 @@ export default function BackToTop() {
 			left: 0,
 			behavior,
 		});
-
-		buttonRef.current?.blur();
 	};
 
 	useEffect(() => {
@@ -35,9 +33,12 @@ export default function BackToTop() {
 		let frameId: ReturnType<typeof requestAnimationFrame> | null = null;
 
 		const updateVisibility = () => {
-			setIsVisible(window.scrollY > threshold);
-			ticking = false;
-			frameId = null;
+			try {
+				setIsVisible(window.scrollY > threshold);
+			} finally {
+				ticking = false;
+				frameId = null;
+			}
 		};
 
 		const handleScroll = () => {
