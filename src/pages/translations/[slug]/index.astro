@@ -1,0 +1,22 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+
+import TranslationPost from '@/layouts/TranslationPost.astro';
+import { getAllTranslations } from '@/utils';
+
+export async function getStaticPaths() {
+	const translations = await getAllTranslations();
+	return translations.map((translation) => ({
+		params: { slug: translation.id },
+		props: translation,
+	}));
+}
+type Props = CollectionEntry<'translations'>;
+
+const translation = Astro.props;
+const { Content, headings } = await render(translation);
+---
+
+<TranslationPost {...translation.data} postId={translation.id} headings={headings}>
+	<Content />
+</TranslationPost>

@@ -4,10 +4,11 @@ import type { CollectionEntry } from 'astro:content';
 import FormattedDate from './FormattedDate.astro';
 
 interface Props {
-	posts: CollectionEntry<'blog'>[];
+	posts: CollectionEntry<'blog'>[] | CollectionEntry<'translations'>[];
+	basePath?: string;
 }
 
-const { posts } = Astro.props;
+const { posts, basePath = '/blog' } = Astro.props;
 ---
 
 <ul class="blog-posts">
@@ -19,7 +20,7 @@ const { posts } = Astro.props;
 						<FormattedDate date={post.data.pubDate} />
 					</i>
 				</span>
-				<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+				<a href={`${basePath}/${post.id}/`}>{post.data.title}</a>
 			</li>
 		))
 	}

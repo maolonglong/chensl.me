@@ -23,6 +23,7 @@
         MD010 = false;
         MD013 = false;
         MD033 = false;
+        MD036 = false;
         MD045 = false;
       };
       files = "src/content/.*\\.md";

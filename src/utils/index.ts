@@ -4,26 +4,47 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import type { TocHeading } from '@/types';
 
 type Post = CollectionEntry<'blog'>;
+type Translation = CollectionEntry<'translations'>;
+
+async function getPublishedEntries<T extends 'blog' | 'translations'>(
+	collection: T
+): Promise<CollectionEntry<T>[]> {
+	return (await getCollection(collection))
+		.filter((entry) => !entry.data.draft)
+		.sort((b, a) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+}
 
 export async function getAllPosts() {
-	return (await getCollection('blog'))
-		.filter((post) => !post.data.draft)
-		.sort((b, a) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+	return getPublishedEntries('blog');
+}
+
+export async function getAllTranslations() {
+	return getPublishedEntries('translations');
+}
+
+function extractTags<T extends { data: { tags?: string[] } }>(entries: T[]): string[] {
+	return [
+		...new Set(
+			entries
+				.flatMap((entry) => entry.data.tags || [])
+				.filter((tag) => tag && tag.trim().length > 0)
+				.map((tag) => tag.trim().toLowerCase())
+		),
+	].sort();
 }
 
 export async function getAllTags(posts?: Post[]) {
 	if (!posts) {
 		posts = await getAllPosts();
 	}
+	return extractTags(posts);
+}
 
-	return [
-		...new Set(
-			posts
-				.flatMap((post) => post.data.tags || [])
-				.filter((tag) => tag && tag.trim().length > 0)
-				.map((tag) => tag.trim().toLowerCase())
-		),
-	].sort();
+export async function getAllTranslationTags(translations?: Translation[]) {
+	if (!translations) {
+		translations = await getAllTranslations();
+	}
+	return extractTags(translations);
 }
 
 export function buildHierarchy(headings: MarkdownHeading[]) {

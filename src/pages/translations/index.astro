@@ -1,0 +1,36 @@
+---
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
+import BaseHead from '@/components/BaseHead.astro';
+import Footer from '@/components/Footer.astro';
+import Header from '@/components/Header.astro';
+import PostList from '@/components/PostList.astro';
+import { getAllTranslations, getAllTranslationTags } from '@/utils';
+
+const translations = await getAllTranslations();
+const allTags = await getAllTranslationTags(translations);
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={`翻译 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<PostList posts={translations} basePath="/translations" />
+			{
+				allTags && allTags.length > 0 && (
+					<small>
+						<div class="tags">
+							{allTags.map((tag) => (
+								<a rel="nofollow" href={`/tags/${encodeURIComponent(tag)}/`}>{`#${tag}`}</a>
+							))}
+						</div>
+					</small>
+				)
+			}
+		</main>
+		<Footer />
+	</body>
+</html>
