@@ -13,6 +13,7 @@
 		'Liberation Mono', 'Courier New', monospace;
 	--font-scale: 1em;
 	--background-color: #fff;
+	--background-color-alt: #f6f8fa;
 	--heading-color: #1f2328;
 	--text-color: #1f2328;
 	--subtext-color: #59636e;
@@ -30,6 +31,7 @@ html {
 @media (prefers-color-scheme: dark) {
 	:root {
 		--background-color: #212830;
+		--background-color-alt: #2d333b;
 		--heading-color: #d1d7e0;
 		--text-color: #d1d7e0;
 		--subtext-color: #9198a1;

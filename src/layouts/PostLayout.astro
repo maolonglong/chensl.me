@@ -1,0 +1,102 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+import { SITE_TITLE } from '@/consts';
+import BackToTop from '@/components/BackToTop';
+import BaseHead from '@/components/BaseHead.astro';
+import Footer from '@/components/Footer.astro';
+import FormattedDate from '@/components/FormattedDate.astro';
+import Header from '@/components/Header.astro';
+import TocItem from '@/components/TocItem.astro';
+import Upvote from '@/components/Upvote';
+import { buildHierarchy, normalizeTags } from '@/utils';
+
+type BaseProps = {
+	postId: string;
+	title: string;
+	description: string;
+	pubDate: Date;
+	tags?: string[];
+	toc?: boolean;
+	headings: MarkdownHeading[];
+};
+
+type Props = BaseProps & {
+	/**
+	 * Whether to show the upvote button (default: true for blog posts)
+	 */
+	showUpvote?: boolean;
+	/**
+	 * Optional content to display before the main content (e.g., source link for translations)
+	 */
+	beforeContent?: any;
+	/**
+	 * Base path for OG image (e.g., '/blog' or '/translations')
+	 */
+	ogBasePath?: string;
+};
+
+const {
+	postId,
+	title,
+	description,
+	pubDate,
+	tags,
+	toc,
+	headings,
+	showUpvote = true,
+	beforeContent,
+	ogBasePath = '/blog',
+} = Astro.props;
+
+const tocHeadings = buildHierarchy(headings);
+const normalizedTags = normalizeTags(tags);
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead
+			title={`${title} | ${SITE_TITLE}`}
+			description={description}
+			ogImage={`${ogBasePath}/${postId}/og.png`}
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>{title}</h1>
+			<p>
+				<i>
+					<FormattedDate date={pubDate} />
+				</i>
+			</p>
+			{beforeContent && <Fragment set:html={beforeContent} />}
+			{
+				toc && tocHeadings.length > 0 && (
+					<details>
+						<summary>目录</summary>
+						<ul>
+							{tocHeadings.map((h) => (
+								<TocItem heading={h} />
+							))}
+						</ul>
+					</details>
+				)
+			}
+			<slot />
+			{
+				normalizedTags && normalizedTags.length > 0 && (
+					<p class="tags">
+						{normalizedTags.map((tag) => (
+							<a href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>
+						))}
+					</p>
+				)
+			}
+			{showUpvote && <Upvote client:load postId={postId} />}
+		</main>
+		<BackToTop client:load />
+		<Footer />
+	</body>
+</html>

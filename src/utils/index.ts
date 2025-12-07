@@ -6,6 +6,22 @@ import type { TocHeading } from '@/types';
 type Post = CollectionEntry<'blog'>;
 type Translation = CollectionEntry<'translations'>;
 
+/**
+ * Normalize a single tag to lowercase and trim whitespace
+ */
+export function normalizeTag(tag: string): string {
+	return tag.trim().toLowerCase();
+}
+
+/**
+ * Normalize an array of tags: trim, lowercase, filter empty, remove duplicates, and sort
+ */
+export function normalizeTags(tags: string[] | undefined): string[] {
+	if (!tags) return [];
+
+	return [...new Set(tags.map((tag) => normalizeTag(tag)).filter((tag) => tag.length > 0))].sort();
+}
+
 async function getPublishedEntries<T extends 'blog' | 'translations'>(
 	collection: T
 ): Promise<CollectionEntry<T>[]> {
@@ -23,14 +39,8 @@ export async function getAllTranslations() {
 }
 
 function extractTags<T extends { data: { tags?: string[] } }>(entries: T[]): string[] {
-	return [
-		...new Set(
-			entries
-				.flatMap((entry) => entry.data.tags || [])
-				.filter((tag) => tag && tag.trim().length > 0)
-				.map((tag) => tag.trim().toLowerCase())
-		),
-	].sort();
+	const allTags = entries.flatMap((entry) => entry.data.tags || []);
+	return normalizeTags(allTags);
 }
 
 export async function getAllTags(posts?: Post[]) {
@@ -45,6 +55,15 @@ export async function getAllTranslationTags(translations?: Translation[]) {
 		translations = await getAllTranslations();
 	}
 	return extractTags(translations);
+}
+
+/**
+ * Generic function to get all tags from any collection entries
+ */
+export function getTagsFromEntries<T extends { data: { tags?: string[] } }>(
+	entries: T[]
+): string[] {
+	return extractTags(entries);
 }
 
 export function buildHierarchy(headings: MarkdownHeading[]) {

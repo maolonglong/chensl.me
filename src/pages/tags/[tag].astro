@@ -4,7 +4,13 @@ import BaseHead from '@/components/BaseHead.astro';
 import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
 import PostList from '@/components/PostList.astro';
-import { getAllPosts, getAllTags, getAllTranslations, getAllTranslationTags } from '@/utils';
+import {
+	getAllPosts,
+	getAllTags,
+	getAllTranslations,
+	getAllTranslationTags,
+	normalizeTag,
+} from '@/utils';
 
 export async function getStaticPaths() {
 	const posts = await getAllPosts();
@@ -15,11 +21,11 @@ export async function getStaticPaths() {
 
 	return allTags.map((tag) => {
 		const filteredPosts = posts.filter(
-			(post) => post.data.tags && post.data.tags.some((t) => t.trim().toLowerCase() === tag)
+			(post) => post.data.tags && post.data.tags.some((t) => normalizeTag(t) === tag)
 		);
 		const filteredTranslations = translations.filter(
 			(translation) =>
-				translation.data.tags && translation.data.tags.some((t) => t.trim().toLowerCase() === tag)
+				translation.data.tags && translation.data.tags.some((t) => normalizeTag(t) === tag)
 		);
 		return {
 			params: { tag },

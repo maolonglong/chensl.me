@@ -1,11 +1,15 @@
 import fs from 'fs/promises';
 import type { ReactNode } from 'react';
+import type { GetStaticPaths } from 'astro';
+import type { CollectionEntry } from 'astro:content';
 import { chars, icons } from '@iconify-json/twemoji';
 import { getIconData, iconToHTML, iconToSVG, replaceIDs } from '@iconify/utils';
 import satori from 'satori';
 import sharp from 'sharp';
 
 const fontData = await fs.readFile('./src/assets/fonts/JetBrainsMapleMono-Regular.ttf');
+const logoBuffer = await fs.readFile('./public/android-chrome-192x192.png');
+const logoDataUrl = `data:image/png;base64,${logoBuffer.toString('base64')}`;
 
 async function satoriSVG(element: ReactNode) {
 	return await satori(element, {
@@ -85,4 +89,59 @@ function loadEmoji(code: string) {
 	const svgContent = iconToHTML(replaceIDs(renderData.body), renderData.attributes);
 
 	return (emojiCache[code] = svgContent);
+}
+
+/**
+ * Create OG image handlers for a collection
+ * @param getEntries Function to get all entries from the collection
+ * @param OgImageComponent React component to render the OG image
+ * @returns Object with GET handler and getStaticPaths function
+ */
+export function createOgImageHandlers<
+	T extends CollectionEntry<'blog'> | CollectionEntry<'translations'>,
+>(
+	getEntries: () => Promise<T[]>,
+	OgImageComponent: (props: { title: string; description: string; logo: string }) => ReactNode
+) {
+	let cachedEntries: T[] | null = null;
+
+	const getEntriesCached = async () => {
+		if (!cachedEntries) {
+			cachedEntries = await getEntries();
+		}
+		return cachedEntries;
+	};
+
+	return {
+		GET: async ({ params }: { params: { slug: string } }) => {
+			const entries = await getEntriesCached();
+			const entry = entries.find((e) => e.id === params.slug);
+
+			if (!entry) {
+				return new Response('Not found', { status: 404 });
+			}
+
+			const element = OgImageComponent({
+				title: entry.data.title,
+				description: entry.data.description,
+				logo: logoDataUrl,
+			});
+
+			const png = await satoriPNG(element);
+
+			return new Response(new Uint8Array(png), {
+				headers: {
+					'Content-Type': 'image/png',
+				},
+			});
+		},
+
+		getStaticPaths: (async () => {
+			const entries = await getEntriesCached();
+			return entries.map((entry) => ({
+				params: { slug: entry.id },
+				props: entry,
+			}));
+		}) as GetStaticPaths,
+	};
 }

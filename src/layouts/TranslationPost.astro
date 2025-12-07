@@ -2,78 +2,28 @@
 import type { MarkdownHeading } from 'astro';
 import type { CollectionEntry } from 'astro:content';
 
-import { SITE_TITLE } from '@/consts';
-import BackToTop from '@/components/BackToTop';
-import BaseHead from '@/components/BaseHead.astro';
-import Footer from '@/components/Footer.astro';
-import FormattedDate from '@/components/FormattedDate.astro';
-import Header from '@/components/Header.astro';
-import TocItem from '@/components/TocItem.astro';
-import { buildHierarchy } from '@/utils';
+import PostLayout from './PostLayout.astro';
 
 type Props = CollectionEntry<'translations'>['data'] & {
 	postId: string;
 	headings: MarkdownHeading[];
 };
 
-const { postId, title, description, pubDate, source, tags, toc, headings } = Astro.props;
-const tocHeadings = buildHierarchy(headings);
-const normalizedTags = tags
-	?.map((tag) => tag.trim().toLowerCase())
-	.filter((tag) => tag.length > 0)
-	.sort();
+const { source, ...props } = Astro.props;
+
+// Create the source link HTML to be inserted before content
+const sourceLink = `
+	<p class="source-link">
+		原文链接: <a href="${source}" rel="nofollow" target="_blank">${source}</a>
+	</p>
+`;
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-	<head>
-		<BaseHead
-			title={`${title} | ${SITE_TITLE}`}
-			description={description}
-			ogImage={`/translations/${postId}/og.png`}
-		/>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>{title}</h1>
-			<p>
-				<i>
-					<FormattedDate date={pubDate} />
-				</i>
-			</p>
-			<p class="source-link">
-				原文链接: <a href={source} rel="nofollow" target="_blank">{source}</a>
-			</p>
-			{
-				toc && tocHeadings.length > 0 && (
-					<details>
-						<summary>目录</summary>
-						<ul>
-							{tocHeadings.map((h) => (
-								<TocItem heading={h} />
-							))}
-						</ul>
-					</details>
-				)
-			}
-			<slot />
-			{
-				normalizedTags && normalizedTags.length > 0 && (
-					<p class="tags">
-						{normalizedTags.map((tag) => (
-							<a href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>
-						))}
-					</p>
-				)
-			}
-		</main>
-		<BackToTop client:load />
-		<Footer />
-	</body>
-</html>
+<PostLayout {...props} showUpvote={false} beforeContent={sourceLink} ogBasePath="/translations">
+	<slot />
+</PostLayout>
 
-<style>
+<style is:global>
 	.source-link {
 		padding: 0.5rem 1rem;
 		background-color: var(--background-color-alt);

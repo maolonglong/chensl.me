@@ -63,13 +63,6 @@ const { title, description, ogImage = fallbackOgImage } = Astro.props;
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#212830" media="(prefers-color-scheme: dark)" />
 
-<link
-	rel="alternate"
-	type="application/rss+xml"
-	title={SITE_TITLE}
-	href={new URL('rss.xml', Astro.site)}
-/>
-
 <script>
 	import mediumZoom from 'medium-zoom';
 

@@ -1,4 +1,4 @@
-export default function PostOgImage() {
+export default function HomeOgImage() {
 	return (
 		<div
 			style={{

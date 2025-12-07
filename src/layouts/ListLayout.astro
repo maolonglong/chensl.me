@@ -1,0 +1,55 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
+import BaseHead from '@/components/BaseHead.astro';
+import Footer from '@/components/Footer.astro';
+import Header from '@/components/Header.astro';
+import PostList from '@/components/PostList.astro';
+
+interface Props {
+	/**
+	 * Page title (will be appended with " | SITE_TITLE")
+	 */
+	pageTitle: string;
+	/**
+	 * Posts or translations to display
+	 */
+	posts: CollectionEntry<'blog'>[] | CollectionEntry<'translations'>[];
+	/**
+	 * All tags to display at the bottom
+	 */
+	allTags: string[];
+	/**
+	 * Base path for post links (e.g., '/blog' or '/translations')
+	 */
+	basePath?: string;
+}
+
+const { pageTitle, posts, allTags, basePath = '/blog' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={`${pageTitle} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<PostList posts={posts} basePath={basePath} />
+			{
+				allTags && allTags.length > 0 && (
+					<small>
+						<div class="tags">
+							{allTags.map((tag) => (
+								<a rel="nofollow" href={`/tags/${encodeURIComponent(tag)}/`}>{`#${tag}`}</a>
+							))}
+						</div>
+					</small>
+				)
+			}
+		</main>
+		<Footer />
+	</body>
+</html>
