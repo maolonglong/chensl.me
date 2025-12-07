@@ -177,9 +177,9 @@ enum ResponseFormat {
 
 ![This code snippet depicts an example of a detailed tool response.](./5ed0d30526bf68624f335d075b8c1541be3bb595-1920x1006.png)
 
-该代码片段展示了一个详细工具响应的示例。
-
 这是一个简洁工具响应的示例（72 Tokens）：
+
+![This code snippet depicts a concise tool response.](./d4f649a66482efb5a80cf14ea85e84974ede1c49-1920x725.png)
 
 甚至你的工具响应结构——例如 XML、JSON 或 Markdown——也会对评估性能产生影响：没有放之四海而皆准的解决方案。这是因为 LLM 是基于“下一个 Token 预测”进行训练的，往往在格式与其训练数据匹配时表现更好。最佳响应结构将因任务和 Agent 而异。我们鼓励你根据自己的评估选择最佳的响应结构。
 
@@ -195,15 +195,13 @@ enum ResponseFormat {
 
 ![This image depicts an example of a truncated tool response.](./e440d6a69d0ca80e71f3bec5c2d00906ff03ce6d-1920x1162.png)
 
-该图展示了一个被截断的工具响应示例。
-
 这是一个无助益的错误响应示例：
 
-![This image depicts an example of an unhelpful tool response. ](./2445187904704fec8c50af0b950e310ba743fac2-1920x733.png)
-
-该图展示了一个无助益的工具响应示例。
+![This image depicts an example of an unhelpful tool response.](./2445187904704fec8c50af0b950e310ba743fac2-1920x733.png)
 
 这是一个有助益的错误响应示例：
+
+![This image depicts an example of a helpful error response.](./810661bd44a35fb273806ae95160040155978c3e-1920x850.png)
 
 ### 对工具描述进行提示词工程
 
