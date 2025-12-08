@@ -1,0 +1,149 @@
+---
+
+---
+
+<button
+	id="back-to-top"
+	class="back-to-top"
+	aria-label="返回顶部"
+	title="返回顶部"
+	type="button"
+	tabindex="-1"
+>
+	<svg
+		width="20"
+		height="20"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+	>
+		<path d="M18 15l-6-6-6 6"></path>
+	</svg>
+</button>
+
+<style>
+	.back-to-top {
+		position: fixed;
+		bottom: 20px;
+		right: 20px;
+		width: 44px;
+		height: 44px;
+		border: 1px solid var(--border-color);
+		border-radius: 50%;
+		background-color: var(--background-color);
+		color: var(--text-color);
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(20px);
+		transition:
+			opacity 0.18s ease,
+			transform 0.18s ease,
+			color 0.18s ease,
+			border-color 0.18s ease;
+		box-shadow: none;
+		z-index: 1000;
+	}
+
+	.back-to-top.visible:hover {
+		transform: translateY(-2px);
+		color: var(--heading-color);
+		border-color: var(--border-color);
+	}
+
+	.back-to-top.visible:active {
+		transform: translateY(0);
+	}
+
+	.back-to-top.visible {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(0);
+	}
+
+	.back-to-top:focus {
+		outline: 2px solid var(--border-color);
+		outline-offset: 2px;
+	}
+
+	.back-to-top:focus-visible {
+		outline: 2px solid var(--border-color);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		.back-to-top {
+			box-shadow: none;
+		}
+
+		.back-to-top.visible:hover {
+			color: var(--text-color);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.back-to-top {
+			transition:
+				opacity 0s,
+				transform 0s,
+				color 0s,
+				border-color 0s;
+		}
+	}
+</style>
+
+<script>
+	const backToTop = document.getElementById('back-to-top');
+
+	function scrollToTop() {
+		const prefersReducedMotion =
+			window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const behavior = prefersReducedMotion ? 'auto' : 'smooth';
+
+		window.scrollTo({
+			top: 0,
+			left: 0,
+			behavior,
+		});
+	}
+
+	function updateVisibility() {
+		if (!backToTop) return;
+		const threshold = 300;
+		if (window.scrollY > threshold) {
+			backToTop.classList.add('visible');
+			backToTop.setAttribute('tabindex', '0');
+		} else {
+			backToTop.classList.remove('visible');
+			backToTop.setAttribute('tabindex', '-1');
+		}
+	}
+
+	if (backToTop) {
+		backToTop.addEventListener('click', scrollToTop);
+
+		let ticking = false;
+		window.addEventListener(
+			'scroll',
+			() => {
+				if (!ticking) {
+					window.requestAnimationFrame(() => {
+						updateVisibility();
+						ticking = false;
+					});
+					ticking = true;
+				}
+			},
+			{ passive: true }
+		);
+
+		// Initial check
+		updateVisibility();
+	}
+</script>

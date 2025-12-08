@@ -1,0 +1,29 @@
+---
+import BackToTop from '@/components/BackToTop.astro';
+import BaseHead from '@/components/BaseHead.astro';
+import Footer from '@/components/Footer.astro';
+import Header from '@/components/Header.astro';
+
+interface Props {
+	title: string;
+	description: string;
+	ogImage?: string;
+}
+
+const { title, description, ogImage } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={title} description={description} ogImage={ogImage} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<slot />
+		</main>
+		<BackToTop />
+		<Footer />
+	</body>
+</html>
