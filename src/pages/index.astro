@@ -1,112 +1,60 @@
 ---
-import { Redis } from '@upstash/redis/cloudflare';
-
-import { REDIS_UPVOTE_KEY, SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
-import BaseHead from '@/components/BaseHead.astro';
-import Footer from '@/components/Footer.astro';
-import Header from '@/components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import Twemoji from '@/components/Twemoji.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getAllPosts } from '@/utils';
+import { getPopularPosts } from '@/utils/ranking';
 
 export const prerender = false;
 
 const posts = await getAllPosts();
 const latestPosts = posts.slice(0, 5);
 
-let popularPosts = latestPosts;
-
-try {
-	if (Astro.locals.runtime?.env) {
-		const redis = Redis.fromEnv(Astro.locals.runtime.env);
-
-		const scores = await redis.zrange(REDIS_UPVOTE_KEY, 0, 4, {
-			rev: true,
-			withScores: true,
-		});
-
-		const scoreMap = new Map<string, number>();
-		for (let i = 0; i < scores.length; i += 2) {
-			scoreMap.set(scores[i] as string, Number(scores[i + 1]));
-		}
-
-		popularPosts = posts
-			.map((post, index) => ({
-				post,
-				score: scoreMap.get(post.id) ?? 0,
-				originalIndex: index,
-			}))
-			.sort((a, b) => {
-				if (b.score !== a.score) {
-					return b.score - a.score;
-				}
-				return a.originalIndex - b.originalIndex;
-			})
-			.slice(0, 5)
-			.map(({ post }) => post);
-	}
-} catch (error) {
-	console.error('Failed to load popular posts from Redis:', {
-		error: error instanceof Error ? error.message : String(error),
-		stack: error instanceof Error ? error.stack : undefined,
-		hasRuntime: !!Astro.locals.runtime,
-		hasEnv: !!Astro.locals.runtime?.env,
-	});
-}
+const popularPosts = await getPopularPosts(Astro.locals.runtime?.env, posts);
 
 Astro.response.headers.set('Cache-Control', 'public, max-age=3600');
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1><Twemoji name="waving-hand" /> Hi! 我是陈劭珑</h1>
-			<p>
-				目前在 <Twemoji name="globe-showing-asia-australia" /> 工作的软件工程师, 为了 <Twemoji
-					name="house"
-				/>
-				<Twemoji name="automobile" />
-				<Twemoji name="money-bag" /> 而写代码
-			</p>
+<BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+	<h1><Twemoji name="waving-hand" /> Hi! 我是陈劭珑</h1>
+	<p>
+		目前在 <Twemoji name="globe-showing-asia-australia" /> 工作的软件工程师, 为了 <Twemoji
+			name="house"
+		/>
+		<Twemoji name="automobile" />
+		<Twemoji name="money-bag" /> 而写代码
+	</p>
 
-			<h2>社交媒体链接</h2>
-			<ul>
+	<h2>社交媒体链接</h2>
+	<ul>
+		<li>
+			GitHub: <a href="https://github.com/maolonglong" rel="nofollow" target="_blank"
+				>github.com/maolonglong</a
+			>
+		</li>
+		<li>
+			Fediverse: <a href="https://gts.purr.onl/@chensl" rel="me" target="_blank">@chensl@purr.onl</a
+			>
+		</li>
+	</ul>
+	<h2>最近的文章</h2>
+	<ul>
+		{
+			latestPosts.map((post) => (
 				<li>
-					GitHub: <a href="https://github.com/maolonglong" rel="nofollow" target="_blank"
-						>github.com/maolonglong</a
-					>
+					<a href={`/blog/${post.id}/`}>{post.data.title}</a>
 				</li>
+			))
+		}
+	</ul>
+	<h2>最受欢迎的文章</h2>
+	<ul>
+		{
+			popularPosts.map((post) => (
 				<li>
-					Fediverse: <a href="https://gts.purr.onl/@chensl" rel="me" target="_blank"
-						>@chensl@purr.onl</a
-					>
+					<a href={`/blog/${post.id}/`}>{post.data.title}</a>
 				</li>
-			</ul>
-			<h2>最近的文章</h2>
-			<ul>
-				{
-					latestPosts.map((post) => (
-						<li>
-							<a href={`/blog/${post.id}/`}>{post.data.title}</a>
-						</li>
-					))
-				}
-			</ul>
-			<h2>最受欢迎的文章</h2>
-			<ul>
-				{
-					popularPosts.map((post) => (
-						<li>
-							<a href={`/blog/${post.id}/`}>{post.data.title}</a>
-						</li>
-					))
-				}
-			</ul>
-		</main>
-		<Footer />
-	</body>
-</html>
+			))
+		}
+	</ul>
+</BaseLayout>

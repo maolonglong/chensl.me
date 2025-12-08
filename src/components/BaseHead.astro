@@ -66,24 +66,19 @@ const { title, description, ogImage = fallbackOgImage } = Astro.props;
 <script>
 	import mediumZoom from 'medium-zoom';
 
-	const COLOR_SCHEME_QUERY = '(prefers-color-scheme: dark)';
-
-	const COLOR_LIGHT = '#fff';
-	const COLOR_DARK = '#212830';
-
-	function getOverlayBackground() {
-		return window.matchMedia(COLOR_SCHEME_QUERY).matches ? COLOR_DARK : COLOR_LIGHT;
+	function getThemeColor() {
+		return getComputedStyle(document.documentElement).getPropertyValue('--background-color').trim();
 	}
 
 	function init() {
 		const zoom = mediumZoom('main img:not([data-zoom="false"])', {
-			background: getOverlayBackground(),
+			background: getThemeColor(),
 		});
 
-		const media = window.matchMedia(COLOR_SCHEME_QUERY);
+		const media = window.matchMedia('(prefers-color-scheme: dark)');
 
-		const handleSchemeChange = (event: MediaQueryListEvent) => {
-			zoom.update({ background: event.matches ? COLOR_DARK : COLOR_LIGHT });
+		const handleSchemeChange = () => {
+			zoom.update({ background: getThemeColor() });
 		};
 
 		media.addEventListener('change', handleSchemeChange);

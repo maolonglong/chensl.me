@@ -1,0 +1,49 @@
+import type { CollectionEntry } from 'astro:content';
+import { Redis } from '@upstash/redis/cloudflare';
+
+import { REDIS_UPVOTE_KEY } from '@/consts';
+
+export async function getPopularPosts(
+	env: any,
+	posts: CollectionEntry<'blog'>[]
+): Promise<CollectionEntry<'blog'>[]> {
+	if (!env) {
+		return posts.slice(0, 5);
+	}
+
+	try {
+		const redis = Redis.fromEnv(env);
+
+		const scores = await redis.zrange(REDIS_UPVOTE_KEY, 0, 4, {
+			rev: true,
+			withScores: true,
+		});
+
+		const scoreMap = new Map<string, number>();
+		for (let i = 0; i < scores.length; i += 2) {
+			scoreMap.set(scores[i] as string, Number(scores[i + 1]));
+		}
+
+		return posts
+			.map((post, index) => ({
+				post,
+				score: scoreMap.get(post.id) ?? 0,
+				originalIndex: index,
+			}))
+			.sort((a, b) => {
+				if (b.score !== a.score) {
+					return b.score - a.score;
+				}
+				return a.originalIndex - b.originalIndex;
+			})
+			.slice(0, 5)
+			.map(({ post }) => post);
+	} catch (error) {
+		console.error('Failed to load popular posts from Redis:', {
+			error: error instanceof Error ? error.message : String(error),
+			stack: error instanceof Error ? error.stack : undefined,
+			hasEnv: !!env,
+		});
+		return posts.slice(0, 5);
+	}
+}
