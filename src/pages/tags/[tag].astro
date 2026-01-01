@@ -4,38 +4,25 @@ import BaseHead from '@/components/BaseHead.astro';
 import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
 import PostList from '@/components/PostList.astro';
-import {
-	getAllPosts,
-	getAllTags,
-	getAllTranslations,
-	getAllTranslationTags,
-	normalizeTag,
-} from '@/utils';
+import { getAllPosts, getAllTags, normalizeTag } from '@/utils';
 
 export async function getStaticPaths() {
 	const posts = await getAllPosts();
-	const translations = await getAllTranslations();
-	const blogTags = await getAllTags(posts);
-	const translationTags = await getAllTranslationTags(translations);
-	const allTags = [...new Set([...blogTags, ...translationTags])].sort();
+	const allTags = await getAllTags(posts);
 
 	return allTags.map((tag) => {
 		const filteredPosts = posts.filter(
 			(post) => post.data.tags && post.data.tags.some((t) => normalizeTag(t) === tag)
 		);
-		const filteredTranslations = translations.filter(
-			(translation) =>
-				translation.data.tags && translation.data.tags.some((t) => normalizeTag(t) === tag)
-		);
 		return {
 			params: { tag },
-			props: { posts: filteredPosts, translations: filteredTranslations },
+			props: { posts: filteredPosts },
 		};
 	});
 }
 
 const { tag } = Astro.params;
-const { posts, translations } = Astro.props;
+const { posts } = Astro.props;
 ---
 
 <!doctype html>
@@ -50,16 +37,7 @@ const { posts, translations } = Astro.props;
 			{
 				posts.length > 0 && (
 					<>
-						<h4>博客</h4>
 						<PostList posts={posts} />
-					</>
-				)
-			}
-			{
-				translations.length > 0 && (
-					<>
-						<h4>翻译</h4>
-						<PostList posts={translations} basePath="/translations" />
 					</>
 				)
 			}

@@ -4,7 +4,6 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import type { TocHeading } from '@/types';
 
 type Post = CollectionEntry<'blog'>;
-type Translation = CollectionEntry<'translations'>;
 
 /**
  * Normalize a single tag to lowercase and trim whitespace
@@ -48,13 +47,6 @@ export async function getAllTags(posts?: Post[]) {
 		posts = await getAllPosts();
 	}
 	return extractTags(posts);
-}
-
-export async function getAllTranslationTags(translations?: Translation[]) {
-	if (!translations) {
-		translations = await getAllTranslations();
-	}
-	return extractTags(translations);
 }
 
 /**

@@ -4,7 +4,7 @@ description: 本文提供了GPLT团体程序设计天梯赛的详细题解，包
 pubDate: 2020-10-27T18:22:23+08:00
 tags:
   - algorithms
-  - c++
+  - cpp
 toc: true
 ---
 

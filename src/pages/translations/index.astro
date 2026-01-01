@@ -1,9 +1,0 @@
----
-import ListLayout from '@/layouts/ListLayout.astro';
-import { getAllTranslations, getAllTranslationTags } from '@/utils';
-
-const translations = await getAllTranslations();
-const allTags = await getAllTranslationTags(translations);
----
-
-<ListLayout pageTitle="翻译" posts={translations} allTags={allTags} basePath="/translations" />

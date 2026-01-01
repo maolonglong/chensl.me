@@ -1,9 +1,0 @@
----
-import ListLayout from '@/layouts/ListLayout.astro';
-import { getAllPosts, getAllTags } from '@/utils';
-
-const posts = await getAllPosts();
-const allTags = await getAllTags(posts);
----
-
-<ListLayout pageTitle="博客" posts={posts} allTags={allTags} basePath="/blog" />

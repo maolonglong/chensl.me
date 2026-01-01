@@ -1,4 +1,5 @@
 ---
+import type { Page } from 'astro';
 import type { CollectionEntry } from 'astro:content';
 
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
@@ -18,18 +19,41 @@ interface Props {
 	/**
 	 * All tags to display at the bottom
 	 */
-	allTags: string[];
+	allTags?: string[];
 	/**
 	 * Base path for post links (e.g., '/blog' or '/translations')
 	 */
 	basePath?: string;
+	/**
+	 * Pagination object
+	 */
+	page?: Page<CollectionEntry<'blog'> | CollectionEntry<'translations'>>;
 }
 
-const { pageTitle, posts, allTags, basePath = '/blog' } = Astro.props;
+const { pageTitle, posts, allTags, basePath = '/blog', page } = Astro.props;
 ---
 
 <BaseLayout title={`${pageTitle} | ${SITE_TITLE}`} description={SITE_DESCRIPTION}>
 	<PostList posts={posts} basePath={basePath} />
+	{
+		page && (page.url.prev || page.url.next) && (
+			<nav class="pagination" aria-label="Pagination">
+				{page.url.prev ? (
+					<a href={page.url.prev}>&larr; 上一页</a>
+				) : (
+					<span class="disabled">&larr; 上一页</span>
+				)}
+				<span>
+					{page.currentPage} / {page.lastPage}
+				</span>
+				{page.url.next ? (
+					<a href={page.url.next}>下一页 &rarr;</a>
+				) : (
+					<span class="disabled">下一页 &rarr;</span>
+				)}
+			</nav>
+		)
+	}
 	{
 		allTags && allTags.length > 0 && (
 			<small>
@@ -42,3 +66,24 @@ const { pageTitle, posts, allTags, basePath = '/blog' } = Astro.props;
 		)
 	}
 </BaseLayout>
+
+<style>
+	.pagination {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin: 2rem 0;
+		font-family: var(--font-mono);
+	}
+	.pagination a {
+		text-decoration: none;
+		color: var(--color-text);
+	}
+	.pagination a:hover {
+		text-decoration: underline;
+	}
+	.pagination .disabled {
+		color: var(--subtext-color);
+		cursor: not-allowed;
+	}
+</style>

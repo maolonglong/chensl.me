@@ -1,0 +1,16 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import { PAGE_SIZE } from '@/consts';
+import ListLayout from '@/layouts/ListLayout.astro';
+import { getAllTranslations } from '@/utils';
+
+export const getStaticPaths = (async ({ paginate }) => {
+	const translations = await getAllTranslations();
+	return paginate(translations, { pageSize: PAGE_SIZE });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+---
+
+<ListLayout pageTitle="翻译" posts={page.data} basePath="/translations" page={page} />

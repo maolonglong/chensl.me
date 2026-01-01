@@ -1,0 +1,17 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import { PAGE_SIZE } from '@/consts';
+import ListLayout from '@/layouts/ListLayout.astro';
+import { getAllPosts, getAllTags } from '@/utils';
+
+export const getStaticPaths = (async ({ paginate }) => {
+	const posts = await getAllPosts();
+	const allTags = await getAllTags(posts);
+	return paginate(posts, { pageSize: PAGE_SIZE, props: { allTags } });
+}) satisfies GetStaticPaths;
+
+const { page, allTags } = Astro.props;
+---
+
+<ListLayout pageTitle="博客" posts={page.data} allTags={allTags} basePath="/blog" page={page} />
