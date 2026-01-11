@@ -10,13 +10,13 @@ importers:
     dependencies:
       '@astrojs/cloudflare':
         specifier: 12.6.12
-        version: 12.6.12(@types/node@24.10.4)(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))(yaml@2.8.2)
+        version: 12.6.12(@types/node@24.10.4)(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))(yaml@2.8.2)
       '@astrojs/markdown-remark':
         specifier: 6.3.10
         version: 6.3.10
       '@astrojs/mdx':
         specifier: ^4.3.9
-        version: 4.3.13(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))
+        version: 4.3.13(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))
       '@astrojs/react':
         specifier: ^4.4.1
         version: 4.4.2(@types/node@24.10.4)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(yaml@2.8.2)
@@ -37,13 +37,13 @@ importers:
         version: 3.20.0
       '@upstash/redis':
         specifier: ^1.35.3
-        version: 1.35.8
+        version: 1.36.0
       astro:
         specifier: ^5.15.3
-        version: 5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)
       astro-expressive-code:
         specifier: ^0.41.3
-        version: 0.41.5(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))
+        version: 0.41.5(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))
       astro-icon:
         specifier: ^1.1.5
         version: 1.1.5
@@ -1480,8 +1480,8 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@upstash/redis@1.35.8':
-    resolution: {integrity: sha512-QqLpVCD9PCPE6hlRzOkz864nfijSdazxtyJLIy9ZeTh6kU2nBIKKfjT5HMHjIRD4BCm6TK1dbUT9pxhFjcvpng==}
+  '@upstash/redis@1.36.0':
+    resolution: {integrity: sha512-9zN2UV9QJGPnXfWU3yZBLVQaqqENDh7g+Y4J2vJuSxBCi9FQ0aUOtaXlzuFhnsiZvCqM+eS27ic+tgmkWUsfOg==}
 
   '@vitejs/plugin-react@4.7.0':
     resolution: {integrity: sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA==}
@@ -3612,12 +3612,12 @@ snapshots:
       - prettier
       - prettier-plugin-astro
 
-  '@astrojs/cloudflare@12.6.12(@types/node@24.10.4)(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))(yaml@2.8.2)':
+  '@astrojs/cloudflare@12.6.12(@types/node@24.10.4)(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))(yaml@2.8.2)':
     dependencies:
       '@astrojs/internal-helpers': 0.7.5
       '@astrojs/underscore-redirects': 1.0.0
       '@cloudflare/workers-types': 4.20251205.0
-      astro: 5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)
+      astro: 5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)
       tinyglobby: 0.2.15
       vite: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)
       wrangler: 4.50.0(@cloudflare/workers-types@4.20251205.0)
@@ -3694,12 +3694,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/mdx@4.3.13(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))':
+  '@astrojs/mdx@4.3.13(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2))':
     dependencies:
       '@astrojs/markdown-remark': 6.3.10
       '@mdx-js/mdx': 3.1.1
       acorn: 8.15.0
-      astro: 5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)
+      astro: 5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)
       es-module-lexer: 1.7.0
       estree-util-visit: 2.0.0
       hast-util-to-html: 9.0.5
@@ -4790,7 +4790,7 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@upstash/redis@1.35.8':
+  '@upstash/redis@1.36.0':
     dependencies:
       uncrypto: 0.1.3
 
@@ -4906,9 +4906,9 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro-expressive-code@0.41.5(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)):
+  astro-expressive-code@0.41.5(astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)):
     dependencies:
-      astro: 5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)
+      astro: 5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2)
       rehype-expressive-code: 0.41.5
 
   astro-icon@1.1.5:
@@ -4920,7 +4920,7 @@ snapshots:
       - debug
       - supports-color
 
-  astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.35.8)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2):
+  astro@5.16.6(@types/node@24.10.4)(@upstash/redis@1.36.0)(rollup@4.54.0)(typescript@5.9.3)(yaml@2.8.2):
     dependencies:
       '@astrojs/compiler': 2.13.0
       '@astrojs/internal-helpers': 0.7.5
@@ -4975,7 +4975,7 @@ snapshots:
       ultrahtml: 1.6.0
       unifont: 0.6.0
       unist-util-visit: 5.0.0
-      unstorage: 1.17.3(@upstash/redis@1.35.8)
+      unstorage: 1.17.3(@upstash/redis@1.36.0)
       vfile: 6.0.3
       vite: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)
       vitefu: 1.1.1(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
@@ -7284,7 +7284,7 @@ snapshots:
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
 
-  unstorage@1.17.3(@upstash/redis@1.35.8):
+  unstorage@1.17.3(@upstash/redis@1.36.0):
     dependencies:
       anymatch: 3.1.3
       chokidar: 4.0.3
@@ -7295,7 +7295,7 @@ snapshots:
       ofetch: 1.5.1
       ufo: 1.6.1
     optionalDependencies:
-      '@upstash/redis': 1.35.8
+      '@upstash/redis': 1.36.0
 
   update-browserslist-db@1.1.4(browserslist@4.28.0):
     dependencies:
