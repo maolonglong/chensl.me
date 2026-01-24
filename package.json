@@ -22,7 +22,7 @@
     "@iconify/utils": "^3.0.1",
     "@shikijs/colorized-brackets": "^3.12.2",
     "@upstash/redis": "^1.35.3",
-    "astro": "^5.15.3",
+    "astro": "^5.16.15",
     "astro-expressive-code": "^0.41.3",
     "astro-icon": "^1.1.5",
     "clsx": "^2.1.1",
@@ -42,7 +42,7 @@
     "sharp": "^0.34.3"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.5",
+    "@astrojs/check": "^0.9.6",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.3.1",
@@ -52,6 +52,13 @@
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.2",
-    "wrangler": "^4.35.0"
+    "wrangler": "^4.60.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "wrangler": "^4.60.0",
+      "lodash": "^4.17.23",
+      "undici": "^7.18.2"
+    }
   }
 }
