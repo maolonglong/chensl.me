@@ -18,7 +18,8 @@ export const GET: APIRoute = async (context) => {
 		throw Error('site not set');
 	}
 
-	const posts = await getAllPosts();
+	const posts = (await getAllPosts()).slice(0, 20);
+
 	const items: RSSFeedItem[] = [];
 
 	for (const post of posts) {
