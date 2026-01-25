@@ -5,7 +5,7 @@ import MarkdownIt from 'markdown-it';
 import { parse as htmlParser } from 'node-html-parser';
 import sanitizeHtml from 'sanitize-html';
 
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
+import { RSS_FEED_LIMIT, SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { getAllPosts } from '@/utils';
 
 const markdownParser = new MarkdownIt();
@@ -18,7 +18,7 @@ export const GET: APIRoute = async (context) => {
 		throw Error('site not set');
 	}
 
-	const posts = (await getAllPosts()).slice(0, 20);
+	const posts = (await getAllPosts()).slice(0, RSS_FEED_LIMIT);
 
 	const items: RSSFeedItem[] = [];
 
