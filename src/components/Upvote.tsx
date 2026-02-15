@@ -38,6 +38,7 @@ export default function Upvote({ postId }: { postId: string }) {
 		<div style={{ display: 'inline' }}>
 			<button
 				className={clsx('upvote-button', { upvoted })}
+				type="button"
 				title="Toast this post"
 				onClick={handleClick}
 			>

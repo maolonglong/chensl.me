@@ -14,7 +14,7 @@ const { source, ...props } = Astro.props;
 // Create the source link HTML to be inserted before content
 const sourceLink = `
 	<p class="source-link">
-		原文链接: <a href="${source}" rel="nofollow" target="_blank">${source}</a>
+		原文链接: <a href="${source}" rel="nofollow noopener noreferrer" target="_blank">${source}</a>
 	</p>
 `;
 ---
