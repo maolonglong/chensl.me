@@ -27,7 +27,7 @@ export default function Upvote({ postId }: { postId: string }) {
 			return;
 		}
 		setUpvoted(true);
-		setCount(count + 1);
+		setCount((prev) => prev + 1);
 		const { error } = await actions.upvotePost({ postId });
 		if (error) {
 			console.error('Failed to upvote post:', error);
