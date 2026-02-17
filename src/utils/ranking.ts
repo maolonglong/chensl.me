@@ -24,20 +24,52 @@ export async function getPopularPosts(
 			scoreMap.set(scores[i] as string, Number(scores[i + 1]));
 		}
 
-		return posts
-			.map((post, index) => ({
-				post,
-				score: scoreMap.get(post.id) ?? 0,
-				originalIndex: index,
-			}))
-			.sort((a, b) => {
-				if (b.score !== a.score) {
-					return b.score - a.score;
+		const topK = 5;
+		const scoredPosts: { post: CollectionEntry<'blog'>; score: number; originalIndex: number }[] = [];
+		for (let i = 0; i < posts.length; i++) {
+			const post = posts[i];
+			const score = scoreMap.get(post.id);
+			if (score !== undefined && score !== 0) {
+				scoredPosts.push({ post, score, originalIndex: i });
+			}
+		}
+
+		scoredPosts.sort((a, b) => {
+			if (b.score !== a.score) {
+				return b.score - a.score;
+			}
+			return a.originalIndex - b.originalIndex;
+		});
+
+		const result: CollectionEntry<'blog'>[] = [];
+
+		// 1. score > 0
+		for (let i = 0; i < scoredPosts.length && result.length < topK; i++) {
+			if (scoredPosts[i].score <= 0) break;
+			result.push(scoredPosts[i].post);
+		}
+
+		// 2. score === 0
+		if (result.length < topK) {
+			for (let i = 0; i < posts.length && result.length < topK; i++) {
+				const post = posts[i];
+				const score = scoreMap.get(post.id) ?? 0;
+				if (score === 0) {
+					result.push(post);
 				}
-				return a.originalIndex - b.originalIndex;
-			})
-			.slice(0, 5)
-			.map(({ post }) => post);
+			}
+		}
+
+		// 3. score < 0
+		if (result.length < topK) {
+			for (let i = 0; i < scoredPosts.length && result.length < topK; i++) {
+				if (scoredPosts[i].score < 0) {
+					result.push(scoredPosts[i].post);
+				}
+			}
+		}
+
+		return result;
 	} catch (error) {
 		console.error('Failed to load popular posts from Redis:', {
 			error: error instanceof Error ? error.message : String(error),
