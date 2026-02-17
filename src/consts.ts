@@ -6,3 +6,4 @@ export const SITE_DESCRIPTION = 'This is my personal website.';
 export const REDIS_UPVOTE_KEY = import.meta.env.PROD ? 'upvote' : 'upvote-dev';
 export const PAGE_SIZE = 22;
 export const RSS_FEED_LIMIT = 20;
+export const POPULAR_POSTS_LIMIT = 5;
