@@ -24,20 +24,28 @@ export async function getPopularPosts(
 			scoreMap.set(scores[i] as string, Number(scores[i + 1]));
 		}
 
-		return posts
-			.map((post, index) => ({
-				post,
-				score: scoreMap.get(post.id) ?? 0,
-				originalIndex: index,
-			}))
-			.sort((a, b) => {
-				if (b.score !== a.score) {
-					return b.score - a.score;
-				}
-				return a.originalIndex - b.originalIndex;
-			})
-			.slice(0, 5)
-			.map(({ post }) => post);
+		if (scoreMap.size === 0) {
+			return posts.slice(0, 5);
+		}
+
+		const withScore: { post: CollectionEntry<'blog'>; score: number; index: number }[] = [];
+		const withoutScore: CollectionEntry<'blog'>[] = [];
+
+		for (let i = 0; i < posts.length; i++) {
+			const post = posts[i];
+			const score = scoreMap.get(post.id);
+			if (score !== undefined && score > 0) {
+				withScore.push({ post, score, index: i });
+			} else if (withoutScore.length < 5) {
+				withoutScore.push(post);
+			}
+		}
+
+		return withScore
+			.sort((a, b) => b.score - a.score || a.index - b.index)
+			.map((item) => item.post)
+			.concat(withoutScore)
+			.slice(0, 5);
 	} catch (error) {
 		console.error('Failed to load popular posts from Redis:', {
 			error: error instanceof Error ? error.message : String(error),
