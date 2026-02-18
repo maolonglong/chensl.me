@@ -31,7 +31,6 @@ export const GET: APIRoute = async (context) => {
 			if (src.startsWith('./')) {
 				const path = src.replace('./', `/src/content/blog/${post.id}/`);
 				const origin = (await images[path]()).default;
-				// FIXME: duplicate image generation when `astro build`
 				const optimized = await getImage({ src: origin });
 				elem.setAttribute('src', new URL(optimized.src, context.site).href);
 			} else if (!src.startsWith('https://')) {
