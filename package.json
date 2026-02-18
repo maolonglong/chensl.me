@@ -53,12 +53,5 @@
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.2",
     "wrangler": "^4.60.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "wrangler": "^4.60.0",
-      "lodash": "^4.17.23",
-      "undici": "^7.18.2"
-    }
   }
 }
