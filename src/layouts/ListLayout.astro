@@ -38,19 +38,9 @@ const { pageTitle, posts, allTags, basePath = '/blog', page } = Astro.props;
 	{
 		page && (page.url.prev || page.url.next) && (
 			<nav class="pagination" aria-label="Pagination">
-				{page.url.prev ? (
-					<a href={page.url.prev}>&larr; 上一页</a>
-				) : (
-					<span class="disabled">&larr; 上一页</span>
-				)}
-				<span>
-					{page.currentPage} / {page.lastPage}
-				</span>
-				{page.url.next ? (
-					<a href={page.url.next}>下一页 &rarr;</a>
-				) : (
-					<span class="disabled">下一页 &rarr;</span>
-				)}
+				{page.url.prev && <a href={page.url.prev}>&larr; 上一页</a>}
+				{page.url.prev && page.url.next && <span class="separator">/</span>}
+				{page.url.next && <a href={page.url.next}>下一页 &rarr;</a>}
 			</nav>
 		)
 	}
@@ -69,9 +59,6 @@ const { pageTitle, posts, allTags, basePath = '/blog', page } = Astro.props;
 
 <style>
 	.pagination {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
 		margin: 2rem 0;
 		font-family: var(--font-mono);
 	}
@@ -82,8 +69,8 @@ const { pageTitle, posts, allTags, basePath = '/blog', page } = Astro.props;
 	.pagination a:hover {
 		text-decoration: underline;
 	}
-	.pagination .disabled {
+	.pagination .separator {
+		margin: 0 0.5rem;
 		color: var(--subtext-color);
-		cursor: not-allowed;
 	}
 </style>
