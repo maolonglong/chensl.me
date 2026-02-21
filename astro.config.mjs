@@ -39,8 +39,10 @@ export default defineConfig({
 				{
 					behavior: 'append',
 					content: {
-						type: 'text',
-						value: '#',
+						type: 'element',
+						tagName: 'span',
+						properties: { className: ['anchor-icon'] },
+						children: [],
 					},
 					headingProperties: {
 						className: ['anchor'],

@@ -241,3 +241,7 @@ svg.iconify-emoji {
 .anchor:hover > .anchor-link {
 	opacity: 1;
 }
+
+.anchor-icon::after {
+	content: '#';
+}

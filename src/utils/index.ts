@@ -63,9 +63,7 @@ export function buildHierarchy(headings: MarkdownHeading[]) {
 	let parent: TocHeading | null = null;
 
 	headings.forEach((h) => {
-		// Remove trailing anchor symbol injected by rehypeAutolinkHeadings
-		const sanitizedText = h.text.replace(/\s*#$/, '');
-		const heading = { ...h, text: sanitizedText, subheadings: [] };
+		const heading = { ...h, subheadings: [] };
 
 		if (heading.depth === 2) {
 			tocHeadings.push(heading);
