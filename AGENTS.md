@@ -11,12 +11,19 @@
 ## Core Commands
 
 ```bash
-pnpm run dev      # Local development server
-pnpm run build    # Production build
-pnpm run preview  # Cloudflare Wrangler preview
-pnpm run format   # Prettier formatting
-pnpm run astro check # TypeScript checking
+pnpm run dev          # Local development server
+pnpm run build        # Production build (outputs to dist/)
+pnpm run preview      # Cloudflare Wrangler preview (runs build first)
+pnpm run format       # Prettier formatting with cache
+pnpm run astro check  # TypeScript checking
+pnpm run astro        # Run Astro CLI commands
 ```
+
+**Note**: This project has no test suite. Do not add tests without confirming with the owner.
+
+### Type Checking
+
+Always run `pnpm run astro check` before committing to catch TypeScript errors.
 
 ## Git Commit Guidelines
 
@@ -42,7 +49,9 @@ pnpm run astro check # TypeScript checking
 ## Code Style Guidelines
 
 - **Formatting**: Prettier with tabs (except JSON/MD), 100 char width, single quotes, trailing commas
-- **Imports**: Sorted by React → Astro → third-party → local (@/\*) → relative imports
+  - 2 space tabs, semicolons enabled
+  - MD/MDX files use 80 char width with spaces instead of tabs
+- **Imports**: Sorted by React → Astro → @astrojs/_ → astro-_ → third-party → @/types → @/consts → @/\* → relative
 - **TypeScript**: Strict mode enabled, use `@/*` path aliases, React JSX with `react-jsx`
 - **Naming**: PascalCase for components, camelCase for functions/variables, kebab-case for files
 - **Error Handling**: Use try/catch with proper typing, prefer early returns, validate with Zod in actions
@@ -86,6 +95,35 @@ pnpm run astro check # TypeScript checking
 - `buildHierarchy()` creates TOC structures for `h2`/`h3`
 - `satoriPNG()` wraps Satori image generation for OG assets
 
+## TypeScript & Configuration
+
+- `tsconfig.json` extends Astro's strict config
+- Path aliases: `@/*` maps to `src/*`
+- React 19 with `react-jsx` transform
+- Server actions in `src/actions/` use `defineAction` with Zod validation
+- Cloudflare Pages adapter at `@astrojs/cloudflare`
+
+## File Organization
+
+```
+src/
+├── actions/         # Server actions with defineAction
+├── components/     # Astro components (.astro) and React islands (.tsx)
+├── content/        # Blog content (MD/MDX) with frontmatter schema
+├── layouts/        # Page layouts (BlogPost.astro, Home.astro)
+├── pages/          # File-based routing
+├── styles/         # Global CSS and custom properties
+├── utils/          # Helper functions
+└── content.config.ts # Content collection schema definitions
+```
+
+## Common Patterns
+
+- React islands: Use `client:*` directives only when interactivity needed
+- CSS: Use semantic class names, avoid dynamic concatenation for PurgeCSS compatibility
+- OG Images: Satori components in `src/components/og/` for tree-shaking
+- Redis: Upstash for upvote counter, keys prefixed by environment
+
 ## AI Contribution Checklist
 
 - Prefer incremental changes with clear diffs; align with existing formatting rules (`pnpm run format`)
@@ -97,3 +135,17 @@ pnpm run astro check # TypeScript checking
 - For feature work, at minimum run `pnpm run build`; use `pnpm run preview` when Cloudflare behavior matters
 - Confirm PurgeCSS-safe class usage and ensure assets referenced in Markdown exist
 - Leave a short testing note in PRs / handoffs describing which commands or checks you ran
+
+## Development Workflow
+
+1. **Before starting**: Run `pnpm run dev` to start the local dev server
+2. **During development**: Use `pnpm run format` to format code, `pnpm run astro check` for type checking
+3. **Before committing**: Run `pnpm run build` to verify production build succeeds
+4. **For Cloudflare-specific features**: Use `pnpm run preview` to test edge runtime behavior
+
+## Environment Variables
+
+- Redis credentials: Provided via Cloudflare environment variables
+- Session secrets: Set in Cloudflare Pages settings
+- Development vs production: Redis keys are prefixed accordingly
+- Never commit `.env` files or secrets to the repository
