@@ -19,14 +19,4 @@ const blog = defineCollection({
 	schema: basePostSchema,
 });
 
-const translations = defineCollection({
-	// Load Markdown and MDX files in the `src/content/translations/` directory.
-	loader: glob({ base: './src/content/translations', pattern: '**/*.{md,mdx}' }),
-	// Type-check frontmatter using a schema
-	schema: basePostSchema.omit({ tags: true }).extend({
-		// Source URL for the original article
-		source: z.string().url(),
-	}),
-});
-
-export const collections = { blog, translations };
+export const collections = { blog };

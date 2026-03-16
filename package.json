@@ -8,8 +8,7 @@
     "build": "astro build",
     "preview": "pnpm run build && wrangler dev",
     "astro": "astro",
-    "format": "prettier -w . --cache",
-    "download-images": "node scripts/download-images.mjs"
+    "format": "prettier -w . --cache"
   },
   "dependencies": {
     "@astrojs/cloudflare": "12.6.12",

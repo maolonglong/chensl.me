@@ -21,9 +21,7 @@ export function normalizeTags(tags: string[] | undefined): string[] {
 	return [...new Set(tags.map((tag) => normalizeTag(tag)).filter((tag) => tag.length > 0))].sort();
 }
 
-async function getPublishedEntries<T extends 'blog' | 'translations'>(
-	collection: T
-): Promise<CollectionEntry<T>[]> {
+async function getPublishedEntries<T extends 'blog'>(collection: T): Promise<CollectionEntry<T>[]> {
 	return (await getCollection(collection))
 		.filter((entry) => !entry.data.draft)
 		.sort((b, a) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
@@ -31,10 +29,6 @@ async function getPublishedEntries<T extends 'blog' | 'translations'>(
 
 export async function getAllPosts() {
 	return getPublishedEntries('blog');
-}
-
-export async function getAllTranslations() {
-	return getPublishedEntries('translations');
 }
 
 function extractTags<T extends { data: { tags?: string[] } }>(entries: T[]): string[] {

@@ -97,9 +97,7 @@ function loadEmoji(code: string) {
  * @param OgImageComponent React component to render the OG image
  * @returns Object with GET handler and getStaticPaths function
  */
-export function createOgImageHandlers<
-	T extends CollectionEntry<'blog'> | CollectionEntry<'translations'>,
->(
+export function createOgImageHandlers<T extends CollectionEntry<'blog'>>(
 	getEntries: () => Promise<T[]>,
 	OgImageComponent: (props: { title: string; description: string; logo: string }) => ReactNode
 ) {

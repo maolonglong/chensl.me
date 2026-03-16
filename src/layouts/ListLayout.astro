@@ -13,21 +13,21 @@ interface Props {
 	 */
 	pageTitle: string;
 	/**
-	 * Posts or translations to display
+	 * Posts to display
 	 */
-	posts: CollectionEntry<'blog'>[] | CollectionEntry<'translations'>[];
+	posts: CollectionEntry<'blog'>[];
 	/**
 	 * All tags to display at the bottom
 	 */
 	allTags?: string[];
 	/**
-	 * Base path for post links (e.g., '/blog' or '/translations')
+	 * Base path for post links
 	 */
 	basePath?: string;
 	/**
 	 * Pagination object
 	 */
-	page?: Page<CollectionEntry<'blog'> | CollectionEntry<'translations'>>;
+	page?: Page<CollectionEntry<'blog'>>;
 }
 
 const { pageTitle, posts, allTags, basePath = '/blog', page } = Astro.props;
