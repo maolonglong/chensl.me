@@ -3,9 +3,9 @@ export default function PostOgImage({
 	description,
 	logo,
 }: {
-	title: string;
-	description: string;
-	logo: string;
+	title: string
+	description: string
+	logo: string
 }) {
 	return (
 		<div
@@ -19,7 +19,12 @@ export default function PostOgImage({
 			}}
 		>
 			<div style={{ display: 'flex' }}>
-				<img src={logo} width={96} height={96} style={{ borderRadius: '24px' }} />
+				<img
+					src={logo}
+					width={96}
+					height={96}
+					style={{ borderRadius: '24px' }}
+				/>
 			</div>
 			<div
 				style={{
@@ -66,5 +71,5 @@ export default function PostOgImage({
 				chensl.me
 			</div>
 		</div>
-	);
+	)
 }

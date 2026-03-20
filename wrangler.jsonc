@@ -1,23 +1,19 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "blog",
-  "main": "./dist/_worker.js/index.js",
-  "compatibility_date": "2025-08-15",
-  "compatibility_flags": ["nodejs_compat"],
-  "placement": {
-    "mode": "smart",
-  },
-  "assets": {
-    "binding": "ASSETS",
-    "directory": "./dist",
-  },
-  "observability": {
-    "enabled": true,
-  },
-  "kv_namespaces": [
-    {
-      "binding": "SESSION",
-      "id": "28d9d59a96bd45338d23149ed74400ff",
-    },
-  ],
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "blog",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"compatibility_date": "2025-08-15",
+	"compatibility_flags": ["nodejs_compat"],
+	"placement": {
+		"mode": "smart",
+	},
+	"observability": {
+		"enabled": true,
+	},
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "28d9d59a96bd45338d23149ed74400ff",
+		},
+	],
 }

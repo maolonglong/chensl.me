@@ -1,38 +1,38 @@
-import { useEffect, useState } from 'react';
-import { actions } from 'astro:actions';
-import { clsx } from 'clsx';
+import { useEffect, useState } from 'react'
+import { actions } from 'astro:actions'
+import { clsx } from 'clsx'
 
 export default function Upvote({ postId }: { postId: string }) {
-	const [count, setCount] = useState(0);
-	const [upvoted, setUpvoted] = useState(false);
+	const [count, setCount] = useState(0)
+	const [upvoted, setUpvoted] = useState(false)
 
 	useEffect(() => {
-		(async () => {
-			const { data, error } = await actions.getPostUpvotes({ postId });
+		;(async () => {
+			const { data, error } = await actions.getPostUpvotes({ postId })
 			if (error) {
-				console.error('Failed to get post upvotes:', error);
-				return;
+				console.error('Failed to get post upvotes:', error)
+				return
 			}
 			if (!data.success) {
-				console.error('Get post upvotes failed:', data);
-				return;
+				console.error('Get post upvotes failed:', data)
+				return
 			}
-			setCount(data.count);
-			setUpvoted(data.upvoted);
-		})();
-	}, [postId]);
+			setCount(data.count)
+			setUpvoted(data.upvoted)
+		})()
+	}, [postId])
 
 	const handleClick = async () => {
 		if (upvoted) {
-			return;
+			return
 		}
-		setUpvoted(true);
-		setCount((prev) => prev + 1);
-		const { error } = await actions.upvotePost({ postId });
+		setUpvoted(true)
+		setCount((prev) => prev + 1)
+		const { error } = await actions.upvotePost({ postId })
 		if (error) {
-			console.error('Failed to upvote post:', error);
+			console.error('Failed to upvote post:', error)
 		}
-	};
+	}
 
 	return (
 		<div style={{ display: 'inline' }}>
@@ -59,5 +59,5 @@ export default function Upvote({ postId }: { postId: string }) {
 				<small className="upvote-count">{count}</small>
 			</button>
 		</div>
-	);
+	)
 }

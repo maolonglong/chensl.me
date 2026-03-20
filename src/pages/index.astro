@@ -1,26 +1,26 @@
 ---
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
-import Twemoji from '@/components/Twemoji.astro';
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getAllPosts } from '@/utils';
-import { getPopularPosts } from '@/utils/ranking';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts'
+import Twemoji from '@/components/Twemoji.astro'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { getAllPosts } from '@/utils'
+import { getPopularPosts } from '@/utils/ranking'
 
-export const prerender = false;
+export const prerender = false
 
-const posts = await getAllPosts();
-const latestPosts = posts.slice(0, 5);
+const { env } = await import('cloudflare:workers')
+const posts = await getAllPosts()
+const latestPosts = posts.slice(0, 5)
 
-const popularPosts = await getPopularPosts(Astro.locals.runtime?.env, posts);
+const popularPosts = await getPopularPosts(env, posts)
 
-Astro.response.headers.set('Cache-Control', 'public, max-age=3600');
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600')
 ---
 
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
 	<h1><Twemoji name="waving-hand" /> Hi! 我是陈劭珑</h1>
 	<p>
-		目前在 <Twemoji name="globe-showing-asia-australia" /> 工作的软件工程师, 为了 <Twemoji
-			name="house"
-		/>
+		目前在 <Twemoji name="globe-showing-asia-australia" /> 工作的软件工程师, 为了
+		<Twemoji name="house" />
 		<Twemoji name="automobile" />
 		<Twemoji name="money-bag" /> 而写代码
 	</p>
@@ -35,8 +35,10 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=3600');
 			>
 		</li>
 		<li>
-			Twitter: <a href="https://x.com/chensl_" rel="nofollow noopener noreferrer" target="_blank"
-				>x.com/chensl_</a
+			Twitter: <a
+				href="https://x.com/chensl_"
+				rel="nofollow noopener noreferrer"
+				target="_blank">x.com/chensl_</a
 			>
 		</li>
 	</ul>

@@ -1,37 +1,37 @@
 ---
-import type { MarkdownHeading } from 'astro';
+import type { MarkdownHeading } from 'astro'
 
-import FormattedDate from '@/components/FormattedDate.astro';
-import TocItem from '@/components/TocItem.astro';
-import Upvote from '@/components/Upvote';
-import { buildHierarchy, normalizeTags } from '@/utils';
+import FormattedDate from '@/components/FormattedDate.astro'
+import TocItem from '@/components/TocItem.astro'
+import Upvote from '@/components/Upvote'
+import { buildHierarchy, normalizeTags } from '@/utils'
 
-import BaseLayout from './BaseLayout.astro';
+import BaseLayout from './BaseLayout.astro'
 
 type BaseProps = {
-	postId: string;
-	title: string;
-	description: string;
-	pubDate: Date;
-	tags?: string[];
-	toc?: boolean;
-	headings: MarkdownHeading[];
-};
+	postId: string
+	title: string
+	description: string
+	pubDate: Date
+	tags?: string[]
+	toc?: boolean
+	headings: MarkdownHeading[]
+}
 
 type Props = BaseProps & {
 	/**
 	 * Whether to show the upvote button (default: true for blog posts)
 	 */
-	showUpvote?: boolean;
+	showUpvote?: boolean
 	/**
 	 * Optional content to display before the main content
 	 */
-	beforeContent?: any;
+	beforeContent?: any
 	/**
 	 * Base path for OG image (e.g., '/blog')
 	 */
-	ogBasePath?: string;
-};
+	ogBasePath?: string
+}
 
 const {
 	postId,
@@ -44,13 +44,17 @@ const {
 	showUpvote = true,
 	beforeContent,
 	ogBasePath = '/blog',
-} = Astro.props;
+} = Astro.props
 
-const tocHeadings = buildHierarchy(headings);
-const normalizedTags = normalizeTags(tags);
+const tocHeadings = buildHierarchy(headings)
+const normalizedTags = normalizeTags(tags)
 ---
 
-<BaseLayout title={title} description={description} ogImage={`${ogBasePath}/${postId}/og.png`}>
+<BaseLayout
+	title={title}
+	description={description}
+	ogImage={`${ogBasePath}/${postId}/og.png`}
+>
 	<h1>{title}</h1>
 	<p>
 		<i>

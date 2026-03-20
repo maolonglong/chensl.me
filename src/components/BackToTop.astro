@@ -100,51 +100,52 @@
 </style>
 
 <script>
-	const backToTop = document.getElementById('back-to-top');
+	const backToTop = document.getElementById('back-to-top')
 
 	function scrollToTop() {
 		const prefersReducedMotion =
-			window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		const behavior = prefersReducedMotion ? 'auto' : 'smooth';
+			window.matchMedia &&
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		const behavior = prefersReducedMotion ? 'auto' : 'smooth'
 
 		window.scrollTo({
 			top: 0,
 			left: 0,
 			behavior,
-		});
+		})
 	}
 
 	function updateVisibility() {
-		if (!backToTop) return;
-		const threshold = 300;
+		if (!backToTop) return
+		const threshold = 300
 		if (window.scrollY > threshold) {
-			backToTop.classList.add('visible');
-			backToTop.setAttribute('tabindex', '0');
+			backToTop.classList.add('visible')
+			backToTop.setAttribute('tabindex', '0')
 		} else {
-			backToTop.classList.remove('visible');
-			backToTop.setAttribute('tabindex', '-1');
+			backToTop.classList.remove('visible')
+			backToTop.setAttribute('tabindex', '-1')
 		}
 	}
 
 	if (backToTop) {
-		backToTop.addEventListener('click', scrollToTop);
+		backToTop.addEventListener('click', scrollToTop)
 
-		let ticking = false;
+		let ticking = false
 		window.addEventListener(
 			'scroll',
 			() => {
 				if (!ticking) {
 					window.requestAnimationFrame(() => {
-						updateVisibility();
-						ticking = false;
-					});
-					ticking = true;
+						updateVisibility()
+						ticking = false
+					})
+					ticking = true
 				}
 			},
-			{ passive: true }
-		);
+			{ passive: true },
+		)
 
 		// Initial check
-		updateVisibility();
+		updateVisibility()
 	}
 </script>

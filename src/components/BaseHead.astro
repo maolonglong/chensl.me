@@ -1,25 +1,25 @@
 ---
 // Import the global.css file here so that it is included on
 // all pages through the use of the <BaseHead /> component.
-import '@/styles/global.css';
-import '@/styles/alert.css';
+import '@/styles/global.css'
+import '@/styles/alert.css'
 
-import { SITE_TITLE } from '@/consts';
+import { SITE_TITLE } from '@/consts'
 
 // import FallbackImage from '@/assets/blog-placeholder-1.jpg';
 // import type { ImageMetadata } from 'astro';
 
 interface Props {
-	title: string;
-	description: string;
-	ogImage?: string;
+	title: string
+	description: string
+	ogImage?: string
 }
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 
 // const { title, description, image = FallbackImage } = Astro.props;
-const fallbackOgImage = '/og.png';
-const { title, description, ogImage = fallbackOgImage } = Astro.props;
+const fallbackOgImage = '/og.png'
+const { title, description, ogImage = fallbackOgImage } = Astro.props
 ---
 
 {/* Global Metadata */}
@@ -60,29 +60,39 @@ const { title, description, ogImage = fallbackOgImage } = Astro.props;
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(ogImage, Astro.url)} />
 
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#212830" media="(prefers-color-scheme: dark)" />
+<meta
+	name="theme-color"
+	content="#ffffff"
+	media="(prefers-color-scheme: light)"
+/>
+<meta
+	name="theme-color"
+	content="#212830"
+	media="(prefers-color-scheme: dark)"
+/>
 
 <script>
-	import mediumZoom from 'medium-zoom';
+	import mediumZoom from 'medium-zoom'
 
 	function getThemeColor() {
-		return getComputedStyle(document.documentElement).getPropertyValue('--background-color').trim();
+		return getComputedStyle(document.documentElement)
+			.getPropertyValue('--background-color')
+			.trim()
 	}
 
 	function init() {
 		const zoom = mediumZoom('main img:not([data-zoom="false"])', {
 			background: getThemeColor(),
-		});
+		})
 
-		const media = window.matchMedia('(prefers-color-scheme: dark)');
+		const media = window.matchMedia('(prefers-color-scheme: dark)')
 
 		const handleSchemeChange = () => {
-			zoom.update({ background: getThemeColor() });
-		};
+			zoom.update({ background: getThemeColor() })
+		}
 
-		media.addEventListener('change', handleSchemeChange);
+		media.addEventListener('change', handleSchemeChange)
 	}
 
-	document.addEventListener('DOMContentLoaded', init);
+	document.addEventListener('DOMContentLoaded', init)
 </script>

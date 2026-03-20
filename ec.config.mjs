@@ -1,6 +1,6 @@
 // @ts-check
-import { defineEcConfig } from 'astro-expressive-code';
-import { transformerColorizedBrackets } from '@shikijs/colorized-brackets';
+import { defineEcConfig } from 'astro-expressive-code'
+import { transformerColorizedBrackets } from '@shikijs/colorized-brackets'
 
 export default defineEcConfig({
 	themes: ['github-dark-dimmed', 'github-light-default'],
@@ -18,4 +18,4 @@ export default defineEcConfig({
 	shiki: {
 		transformers: [transformerColorizedBrackets()],
 	},
-});
+})

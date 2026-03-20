@@ -1,14 +1,14 @@
 ---
-import type { CollectionEntry } from 'astro:content';
+import type { CollectionEntry } from 'astro:content'
 
-import FormattedDate from './FormattedDate.astro';
+import FormattedDate from './FormattedDate.astro'
 
 interface Props {
-	posts: CollectionEntry<'blog'>[];
-	basePath?: string;
+	posts: CollectionEntry<'blog'>[]
+	basePath?: string
 }
 
-const { posts, basePath = '/blog' } = Astro.props;
+const { posts, basePath = '/blog' } = Astro.props
 ---
 
 <ul class="blog-posts">

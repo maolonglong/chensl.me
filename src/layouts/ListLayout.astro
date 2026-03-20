@@ -1,39 +1,42 @@
 ---
-import type { Page } from 'astro';
-import type { CollectionEntry } from 'astro:content';
+import type { Page } from 'astro'
+import type { CollectionEntry } from 'astro:content'
 
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
-import PostList from '@/components/PostList.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts'
+import PostList from '@/components/PostList.astro'
 
-import BaseLayout from './BaseLayout.astro';
+import BaseLayout from './BaseLayout.astro'
 
 interface Props {
 	/**
 	 * Page title (will be appended with " | SITE_TITLE")
 	 */
-	pageTitle: string;
+	pageTitle: string
 	/**
 	 * Posts to display
 	 */
-	posts: CollectionEntry<'blog'>[];
+	posts: CollectionEntry<'blog'>[]
 	/**
 	 * All tags to display at the bottom
 	 */
-	allTags?: string[];
+	allTags?: string[]
 	/**
 	 * Base path for post links
 	 */
-	basePath?: string;
+	basePath?: string
 	/**
 	 * Pagination object
 	 */
-	page?: Page<CollectionEntry<'blog'>>;
+	page?: Page<CollectionEntry<'blog'>>
 }
 
-const { pageTitle, posts, allTags, basePath = '/blog', page } = Astro.props;
+const { pageTitle, posts, allTags, basePath = '/blog', page } = Astro.props
 ---
 
-<BaseLayout title={`${pageTitle} | ${SITE_TITLE}`} description={SITE_DESCRIPTION}>
+<BaseLayout
+	title={`${pageTitle} | ${SITE_TITLE}`}
+	description={SITE_DESCRIPTION}
+>
 	<PostList posts={posts} basePath={basePath} />
 	{
 		page && (page.url.prev || page.url.next) && (
@@ -49,7 +52,10 @@ const { pageTitle, posts, allTags, basePath = '/blog', page } = Astro.props;
 			<small>
 				<div class="tags">
 					{allTags.map((tag) => (
-						<a rel="nofollow" href={`/tags/${encodeURIComponent(tag)}/`}>{`#${tag}`}</a>
+						<a
+							rel="nofollow"
+							href={`/tags/${encodeURIComponent(tag)}/`}
+						>{`#${tag}`}</a>
 					))}
 				</div>
 			</small>

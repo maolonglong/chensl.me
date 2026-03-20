@@ -1,15 +1,15 @@
 ---
-import type { MarkdownHeading } from 'astro';
-import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro'
+import type { CollectionEntry } from 'astro:content'
 
-import PostLayout from './PostLayout.astro';
+import PostLayout from './PostLayout.astro'
 
 type Props = CollectionEntry<'blog'>['data'] & {
-	postId: string;
-	headings: MarkdownHeading[];
-};
+	postId: string
+	headings: MarkdownHeading[]
+}
 
-const props = Astro.props;
+const props = Astro.props
 ---
 
 <PostLayout {...props} showUpvote={true}>

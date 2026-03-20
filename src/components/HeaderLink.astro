@@ -1,16 +1,20 @@
 ---
-import type { HTMLAttributes } from 'astro/types';
+import type { HTMLAttributes } from 'astro/types'
 
-type Props = HTMLAttributes<'a'>;
+type Props = HTMLAttributes<'a'>
 
-const { href, class: className, ...props } = Astro.props;
+const { href, class: className, ...props } = Astro.props
 
-const currentPath = Astro.url.pathname;
+const currentPath = Astro.url.pathname
 const isActive =
-	href === '/' ? currentPath === '/' : typeof href === 'string' && currentPath.startsWith(href);
+	href === '/'
+		? currentPath === '/'
+		: typeof href === 'string' && currentPath.startsWith(href)
 ---
 
-<a href={href} class:list={[className, { active: isActive }]} {...props}><slot /></a>
+<a href={href} class:list={[className, { active: isActive }]} {...props}
+	><slot /></a
+>
 
 <style>
 	a.active {

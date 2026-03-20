@@ -31,7 +31,8 @@
 }
 
 .markdown-alert {
-	border-left: 0.25em solid var(--borderColor-default, var(--color-border-default));
+	border-left: 0.25em solid
+		var(--borderColor-default, var(--color-border-default));
 	color: inherit;
 	margin: 16px 0;
 	padding: 0.5rem 1em;
@@ -52,35 +53,50 @@
 	fill: currentColor;
 }
 .markdown-alert.markdown-alert-note {
-	border-left-color: var(--borderColor-accent-emphasis, var(--color-accent-emphasis));
+	border-left-color: var(
+		--borderColor-accent-emphasis,
+		var(--color-accent-emphasis)
+	);
 }
 .markdown-alert.markdown-alert-note .markdown-alert-title {
 	color: var(--color-accent-fg);
 	color: var(--fgColor-accent, var(--color-accent-fg));
 }
 .markdown-alert.markdown-alert-tip {
-	border-left-color: var(--borderColor-success-emphasis, var(--color-success-emphasis));
+	border-left-color: var(
+		--borderColor-success-emphasis,
+		var(--color-success-emphasis)
+	);
 }
 .markdown-alert.markdown-alert-tip .markdown-alert-title {
 	color: var(--color-success-fg);
 	color: var(--fgColor-success, var(--color-success-fg));
 }
 .markdown-alert.markdown-alert-important {
-	border-left-color: var(--borderColor-done-emphasis, var(--color-done-emphasis));
+	border-left-color: var(
+		--borderColor-done-emphasis,
+		var(--color-done-emphasis)
+	);
 }
 .markdown-alert.markdown-alert-important .markdown-alert-title {
 	color: var(--color-done-fg);
 	color: var(--fgColor-done, var(--color-done-fg));
 }
 .markdown-alert.markdown-alert-warning {
-	border-left-color: var(--borderColor-attention-emphasis, var(--color-attention-emphasis));
+	border-left-color: var(
+		--borderColor-attention-emphasis,
+		var(--color-attention-emphasis)
+	);
 }
 .markdown-alert.markdown-alert-warning .markdown-alert-title {
 	color: var(--color-attention-fg);
 	color: var(--fgColor-attention, var(--color-attention-fg));
 }
 .markdown-alert.markdown-alert-caution {
-	border-left-color: var(--borderColor-danger-emphasis, var(--color-danger-emphasis));
+	border-left-color: var(
+		--borderColor-danger-emphasis,
+		var(--color-danger-emphasis)
+	);
 }
 .markdown-alert.markdown-alert-caution .markdown-alert-title {
 	color: var(--color-danger-fg);

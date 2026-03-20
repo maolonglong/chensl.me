@@ -23,7 +23,6 @@ Astro 5 SSR blog (chensl.me) deployed to Cloudflare Workers with KV (session) an
 
 ## Code Style
 
-- **Formatter**: Prettier (printWidth 100, tabs, single quotes, trailing commas `es5`)
-- **Imports**: auto-sorted by `@ianvs/prettier-plugin-sort-imports` (react → astro → third-party → @/ aliases → relative)
-- **Indent**: tabs for code, spaces for JSON/MD/YAML/dotfiles
+- **Formatter**: Prettier (no semi, single quotes, trailing commas `all`, 2-space indent)
+- **Plugins**: `@prettier/plugin-oxc` (OXC-based JS/TS parser), `prettier-plugin-astro`
 - **TypeScript**: strict mode with `strictNullChecks`; use `@/*` path aliases over deep relative imports

@@ -30,5 +30,5 @@ export default function HomeOgImage() {
 				目前在 🌏 工作的软件工程师, 为了 🏡 🚗 💰 而写代码，这是我的个人博客
 			</p>
 		</div>
-	);
+	)
 }

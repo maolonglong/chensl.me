@@ -1,34 +1,38 @@
 ---
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
-import BaseHead from '@/components/BaseHead.astro';
-import Footer from '@/components/Footer.astro';
-import Header from '@/components/Header.astro';
-import PostList from '@/components/PostList.astro';
-import { getAllPosts, getAllTags, normalizeTag } from '@/utils';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts'
+import BaseHead from '@/components/BaseHead.astro'
+import Footer from '@/components/Footer.astro'
+import Header from '@/components/Header.astro'
+import PostList from '@/components/PostList.astro'
+import { getAllPosts, getAllTags, normalizeTag } from '@/utils'
 
 export async function getStaticPaths() {
-	const posts = await getAllPosts();
-	const allTags = await getAllTags(posts);
+	const posts = await getAllPosts()
+	const allTags = await getAllTags(posts)
 
 	return allTags.map((tag) => {
 		const filteredPosts = posts.filter(
-			(post) => post.data.tags && post.data.tags.some((t) => normalizeTag(t) === tag)
-		);
+			(post) =>
+				post.data.tags && post.data.tags.some((t) => normalizeTag(t) === tag),
+		)
 		return {
 			params: { tag },
 			props: { posts: filteredPosts },
-		};
-	});
+		}
+	})
 }
 
-const { tag } = Astro.params;
-const { posts } = Astro.props;
+const { tag } = Astro.params
+const { posts } = Astro.props
 ---
 
 <!doctype html>
 <html lang="zh-CN">
 	<head>
-		<BaseHead title={`#${tag} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		<BaseHead
+			title={`#${tag} | ${SITE_TITLE}`}
+			description={SITE_DESCRIPTION}
+		/>
 	</head>
 	<body>
 		<Header />

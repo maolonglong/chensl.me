@@ -1,12 +1,12 @@
 :root {
 	--width: 720px;
 	--font-sans:
-		'PingFang SC', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-		'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-		'Segoe UI Symbol', 'Noto Color Emoji';
+		'PingFang SC', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+		'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+		'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 	--font-mono:
-		'JetBrains Maple Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-		'Liberation Mono', 'Courier New', monospace;
+		'JetBrains Maple Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular,
+		Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 	--font-scale: 1em;
 	--background-color: #fff;
 	--background-color-alt: #f6f8fa;
