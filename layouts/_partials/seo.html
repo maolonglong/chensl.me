@@ -1,7 +1,7 @@
 {{- $title := .Title | default site.Title -}}
 {{- $description := .Description | default (.Summary | default site.Params.description) -}}
 {{- $url := .Permalink -}}
-{{- $image := "" -}}
+{{- $image := "/og-image.png" -}}
 {{- with .Params.image }}{{ $image = . }}{{ end -}}
 
 <!-- Primary Meta Tags -->
@@ -14,14 +14,14 @@
 <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
 <meta property="og:url" content="{{ $url }}">
 <meta property="og:description" content="{{ $description }}">
-{{ with $image }}<meta property="og:image" content="{{ . | absURL }}">{{ end }}
+<meta property="og:image" content="{{ $image | absURL }}">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary">
 <meta name="twitter:url" content="{{ $url }}">
 <meta name="twitter:title" content="{{ $title }}">
 <meta name="twitter:description" content="{{ $description }}">
-{{ with $image }}<meta name="twitter:image" content="{{ . | absURL }}">{{ end }}
+<meta name="twitter:image" content="{{ $image | absURL }}">
 
 <!-- Structured Data -->
 {{- $schema := dict
@@ -32,7 +32,7 @@
   "url" $url
   "description" ($description | plainify | truncate 200)
 -}}
-{{- with $image }}{{ $schema = merge $schema (dict "image" (. | absURL)) }}{{ end -}}
+{{- $schema = merge $schema (dict "image" ($image | absURL)) -}}
 <script type="application/ld+json">
   {{ $schema | jsonify | safeJS }}
 </script>
