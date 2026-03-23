@@ -18,5 +18,8 @@
     }
   ],
   "preview_urls": true,
-  "workers_dev": true
+  "workers_dev": true,
+  "build": {
+    "command": "npx hugo --minify --gc"
+  }
 }
