@@ -1,0 +1,38 @@
+{{- $title := .Title | default site.Title -}}
+{{- $description := .Description | default (.Summary | default site.Params.description) -}}
+{{- $url := .Permalink -}}
+{{- $image := "" -}}
+{{- with .Params.image }}{{ $image = . }}{{ end -}}
+
+<!-- Primary Meta Tags -->
+<meta name="title" content="{{ $title }}">
+<meta name="description" content="{{ $description }}">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:site_name" content="{{ site.Title }}">
+<meta property="og:title" content="{{ $title }}">
+<meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+<meta property="og:url" content="{{ $url }}">
+<meta property="og:description" content="{{ $description }}">
+{{ with $image }}<meta property="og:image" content="{{ . | absURL }}">{{ end }}
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:url" content="{{ $url }}">
+<meta name="twitter:title" content="{{ $title }}">
+<meta name="twitter:description" content="{{ $description }}">
+{{ with $image }}<meta name="twitter:image" content="{{ . | absURL }}">{{ end }}
+
+<!-- Structured Data -->
+{{- $schema := dict
+  "@context" "http://schema.org"
+  "@type" (cond .IsPage "Article" "WebSite")
+  "name" $title
+  "headline" $title
+  "url" $url
+  "description" ($description | plainify | truncate 200)
+-}}
+{{- with $image }}{{ $schema = merge $schema (dict "image" (. | absURL)) }}{{ end -}}
+<script type="application/ld+json">
+  {{ $schema | jsonify | safeJS }}
+</script>

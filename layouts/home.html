@@ -1,0 +1,13 @@
+{{ define "title" }}{{ site.Title }}{{ end }}
+
+{{ define "main" }}
+  {{ if .Content }}
+    {{ .Content }}
+  {{ else }}
+    {{ partial "post-list.html" (dict "pages" (where site.RegularPages "Section" "blog") "dateFormat" (site.Params.dateFormat | default "2006-01-02")) }}
+  {{ end }}
+
+  {{ if not (where site.RegularPages "Section" "blog") }}
+    <p>还没有文章</p>
+  {{ end }}
+{{ end }}

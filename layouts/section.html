@@ -1,0 +1,24 @@
+{{ define "title" }}{{ .Title }} | {{ site.Title }}{{ end }}
+
+{{ define "main" }}
+  {{ .Content }}
+
+  {{ $searchDomain := (urls.Parse site.BaseURL).Host }}
+  <form class="search-form" action="https://duckduckgo.com/" method="GET" role="search">
+    <input type="hidden" name="sites" value="{{ $searchDomain }}">
+    <label for="search-input" class="sr-only">搜索</label>
+    <input id="search-input" type="search" name="q" placeholder="搜索…">
+  </form>
+
+  {{ partial "post-list.html" (dict "pages" .RegularPages "dateFormat" (site.Params.dateFormat | default "2006-01-02")) }}
+
+  {{ with .Site.Taxonomies.tags }}
+    <small>
+      <div class="tags">
+        {{ range .Alphabetical }}
+          <a href="{{ .Page.Permalink }}">#{{ .Page.LinkTitle }}</a>
+        {{ end }}
+      </div>
+    </small>
+  {{ end }}
+{{ end }}

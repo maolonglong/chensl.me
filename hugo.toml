@@ -1,0 +1,50 @@
+baseURL = 'https://chensl.me/'
+title = '~chensl'
+locale = 'zh-CN'
+timeZone = 'Asia/Shanghai'
+hasCJKLanguage = true
+enableEmoji = true
+enableRobotsTXT = true
+
+# https://github.com/gohugoio/hugo/issues/12152
+capitalizeListTitles = false
+
+[taxonomies]
+  tag = "tags"
+
+[pagination]
+  pagerSize = 22
+
+[markup]
+  [markup.highlight]
+    noClasses = false
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[outputs]
+  home = ['html', 'rss']
+  section = ['html', 'rss']
+  taxonomy = ['html']
+  term = ['html', 'rss']
+
+[services]
+  [services.rss]
+    limit = 20
+
+[params]
+  description = '这是我的个人网站'
+  dateFormat = '2006-01-02'
+  [params.author]
+    email = 'shaolong.chen@outlook.it'
+    name = 'Shaolong Chen'
+
+[[menus.main]]
+  name = '首页'
+  pageRef = '/'
+  weight = 10
+
+[[menus.main]]
+  name = '博客'
+  pageRef = '/blog'
+  weight = 20

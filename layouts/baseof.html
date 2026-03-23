@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="{{ site.Language.Locale | default "zh-CN" }}">
+<!-- Built with Hugo, inspired by Bear Blog -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#01242e" media="(prefers-color-scheme: dark)">
+  <title>{{ block "title" . }}{{ site.Title }}{{ end }}</title>
+  {{ block "canonical" . }}
+    <link rel="canonical" href="{{ .Permalink }}">
+  {{ end }}
+  {{ partial "seo.html" . }}
+  {{ block "head" . }}{{ end }}
+  {{ partial "favicons.html" . }}
+  {{- with resources.Get "css/style.css" }}
+    <style>{{ .Content | safeCSS }}</style>
+  {{- end }}
+  {{- with resources.Get "css/syntax.css" }}
+    <style>{{ .Content | safeCSS }}</style>
+  {{- end }}
+  {{ with .OutputFormats.Get "rss" }}
+    <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
+  {{ end }}
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header>
+    <a class="title" href="{{ "/" | relURL }}">
+      <h1>{{ site.Title }}</h1>
+    </a>
+    {{ block "nav" . }}
+    <nav aria-label="主导航">
+      {{ range site.Menus.main }}
+        <a href="{{ .URL }}">{{ .Name }}</a>
+      {{ end }}
+      {{ with site.Home.OutputFormats.Get "rss" }}
+        <a href="{{ .RelPermalink }}">RSS</a>
+      {{ end }}
+    </nav>
+    {{ end }}
+  </header>
+  <main id="main">
+    {{ block "main" . }}{{ end }}
+  </main>
+  <footer>
+    {{ block "footer" . }}
+      <span>
+        基于 <a href="https://gohugo.io">Hugo</a> 构建
+        /
+        灵感来自 <a href="https://bearblog.dev">Bear Blog</a>
+      </span>
+    {{ end }}
+  </footer>
+</body>
+</html>

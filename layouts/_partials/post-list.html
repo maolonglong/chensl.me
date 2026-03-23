@@ -1,0 +1,19 @@
+{{- $pages := .pages -}}
+{{- $dateFormat := .dateFormat | default "02 Jan, 2006" -}}
+
+<ul class="blog-posts">
+  {{ range $pages }}
+    <li>
+      <span>
+        <i>
+          <time datetime="{{ .Date.Format "2006-01-02T15:04Z" }}">
+            {{ .Date.Format $dateFormat }}
+          </time>
+        </i>
+      </span>
+      <a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
+    </li>
+  {{ else }}
+    <li>还没有文章</li>
+  {{ end }}
+</ul>

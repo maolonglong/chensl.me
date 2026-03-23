@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="{{ site.Language.Locale | default "zh-CN" }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#01242e" media="(prefers-color-scheme: dark)">
+  <title>404</title>
+  {{ partial "favicons.html" . }}
+  {{- with resources.Get "css/style.css" }}
+    <style>{{ .Content | safeCSS }}</style>
+  {{- end }}
+  {{- with resources.Get "css/syntax.css" }}
+    <style>{{ .Content | safeCSS }}</style>
+  {{- end }}
+</head>
+<body>
+  <header>
+    <a class="title" href="{{ "/" | relURL }}">
+      <h1>{{ site.Title }}</h1>
+    </a>
+  </header>
+  <main id="main">
+    <div class="not-found">
+      <h1>404</h1>
+      <h2>ʕノ•ᴥ•ʔノ ︵ ┻━┻</h2>
+      <p>
+        这个页面不存在。
+        <br>
+        <a href="/">返回首页</a>
+      </p>
+    </div>
+  </main>
+</body>
+</html>
