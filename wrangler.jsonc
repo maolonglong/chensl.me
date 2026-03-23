@@ -6,7 +6,8 @@
     "enabled": true
   },
   "assets": {
-    "directory": "public"
+    "directory": "public",
+    "not_found_handling": "404-page"
   },
   "compatibility_flags": [
     "nodejs_compat"
@@ -20,6 +21,6 @@
   "preview_urls": true,
   "workers_dev": true,
   "build": {
-    "command": "npx hugo --minify --gc"
+    "command": "chmod a+x build.sh && ./build.sh"
   }
 }
