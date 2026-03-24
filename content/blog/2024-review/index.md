@@ -1,6 +1,6 @@
 +++
 title = "2024 简单总结"
-pubDate = 2025-01-29T13:11:18+08:00
+date = 2025-01-29T13:11:18+08:00
 draft = false
 tags = []
 toc = true

@@ -1,6 +1,6 @@
 +++
 title = "实现一个最小的 JIT 编译器"
-pubDate = 2024-02-16T15:34:05+08:00
+date = 2024-02-16T15:34:05+08:00
 draft = false
 toc = true
 tags = ["jit", "zig", "brainfuck"]

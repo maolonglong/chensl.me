@@ -1,6 +1,6 @@
 +++
 title = "我的 Logseq 工作流"
-pubDate = 2024-03-02T14:47:13+08:00
+date = 2024-03-02T14:47:13+08:00
 draft = false
 tags = ["logseq", "clojure", "gtd", "para"]
 toc = true
