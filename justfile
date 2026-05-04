@@ -12,4 +12,4 @@ build:
   hugo --minify --gc
 
 clean:
-  rm -r public
+  rm -rf public resources/_gen

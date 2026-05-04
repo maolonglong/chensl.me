@@ -104,7 +104,7 @@ img {
 
 blockquote {
     border-left: 1px solid #999;
-    color: var(--code-color);
+    color: var(--blockquote-color);
     padding-left: 20px;
     font-style: italic;
 }
