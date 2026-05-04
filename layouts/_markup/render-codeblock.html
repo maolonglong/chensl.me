@@ -1,0 +1,10 @@
+{{- /*
+  Default code block render hook.
+
+  Mirrors Hugo's built-in behavior (Chroma highlighting + wrapping) but also
+  marks the page as containing a code block so baseof.html can conditionally
+  inline syntax.css.
+*/ -}}
+{{- .Page.Store.Set "hasCodeBlock" true -}}
+{{- $result := transform.HighlightCodeBlock . -}}
+{{- $result.Wrapped -}}

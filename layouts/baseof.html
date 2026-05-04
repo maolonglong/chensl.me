@@ -13,11 +13,17 @@
   {{ partial "seo.html" . }}
   {{ block "head" . }}{{ end }}
   {{ partial "favicons.html" . }}
+  {{- /* Force content rendering so code block render hooks populate .Store before we check it. */ -}}
+  {{- $_ := .Content -}}
   {{- with resources.Get "css/style.css" }}
-    <style>{{ .Content | safeCSS }}</style>
+    {{- $css := . | minify -}}
+    <style>{{ $css.Content | safeCSS }}</style>
   {{- end }}
-  {{- with resources.Get "css/syntax.css" }}
-    <style>{{ .Content | safeCSS }}</style>
+  {{- if .Store.Get "hasCodeBlock" }}
+    {{- with resources.Get "css/syntax.css" }}
+      {{- $css := . | minify -}}
+      <style>{{ $css.Content | safeCSS }}</style>
+    {{- end }}
   {{- end }}
   {{ with .OutputFormats.Get "rss" }}
     <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
