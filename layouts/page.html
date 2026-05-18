@@ -1,17 +1,15 @@
 {{ define "title" }}{{ .Title }} | {{ site.Title }}{{ end }}
 
 {{ define "main" }}
-  {{ if not .Params.is_page }}
-    <h1>{{ .Title }}</h1>
+  <h1>{{ .Title }}</h1>
 
-    <p>
-      <i>
-        <time datetime="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">
-          {{ .Date.Format (site.Params.dateFormat | default "02 Jan, 2006") }}
-        </time>
-      </i>
-    </p>
-  {{ end }}
+  <p>
+    <i>
+      <time datetime="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">
+        {{ .Date.Format (site.Params.dateFormat | default "02 Jan, 2006") }}
+      </time>
+    </i>
+  </p>
 
   {{ .Content }}
 

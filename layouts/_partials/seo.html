@@ -1,5 +1,8 @@
 {{- $title := .Title | default site.Title -}}
-{{- $description := .Description | default (.Summary | default site.Params.description) -}}
+{{- $description := .Description | default site.Params.description -}}
+{{- if and (not .Description) .Summary -}}
+  {{- $description = .Summary | plainify | truncate 160 -}}
+{{- end -}}
 {{- $url := .Permalink -}}
 {{- $image := "/og-image.png" -}}
 {{- with .Params.image }}{{ $image = . }}{{ end -}}

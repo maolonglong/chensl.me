@@ -8,7 +8,8 @@
   <title>404</title>
   {{ partial "favicons.html" . }}
   {{- with resources.Get "css/style.css" }}
-    <style>{{ .Content | safeCSS }}</style>
+    {{- $css := . | minify -}}
+    <style>{{ $css.Content | safeCSS }}</style>
   {{- end }}
 </head>
 <body>
