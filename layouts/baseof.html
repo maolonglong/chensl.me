@@ -25,7 +25,7 @@
       <style>{{ $css.Content | safeCSS }}</style>
     {{- end }}
   {{- end }}
-  {{ with .OutputFormats.Get "rss" }}
+  {{ with or (.OutputFormats.Get "rss") (site.Home.OutputFormats.Get "rss") }}
     <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
   {{ end }}
 </head>

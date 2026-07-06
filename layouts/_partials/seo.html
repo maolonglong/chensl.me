@@ -1,4 +1,4 @@
-{{- $title := .Title | default site.Title -}}
+{{- $title := cond .IsHome site.Title (.Title | default site.Title) -}}
 {{- $description := .Description | default site.Params.description -}}
 {{- if and (not .Description) .Summary -}}
   {{- $description = .Summary | plainify | truncate 160 -}}

@@ -12,9 +12,6 @@ capitalizeListTitles = false
 [taxonomies]
   tag = "tags"
 
-[pagination]
-  pagerSize = 22
-
 [markup]
   [markup.highlight]
     noClasses = false

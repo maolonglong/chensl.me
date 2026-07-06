@@ -18,13 +18,14 @@
   {{- end }}
 {{- end }}
 
-{{- $pctx := . }}
-{{- if .IsHome }}{{ $pctx = .Site }}{{ end }}
 {{- $pages := slice }}
-{{- if or $.IsHome $.IsSection }}
-{{- $pages = $pctx.RegularPages }}
+{{- if .IsHome }}
+{{- /* Keep the home feed scoped to blog posts, matching the home page listing. */ -}}
+{{- $pages = where site.RegularPages "Section" "blog" }}
+{{- else if .IsSection }}
+{{- $pages = .RegularPages }}
 {{- else }}
-{{- $pages = $pctx.Pages }}
+{{- $pages = .Pages }}
 {{- end }}
 {{- $limit := .Site.Config.Services.RSS.Limit }}
 {{- if ge $limit 1 }}
