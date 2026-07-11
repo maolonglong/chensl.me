@@ -4,8 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#01242e" media="(prefers-color-scheme: dark)">
+  {{ partial "theme.html" . }}
   <title>{{ block "title" . }}{{ site.Title }}{{ end }}</title>
   {{ block "canonical" . }}
     <link rel="canonical" href="{{ .Permalink }}">
@@ -43,6 +42,9 @@
       {{ with site.Home.OutputFormats.Get "rss" }}
         <a href="{{ .RelPermalink }}">RSS</a>
       {{ end }}
+      <button class="theme-toggle" type="button" data-theme-toggle>
+        主题：<span data-theme-label aria-live="polite">自动</span>
+      </button>
     </nav>
     {{ end }}
   </header>

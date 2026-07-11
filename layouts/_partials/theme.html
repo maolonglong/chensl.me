@@ -1,0 +1,106 @@
+<meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)" data-theme-color="light">
+<meta name="theme-color" content="#01242e" media="(prefers-color-scheme: dark)" data-theme-color="dark">
+<script>
+  (() => {
+    "use strict";
+
+    const storageKey = "color-theme";
+    const modes = ["auto", "light", "dark"];
+    const labels = {
+      auto: "自动",
+      light: "浅色",
+      dark: "深色"
+    };
+    const root = document.documentElement;
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const isMode = value => modes.includes(value);
+    const readMode = () => {
+      try {
+        const value = localStorage.getItem(storageKey);
+        return isMode(value) ? value : "auto";
+      } catch {
+        return "auto";
+      }
+    };
+
+    let mode = readMode();
+
+    const resolvedTheme = () => {
+      if (mode !== "auto") {
+        return mode;
+      }
+      return systemTheme.matches ? "dark" : "light";
+    };
+
+    const nextMode = () => modes[(modes.indexOf(mode) + 1) % modes.length];
+
+    const applyTheme = () => {
+      if (mode === "auto") {
+        delete root.dataset.theme;
+      } else {
+        root.dataset.theme = mode;
+      }
+
+      const theme = resolvedTheme();
+      document.querySelectorAll("meta[data-theme-color]").forEach(element => {
+        element.media = element.dataset.themeColor === theme ? "all" : "not all";
+      });
+
+      const toggle = document.querySelector("[data-theme-toggle]");
+      if (!toggle) {
+        return;
+      }
+
+      const label = toggle.querySelector("[data-theme-label]");
+      if (label) {
+        label.textContent = labels[mode];
+      }
+      toggle.dataset.themeMode = mode;
+      toggle.setAttribute("aria-label", `主题：${labels[mode]}。切换为${labels[nextMode()]}`);
+      root.dataset.themeReady = "";
+    };
+
+    const persistMode = () => {
+      try {
+        if (mode === "auto") {
+          localStorage.removeItem(storageKey);
+        } else {
+          localStorage.setItem(storageKey, mode);
+        }
+      } catch {
+        // The current page still switches theme when storage is unavailable.
+      }
+    };
+
+    applyTheme();
+
+    window.addEventListener("DOMContentLoaded", () => {
+      applyTheme();
+      const toggle = document.querySelector("[data-theme-toggle]");
+      if (!toggle) {
+        return;
+      }
+      toggle.addEventListener("click", () => {
+        mode = nextMode();
+        persistMode();
+        applyTheme();
+      });
+    }, { once: true });
+
+    systemTheme.addEventListener("change", () => {
+      if (mode === "auto") {
+        applyTheme();
+      }
+    });
+
+    window.addEventListener("storage", event => {
+      if (event.key !== storageKey && event.key !== null) {
+        return;
+      }
+      mode = isMode(event.newValue) ? event.newValue : "auto";
+      applyTheme();
+    });
+  })();
+</script>
+<noscript><style>.theme-toggle { display: none; }</style></noscript>
