@@ -165,11 +165,6 @@ ul.blog-posts li a:visited {
     color: var(--visited-color);
 }
 
-/* tags */
-.tags a {
-    margin-right: 4px;
-}
-
 /* search form */
 .search-form {
     margin: 1em 0;
@@ -208,6 +203,17 @@ ul.blog-posts li a:visited {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+}
+
+.search-submit:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 1px 6px;
+    margin-left: 4px;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
 }
 
 /* 404 page */

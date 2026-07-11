@@ -9,59 +9,112 @@
 
 main() {
 
-  HUGO_VERSION=0.158.0
-  HUGO_ARCHIVE="hugo_${HUGO_VERSION}_linux-amd64.tar.gz"
-  HUGO_URL="https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${HUGO_ARCHIVE}"
-  HUGO_INSTALL_DIR="${HOME}/.local/hugo"
-  TMP_ARCHIVE="$(mktemp "${TMPDIR:-/tmp}/hugo.XXXXXX.tar.gz")"
-  TMP_HUGO_DIR=""
-  BACKUP_HUGO_DIR=""
+  local hugo_version="0.164.0"
+  local hugo_archive=""
+  local hugo_checksum=""
+  local hugo_bin=""
+  local temp_dir=""
 
   export TZ=Asia/Shanghai
 
   cleanup() {
-    local exit_code=$?
-
-    rm -f "${TMP_ARCHIVE}"
-
-    if [ "${exit_code}" -ne 0 ] && [ -n "${BACKUP_HUGO_DIR}" ] && [ ! -d "${HUGO_INSTALL_DIR}" ] && [ -d "${BACKUP_HUGO_DIR}/hugo" ]; then
-      mv "${BACKUP_HUGO_DIR}/hugo" "${HUGO_INSTALL_DIR}"
-    fi
-
-    if [ -n "${TMP_HUGO_DIR}" ]; then
-      rm -rf "${TMP_HUGO_DIR}"
-    fi
-
-    if [ -n "${BACKUP_HUGO_DIR}" ]; then
-      rm -rf "${BACKUP_HUGO_DIR}"
+    local cleanup_dir="${temp_dir:-}"
+    if [ -n "${cleanup_dir}" ]; then
+      rm -rf -- "${cleanup_dir}"
     fi
   }
 
   trap cleanup EXIT
 
-  # Install Hugo
-  echo "Installing Hugo ${HUGO_VERSION}..."
-  mkdir -p "${HOME}/.local"
-  TMP_HUGO_DIR="$(mktemp -d "${HOME}/.local/hugo.new.XXXXXX")"
-  curl -fsSL -o "${TMP_ARCHIVE}" "${HUGO_URL}"
-  tar -C "${TMP_HUGO_DIR}" -xf "${TMP_ARCHIVE}"
+  local system_hugo=""
+  system_hugo="$(command -v hugo || true)"
+  local is_ci=false
+  case "${CI:-}" in
+    ""|0|false)
+      ;;
+    *)
+      is_ci=true
+      ;;
+  esac
 
-  if [ -d "${HUGO_INSTALL_DIR}" ]; then
-    BACKUP_HUGO_DIR="$(mktemp -d "${HOME}/.local/hugo.old.XXXXXX")"
-    mv "${HUGO_INSTALL_DIR}" "${BACKUP_HUGO_DIR}/hugo"
+  if [ "${is_ci}" = false ]; then
+    if [ -z "${system_hugo}" ]; then
+      echo "Hugo is required for local builds." >&2
+      exit 1
+    fi
+    hugo_bin="${system_hugo}"
+  else
+    case "$(uname -s)/$(uname -m)" in
+      Darwin/arm64|Darwin/x86_64)
+        hugo_archive="hugo_${hugo_version}_darwin-universal.pkg"
+        hugo_checksum="c994e2cc6946838bb76521039509a7ce71282827e7035e344b6c225a83a5d0d3"
+        ;;
+      Linux/aarch64|Linux/arm64)
+        hugo_archive="hugo_${hugo_version}_linux-arm64.tar.gz"
+        hugo_checksum="948ee5f0ed30175f31937d592d63a2712f0761a69f1cbe812f780eb918a08b8e"
+        ;;
+      Linux/x86_64|Linux/amd64)
+        hugo_archive="hugo_${hugo_version}_linux-amd64.tar.gz"
+        hugo_checksum="d9c8b17285ea4ec004d9f814273ea910f2051ce02c284993fd1f91ba455ae50d"
+        ;;
+      *)
+        echo "Unsupported platform: $(uname -s)/$(uname -m)" >&2
+        exit 1
+        ;;
+    esac
+
+    temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/hugo.XXXXXX")"
+    local archive_path="${temp_dir}/${hugo_archive}"
+    local hugo_url="https://github.com/gohugoio/hugo/releases/download/v${hugo_version}/${hugo_archive}"
+
+    echo "Downloading Hugo ${hugo_version} for $(uname -s)/$(uname -m)..."
+    curl -fsSL -o "${archive_path}" "${hugo_url}"
+
+    local actual_checksum=""
+    if command -v sha256sum >/dev/null 2>&1; then
+      actual_checksum="$(sha256sum "${archive_path}" | awk '{ print $1 }')"
+    elif command -v shasum >/dev/null 2>&1; then
+      actual_checksum="$(shasum -a 256 "${archive_path}" | awk '{ print $1 }')"
+    else
+      echo "A SHA-256 checksum tool is required." >&2
+      exit 1
+    fi
+
+    if [ "${actual_checksum}" != "${hugo_checksum}" ]; then
+      echo "Hugo archive checksum mismatch." >&2
+      exit 1
+    fi
+
+    case "${hugo_archive}" in
+      *.pkg)
+        local package_dir="${temp_dir}/package"
+        pkgutil --expand-full "${archive_path}" "${package_dir}"
+        hugo_bin="$(find "${package_dir}" -type f -name hugo -perm -111 -print -quit)"
+        ;;
+      *.tar.gz)
+        local extract_dir="${temp_dir}/hugo"
+        mkdir -p "${extract_dir}"
+        tar -C "${extract_dir}" -xf "${archive_path}"
+        hugo_bin="${extract_dir}/hugo"
+        ;;
+    esac
   fi
 
-  mv "${TMP_HUGO_DIR}" "${HUGO_INSTALL_DIR}"
-  TMP_HUGO_DIR=""
-  export PATH="${HUGO_INSTALL_DIR}:${PATH}"
+  if [ ! -x "${hugo_bin}" ]; then
+    echo "Unable to locate the Hugo executable." >&2
+    exit 1
+  fi
 
   # Verify installation
   echo "Verifying installation..."
-  echo Hugo: "$(hugo version)"
+  "${hugo_bin}" version
 
   # Build the site
   echo "Building the site..."
-  hugo build --gc --minify
+  "${hugo_bin}" build --gc --minify
+
+  cleanup
+  trap - EXIT
 
 }
 

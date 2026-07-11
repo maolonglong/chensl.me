@@ -4,7 +4,7 @@
   <h1>标签</h1>
   <div class="tags">
     {{ range sort .Pages "Title" }}
-      <a href="{{ .Permalink }}">#{{ .LinkTitle }} ({{ len .Pages }})</a>
+      <a href="{{ .RelPermalink }}">#{{ .LinkTitle }} ({{ len .Pages }})</a>
     {{ end }}
   </div>
 {{ end }}
