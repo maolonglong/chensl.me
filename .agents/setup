@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+export CI=true
+export MISE_VERSION="v2026.2.4"
+export MISE_TRUSTED_CONFIG_PATHS="${PWD}"
+
+mise_bin="${HOME}/.local/bin/mise"
+if [ ! -x "${mise_bin}" ]; then
+  curl -fsSL https://mise.run | MISE_VERSION="${MISE_VERSION}" sh
+fi
+
+"${mise_bin}" trust --yes mise.toml
+"${mise_bin}" install --locked
+if [ "$("${mise_bin}" exec -- corepack --version 2>/dev/null || true)" != "0.34.0" ]; then
+  "${mise_bin}" exec -- npm install --global corepack@0.34.0
+fi
+"${mise_bin}" exec -- corepack enable
+"${mise_bin}" reshim
+
+# Amp's non-interactive shells do not source .bashrc. Expose mise's dynamic
+# shims through ~/.local/bin, which is already on the orb PATH.
+shim_dir="${MISE_DATA_DIR:-${XDG_DATA_HOME:-${HOME}/.local/share}/mise}/shims"
+for command in node npm npx corepack pnpm hugo just shellcheck; do
+  if [ -e "${shim_dir}/${command}" ]; then
+    ln -sfn "${shim_dir}/${command}" "${HOME}/.local/bin/${command}"
+  fi
+done
+
+"${mise_bin}" exec -- pnpm install --frozen-lockfile
+"${mise_bin}" exec -- just build
