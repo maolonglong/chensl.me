@@ -2,15 +2,20 @@
 
 set -euo pipefail
 
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "${repo_root}"
+
 export CI=true
 export MISE_VERSION="v2026.2.4"
-export MISE_TRUSTED_CONFIG_PATHS="${PWD}"
+export MISE_TRUSTED_CONFIG_PATHS="${repo_root}"
 
 mise_bin="${HOME}/.local/bin/mise"
 if [ ! -x "${mise_bin}" ]; then
+  echo "Installing mise ${MISE_VERSION}..."
   curl -fsSL https://mise.run | MISE_VERSION="${MISE_VERSION}" sh
 fi
 
+echo "Installing pinned development tools..."
 "${mise_bin}" trust --yes mise.toml
 "${mise_bin}" install --locked
 if [ "$("${mise_bin}" exec -- corepack --version 2>/dev/null || true)" != "0.34.0" ]; then
@@ -28,5 +33,8 @@ for command in node npm npx corepack pnpm hugo just shellcheck; do
   fi
 done
 
+echo "Installing Node.js dependencies..."
 "${mise_bin}" exec -- pnpm install --frozen-lockfile
+
+echo "Building the site..."
 "${mise_bin}" exec -- just build
