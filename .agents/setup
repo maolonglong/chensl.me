@@ -6,11 +6,12 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${repo_root}"
 
 export CI=true
-export MISE_VERSION="v2026.2.4"
+export MISE_VERSION="v2026.7.12"
 export MISE_TRUSTED_CONFIG_PATHS="${repo_root}"
 
 mise_bin="${HOME}/.local/bin/mise"
-if [ ! -x "${mise_bin}" ]; then
+installed_mise_version="$("${mise_bin}" --version 2>/dev/null | awk '{ print $1 }' || true)"
+if [ "${installed_mise_version}" != "${MISE_VERSION#v}" ]; then
   echo "Installing mise ${MISE_VERSION}..."
   curl -fsSL https://mise.run | MISE_VERSION="${MISE_VERSION}" sh
 fi
