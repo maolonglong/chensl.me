@@ -130,9 +130,11 @@ a {
     text-decoration: none;
 }
 
-a:hover {
-    color: var(--link-hover-color);
-    text-decoration: underline;
+@media (hover: hover) {
+    a:hover {
+        color: var(--link-hover-color);
+        text-decoration: underline;
+    }
 }
 
 ::selection {
@@ -194,6 +196,37 @@ button {
 
 table {
     width: 100%;
+    margin: 1.5em 0;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--blockquote-border-color);
+}
+
+th {
+    font-weight: 650;
+    color: var(--heading-color);
+}
+
+th:first-child,
+td:first-child {
+    padding-left: 0;
+}
+
+th:last-child,
+td:last-child {
+    padding-right: 0;
+}
+
+@media (max-width: 480px) {
+    table {
+        display: block;
+        overflow-x: auto;
+    }
 }
 
 hr {
