@@ -339,11 +339,6 @@ ul.blog-posts li a:visited {
     color: var(--visited-color);
 }
 
-/* search form */
-.search-form {
-    margin: 1em 0;
-}
-
 /* skip link */
 .skip-link {
     position: absolute;
@@ -364,30 +359,6 @@ ul.blog-posts li a:visited {
     background: var(--link-color);
     color: var(--background-color);
     z-index: 100;
-}
-
-/* screen reader only */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-.search-submit:focus {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: 1px 6px;
-    margin-left: 4px;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
 }
 
 /* 404 page */

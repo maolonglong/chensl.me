@@ -1,7 +1,0 @@
-{{ define "title" }}#{{ .Title }} | {{ site.Title }}{{ end }}
-
-{{ define "main" }}
-  <h1>标签：#{{ .Title }}</h1>
-
-  {{ partial "post-list.html" (dict "pages" .Pages) }}
-{{ end }}

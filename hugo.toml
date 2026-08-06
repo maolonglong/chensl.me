@@ -9,8 +9,8 @@ enableRobotsTXT = true
 # https://github.com/gohugoio/hugo/issues/12152
 capitalizeListTitles = false
 
+# Disable all taxonomies (omit the table entirely and Hugo falls back to tags+categories).
 [taxonomies]
-  tag = "tags"
 
 [markup]
   [markup.highlight]
@@ -26,8 +26,6 @@ capitalizeListTitles = false
 [outputs]
   home = ['html', 'rss']
   section = ['html', 'rss']
-  taxonomy = ['html']
-  term = ['html', 'rss']
 
 [services]
   [services.rss]
