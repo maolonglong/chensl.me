@@ -11,7 +11,7 @@
     <button class="search-submit sr-only" type="submit">搜索</button>
   </form>
 
-  {{ partial "post-list.html" (dict "pages" .RegularPages "dateFormat" (site.Params.dateFormat | default "2006-01-02")) }}
+  {{ partial "post-list.html" (dict "pages" .RegularPages) }}
 
   {{ with .Site.Taxonomies.tags }}
     <div class="tags">

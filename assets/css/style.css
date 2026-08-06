@@ -311,6 +311,13 @@ pre code {
 }
 
 /* blog post list */
+.posts-year {
+    font-size: 1.15rem;
+    letter-spacing: 0;
+    color: var(--muted-color);
+    margin: 2em 0 0.5em;
+}
+
 ul.blog-posts {
     list-style-type: none;
     padding: unset;
@@ -318,10 +325,11 @@ ul.blog-posts {
 
 ul.blog-posts li {
     display: flex;
+    align-items: baseline;
 }
 
 ul.blog-posts li span {
-    flex: 0 0 130px;
+    flex: 0 0 64px;
     font-family: var(--font-mono);
     font-size: 0.875rem;
     color: var(--muted-color);

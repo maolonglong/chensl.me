@@ -4,6 +4,6 @@
   {{ if .Content }}
     {{ .Content }}
   {{ else }}
-    {{ partial "post-list.html" (dict "pages" (where site.RegularPages "Section" "blog") "dateFormat" (site.Params.dateFormat | default "2006-01-02")) }}
+    {{ partial "post-list.html" (dict "pages" (where site.RegularPages "Section" "blog")) }}
   {{ end }}
 {{ end }}
