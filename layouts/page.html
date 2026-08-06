@@ -11,6 +11,14 @@
     </i>
   </p>
 
+  {{ $headings := findRE `<h[23][ >]` .Content }}
+  {{ if ge (len $headings) 3 }}
+    <details class="toc">
+      <summary>目录</summary>
+      {{ .TableOfContents }}
+    </details>
+  {{ end }}
+
   {{ .Content }}
 
   {{ with .GetTerms "tags" }}
