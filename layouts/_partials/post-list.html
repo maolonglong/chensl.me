@@ -5,11 +5,9 @@
   {{ range $pages }}
     <li>
       <span>
-        <i>
-          <time datetime="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">
-            {{ .Date.Format $dateFormat }}
-          </time>
-        </i>
+        <time datetime="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">
+          {{ .Date.Format $dateFormat }}
+        </time>
       </span>
       <a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
     </li>

@@ -1,11 +1,29 @@
 :root {
-    --width: 720px;
-    --font-main: Verdana, sans-serif;
-    --font-secondary: Verdana, sans-serif;
-    --font-scale: 1em;
+    --width: 42rem;
+    --font-sans:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "Microsoft YaHei",
+        "Noto Sans CJK SC",
+        sans-serif;
+    --font-mono:
+        ui-monospace,
+        "SFMono-Regular",
+        "SF Mono",
+        Menlo,
+        Monaco,
+        Consolas,
+        "Liberation Mono",
+        monospace;
+    --radius: 6px;
     --background-color: #eff1f5;
     --heading-color: #4c4f69;
     --text-color: #4c4f69;
+    --muted-color: #6c6f85;
     --link-color: #1e66f5;
     --link-hover-color: #04a5e5;
     --visited-color: #7287fd;
@@ -22,6 +40,7 @@
         --background-color: #1e1e2e;
         --heading-color: #cdd6f4;
         --text-color: #cdd6f4;
+        --muted-color: #a6adc8;
         --link-color: #89b4fa;
         --link-hover-color: #89dceb;
         --visited-color: #b4befe;
@@ -41,6 +60,7 @@
     --background-color: #1e1e2e;
     --heading-color: #cdd6f4;
     --text-color: #cdd6f4;
+    --muted-color: #a6adc8;
     --link-color: #89b4fa;
     --link-hover-color: #89dceb;
     --visited-color: #b4befe;
@@ -52,9 +72,16 @@
     color-scheme: dark;
 }
 
+html {
+    font-family: var(--font-sans);
+    font-size: 100%;
+    font-synthesis: none;
+}
+
 body {
-    font-family: var(--font-secondary);
-    font-size: var(--font-scale);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.75;
     margin: auto;
     padding: 20px;
     max-width: var(--width);
@@ -62,13 +89,39 @@ body {
     background-color: var(--background-color);
     word-wrap: break-word;
     overflow-wrap: break-word;
-    line-height: 1.5;
     color: var(--text-color);
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-main);
+    font-weight: 650;
+    line-height: 1.3;
     color: var(--heading-color);
+}
+
+h1 {
+    font-size: 1.75rem;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+h2 {
+    font-size: 1.4rem;
+    letter-spacing: -0.015em;
+    margin-top: 2.25em;
+    text-wrap: balance;
+}
+
+h3 {
+    font-size: 1.15rem;
+    margin-top: 2em;
+}
+
+h4 {
+    font-size: 1rem;
+}
+
+p, li {
+    text-wrap: pretty;
 }
 
 a {
@@ -130,6 +183,7 @@ nav a {
 }
 
 strong, b {
+    font-weight: 650;
     color: var(--heading-color);
 }
 
@@ -138,17 +192,13 @@ button {
     cursor: pointer;
 }
 
-main {
-    line-height: 1.6;
-}
-
 table {
     width: 100%;
 }
 
 hr {
     border: 0;
-    border-top: 1px dashed;
+    border-top: 1px dashed var(--blockquote-border-color);
 }
 
 img {
@@ -156,25 +206,37 @@ img {
     height: auto;
 }
 
+code, pre, kbd, samp {
+    font-family: var(--font-mono);
+    font-variant-ligatures: none;
+}
+
 :not(pre) > code,
 .code {
-    font-family: monospace;
-    padding: 2px;
+    font-size: 0.875em;
+    padding: 2px 5px;
     background-color: var(--code-background-color);
     color: var(--code-color);
-    border-radius: 3px;
+    border-radius: 4px;
+}
+
+pre {
+    line-height: 1.65;
+    tab-size: 4;
 }
 
 blockquote {
-    border-left: 1px solid var(--blockquote-border-color);
+    margin: 1em 0;
+    border-left: 3px solid var(--blockquote-border-color);
     color: var(--blockquote-color);
-    padding-left: 20px;
-    font-style: italic;
+    padding-left: 1.25em;
 }
 
 footer {
     padding: 25px 0;
     text-align: center;
+    font-size: 0.875rem;
+    color: var(--muted-color);
 }
 
 .title:hover {
@@ -182,13 +244,18 @@ footer {
 }
 
 .title h1 {
-    font-size: 1.5em;
+    font-size: 1.5rem;
+}
+
+.post-meta {
+    font-size: 0.875rem;
+    color: var(--muted-color);
 }
 
 .highlight {
     margin-block: 1em;
     overflow-x: auto;
-    border-radius: 3px;
+    border-radius: var(--radius);
     background: transparent;
     color: inherit;
 }
@@ -197,7 +264,7 @@ footer {
 pre.chroma {
     margin: 0;
     padding: 12px 15px;
-    border-radius: 3px;
+    border-radius: var(--radius);
     box-sizing: border-box;
     min-width: 100%;
     width: max-content;
@@ -222,6 +289,9 @@ ul.blog-posts li {
 
 ul.blog-posts li span {
     flex: 0 0 130px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--muted-color);
 }
 
 ul.blog-posts li a:visited {
