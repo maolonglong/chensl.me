@@ -11,6 +11,11 @@
       light: "浅色",
       dark: "深色"
     };
+    const icons = {
+      auto: "🌓",
+      light: "🌕",
+      dark: "🌑"
+    };
     const root = document.documentElement;
     const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -54,7 +59,7 @@
 
       const label = toggle.querySelector("[data-theme-label]");
       if (label) {
-        label.textContent = labels[mode];
+        label.textContent = icons[mode];
       }
       toggle.dataset.themeMode = mode;
       toggle.setAttribute("aria-label", `主题：${labels[mode]}。切换为${labels[nextMode()]}`);
