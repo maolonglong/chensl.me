@@ -123,12 +123,6 @@ nav a {
     opacity: 0.65;
 }
 
-@media (hover: hover) {
-    .theme-toggle:hover {
-        text-decoration: underline;
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .theme-toggle {
         transition: none;
