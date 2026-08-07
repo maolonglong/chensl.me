@@ -36,6 +36,7 @@ checksum = "blake3:c7b5c329ad58c39a541124c690ba23bf11824270e57702af34e7978c2e15a
 url = "https://github.com/casey/just/releases/download/1.40.0/just-1.40.0-x86_64-unknown-linux-musl.tar.gz"
 
 [tools.just."platforms.macos-arm64"]
+checksum = "blake3:79a25decfef0b889b23b725c010d808b085941234edc9fbaedf064433a16af55"
 url = "https://github.com/casey/just/releases/download/1.40.0/just-1.40.0-aarch64-apple-darwin.tar.gz"
 
 [tools.just."platforms.macos-x64"]
@@ -80,6 +81,7 @@ checksum = "blake3:729ad9734a3d9ecaf613b25714d6c70812e8808270c13cbe19eca2412f0ff
 url = "https://github.com/koalaman/shellcheck/releases/download/v0.10.0/shellcheck-v0.10.0.linux.x86_64.tar.xz"
 
 [tools.shellcheck."platforms.macos-arm64"]
+checksum = "blake3:a03f7e89a3ae96103d5a425053566ff0643ce8aa1a0bee7fd0f09da50c18b41c"
 url = "https://github.com/koalaman/shellcheck/releases/download/v0.10.0/shellcheck-v0.10.0.darwin.aarch64.tar.xz"
 
 [tools.shellcheck."platforms.macos-x64"]
