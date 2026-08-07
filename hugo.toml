@@ -34,7 +34,7 @@ capitalizeListTitles = false
     limit = 20
 
 [params]
-  description = '这是我的个人网站'
+  description = '陈劭珑的个人网站与技术博客'
   dateFormat = '2006-01-02'
   [params.author]
     email = 'shaolong.chen@outlook.it'
