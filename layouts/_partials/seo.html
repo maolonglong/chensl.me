@@ -6,36 +6,80 @@
 {{- $url := .Permalink -}}
 {{- $image := "/og-image.png" -}}
 {{- with .Params.image }}{{ $image = . }}{{ end -}}
+{{- $imageURL := $image | absURL -}}
+{{- $locale := site.Language.Locale | default "zh-CN" -}}
+{{- $ogLocale := replace $locale "-" "_" -}}
+{{- $isArticle := and .IsPage (eq .Section "blog") -}}
+{{- $authorName := "" -}}
+{{- with site.Params.author -}}
+  {{- if reflect.IsMap . -}}
+    {{- with .name }}{{ $authorName = . }}{{ end -}}
+  {{- else -}}
+    {{- $authorName = . -}}
+  {{- end -}}
+{{- end -}}
 
-<!-- Primary Meta Tags -->
-<meta name="title" content="{{ $title }}">
 <meta name="description" content="{{ $description }}">
+{{- with $authorName }}
+<meta name="author" content="{{ . }}">
+{{- end }}
 
-<!-- Open Graph / Facebook -->
 <meta property="og:site_name" content="{{ site.Title }}">
+<meta property="og:locale" content="{{ $ogLocale }}">
 <meta property="og:title" content="{{ $title }}">
-<meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+<meta property="og:type" content="{{ cond $isArticle "article" "website" }}">
 <meta property="og:url" content="{{ $url }}">
 <meta property="og:description" content="{{ $description }}">
-<meta property="og:image" content="{{ $image | absURL }}">
+<meta property="og:image" content="{{ $imageURL }}">
+{{- if $isArticle }}
+<meta property="article:published_time" content="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
+{{- if not .Lastmod.IsZero }}
+<meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">
+{{- end }}
+{{- with $authorName }}
+<meta property="article:author" content="{{ . }}">
+{{- end }}
+{{- end }}
 
-<!-- Twitter -->
 <meta name="twitter:card" content="summary">
-<meta name="twitter:url" content="{{ $url }}">
 <meta name="twitter:title" content="{{ $title }}">
 <meta name="twitter:description" content="{{ $description }}">
-<meta name="twitter:image" content="{{ $image | absURL }}">
+<meta name="twitter:image" content="{{ $imageURL }}">
 
-<!-- Structured Data -->
+{{- $schemaType := "WebPage" -}}
+{{- if .IsHome -}}
+  {{- $schemaType = "WebSite" -}}
+{{- else if $isArticle -}}
+  {{- $schemaType = "BlogPosting" -}}
+{{- else if .IsSection -}}
+  {{- $schemaType = "CollectionPage" -}}
+{{- end -}}
 {{- $schema := dict
-  "@context" "http://schema.org"
-  "@type" (cond .IsPage "Article" "WebSite")
+  "@context" "https://schema.org"
+  "@type" $schemaType
   "name" $title
   "headline" $title
   "url" $url
   "description" ($description | plainify | truncate 200)
+  "inLanguage" $locale
+  "image" $imageURL
 -}}
-{{- $schema = merge $schema (dict "image" ($image | absURL)) -}}
+{{- if $isArticle -}}
+  {{- $schema = merge $schema (dict
+    "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00")
+    "mainEntityOfPage" (dict "@type" "WebPage" "@id" $url)
+  ) -}}
+  {{- if not .Lastmod.IsZero -}}
+    {{- $schema = merge $schema (dict "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00")) -}}
+  {{- end -}}
+  {{- with $authorName -}}
+    {{- $schema = merge $schema (dict "author" (dict "@type" "Person" "name" .)) -}}
+  {{- end -}}
+{{- else if .IsHome -}}
+  {{- with $authorName -}}
+    {{- $schema = merge $schema (dict "author" (dict "@type" "Person" "name" .)) -}}
+  {{- end -}}
+{{- end -}}
 <script type="application/ld+json">
   {{ $schema | jsonify | safeJS }}
 </script>
