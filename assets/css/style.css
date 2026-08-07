@@ -32,6 +32,7 @@
     --blockquote-color: #5c5f77;
     --blockquote-border-color: #acb0be;
     --selection-color: rgba(124, 127, 147, 0.25);
+    --mark-background-color: rgba(223, 142, 29, 0.3);
     color-scheme: light dark;
 }
 
@@ -49,6 +50,7 @@
         --blockquote-color: #bac2de;
         --blockquote-border-color: #585b70;
         --selection-color: rgba(147, 153, 178, 0.25);
+        --mark-background-color: rgba(249, 226, 175, 0.22);
     }
 }
 
@@ -69,6 +71,7 @@
     --blockquote-color: #bac2de;
     --blockquote-border-color: #585b70;
     --selection-color: rgba(147, 153, 178, 0.25);
+    --mark-background-color: rgba(249, 226, 175, 0.22);
     color-scheme: dark;
 }
 
@@ -308,6 +311,13 @@ pre code {
     background: transparent;
     color: inherit;
     border-radius: 0;
+}
+
+mark {
+    padding: 1px 4px;
+    background-color: var(--mark-background-color);
+    color: inherit;
+    border-radius: 4px;
 }
 
 /* blog post list */

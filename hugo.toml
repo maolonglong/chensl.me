@@ -18,6 +18,8 @@ capitalizeListTitles = false
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+    [markup.goldmark.extensions.extras.mark]
+      enable = true
   [markup.tableOfContents]
     startLevel = 2
     endLevel = 3
