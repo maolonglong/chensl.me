@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-browser": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "skillPath": "skills/agent-browser/SKILL.md",
+      "computedHash": "a674b7d81066e3cc471a7512ddb4ae724418cbfefa75cbb050b0dc430e4d57a0"
+    },
+    "check": {
+      "source": "tw93/Waza",
+      "sourceType": "github",
+      "skillPath": "skills/check/SKILL.md",
+      "computedHash": "f2be18a9d430563cad69e89bba1e52086857fa568e9701b34df79fdbea284e74"
+    },
+    "hunt": {
+      "source": "tw93/Waza",
+      "sourceType": "github",
+      "skillPath": "skills/hunt/SKILL.md",
+      "computedHash": "40a21295171f8fbc7c5b366511601081a50bd1cd9f3ef7b287396bba584ae690"
+    },
+    "learn": {
+      "source": "tw93/Waza",
+      "sourceType": "github",
+      "skillPath": "skills/learn/SKILL.md",
+      "computedHash": "16ddfea68571731dce52de91080210f3a51d25c2530f84b38777baef96c3e3dd"
+    },
+    "read": {
+      "source": "tw93/Waza",
+      "sourceType": "github",
+      "skillPath": "skills/read/SKILL.md",
+      "computedHash": "33373e10b0dd13d3a4c8e612f5cce0bdf97bc5b2fbbece4bcd57a6d62983d80a"
+    },
+    "think": {
+      "source": "tw93/Waza",
+      "sourceType": "github",
+      "skillPath": "skills/think/SKILL.md",
+      "computedHash": "8a40cb2afa968ffaf93adfeefd548f5a1784d30a7e82261396ca3ac1d6f0573d"
+    },
+    "write": {
+      "source": "tw93/Waza",
+      "sourceType": "github",
+      "skillPath": "skills/write/SKILL.md",
+      "computedHash": "122f4cbb463076d099b90d24bfbdb447e47094fd2a603ee44b1641c4eee82817"
+    }
+  }
+}
