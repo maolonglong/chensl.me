@@ -13,6 +13,12 @@
       "skillPath": "skills/check/SKILL.md",
       "computedHash": "f2be18a9d430563cad69e89bba1e52086857fa568e9701b34df79fdbea284e74"
     },
+    "gh": {
+      "source": "cli/cli",
+      "sourceType": "github",
+      "skillPath": "skills/gh/SKILL.md",
+      "computedHash": "4161832d3b900386bfeb687167ea990e65bae91327c7fb1235c0db54ad15eb63"
+    },
     "hunt": {
       "source": "tw93/Waza",
       "sourceType": "github",
