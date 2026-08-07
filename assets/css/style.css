@@ -275,7 +275,9 @@ footer {
     color: var(--muted-color);
 }
 
-.title:hover {
+.title:hover,
+.title:hover h1 {
+    color: var(--heading-color);
     text-decoration: none;
 }
 
@@ -391,6 +393,11 @@ input:focus-visible {
 .toc {
     margin-bottom: 24px;
     font-size: 0.9em;
+}
+
+.toc + h2,
+.toc + h3 {
+    margin-top: 1em;
 }
 
 .toc summary {
