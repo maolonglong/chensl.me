@@ -242,6 +242,14 @@ img {
     height: auto;
 }
 
+img.emoji {
+    display: inline;
+    width: 1em;
+    height: 1em;
+    margin: 0 0.05em 0 0.1em;
+    vertical-align: -0.1em;
+}
+
 code, pre, kbd, samp {
     font-family: var(--font-mono);
     font-variant-ligatures: none;

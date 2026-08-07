@@ -60,6 +60,7 @@
       const label = toggle.querySelector("[data-theme-label]");
       if (label) {
         label.textContent = icons[mode];
+        window.renderEmoji?.(label);
       }
       toggle.dataset.themeMode = mode;
       toggle.setAttribute("aria-label", `主题：${labels[mode]}。切换为${labels[nextMode()]}`);

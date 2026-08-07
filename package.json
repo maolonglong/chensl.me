@@ -1,6 +1,10 @@
 {
 	"packageManager": "pnpm@11.20.0",
+	"dependencies": {
+		"@twemoji/api": "17.0.3"
+	},
 	"devDependencies": {
+		"agent-browser": "0.33.2",
 		"wrangler": "^4.119.0"
 	}
 }

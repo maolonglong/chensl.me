@@ -36,6 +36,44 @@ done
 
 echo "Installing Node.js dependencies..."
 "${mise_bin}" exec -- pnpm install --frozen-lockfile
+agent_browser_package_json="$("${mise_bin}" exec -- node -p "require.resolve('agent-browser/package.json')")"
+agent_browser_package_dir="$(dirname "${agent_browser_package_json}")"
+case "$(uname -s)/$(uname -m)" in
+  Linux/x86_64|Linux/amd64)
+    agent_browser_bin="${agent_browser_package_dir}/bin/agent-browser-linux-x64"
+    ;;
+  Linux/aarch64|Linux/arm64)
+    agent_browser_bin="${agent_browser_package_dir}/bin/agent-browser-linux-arm64"
+    ;;
+  Darwin/arm64)
+    agent_browser_bin="${agent_browser_package_dir}/bin/agent-browser-darwin-arm64"
+    ;;
+  Darwin/x86_64)
+    agent_browser_bin="${agent_browser_package_dir}/bin/agent-browser-darwin-x64"
+    ;;
+  *)
+    echo "Unsupported agent-browser platform: $(uname -s)/$(uname -m)" >&2
+    exit 1
+    ;;
+esac
+ln -sfn "${agent_browser_bin}" "${HOME}/.local/bin/agent-browser"
+
+echo "Installing agent-browser..."
+agent_browser=("${mise_bin}" exec -- pnpm exec agent-browser)
+if [ "$(uname -s)" = "Linux" ]; then
+  agent_browser_version="$("${agent_browser[@]}" --version | awk '{ print $2 }')"
+  browser_deps_marker="${HOME}/.cache/agent-browser/linux-deps-${agent_browser_version}"
+  if [ ! -f "${browser_deps_marker}" ]; then
+    "${agent_browser[@]}" install --with-deps
+    mkdir -p "$(dirname "${browser_deps_marker}")"
+    touch "${browser_deps_marker}"
+  else
+    "${agent_browser[@]}" install
+  fi
+else
+  "${agent_browser[@]}" install
+fi
+"${agent_browser[@]}" doctor --offline --quick --json >/dev/null
 
 echo "Building the site..."
 "${mise_bin}" exec -- just build
