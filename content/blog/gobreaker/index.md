@@ -1,10 +1,6 @@
 ---
 title: 熔断器模式
 date: 2021-09-16T16:21:28+08:00
-tags:
-  - go
-  - micro-services
-toc: true
 description: '介绍熔断器模式及其在微服务中的应用，分析 gobreaker 的实现。'
 ---
 

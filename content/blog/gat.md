@@ -1,10 +1,6 @@
 ---
 title: Rust GAT
 date: 2023-01-24T19:58:29+08:00
-tags:
-  - rust
-  - generics
-toc: true
 description: '介绍 Rust 中的泛型关联类型（GAT）及其应用场景。'
 ---
 

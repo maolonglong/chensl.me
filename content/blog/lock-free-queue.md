@@ -1,11 +1,6 @@
 ---
 title: 无锁队列的简单实现
 date: 2021-06-25T16:16:59+08:00
-tags:
-  - go
-  - concurrency
-  - unsafe
-toc: true
 description: 本文介绍了基于 Michael 和 Scott 1996 年论文的无锁队列实现，重点探讨了如何使用 CAS 操作实现线程安全。
 ---
 

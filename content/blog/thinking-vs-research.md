@@ -3,7 +3,6 @@ title = "深度思考 ≠ 深度研究"
 description = "深度思考、深度研究和 interleaved thinking 三个概念的区别"
 date = 2025-12-07T00:21:54+08:00
 draft = false
-tags = ["ai"]
 +++
 
 > [!NOTE]

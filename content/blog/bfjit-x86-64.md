@@ -2,8 +2,6 @@
 title = "实现一个最小的 JIT 编译器"
 date = 2024-02-16T15:34:05+08:00
 draft = false
-toc = true
-tags = ["jit", "zig", "brainfuck"]
 description = "使用 Zig 实现一个最小的 Brainfuck JIT 编译器，探讨运行时生成和执行机器码的过程。"
 +++
 

@@ -1,11 +1,6 @@
 ---
 title: 用 Docker 解决单元测试外部依赖
 date: 2022-05-01T15:20:06+08:00
-tags:
-  - go
-  - docker
-  - testing
-toc: true
 description: '探讨如何使用 Docker 和 Dockertest 管理单元测试中的外部依赖，简化测试流程并提高测试覆盖率。'
 ---
 

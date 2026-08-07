@@ -1,10 +1,6 @@
 ---
 title: 函数式编程
 date: 2023-07-21T16:20:42+08:00
-tags:
-  - ocaml
-  - functional-programming
-toc: true
 description: '探讨函数式编程的核心概念，包括不可变性、代数数据类型和柯里化。'
 ---
 

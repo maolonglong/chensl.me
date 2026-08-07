@@ -3,8 +3,6 @@ title = "从 Amp 看 Agent 产品设计：薄 Agent，厚流程"
 description = "Agent 的能力不只取决于暴露了多少工具，也取决于系统替它处理了多少复杂性。"
 date = 2026-07-11T00:00:00+08:00
 draft = false
-tags = ["ai", "agent"]
-toc = true
 +++
 
 最近用 Agent 越多，我越觉得这类产品很容易沿着功能列表增长。

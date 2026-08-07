@@ -1,10 +1,6 @@
 ---
 title: 堆叠文件系统 OverlayFS
 date: 2021-10-24T13:12:42+08:00
-tags:
-  - linux
-  - docker
-toc: true
 description: 本文介绍了 OverlayFS 的基本概念及其在 Docker 中的应用，并通过实践演示了如何手动挂载和使用 OverlayFS 实现简易容器。
 ---
 

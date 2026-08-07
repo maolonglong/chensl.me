@@ -137,7 +137,7 @@ Mono:  ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco,
 - Title `h1`, muted date (`params.dateFormat`, default `2006-01-02`).
 - TOC: collapsed `<details class="toc">`, summary `目录`, only if ≥ 3 `h2`/`h3`. Depth from `hugo.toml` (`startLevel = 2`, `endLevel = 3`).
 - Tighten `.toc + h2/h3` top margin so posts that open on a heading do not leave a hole.
-- Legacy front matter `toc = true` is ignored.
+- Do not control TOC via front matter; heading count is the only switch.
 
 ### Tables, quotes, media
 

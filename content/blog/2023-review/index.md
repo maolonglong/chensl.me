@@ -1,7 +1,6 @@
 +++
 title = '2023 年终总结'
 date = 2024-01-11T19:03:51+08:00
-toc = true
 draft = false
 description = "2023 年终总结：技术探索杂而不精，重点实现了 Scheme 宏和 Nix 环境管理，反思了学习与生活的平衡。"
 +++

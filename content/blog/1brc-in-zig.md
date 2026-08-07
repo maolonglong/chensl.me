@@ -2,7 +2,6 @@
 title = "10 亿行挑战"
 date = 2024-02-22T19:44:09+08:00
 draft = false
-tags = ["zig"]
 description = "探索使用 Zig 语言优化 10 亿行挑战的解决方案，包括 mmap、多线程、预分配等技术，最终在 M1 Pro 上实现 3.2 秒的处理速度。"
 +++
 
