@@ -2,5 +2,6 @@
 
 set -euo pipefail
 
-# This site has no backing services or tunnels to repair after an orb wakes.
-echo "No orb services require resuming."
+# Hugo previews are declared in .amp/services.yaml and start on demand through
+# `amp orb services ensure`; this static site has no stateful services to repair.
+echo "No stateful orb services require resuming."
