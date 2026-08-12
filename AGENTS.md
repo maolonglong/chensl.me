@@ -19,13 +19,15 @@
 
 - Local builds use the Hugo executable already available on `PATH`.
 - Cloudflare invokes `build.sh`; CI downloads the pinned Hugo release into a temporary directory and verifies its SHA-256 checksum before building.
-- When upgrading Hugo, update the version and every platform checksum in `build.sh` together, then verify both `./build.sh` and `CI=true ./build.sh`.
+- When upgrading Hugo, update `mise.toml`, `mise.lock`, and the version plus every platform checksum in `build.sh` together, then verify both `./build.sh` and `CI=true ./build.sh`.
+- When upgrading Node.js, update `mise.toml`, `mise.lock`, and the CI `node-version` together.
 - Preserve `set -euo pipefail`, quoted paths, temporary-directory cleanup, and checksum verification in shell changes.
 - Run `just build` after non-trivial changes.
+- Run `just check` when layouts, content rendering, internal links, RSS, or build behavior changes.
 - For `build.sh` changes, also run `bash -n build.sh`, `shellcheck build.sh`, `./build.sh`, and `CI=true ./build.sh`.
 - For Cloudflare configuration or dependency changes, run `corepack pnpm exec wrangler deploy --dry-run` without deploying.
 - For layout or CSS changes, inspect desktop and narrow-width output in a browser. Changes to shared layouts must cover home, blog section, one post, and the 404 page (both light and dark).
-- No project-owned automated test suite is configured.
+- CI runs the Wrangler dry-run, production build, and `scripts/check-site.mjs` output checks.
 
 ## Hugo Conventions
 

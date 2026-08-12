@@ -4,9 +4,19 @@
   {{- $description = .Summary | plainify | truncate 160 -}}
 {{- end -}}
 {{- $url := .Permalink -}}
-{{- $image := "/og-image.png" -}}
-{{- with .Params.image }}{{ $image = . }}{{ end -}}
-{{- $imageURL := $image | absURL -}}
+{{- $imageURL := "og-image.png" | absURL -}}
+{{- with .Params.image -}}
+  {{- $image := . -}}
+  {{- if or (hasPrefix $image "http://") (hasPrefix $image "https://") -}}
+    {{- $imageURL = $image -}}
+  {{- else -}}
+    {{- with $.Resources.GetMatch $image -}}
+      {{- $imageURL = .Permalink -}}
+    {{- else -}}
+      {{- $imageURL = strings.TrimPrefix "/" $image | absURL -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
 {{- $locale := site.Language.Locale | default "zh-CN" -}}
 {{- $ogLocale := replace $locale "-" "_" -}}
 {{- $isArticle := and .IsPage (eq .Section "blog") -}}

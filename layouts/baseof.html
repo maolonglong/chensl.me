@@ -6,10 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {{ partial "theme.html" . }}
   <title>{{ block "title" . }}{{ site.Title }}{{ end }}</title>
-  {{ block "canonical" . }}
-    <link rel="canonical" href="{{ .Permalink }}">
+  {{ if eq .Kind "404" }}
+    <meta name="robots" content="noindex">
+  {{ else }}
+    {{ block "canonical" . }}
+      <link rel="canonical" href="{{ .Permalink }}">
+    {{ end }}
+    {{ partial "seo.html" . }}
   {{ end }}
-  {{ partial "seo.html" . }}
   {{ block "head" . }}{{ end }}
   {{ partial "favicons.html" . }}
   {{- /* Force content rendering so code block render hooks populate .Store before we check it. */ -}}
@@ -31,7 +35,7 @@
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
   <header>
-    <a class="title" href="{{ "/" | relURL }}">
+    <a class="title" href="{{ site.Home.RelPermalink }}">
       <h1>{{ site.Title }}</h1>
     </a>
     {{ block "nav" . }}
@@ -48,7 +52,7 @@
     </nav>
     {{ end }}
   </header>
-  <main id="main">
+  <main id="main"{{ if and .IsPage (eq .Section "blog") }} class="post-content"{{ end }}>
     {{ block "main" . }}{{ end }}
   </main>
   <footer>

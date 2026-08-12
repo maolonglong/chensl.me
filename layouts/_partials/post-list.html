@@ -1,5 +1,14 @@
 {{- $pages := .pages -}}
 
+{{ range $pages }}
+  {{- if not .Title }}
+    {{- errorf "Blog post %q is missing a title" .Path }}
+  {{- end }}
+  {{- if .Date.IsZero }}
+    {{- errorf "Blog post %q is missing a date" .Path }}
+  {{- end }}
+{{ end }}
+
 {{ range $pages.GroupByDate "2006" }}
   <h2 class="posts-year">{{ .Key }}</h2>
   <ul class="blog-posts">

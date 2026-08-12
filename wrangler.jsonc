@@ -18,6 +18,6 @@
     }
   ],
   "build": {
-    "command": "chmod a+x build.sh && ./build.sh"
+    "command": "chmod a+x build.sh && ./build.sh && node scripts/check-site.mjs"
   }
 }

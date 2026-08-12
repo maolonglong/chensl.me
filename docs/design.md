@@ -37,8 +37,8 @@ Each has a real cost. Override only with an explicit product decision.
 
 1. **Page canvas is Catppuccin base**, never pure `#fff` / `#000`. Light = Latte base `#eff1f5`; dark = Mocha base `#1e1e2e`.
 2. **Body and headings use Text** (`#4c4f69` / `#cdd6f4`), not a second “brand black.”
-3. **Links are Blue**; hover may shift to Sky; visited list titles may use Lavender. Do not invent a fourth link hue.
-4. **Muted meta uses Subtext** (`subtext0` / Mocha `subtext0`), not low-contrast Overlay.
+3. **Links are Blue**; hover may shift to Sky; visited list titles may use Lavender. Latte uses darker derivatives of these roles to meet WCAG AA against Base. Do not invent a fourth link hue.
+4. **Muted meta uses readable Subtext** (Latte `subtext1` / Mocha `subtext0`), not low-contrast Overlay.
 5. **Borders and rules use Surface** (we use `surface2` for table rules and quote bars), not pure gray hex.
 6. **Inline code sits on Surface0**; fenced blocks sit on **Mantle/Crust-like** Chroma backgrounds for contrast against base.
 7. **Mark / highlight uses Yellow wash** (opacity), never Blue — Blue is reserved for links (Catppuccin: yellow → warnings/highlight intent).
@@ -48,7 +48,7 @@ Each has a real cost. Override only with an explicit product decision.
 11. **Theme modes are `auto` | `light` | `dark`**. Auto = no `data-theme`; keep `color-scheme` aligned so `light-dark()` syntax colors track the active theme.
 12. **No client framework, no utility CSS framework, no icon pack.** Native HTML elements; emoji is acceptable for the theme toggle only.
 13. **Hierarchy comes from type, weight, and space** before borders, cards, or color fills.
-14. **Touch devices must not sticky-hover**; underline/hover color only under `@media (hover: hover)`.
+14. **Touch devices must not sticky-hover**; hover styles only apply under `@media (hover: hover)`. Inline links in blog post bodies and footer prose stay underlined; structurally clear links elsewhere underline on hover only.
 
 ## Color tokens
 
@@ -60,16 +60,16 @@ Semantic CSS variables live in `assets/css/style.css`. Prefer variables over raw
 |------|-------|-------|-----------------|
 | Background pane (Base) | `#eff1f5` | `#1e1e2e` | `--background-color` |
 | Body / headline (Text) | `#4c4f69` | `#cdd6f4` | `--text-color`, `--heading-color` |
-| Muted / meta (Subtext0) | `#6c6f85` | `#a6adc8` | `--muted-color` |
+| Muted / meta (Subtext) | `#5c5f77` | `#a6adc8` | `--muted-color` |
 | Quote text (Subtext1) | `#5c5f77` | `#bac2de` | `--blockquote-color` |
 | Rules / quote bar (Surface2) | `#acb0be` | `#585b70` | `--blockquote-border-color` |
 | Inline code bg (Surface0) | `#ccd0da` | `#313244` | `--code-background-color` |
 | Inline code fg (Text) | `#4c4f69` | `#cdd6f4` | `--code-color` |
-| Link (Blue) | `#1e66f5` | `#89b4fa` | `--link-color` |
-| Link hover (Sky) | `#04a5e5` | `#89dceb` | `--link-hover-color` |
-| Visited (Lavender) | `#7287fd` | `#b4befe` | `--visited-color` |
+| Link (Blue) | `#1c60e8` | `#89b4fa` | `--link-color` |
+| Link hover (Sky) | `#04759f` | `#89dceb` | `--link-hover-color` |
+| Visited (Lavender) | `#5264c4` | `#b4befe` | `--visited-color` |
 | Selection (Overlay2 @ ~25%) | `rgba(124,127,147,.25)` | `rgba(147,153,178,.25)` | `--selection-color` |
-| Mark (Yellow @ opacity) | `rgba(223,142,29,.3)` | `rgba(249,226,175,.22)` | `--mark-background-color` |
+| Mark (Yellow @ opacity) | `rgba(223,142,29,.2)` | `rgba(249,226,175,.22)` | `--mark-background-color` |
 
 Syntax highlighting uses Hugo Chroma **catppuccin-latte / catppuccin-mocha** in `assets/css/syntax.css` with CSS `light-dark()`. Do not hand-tune individual `.chroma .*` colors unless regenerating from upstream.
 
@@ -143,12 +143,14 @@ Mono:  ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco,
 
 - Tables: full width, bottom borders, first/last cell flush to measure; horizontal scroll under ~480px. Inline `text-align` from Markdown wins over default left align.
 - Blockquote: 3px surface bar, token text color, **no forced italic** (Bear-quiet, not magazine pull-quote).
+- Markdown images: descriptive alt text; page resources render with intrinsic dimensions, lazy loading, and absolute URLs in RSS.
 - Images: `max-width: 100%`, auto height.
 - Footnotes: native Hugo markup; do not restyle into cards.
 
 ## Interaction & motion
 
 - Default to stillness. No marquee, no scroll-jacking, no parallax.
+- Inline links in blog post bodies and footer prose stay underlined; structurally clear links elsewhere underline on hover only.
 - Hover affordances only with fine pointers (`hover: hover`).
 - Theme toggle respects `prefers-reduced-motion`.
 - Expand toggle hit target with a quiet `::before`, not visible padding chrome.
@@ -176,6 +178,7 @@ Restraint is **clear hierarchy and quiet surfaces**, not empty margins and thin 
 |---------|------|
 | Tokens, type, components | `assets/css/style.css` |
 | Chroma / fenced code | `assets/css/syntax.css` |
+| Markdown images | `layouts/_markup/render-image.html`, `render-image.rss.xml` |
 | Theme bootstrap + toggle | `layouts/_partials/theme.html` |
 | Shell | `layouts/baseof.html` |
 | Post chrome | `layouts/page.html` |

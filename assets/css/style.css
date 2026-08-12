@@ -23,16 +23,16 @@
     --background-color: #eff1f5;
     --heading-color: #4c4f69;
     --text-color: #4c4f69;
-    --muted-color: #6c6f85;
-    --link-color: #1e66f5;
-    --link-hover-color: #04a5e5;
-    --visited-color: #7287fd;
+    --muted-color: #5c5f77;
+    --link-color: #1c60e8;
+    --link-hover-color: #04759f;
+    --visited-color: #5264c4;
     --code-background-color: #ccd0da;
     --code-color: #4c4f69;
     --blockquote-color: #5c5f77;
     --blockquote-border-color: #acb0be;
     --selection-color: rgba(124, 127, 147, 0.25);
-    --mark-background-color: rgba(223, 142, 29, 0.3);
+    --mark-background-color: rgba(223, 142, 29, 0.2);
     color-scheme: light dark;
 }
 
@@ -133,6 +133,13 @@ a {
     text-decoration: none;
 }
 
+.post-content a,
+footer a {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.15em;
+}
+
 @media (hover: hover) {
     a:hover {
         color: var(--link-hover-color);
@@ -150,8 +157,10 @@ a:focus-visible {
     border-radius: 2px;
 }
 
-nav a {
+nav a,
+.title {
     margin-right: 8px;
+    text-decoration: none;
 }
 
 .theme-toggle {
@@ -379,7 +388,7 @@ ul.blog-posts li a:visited {
     display: flex;
     flex-flow: column;
     justify-content: center;
-    height: calc(100vh - 70px);
+    min-height: 60vh;
 }
 
 /* button / input focus */

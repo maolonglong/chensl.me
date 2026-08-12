@@ -111,7 +111,7 @@ main() {
 
   # Build the site
   echo "Building the site..."
-  "${hugo_bin}" build --gc --minify
+  "${hugo_bin}" build --cleanDestinationDir --gc --minify
 
   cleanup
   trap - EXIT

@@ -1,0 +1,15 @@
+{{- $src := .Destination -}}
+{{- $isRemote := or (hasPrefix $src "http://") (hasPrefix $src "https://") (hasPrefix $src "//") -}}
+{{- $isData := hasPrefix $src "data:" -}}
+{{- $resource := .PageInner.Resources.Get .Destination -}}
+{{- if $resource -}}
+  {{- $src = $resource.Permalink -}}
+{{- else -}}
+  {{- if hasPrefix $src "/" -}}
+    {{- $src = strings.TrimPrefix "/" $src | absURL -}}
+  {{- else if not (or $isRemote $isData) -}}
+    {{- errorf "Unable to resolve image %q in %s" .Destination .Position -}}
+  {{- end -}}
+{{- end -}}
+<img src="{{ $src | safeURL }}" alt="{{ .PlainText }}" loading="lazy" decoding="async"{{ with $resource }} width="{{ .Width }}" height="{{ .Height }}"{{ end }}{{ with .Title }} title="{{ . }}"{{ end }}{{ if $isRemote }} referrerpolicy="no-referrer"{{ end }}>
+{{- /* Chomp trailing newline. */ -}}
