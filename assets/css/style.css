@@ -140,6 +140,17 @@ footer a {
     text-underline-offset: 0.15em;
 }
 
+nav a {
+    margin-right: 8px;
+}
+
+nav a,
+.title,
+.toc a,
+a.footnote-ref {
+    text-decoration: none;
+}
+
 @media (hover: hover) {
     a:hover {
         color: var(--link-hover-color);
@@ -155,12 +166,6 @@ a:focus-visible {
     outline: 2px solid var(--link-color);
     outline-offset: 2px;
     border-radius: 2px;
-}
-
-nav a,
-.title {
-    margin-right: 8px;
-    text-decoration: none;
 }
 
 .theme-toggle {

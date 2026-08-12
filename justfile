@@ -13,6 +13,7 @@ build:
   hugo --cleanDestinationDir --minify --gc
 
 check: build
+  node --test scripts/*.test.mjs
   node scripts/check-site.mjs
 
 clean:

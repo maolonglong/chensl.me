@@ -113,6 +113,9 @@ main() {
   echo "Building the site..."
   "${hugo_bin}" build --cleanDestinationDir --gc --minify
 
+  echo "Running regression tests..."
+  HUGO_BIN="${hugo_bin}" node --test scripts/*.test.mjs
+
   cleanup
   trap - EXIT
 

@@ -1,15 +1,27 @@
+{{- $destination := urls.Parse .Destination -}}
 {{- $src := .Destination -}}
-{{- $isRemote := or (hasPrefix $src "http://") (hasPrefix $src "https://") (hasPrefix $src "//") -}}
-{{- $isData := hasPrefix $src "data:" -}}
-{{- $resource := .PageInner.Resources.Get .Destination -}}
+{{- $scheme := lower $destination.Scheme -}}
+{{- $isProtocolRelative := and (not $scheme) $destination.Host -}}
+{{- $isRemote := or (eq $scheme "http") (eq $scheme "https") $isProtocolRelative -}}
+{{- $isData := eq $scheme "data" -}}
+{{- $resource := false -}}
+{{- if and (not (or $isRemote $isData)) (not (hasPrefix $destination.Path "/")) -}}
+  {{- $resource = .PageInner.Resources.Get $destination.Path -}}
+{{- end -}}
 {{- if $resource -}}
   {{- $src = $resource.Permalink -}}
-{{- else -}}
-  {{- if hasPrefix $src "/" -}}
-    {{- $src = strings.TrimPrefix "/" $src | absURL -}}
-  {{- else if not (or $isRemote $isData) -}}
+  {{- with $destination.RawQuery }}{{ $src = printf "%s?%s" $src . }}{{ end -}}
+  {{- with $destination.Fragment }}{{ $src = printf "%s#%s" $src . }}{{ end -}}
+{{- else if $isProtocolRelative -}}
+  {{- $src = printf "https:%s" $src -}}
+{{- else if not (or $isRemote $isData) -}}
+  {{- if hasPrefix $destination.Path "/" -}}
+    {{- $src = strings.TrimPrefix "/" $destination.Path | absURL -}}
+    {{- with $destination.RawQuery }}{{ $src = printf "%s?%s" $src . }}{{ end -}}
+    {{- with $destination.Fragment }}{{ $src = printf "%s#%s" $src . }}{{ end -}}
+  {{- else -}}
     {{- errorf "Unable to resolve image %q in %s" .Destination .Position -}}
   {{- end -}}
 {{- end -}}
-<img src="{{ $src | safeURL }}" alt="{{ .PlainText }}" loading="lazy" decoding="async"{{ with $resource }} width="{{ .Width }}" height="{{ .Height }}"{{ end }}{{ with .Title }} title="{{ . }}"{{ end }}{{ if $isRemote }} referrerpolicy="no-referrer"{{ end }}>
+<img src="{{ $src | safeURL }}" alt="{{ .PlainText }}" loading="lazy" decoding="async"{{ if reflect.IsImageResourceWithMeta $resource }} width="{{ $resource.Width }}" height="{{ $resource.Height }}"{{ end }}{{ with .Title }} title="{{ . }}"{{ end }}{{ if $isRemote }} referrerpolicy="no-referrer"{{ end }}>
 {{- /* Chomp trailing newline. */ -}}

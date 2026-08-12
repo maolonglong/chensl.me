@@ -7,8 +7,11 @@
 {{- $imageURL := "og-image.png" | absURL -}}
 {{- with .Params.image -}}
   {{- $image := . -}}
-  {{- if or (hasPrefix $image "http://") (hasPrefix $image "https://") -}}
+  {{- $lowerImage := lower $image -}}
+  {{- if or (hasPrefix $lowerImage "http://") (hasPrefix $lowerImage "https://") -}}
     {{- $imageURL = $image -}}
+  {{- else if hasPrefix $image "//" -}}
+    {{- $imageURL = printf "https:%s" $image -}}
   {{- else -}}
     {{- with $.Resources.GetMatch $image -}}
       {{- $imageURL = .Permalink -}}

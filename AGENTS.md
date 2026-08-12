@@ -3,7 +3,7 @@
 ## Project
 
 - Hugo personal site deployed as Cloudflare Workers static assets through Wrangler.
-- Edit source in `content/`, `layouts/`, `assets/`, `static/`, `hugo.toml`, `wrangler.jsonc`, and `build.sh`.
+- Edit source in `content/`, `layouts/`, `assets/`, `static/`, `scripts/`, `hugo.toml`, `wrangler.jsonc`, `justfile`, and `build.sh`.
 - Never patch generated output in `public/`, `resources/_gen/`, `.wrangler/`, or `node_modules/`.
 
 ## Commands
@@ -27,7 +27,7 @@
 - For `build.sh` changes, also run `bash -n build.sh`, `shellcheck build.sh`, `./build.sh`, and `CI=true ./build.sh`.
 - For Cloudflare configuration or dependency changes, run `corepack pnpm exec wrangler deploy --dry-run` without deploying.
 - For layout or CSS changes, inspect desktop and narrow-width output in a browser. Changes to shared layouts must cover home, blog section, one post, and the 404 page (both light and dark).
-- CI runs the Wrangler dry-run, production build, and `scripts/check-site.mjs` output checks.
+- CI runs the Wrangler dry-run, production build, regression tests, and `scripts/check-site.mjs` output checks.
 
 ## Hugo Conventions
 
