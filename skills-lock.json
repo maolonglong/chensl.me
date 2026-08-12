@@ -11,7 +11,7 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/check/SKILL.md",
-      "computedHash": "f2be18a9d430563cad69e89bba1e52086857fa568e9701b34df79fdbea284e74"
+      "computedHash": "f15dd58b01701ee97a2638a13af87853600317ab75b323d037262195acb26db9"
     },
     "gh": {
       "source": "cli/cli",
@@ -23,7 +23,7 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/hunt/SKILL.md",
-      "computedHash": "40a21295171f8fbc7c5b366511601081a50bd1cd9f3ef7b287396bba584ae690"
+      "computedHash": "42031e6a62e06984d3c8eb2800f99f407d4b870e192296114501f8e680d08eeb"
     },
     "learn": {
       "source": "tw93/Waza",
@@ -47,7 +47,7 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/write/SKILL.md",
-      "computedHash": "122f4cbb463076d099b90d24bfbdb447e47094fd2a603ee44b1641c4eee82817"
+      "computedHash": "077c76d4202d776ade587fc875c16ca804409b6980b4bfb504b7b64fcadf4b60"
     }
   }
 }
