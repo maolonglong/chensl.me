@@ -14,6 +14,7 @@
 - Cloudflare preview: `corepack pnpm exec wrangler dev`
 - Cloudflare dry run: `corepack pnpm exec wrangler deploy --dry-run`
 - Deploy only when explicitly requested: `corepack pnpm exec wrangler deploy`
+- Before evaluating or performing an upgrade from a GitHub-released dependency, use `node scripts/fetch-release-notes.mjs --repo OWNER/REPO --from TAG --to latest --output PATH` to collect the intervening stable release notes. Add `--include-prereleases` only when prerelease compatibility is in scope.
 
 ## Build & Verification
 

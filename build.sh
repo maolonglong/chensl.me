@@ -9,7 +9,7 @@
 
 main() {
 
-  local hugo_version="0.164.0"
+  local hugo_version="0.165.0"
   local hugo_archive=""
   local hugo_checksum=""
   local hugo_bin=""
@@ -47,15 +47,15 @@ main() {
     case "$(uname -s)/$(uname -m)" in
       Darwin/arm64|Darwin/x86_64)
         hugo_archive="hugo_${hugo_version}_darwin-universal.pkg"
-        hugo_checksum="c994e2cc6946838bb76521039509a7ce71282827e7035e344b6c225a83a5d0d3"
+        hugo_checksum="10ea75335975a13d0e73ac298402179335c55fa4e99d1687452d9cfa70b30d16"
         ;;
       Linux/aarch64|Linux/arm64)
         hugo_archive="hugo_${hugo_version}_linux-arm64.tar.gz"
-        hugo_checksum="948ee5f0ed30175f31937d592d63a2712f0761a69f1cbe812f780eb918a08b8e"
+        hugo_checksum="65c9fdd75e82d5f1eaf565f6e9fede6c0ceecaa267798e10c73068986996b77d"
         ;;
       Linux/x86_64|Linux/amd64)
         hugo_archive="hugo_${hugo_version}_linux-amd64.tar.gz"
-        hugo_checksum="d9c8b17285ea4ec004d9f814273ea910f2051ce02c284993fd1f91ba455ae50d"
+        hugo_checksum="5c3a37a5450b3e386e5b75a87a790fea2d04a796d75e171216c80ef48a32b432"
         ;;
       *)
         echo "Unsupported platform: $(uname -s)/$(uname -m)" >&2
