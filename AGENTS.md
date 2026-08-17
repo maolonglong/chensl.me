@@ -3,7 +3,6 @@
 ## Project
 
 - Hugo personal site deployed as Cloudflare Workers static assets through Wrangler.
-- Edit source in `content/`, `layouts/`, `assets/`, `static/`, `scripts/`, `hugo.toml`, `wrangler.jsonc`, `justfile`, and `build.sh`.
 - Never patch generated output in `public/`, `resources/_gen/`, `.wrangler/`, or `node_modules/`.
 
 ## Commands
@@ -23,12 +22,10 @@
 - When upgrading Hugo, update `mise.toml`, `mise.lock`, and the version plus every platform checksum in `build.sh` together, then verify both `./build.sh` and `CI=true ./build.sh`.
 - When upgrading Node.js, update `mise.toml`, `mise.lock`, and the CI `node-version` together.
 - Preserve `set -euo pipefail`, quoted paths, temporary-directory cleanup, and checksum verification in shell changes.
-- Run `just build` after non-trivial changes.
-- Run `just check` when layouts, content rendering, internal links, RSS, or build behavior changes.
+- Run `just check` when layouts, content rendering, internal links, RSS, or build behavior changes; it includes the production build. For other non-trivial changes, run `just build`.
 - For `build.sh` changes, also run `bash -n build.sh`, `shellcheck build.sh`, `./build.sh`, and `CI=true ./build.sh`.
 - For Cloudflare configuration or dependency changes, run `corepack pnpm exec wrangler deploy --dry-run` without deploying.
 - For layout or CSS changes, inspect desktop and narrow-width output in a browser. Changes to shared layouts must cover home, blog section, one post, and the 404 page (both light and dark).
-- CI runs the Wrangler dry-run, production build, regression tests, and `scripts/check-site.mjs` output checks.
 
 ## Hugo Conventions
 
@@ -39,7 +36,7 @@
 
 ## Theme Invariants
 
-Hard rules only. Full design system: [`docs/design.md`](docs/design.md).
+Before changing layouts or CSS, read [`docs/design.md`](docs/design.md). The rules below are hard stops.
 
 - Bear-inspired shell: single column (~`42rem`), system fonts, minimal chrome, no client framework.
 - Palette is Catppuccin **Latte** (light) / **Mocha** (dark) via CSS variables on `:root`. Prefer tokens over one-off hex. Links = Blue, marks = Yellow wash, code surfaces = Surface/Mantle — see `docs/design.md`.
