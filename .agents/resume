@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-set -euo pipefail
-
-# Hugo previews are declared in .amp/services.yaml and start on demand through
-# `amp orb services ensure`; this static site has no stateful services to repair.
-echo "No stateful orb services require resuming."
