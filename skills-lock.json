@@ -11,43 +11,43 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/check/SKILL.md",
-      "computedHash": "f15dd58b01701ee97a2638a13af87853600317ab75b323d037262195acb26db9"
+      "computedHash": "2859887bc3045091e12a2d97e543bec8469505e220d2d199fb0af4ca3bebc554"
     },
     "gh": {
       "source": "cli/cli",
       "sourceType": "github",
       "skillPath": "skills/gh/SKILL.md",
-      "computedHash": "4161832d3b900386bfeb687167ea990e65bae91327c7fb1235c0db54ad15eb63"
+      "computedHash": "d60297badbe5f8c59397e533e41d2ed454e72fbdf08b9348aa0a166366d4c20b"
     },
     "hunt": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/hunt/SKILL.md",
-      "computedHash": "42031e6a62e06984d3c8eb2800f99f407d4b870e192296114501f8e680d08eeb"
+      "computedHash": "80b50e44c197f661ae6f84f95d95958a65c94de8097542bdee97ddb18e3ae823"
     },
     "learn": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/learn/SKILL.md",
-      "computedHash": "16ddfea68571731dce52de91080210f3a51d25c2530f84b38777baef96c3e3dd"
+      "computedHash": "8c9be99ad5bde7d71b88aef45bf318f844207b260dd49434c93b2e887221e433"
     },
     "read": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/read/SKILL.md",
-      "computedHash": "33373e10b0dd13d3a4c8e612f5cce0bdf97bc5b2fbbece4bcd57a6d62983d80a"
+      "computedHash": "81611c7c7ea3adc65cc2df759f340f6e1828f37262a723bde51cf6ffa69bb3e9"
     },
     "think": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/think/SKILL.md",
-      "computedHash": "8a40cb2afa968ffaf93adfeefd548f5a1784d30a7e82261396ca3ac1d6f0573d"
+      "computedHash": "50bbae21386287defdd8d2b6cbe403465ee672143780a5ca9059afa41f0a41cc"
     },
     "write": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/write/SKILL.md",
-      "computedHash": "077c76d4202d776ade587fc875c16ca804409b6980b4bfb504b7b64fcadf4b60"
+      "computedHash": "4763815f3277dfcb4e6c83a88eae688c3816196b287eab668a4c03b204785562"
     }
   }
 }

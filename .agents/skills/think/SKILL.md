@@ -97,6 +97,8 @@ For a hard problem, or one already tuned several times that still feels off, stu
 
 Give one recommended approach with rationale. Include effort, risk, and what existing code it builds on. Mention one alternative only if the tradeoff is genuinely close (>40% chance the user would prefer it). Always include one minimal option.
 
+Anything that asks a person to install or configure something (hook, MCP server, editor plugin, config key, pricing tier, per-day limit) is a setup cost paid by every user. Default to the zero-setup form: a built-in command plus a skill, a fixed sensible default, a doc line. Offer the setup-requiring form only after naming why the zero-setup one cannot do the job.
+
 When the plan is about distilling lessons from one project into a reusable skill set or shared rules, split the plan into **promote** and **do not promote**. Promote only reusable workflow constraints. Explicitly reject project-specific commands, paths, release checklists, safety boundaries, and private local context unless the user asks to update that project itself.
 
 For the recommendation, identify the most fragile assumption (premise collapse) and state it explicitly: "This plan assumes X. If X does not hold, Y happens." If the assumption is load-bearing and fragile, deform the design to survive its failure.
@@ -124,6 +126,19 @@ Get approval before proceeding.
 - Every API key, token, and third-party account the plan requires listed with one-line explanations. No credential requests mid-implementation.
 - Every MCP server, external API, and third-party CLI the plan depends on verified as reachable before approval.
 
+## Simplicity Gate
+
+Skip for one-file bug fixes or when the user explicitly chose the minimal option.
+
+When the plan adds files, abstractions, error layers, config knobs, or retries the user did not ask for:
+
+- **Minimal path:** the brute-force version in one line; the chosen plan must beat it on risk, rollback, or latency, not elegance.
+- **Defensive layers:** every try/catch, retry, fallback, or flag maps to one named failure mode; delete layers that only "might" fail.
+- **Surface delta:** list new commands, env vars, flags, or services; prefer +0 unless a user split needs a knob.
+- **Compensating complexity:** if the plan is mostly workaround machinery around a misbehaving API, stop and name a route change (anti-patterns #27).
+
+If the gate fails, shrink the plan or switch to the minimal option before asking for approval.
+
 ## Implementation Handoff
 
 A finished plan must be executable by another engineer or agent without re-deciding the direction. Include:
@@ -149,17 +164,12 @@ When the user later says "Implement the plan", "可以干", "直接改", "整", 
 
 | What happened | Rule |
 |---------------|------|
-| Moved files to `~/project`, repo was at `~/www/project` | Run `pwd` before the first filesystem operation |
-| Asked for API key after 3 implementation steps | List every dependency before handing off |
 | User said "just do it" or equivalent approval | Treat as approval of the recommended option. State which option was selected, finish the plan. Do not implement inside `/think`. |
-| Planned MCP workflow without checking if MCP was loaded | Verify tool availability before handing off, not mid-implementation |
 | Rejected design restarted from scratch | Ask what specifically failed, re-enter with narrowed constraints |
 | User said "just fix X" and skipped /think | If the fix touches 3+ files or needs a method choice, pause and run Lightweight Mode |
-| User approved a concrete plan and the agent debated the plan again | Execute the approved plan. Only stop for repo drift, missing permissions, or unsafe external state |
 | Picked a regional or locale-specific API variant without checking | List all regional or locale differences before writing integration code |
 | Introduced a second language or runtime into a single-stack project | Never add a new language or runtime without explicit approval |
 | User said "判断一下这个报错" and got Evaluation Mode | "判断一下" + error/bug context = debugging, route to `/hunt`. Evaluation Mode is for value/existence judgments only |
-| User asked to "沉淀到 Waza" after a project review | First separate transferable Waza capability from project facts. Do not import that project's commands, paths, or release rules into Waza |
 
 ## Output
 
