@@ -151,6 +151,12 @@ a.footnote-ref {
     text-decoration: none;
 }
 
+nav a[aria-current] {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.25em;
+}
+
 @media (hover: hover) {
     a:hover {
         color: var(--link-hover-color);
@@ -257,7 +263,7 @@ img {
 }
 
 code, pre, kbd, samp {
-    font-family: var(--font-mono);
+    font-family: "JetBrains Mono", var(--font-mono), var(--font-sans);
     font-variant-ligatures: none;
 }
 
@@ -289,14 +295,18 @@ footer {
     color: var(--muted-color);
 }
 
-.title:hover,
-.title:hover h1 {
+.title,
+.title:hover {
     color: var(--heading-color);
     text-decoration: none;
 }
 
-.title h1 {
+.site-title {
     font-size: 1.5rem;
+    font-weight: 650;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin: 0.67em 0;
 }
 
 .post-meta {
@@ -341,7 +351,7 @@ mark {
     font-size: 1.15rem;
     letter-spacing: 0;
     color: var(--muted-color);
-    margin: 2em 0 0.5em;
+    margin: 1.5em 0 0.5em;
 }
 
 ul.blog-posts {
@@ -352,6 +362,10 @@ ul.blog-posts {
 ul.blog-posts li {
     display: flex;
     align-items: baseline;
+}
+
+ul.blog-posts li + li {
+    margin-top: 6px;
 }
 
 ul.blog-posts li span {

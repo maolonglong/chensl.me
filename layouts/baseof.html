@@ -22,6 +22,12 @@
     {{- $css := . | minify -}}
     <style>{{ $css.Content | safeCSS }}</style>
   {{- end }}
+  {{- if findRE `<(?:code|pre|kbd|samp)(?:\s|>)` .Content 1 }}
+    {{- with resources.Get "css/fonts.css" }}
+      {{- $css := . | resources.ExecuteAsTemplate "css/fonts.css" $ | minify -}}
+      <style>{{ $css.Content | safeCSS }}</style>
+    {{- end }}
+  {{- end }}
   {{- if .Store.Get "hasCodeBlock" }}
     {{- with resources.Get "css/syntax.css" }}
       {{- $css := . | minify -}}
@@ -35,13 +41,11 @@
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
   <header>
-    <a class="title" href="{{ site.Home.RelPermalink }}">
-      <h1>{{ site.Title }}</h1>
-    </a>
+    <p class="site-title"><a class="title" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a></p>
     {{ block "nav" . }}
     <nav aria-label="主导航">
       {{ range site.Menus.main }}
-        <a href="{{ .URL }}">{{ .Name }}</a>
+        <a href="{{ .URL }}"{{ if $.IsMenuCurrent .Menu . }} aria-current="page"{{ else if and .Page (not .Page.IsHome) (.Page.IsAncestor $) }} aria-current="location"{{ end }}>{{ .Name }}</a>
       {{ end }}
       {{ with site.Home.OutputFormats.Get "rss" }}
         <a href="{{ .RelPermalink }}">RSS</a>

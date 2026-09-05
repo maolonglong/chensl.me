@@ -234,4 +234,4 @@ sum [1; 2; 3]
 
 这几天，参考 [Caltech 的课程](http://courses.cms.caltech.edu/cs11/material/ocaml/lab5/lab5.html)。用 OCaml 写了个小玩具，一个简易的 Scheme 解释器，支持了尾递归优化和宏（水平有限，宏实现得比较烂）
 
-[![bogoscheme](https://github-readme-stats.vercel.app/api/pin/?username=maolonglong&repo=bogoscheme&show_owner=true)](https://github.com/maolonglong/bogoscheme)
+[maolonglong/bogoscheme](https://github.com/maolonglong/bogoscheme)

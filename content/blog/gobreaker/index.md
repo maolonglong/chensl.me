@@ -31,7 +31,7 @@ description: '介绍熔断器模式及其在微服务中的应用，分析 gobre
 
 ## Golang 实现
 
-[![gobreaker](https://github-readme-stats.vercel.app/api/pin/?username=sony&repo=gobreaker&show_owner=true)](https://github.com/sony/gobreaker)
+[sony/gobreaker](https://github.com/sony/gobreaker)
 
 ### 使用
 

@@ -38,7 +38,7 @@
 
 Before changing layouts or CSS, read [`docs/design.md`](docs/design.md). The rules below are hard stops.
 
-- Bear-inspired shell: single column (~`42rem`), system fonts, minimal chrome, no client framework.
+- Bear-inspired shell: single column (~`42rem`), system body fonts and self-hosted JetBrains Mono for code, minimal chrome, no client framework.
 - Palette is Catppuccin **Latte** (light) / **Mocha** (dark) via CSS variables on `:root`. Prefer tokens over one-off hex. Links = Blue, marks = Yellow wash, code surfaces = Surface/Mantle — see `docs/design.md`.
 - Theme modes: `auto` | `light` | `dark`. Auto leaves `data-theme` unset; keep `color-scheme` synced so `light-dark()` syntax CSS follows the active theme.
 - Chrome CSS in `assets/css/style.css`; Chroma in `assets/css/syntax.css`. Do not inline large style blocks into layouts.

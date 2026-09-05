@@ -1,0 +1,14 @@
+{{- range slice
+    (dict "file" "Regular" "weight" 400 "style" "normal")
+    (dict "file" "Bold" "weight" 700 "style" "normal")
+    (dict "file" "Italic" "weight" 400 "style" "italic")
+    (dict "file" "BoldItalic" "weight" 700 "style" "italic")
+}}
+@font-face {
+    font-family: "JetBrains Mono";
+    src: url('{{ printf "fonts/jetbrains-mono-2.304/JetBrainsMono-%s.woff2" .file | relURL }}') format("woff2");
+    font-weight: {{ .weight }};
+    font-style: {{ .style }};
+    font-display: swap;
+}
+{{ end -}}

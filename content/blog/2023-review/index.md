@@ -25,7 +25,7 @@ description = "2023 年终总结：技术探索杂而不精，重点实现了 Sc
 
 要说 2023 自己认为最有意义的项目，必须得是 OCaml 实现了一个 Scheme 的子集：
 
-[![bogoscheme GitHub 仓库卡片](https://github-readme-stats.vercel.app/api/pin/?username=maolonglong&repo=bogoscheme)](https://github.com/maolonglong/bogoscheme)
+[maolonglong/bogoscheme](https://github.com/maolonglong/bogoscheme)
 
 最重要的是，实现了宏！！！
 
@@ -53,11 +53,11 @@ description = "2023 年终总结：技术探索杂而不精，重点实现了 Sc
 
 另外，今年还学了点 C 和 Zig，整了几个玩具项目：
 
-[![zig-buddy2 GitHub 仓库卡片](https://github-readme-stats.vercel.app/api/pin/?username=maolonglong&repo=zig-buddy2)](https://github.com/maolonglong/zig-buddy2)
-[![zig-mimalloc GitHub 仓库卡片](https://github-readme-stats.vercel.app/api/pin/?username=maolonglong&repo=zig-mimalloc)](https://github.com/maolonglong/zig-mimalloc)
-[![evio-lite.zig GitHub 仓库卡片](https://github-readme-stats.vercel.app/api/pin/?username=maolonglong&repo=evio-lite.zig)](https://github.com/maolonglong/evio-lite.zig)
-[![spsc_queue GitHub 仓库卡片](https://github-readme-stats.vercel.app/api/pin/?username=maolonglong&repo=spsc_queue)](https://github.com/maolonglong/spsc_queue)
-[![zsimd GitHub 仓库卡片](https://github-readme-stats.vercel.app/api/pin/?username=maolonglong&repo=zsimd)](https://github.com/maolonglong/zsimd)
+- [maolonglong/zig-buddy2](https://github.com/maolonglong/zig-buddy2)
+- [maolonglong/zig-mimalloc](https://github.com/maolonglong/zig-mimalloc)
+- [maolonglong/evio-lite.zig](https://github.com/maolonglong/evio-lite.zig)
+- [maolonglong/spsc_queue](https://github.com/maolonglong/spsc_queue)
+- [maolonglong/zsimd](https://github.com/maolonglong/zsimd)
 
 - **evio-lite.zig**: 和 Redis 作者学着写 [smallchat](https://github.com/antirez/smallchat)，顺手把 Go 版本的 [evio-lite](https://github.com/tidwall/evio-lite) 迁移到了 Zig
 - **spsc_queue**: 当时面试[矩池云](https://matpool.com/)就栽在这了，那时候完全不理解 spsc, mpsc, mpmc 的区别，问我设计一个并发安全 ringbuffer 的思路，我直接往 lock 和 mpmc 的方向去想了

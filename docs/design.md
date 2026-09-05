@@ -44,7 +44,7 @@ Each has a real cost. Override only with an explicit product decision.
 7. **Mark / highlight uses Yellow wash** (opacity), never Blue — Blue is reserved for links (Catppuccin: yellow → warnings/highlight intent).
 8. **Selection uses Overlay at ~25% opacity** (Catppuccin selection guidance).
 9. **Measure stays ~`42rem`**, single column, centered. No multi-column article chrome, no sticky app header.
-10. **System font stacks only** (no webfont download for body). CJK fallbacks required in the sans stack.
+10. **System fonts for body and chrome** (no webfont download for body). Code alone uses self-hosted JetBrains Mono with system/CJK fallbacks.
 11. **Theme modes are `auto` | `light` | `dark`**. Auto = no `data-theme`; keep `color-scheme` aligned so `light-dark()` syntax colors track the active theme.
 12. **No client framework, no utility CSS framework, no icon pack.** Native HTML elements; emoji is acceptable for the theme toggle only.
 13. **Hierarchy comes from type, weight, and space** before borders, cards, or color fills.
@@ -71,7 +71,7 @@ Semantic CSS variables live in `assets/css/style.css`. Prefer variables over raw
 | Selection (Overlay2 @ ~25%) | `rgba(124,127,147,.25)` | `rgba(147,153,178,.25)` | `--selection-color` |
 | Mark (Yellow @ opacity) | `rgba(223,142,29,.2)` | `rgba(249,226,175,.22)` | `--mark-background-color` |
 
-Syntax highlighting uses Hugo Chroma **catppuccin-latte / catppuccin-mocha** in `assets/css/syntax.css` with CSS `light-dark()`. Do not hand-tune individual `.chroma .*` colors unless regenerating from upstream.
+Syntax highlighting derives from Hugo Chroma **catppuccin-latte / catppuccin-mocha** in `assets/css/syntax.css` with CSS `light-dark()`. Preserve hue roles, not inaccessible upstream values: Latte accents are darkened toward black in sRGB, while comments and line numbers use Subtext. All foregrounds must reach **4.5:1** against code, highlighted-line, and diff backgrounds in both themes. The regression test checks the palette; browser checks verify the rendered result. Do not overwrite these adjustments when refreshing Chroma styles.
 
 **Flavors we do not ship:** Frappé, Macchiato. Do not mix flavors across one theme mode.
 
@@ -90,7 +90,7 @@ Mono:  ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco,
 
 | Role | Size | Weight | Notes |
 |------|------|--------|-------|
-| Site title (`header .title h1`) | `1.5rem` | 650 | Stays heading color on hover |
+| Site title (`header .site-title`) | `1.5rem` | 650 | Plain text link; stays heading color on hover |
 | Article `h1` | `1.75rem` | 650 | Slight negative tracking |
 | `h2` | `1.4rem` | 650 | Top margin for section breaks |
 | `h3` | `1.15rem` | 650 | |
@@ -101,6 +101,10 @@ Mono:  ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco,
 - Indent: **2 spaces** in Hugo templates, **4 spaces** in CSS.
 - Prefer `text-wrap: balance` on headings and `pretty` on paragraphs/lists where supported.
 - Do not introduce display serifs or downloaded variable fonts without an explicit request.
+
+Code (`code`, `pre`, `kbd`, `samp`) prepends **JetBrains Mono 2.304** to the system mono and sans/CJK stacks; body, headings, navigation, and list dates remain system fonts. Keep existing sizes and disable ligatures. Four official WOFF2 faces preserve real regular/bold/italic/bold-italic without synthetic styles. They load only when used, with `font-display: swap`, no preload, and no third-party requests. Each face is about 90–96 KiB; a typical highlighted article uses three faces (~276 KiB), cached across pages.
+
+Unmodified files and the SIL OFL 1.1 license live in `static/fonts/jetbrains-mono-2.304/`, from the official [v2.304 release](https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304) (`fonts/webfonts/` and `OFL.txt`). Keep the versioned URLs and license when updating. Hugo templates `assets/css/fonts.css` URLs with `relURL` so subpath deployments also work. Include font faces only on pages containing code (including inline-only code), preventing speculative font downloads on home, list, and 404 pages.
 
 ## Layout shell
 
@@ -115,6 +119,9 @@ Mono:  ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco,
 - Max width `--width: 42rem`, body padding `20px`.
 - Internal links: `.RelPermalink` / `relURL`. Absolute URLs only for canonical, RSS, and social meta.
 - Skip link → `#main`. Preserve focus-visible rings using `--link-color`.
+- Keep the page's `h1` in main content, not the repeated site name. Section pages show their title.
+- Underline the current navigation entry: `aria-current="page"` for an exact match, `location` for the containing blog section.
+- The home page relies on the navigation's blog link; do not repeat it in the biography.
 
 ## Components
 
@@ -128,6 +135,7 @@ Mono:  ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco,
 ### Post list
 
 - Group by publish year (`GroupByDate "2006"`), `MM-DD` + title.
+- Separate entries by 6px so wrapped titles remain distinct; year headings use a 1.5em top margin.
 - Visited titles → `--visited-color`.
 - Empty: `还没有文章`.
 - **Caveat:** a “2024 年终总结” dated January 2025 appears under **2025**.
@@ -144,6 +152,7 @@ Mono:  ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco,
 - Tables: full width, bottom borders, first/last cell flush to measure; horizontal scroll under ~480px. Inline `text-align` from Markdown wins over default left align.
 - Blockquote: 3px surface bar, token text color, **no forced italic** (Bear-quiet, not magazine pull-quote).
 - Markdown images: descriptive alt text; page resources render with intrinsic dimensions, lazy loading, and absolute URLs in RSS.
+- Use local page resources for images and ordinary links for GitHub repositories, not live third-party image cards. The build checks image URLs against `static/_headers`' CSP.
 - Images: `max-width: 100%`, auto height.
 - Footnotes: native Hugo markup; do not restyle into cards.
 

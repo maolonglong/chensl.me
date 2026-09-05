@@ -29,7 +29,7 @@ free:
 
 更完整的内容可以看 [wuwenbin](https://github.com/wuwenbin/buddy2) 的实现或 [陈皓老师的 blog](https://coolshell.org/articles/10427.html/)，这里就不赘述，接下来主要讲一下我在 wuwenbin 那份实现上，新加的东西。
 
-[![zig-buddy2](https://github-readme-stats.vercel.app/api/pin/?username=maolonglong&repo=zig-buddy2&show_owner=true)](https://github.com/maolonglong/zig-buddy2)
+[maolonglong/zig-buddy2](https://github.com/maolonglong/zig-buddy2)
 
 <!-- more -->
 

@@ -100,15 +100,16 @@ date = 2026-01-01
 
 async function checkerFixture() {
   const fixture = await temporaryDirectory('site-checker-')
-  for (const relative of ['build.sh', 'justfile', 'mise.toml', '.github/workflows/ci.yml']) {
+  for (const relative of ['build.sh', 'justfile', 'mise.toml', 'mise.lock', '.github/workflows/ci.yml']) {
     await cp(path.join(root, relative), path.join(fixture, relative), { recursive: true })
   }
   await write(fixture, 'public/index.html', '<link rel="canonical" href="https://chensl.me/">')
   await write(fixture, 'public/blog/index.html', '<main id="main"></main>')
   await write(fixture, 'public/404.html', '<main id="main"></main>')
-  await write(fixture, 'public/index.xml', '<rss version="2.0"></rss>')
-  await write(fixture, 'public/blog/index.xml', '<rss version="2.0"></rss>')
-  await write(fixture, 'public/_headers', '')
+  const emptyFeed = '<rss version="2.0"><channel><title>Fixture</title><link>https://chensl.me/</link><description>Fixture</description></channel></rss>'
+  await write(fixture, 'public/index.xml', emptyFeed)
+  await write(fixture, 'public/blog/index.xml', emptyFeed)
+  await cp(path.join(root, 'static/_headers'), path.join(fixture, 'public/_headers'))
   return fixture
 }
 
@@ -127,6 +128,32 @@ test('site checker accepts valid feeds without images', async () => {
   const fixture = await checkerFixture()
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 0, result.stderr)
+})
+
+test('site checker rejects malformed XML that resembles RSS', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'public/index.xml', '<rss version="2.0"><channel></rss>')
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /contains malformed XML/)
+})
+
+test('site checker rejects XML entity declarations', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'public/index.xml', '<!DOCTYPE rss [<!ENTITY title "Fixture">]><rss version="2.0"><channel><title>&title;</title><link>https://chensl.me/</link><description>Fixture</description></channel></rss>')
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /forbidden DTD or entity declaration/)
+})
+
+test('site checker validates RSS structure and item fields', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'public/index.xml', '<rss version="2.0"><channel><title>x</title><link>https://chensl.me/</link><description>x</description><item><title>x</title></item></channel></rss>')
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /item 1 is missing link/)
+  assert.match(result.stderr, /item 1 is missing guid/)
+  assert.match(result.stderr, /item 1 is missing pubDate/)
 })
 
 test('site checker accepts local SVG images without raster dimensions', async () => {
@@ -153,4 +180,121 @@ test('site checker still rejects relative RSS images', async () => {
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
   assert.match(result.stderr, /non-absolute RSS image URL "\/missing\.png"/)
+})
+
+test('site checker enforces CSP image sources', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'public/local.png', 'png')
+  await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
+<img src="/local.png" alt="Local" loading="lazy" decoding="async" width="1" height="1">
+<img src="https://other.example/image.png" alt="Remote" loading="lazy" decoding="async">
+<img src="data:image/png;base64,eA==" alt="Data" loading="lazy" decoding="async">`)
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.doesNotMatch(result.stderr, /blocked by CSP img-src: "\/local\.png"/)
+  assert.match(result.stderr, /blocked by CSP img-src: "https:\/\/other\.example\/image\.png"/)
+  assert.match(result.stderr, /blocked by CSP img-src: "data:image\/png/)
+})
+
+test('site checker accepts an explicitly allowed HTTPS image origin', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'public/_headers', `/*\n  Content-Security-Policy: default-src 'self'; img-src 'self' https://images.example; object-src 'none'\n`)
+  await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
+<img src="https://images.example/image.png" alt="Remote" loading="lazy" decoding="async">`)
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 0, result.stderr)
+})
+
+test('site checker validates same-origin social images', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
+<meta property="og:image" content="/missing-card.png">
+<meta name="twitter:image" content="https://chensl.me/missing-twitter.png">`)
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /missing internal URL "\/missing-card\.png"/)
+  assert.match(result.stderr, /missing internal URL "https:\/\/chensl\.me\/missing-twitter\.png"/)
+})
+
+test('site checker rejects stale locked tool versions and Hugo checksums', async () => {
+  const fixture = await checkerFixture()
+  const lock = await readFile(path.join(fixture, 'mise.lock'), 'utf8')
+  await write(fixture, 'mise.lock', lock
+    .replace(/(\[\[tools\.hugo\]\]\s*version = ")[^"]+/, '$10.0.0')
+    .replace(/(\[\[tools\.node\]\]\s*version = ")[^"]+/, '$10.0.0')
+    .replace(/sha256:[a-f\d]{64}/g, `sha256:${'0'.repeat(64)}`))
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /Hugo version mismatch: mise.toml=.*mise.lock=0.0.0/)
+  assert.match(result.stderr, /Node.js version mismatch: mise.toml=.*mise.lock=0.0.0/)
+  for (const platform of ['macos-arm64', 'macos-x64', 'linux-arm64', 'linux-x64']) {
+    assert.ok(result.stderr.includes(`does not match mise.lock for ${platform}`))
+  }
+})
+
+test('syntax colors meet AA contrast on code, highlighted lines, and diff surfaces', async () => {
+  const css = await readFile(path.join(root, 'assets/css/syntax.css'), 'utf8')
+  const foregrounds = [...css.matchAll(/(?:[{;]\s*)color:\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/g)]
+  const backgrounds = [...css.matchAll(/background-color:\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/g)]
+  assert.ok(foregrounds.length > 0 && backgrounds.length > 0, 'missing syntax palette')
+  const luminance = hex => hex.slice(1).match(/../g)
+    .map(channel => Number.parseInt(channel, 16) / 255)
+    .map(channel => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0)
+  for (const mode of [1, 2]) {
+    for (const foreground of foregrounds) {
+      for (const background of backgrounds) {
+        const values = [luminance(foreground[mode]), luminance(background[mode])].sort((a, b) => a - b)
+        const contrast = (values[1] + 0.05) / (values[0] + 0.05)
+        assert.ok(contrast >= 4.5, `${foreground[mode]} on ${background[mode]}: ${contrast.toFixed(2)}:1`)
+      }
+    }
+  }
+})
+
+test('page shell keeps headings in main and marks only the current navigation entry', async () => {
+  const destination = await temporaryDirectory('hugo-page-shell-')
+  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)
+  assert.equal(result.status, 0, result.stderr)
+  for (const [file, current] of [
+    ['index.html', 'href="/" aria-current="page"'],
+    ['blog/index.html', 'href="/blog/" aria-current="page"'],
+    ['blog/buddy/index.html', 'href="/blog/" aria-current="location"'],
+    ['404.html', null],
+  ]) {
+    const html = await readFile(path.join(destination, file), 'utf8')
+    assert.equal([...html.matchAll(/<h1\b/g)].length, 1, file)
+    assert.match(html, /<main\b[^>]*>[\s\S]*?<h1\b/)
+    const nav = html.match(/<nav\b[^>]*>[\s\S]*?<\/nav>/)?.[0]
+    assert.ok(nav, file)
+    assert.equal([...nav.matchAll(/aria-current=/g)].length, current ? 1 : 0, file)
+    if (current) assert.ok(nav.includes(current), file)
+  }
+})
+
+test('self-hosted code fonts resolve under a base URL subpath', async () => {
+  const destination = await temporaryDirectory('hugo-code-fonts-')
+  const result = run(process.env.HUGO_BIN ?? 'hugo', [
+    '--baseURL', 'https://example.test/sub/', '--destination', destination, '--minify', '--quiet',
+  ], root)
+  assert.equal(result.status, 0, result.stderr)
+  for (const file of ['index.html', 'blog/index.html', '404.html']) {
+    const html = await readFile(path.join(destination, file), 'utf8')
+    assert.doesNotMatch(html, /@font-face/, file)
+  }
+  for (const file of ['blog/buddy/index.html', 'blog/thin-agent-thick-harness/index.html']) {
+    const html = await readFile(path.join(destination, file), 'utf8')
+    const faces = [...html.matchAll(/@font-face\{[^}]+\}/g)]
+    assert.equal(faces.length, 4, file)
+    for (const [face] of faces) {
+      assert.match(face, /font-display:swap/)
+      const url = face.match(/url\(["']?(\/sub\/fonts\/[^)"']+)['"]?\)/)?.[1]
+      assert.ok(url, face)
+      const font = await readFile(path.join(destination, url.slice('/sub/'.length)))
+      assert.equal(font.toString('ascii', 0, 4), 'wOF2')
+    }
+    assert.doesNotMatch(html, /rel=["']?preload/)
+  }
+  const license = await readFile(path.join(destination, 'fonts/jetbrains-mono-2.304/OFL.txt'), 'utf8')
+  assert.match(license, /SIL OPEN FONT LICENSE Version 1\.1/)
 })

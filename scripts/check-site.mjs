@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 
 const root = process.cwd()
@@ -129,17 +130,26 @@ if (!existsSync(outputDir)) {
   process.exit(1)
 }
 
-const [buildScript, justfile, miseConfig, ciWorkflow] = await Promise.all([
+const [buildScript, justfile, miseConfig, miseLock, ciWorkflow] = await Promise.all([
   readFile(path.join(root, 'build.sh'), 'utf8'),
   readFile(path.join(root, 'justfile'), 'utf8'),
   readFile(path.join(root, 'mise.toml'), 'utf8'),
+  readFile(path.join(root, 'mise.lock'), 'utf8'),
   readFile(path.join(root, '.github/workflows/ci.yml'), 'utf8'),
 ])
+
+function lockedToolVersion(tool) {
+  return miseLock.match(new RegExp(`\\[\\[tools\\.${tool}\\]\\]\\s*\\nversion = "([^"]+)"`))?.[1]
+}
 
 const buildHugoVersion = buildScript.match(/hugo_version="([^"]+)"/)?.[1]
 const miseHugoVersion = miseConfig.match(/^hugo = "([^"]+)"/m)?.[1]
 if (!buildHugoVersion || buildHugoVersion !== miseHugoVersion) {
   errors.push(`Hugo version mismatch: build.sh=${buildHugoVersion ?? 'missing'}, mise.toml=${miseHugoVersion ?? 'missing'}`)
+}
+const lockHugoVersion = lockedToolVersion('hugo')
+if (!miseHugoVersion || miseHugoVersion !== lockHugoVersion) {
+  errors.push(`Hugo version mismatch: mise.toml=${miseHugoVersion ?? 'missing'}, mise.lock=${lockHugoVersion ?? 'missing'}`)
 }
 if (!buildScript.includes('build --cleanDestinationDir')) {
   errors.push('build.sh must build with --cleanDestinationDir')
@@ -152,6 +162,22 @@ const ciNodeVersion = ciWorkflow.match(/node-version:\s*["']?([^\s"']+)/)?.[1]
 if (!miseNodeVersion || miseNodeVersion !== ciNodeVersion) {
   errors.push(`Node.js version mismatch: CI=${ciNodeVersion ?? 'missing'}, mise.toml=${miseNodeVersion ?? 'missing'}`)
 }
+const lockNodeVersion = lockedToolVersion('node')
+if (!miseNodeVersion || miseNodeVersion !== lockNodeVersion) {
+  errors.push(`Node.js version mismatch: mise.toml=${miseNodeVersion ?? 'missing'}, mise.lock=${lockNodeVersion ?? 'missing'}`)
+}
+
+const buildArchives = new Map([...buildScript.matchAll(/hugo_archive="([^"]+)"\s*\n\s*hugo_checksum="([a-f\d]{64})"/g)]
+  .map(match => [match[1], match[2]]))
+for (const platform of ['macos-arm64', 'macos-x64', 'linux-arm64', 'linux-x64']) {
+  const section = miseLock.match(new RegExp(`\\[tools\\.hugo\\."platforms\\.${platform}"\\]([\\s\\S]*?)(?=\\n\\[|$)`))?.[1] ?? ''
+  const checksum = section.match(/checksum = "sha256:([a-f\d]{64})"/)?.[1]
+  const archive = section.match(/url = "[^"]*\/([^/"]+)"/)?.[1]
+  const buildArchive = archive?.replace(miseHugoVersion, '${hugo_version}')
+  if (!archive || !checksum || buildArchives.get(buildArchive) !== checksum) {
+    errors.push(`build.sh Hugo archive/checksum does not match mise.lock for ${platform}`)
+  }
+}
 
 const files = await walk(outputDir)
 const outputFiles = new Set(files.map(file => path.relative(outputDir, file).split(path.sep).join('/')))
@@ -163,6 +189,13 @@ for (const required of ['index.html', 'blog/index.html', '404.html', 'index.xml'
 
 const htmlFiles = files.filter(file => file.endsWith('.html'))
 const htmlByFile = new Map(await Promise.all(htmlFiles.map(async file => [file, await readFile(file, 'utf8')])))
+const headers = outputFiles.has('_headers') ? await readFile(path.join(outputDir, '_headers'), 'utf8') : ''
+const globalHeaders = headers.match(/^\/\*\s*\n((?:[ \t].*(?:\n|$))*)/m)?.[1] ?? ''
+const csp = globalHeaders.match(/^\s*Content-Security-Policy:\s*(.+)$/mi)?.[1]
+const imgSourceTokens = csp?.match(/(?:^|;)\s*img-src\s+([^;]+)/i)?.[1].trim().split(/\s+/) ?? []
+if (!csp || imgSourceTokens.length === 0) {
+  errors.push('public/_headers must define img-src in the global Content-Security-Policy')
+}
 const homeHtml = htmlByFile.get(path.join(outputDir, 'index.html')) ?? ''
 const canonicalTag = [...homeHtml.matchAll(/<link\b[^>]*>/gi)]
   .find(match => getAttributes(match[0]).get('rel')?.split(/\s+/).some(value => value.toLowerCase() === 'canonical'))?.[0]
@@ -224,19 +257,91 @@ for (const [file, html] of htmlByFile) {
       errors.push(`${relative} contains an image without lazy loading and async decoding`)
     }
     const src = attributes.get('src') ?? ''
+    let imageUrl
+    try {
+      imageUrl = new URL(src.replaceAll('&amp;', '&'), pageUrlFor(file, basePath, siteOrigin))
+    } catch {
+      imageUrl = null
+    }
+    // ponytail: supports our CSP's self/data/exact HTTPS origins; extend with tests before adopting wildcards or path sources.
+    const imageAllowed = imageUrl && (
+      (imageUrl.origin === siteOrigin && imgSourceTokens.includes("'self'"))
+      || (imageUrl.protocol === 'data:' && imgSourceTokens.includes('data:'))
+      || (imageUrl.protocol === 'https:' && imgSourceTokens.includes(imageUrl.origin))
+    )
+    if (!imageAllowed) {
+      errors.push(`${relative} contains an image blocked by CSP img-src: ${JSON.stringify(src)}`)
+    }
     if (isInternalUrl(src, file, basePath, siteOrigin)
       && !isSvgUrl(src, file, basePath, siteOrigin)
       && (!attributes.has('width') || !attributes.has('height'))) {
       errors.push(`${relative} contains a local image without intrinsic dimensions: ${JSON.stringify(src)}`)
     }
   }
+
+  for (const match of html.matchAll(/<meta\b[^>]*>/gi)) {
+    const attributes = getAttributes(match[0])
+    const key = (attributes.get('property') ?? attributes.get('name') ?? '').toLowerCase()
+    const value = attributes.get('content')
+    if ((key === 'og:image' || key === 'twitter:image') && value && isInternalUrl(value, file, basePath, siteOrigin)) {
+      const error = internalReferenceError(value, file, outputFiles, anchorsByFile, basePath, siteOrigin)
+      if (error) errors.push(`${relative} ${error}`)
+    }
+  }
 }
 
-for (const file of files.filter(file => file.endsWith('.xml'))) {
-  const xml = await readFile(file, 'utf8')
-  if (!xml.includes('<rss ') || !xml.includes('</rss>')) {
-    continue
+const xmlFiles = files.filter(file => file.endsWith('.xml'))
+const xmlDocuments = await Promise.all(xmlFiles.map(async file => ({
+  file: path.relative(root, file),
+  requiredFeed: ['index.xml', 'blog/index.xml'].includes(path.relative(outputDir, file).split(path.sep).join('/')),
+  xml: await readFile(file, 'utf8'),
+})))
+const python = spawnSync('python3', ['-c', String.raw`
+import json, re, sys, xml.etree.ElementTree as ET
+documents = json.load(sys.stdin)
+errors = []
+for document in documents:
+    name, xml = document['file'], document['xml']
+    if re.search(r'<!\s*(?:DOCTYPE|ENTITY)\b', xml, re.I):
+        errors.append(f'{name} contains a forbidden DTD or entity declaration')
+        continue
+    try:
+        root = ET.fromstring(xml)
+    except ET.ParseError as error:
+        errors.append(f'{name} contains malformed XML: {error}')
+        continue
+    if not document['requiredFeed']:
+        continue
+    if root.tag != 'rss':
+        errors.append(f'{name} must have an rss root element')
+        continue
+    channel = root.find('channel')
+    if channel is None:
+        errors.append(f'{name} is missing rss/channel')
+        continue
+    for field in ('title', 'link', 'description'):
+        if not (channel.findtext(field) or '').strip():
+            errors.append(f'{name} is missing rss/channel/{field}')
+    for index, item in enumerate(channel.findall('item'), 1):
+        for field in ('title', 'link', 'guid', 'pubDate'):
+            if not (item.findtext(field) or '').strip():
+                errors.append(f'{name} item {index} is missing {field}')
+print(json.dumps(errors))
+`], { input: JSON.stringify(xmlDocuments), encoding: 'utf8' })
+if (python.error?.code === 'ENOENT') {
+  errors.push('Python 3 is required to validate generated XML')
+} else if (python.status !== 0) {
+  errors.push(`Python XML validation failed: ${(python.stderr || `exit ${python.status}`).trim()}`)
+} else {
+  try {
+    errors.push(...JSON.parse(python.stdout))
+  } catch {
+    errors.push('Python XML validation returned invalid JSON')
   }
+}
+
+for (const file of xmlFiles) {
+  const xml = await readFile(file, 'utf8')
   const relative = path.relative(root, file)
   const decodedXml = decodeXmlEntities(xml)
   for (const match of decodedXml.matchAll(/<img\b[^>]*>/gi)) {
