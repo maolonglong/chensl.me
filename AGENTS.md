@@ -3,6 +3,7 @@
 ## Project
 
 - Hugo personal site deployed as Cloudflare Workers static assets through Wrangler.
+- Pushing to `main` triggers production deployment through Cloudflare's Git integration, configured outside this repository. GitHub Actions only validates changes; its status does not establish deployment status. See [CI and deployment](README.md#ci-and-deployment).
 - Never patch generated output in `public/`, `resources/_gen/`, `.wrangler/`, or `node_modules/`.
 - Manage external skills under `.agents/skills/` with `npx skills`. Do not hand-edit installed files or `skills-lock.json`; commit skill changes and the lockfile together.
 
@@ -13,7 +14,7 @@
 - Production build: `just build`
 - Cloudflare preview: `corepack pnpm exec wrangler dev`
 - Cloudflare dry run: `corepack pnpm exec wrangler deploy --dry-run`
-- Deploy only when explicitly requested: `corepack pnpm exec wrangler deploy`
+- Manual deploy only when explicitly requested: `corepack pnpm exec wrangler deploy`
 
 ## Task-specific guidance
 

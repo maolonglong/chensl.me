@@ -27,13 +27,20 @@ After changing dependencies or Cloudflare configuration, run a deployment dry ru
 corepack pnpm exec wrangler deploy --dry-run
 ```
 
-Deploy only when intended:
+Manual deployment, only when explicitly requested:
 
 ```sh
 corepack pnpm exec wrangler deploy
 ```
 
-This repository's CI does not deploy the site. If Cloudflare's external Git integration is enabled, treat the Cloudflare dashboard as the source of truth for its deployment settings.
+## CI and deployment
+
+- GitHub Actions runs on pushes and pull requests. [The CI workflow](.github/workflows/ci.yml) installs Node.js dependencies and runs `wrangler deploy --dry-run`. Through [Wrangler's build command](wrangler.jsonc), this builds the site, runs regression tests, and checks the generated output. It does not publish the site.
+- Cloudflare's Git integration automatically builds and deploys the production site when `main` is pushed. This integration is configured in the Cloudflare dashboard, outside the GitHub workflow. The dashboard is the source of truth for deployment settings and build/deployment records.
+
+Check validation and deployment separately. A successful GitHub CI run does not prove deployment succeeded, and the absence of a GitHub deployment job does not mean no deployment was triggered. Do not assume Cloudflare waits for GitHub CI to pass.
+
+When reporting a shipped change, distinguish pushed, CI passed, and deployment confirmed. Confirm deployment against the pushed commit using Cloudflare's records; if those records are unavailable, report deployment as unverified rather than claiming the site did not update. Do not run an extra manual deployment merely because GitHub Actions only validates.
 
 ## Content and maintenance
 
