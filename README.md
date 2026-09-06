@@ -39,4 +39,32 @@ This repository's CI does not deploy the site. If Cloudflare's external Git inte
 
 Articles live under `content/blog`, with `title`, `date`, and `description` in front matter. Keep each article's existing front matter format. Put article-specific images in the article's page bundle and reference them with relative paths and descriptive alt text. Remote image sources must be explicitly allowed by `static/_headers`; prefer local images and ordinary repository links.
 
-See [the design guide](docs/design.md) before changing layouts or styles. Upgrade and repository-specific instructions are documented in [AGENTS.md](AGENTS.md).
+See [the design guide](docs/design.md) before changing layouts or styles. Agent instructions are documented in [AGENTS.md](AGENTS.md).
+
+### Dependency upgrades
+
+Before evaluating or performing an upgrade from a GitHub-released dependency, collect the stable release notes between the current and target versions:
+
+```sh
+node scripts/fetch-release-notes.mjs --repo OWNER/REPO --from CURRENT_TAG --to TARGET_TAG --output PATH
+```
+
+Use `--to latest` only when targeting the latest stable release. Add `--include-prereleases` only when prerelease compatibility is in scope.
+
+- Hugo: update `mise.toml`, `mise.lock`, and the version plus every platform checksum in `build.sh` together. Verify both `./build.sh` and `CI=true ./build.sh`.
+- Node.js: update `mise.toml`, `mise.lock`, and `node-version` in `.github/workflows/ci.yml` together.
+
+Run the deployment dry run described above after dependency changes.
+
+### Build script
+
+Local builds use the Hugo executable on `PATH`. Cloudflare invokes `build.sh`; in CI mode, the script downloads the pinned Hugo release into a temporary directory and verifies its SHA-256 checksum before building.
+
+When changing `build.sh`, preserve `set -euo pipefail`, quoted paths, temporary-directory cleanup, and checksum verification. In addition to `just check`, run:
+
+```sh
+bash -n build.sh
+shellcheck build.sh
+./build.sh
+CI=true ./build.sh
+```

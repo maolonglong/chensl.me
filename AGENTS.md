@@ -13,19 +13,19 @@
 - Cloudflare preview: `corepack pnpm exec wrangler dev`
 - Cloudflare dry run: `corepack pnpm exec wrangler deploy --dry-run`
 - Deploy only when explicitly requested: `corepack pnpm exec wrangler deploy`
-- Before evaluating or performing an upgrade from a GitHub-released dependency, use `node scripts/fetch-release-notes.mjs --repo OWNER/REPO --from TAG --to latest --output PATH` to collect the intervening stable release notes. Add `--include-prereleases` only when prerelease compatibility is in scope.
 
-## Build & Verification
+## Task-specific guidance
 
-- Local builds use the Hugo executable already available on `PATH`.
-- Cloudflare invokes `build.sh`; CI downloads the pinned Hugo release into a temporary directory and verifies its SHA-256 checksum before building.
-- When upgrading Hugo, update `mise.toml`, `mise.lock`, and the version plus every platform checksum in `build.sh` together, then verify both `./build.sh` and `CI=true ./build.sh`.
-- When upgrading Node.js, update `mise.toml`, `mise.lock`, and the CI `node-version` together.
-- Preserve `set -euo pipefail`, quoted paths, temporary-directory cleanup, and checksum verification in shell changes.
-- Run `just check` when layouts, content rendering, internal links, RSS, or build behavior changes; it includes the production build. For other non-trivial changes, run `just build`.
-- For `build.sh` changes, also run `bash -n build.sh`, `shellcheck build.sh`, `./build.sh`, and `CI=true ./build.sh`.
+- Before changing layouts or CSS, read [the design guide](docs/design.md) for theme invariants, file ownership, and browser verification. Preserve the Bear-inspired single column, Catppuccin Latte/Mocha palette, and framework-free site.
+- Before evaluating or performing dependency upgrades, read [the upgrade guide](README.md#dependency-upgrades) for release-note collection and version synchronization.
+- Before changing `build.sh`, read [the build-script guide](README.md#build-script) for safety constraints and verification.
+
+## Verification
+
+- Run `just check` for changes to site output (including content, layouts, CSS, links, and RSS) or build behavior. It includes the production build; do not run `just build` separately.
 - For Cloudflare configuration or dependency changes, run `corepack pnpm exec wrangler deploy --dry-run` without deploying.
-- For layout or CSS changes, inspect desktop and narrow-width output in a browser. Changes to shared layouts must cover home, blog section, one post, and the 404 page (both light and dark).
+- For layout or CSS changes, inspect rendered output using the design guide's browser coverage.
+- For tooling-only changes, run the affected checks. Documentation-only changes outside site content need no site build; check referenced commands and links instead.
 
 ## Hugo Conventions
 
@@ -34,17 +34,7 @@
 - Preserve semantic HTML, labels, focus states, responsive images, light/dark behavior, SEO, and RSS behavior.
 - Preserve each content file's YAML or TOML front matter style. Do not rename slugs, move content, or reflow unrelated prose without a concrete reason.
 
-## Theme Invariants
-
-Before changing layouts or CSS, read [`docs/design.md`](docs/design.md). The rules below are hard stops.
-
-- Bear-inspired shell: single column (~`42rem`), system body fonts and self-hosted JetBrains Mono for code, minimal chrome, no client framework.
-- Palette is Catppuccin **Latte** (light) / **Mocha** (dark) via CSS variables on `:root`. Prefer tokens over one-off hex. Links = Blue, marks = Yellow wash, code surfaces = Surface/Mantle — see `docs/design.md`.
-- Theme modes: `auto` | `light` | `dark`. Auto leaves `data-theme` unset; keep `color-scheme` synced so `light-dark()` syntax CSS follows the active theme.
-- Chrome CSS in `assets/css/style.css`; Chroma in `assets/css/syntax.css`. Do not inline large style blocks into layouts.
-- Post TOC: collapsed `<details>`, only when ≥ 3 `h2`/`h3`. Post lists group by publish year (`MM-DD` dates).
-
 ## Commits
 
-- Use Conventional Commits: `<type>(<scope>): <summary>` — imperative, <= 72 chars, no trailing period.
+- Use Conventional Commits: `<type>(<scope>): <summary>` (imperative, <= 72 chars, no trailing period).
 - **Always write a commit body** explaining the *why* (bullets welcome), not just the *what*.

@@ -2,7 +2,7 @@
 
 Design like a calm personal technical blog: Bear Blog bones, Catppuccin paint, system type, almost no chrome.
 
-This file is the visual and interaction authority for agents editing layouts and CSS. **Hard stop rules** also live in root [`AGENTS.md`](../AGENTS.md); keep that file short. Put lasting rationale here.
+This file owns visual and interaction rules, rationale, and browser verification for layout and CSS changes. Root [`AGENTS.md`](../AGENTS.md) points here rather than duplicating the details.
 
 ## Lineage
 
