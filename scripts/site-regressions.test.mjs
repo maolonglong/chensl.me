@@ -270,6 +270,16 @@ test('page shell keeps headings in main and marks only the current navigation en
     assert.equal([...nav.matchAll(/aria-current=/g)].length, current ? 1 : 0, file)
     if (current) assert.ok(nav.includes(current), file)
   }
+  const blog = await readFile(path.join(destination, 'blog/index.html'), 'utf8')
+  const lists = [...blog.matchAll(/<ul class="blog-posts">([\s\S]*?)<\/ul>/g)]
+  assert.ok(lists.length > 0, 'missing post lists')
+  for (const [, list] of lists) {
+    const rows = [...list.matchAll(/<li>([\s\S]*?)<\/li>/g)]
+    assert.ok(rows.length > 0, 'missing post links')
+    for (const [, row] of rows) {
+      assert.match(row.trim(), /^<a href="\/blog\/[^\"]+">\s*<span>[^<]+<\/span>\s*<time datetime="[^\"]+">\s*\d{2}-\d{2}\s*<\/time>\s*<\/a>$/)
+    }
+  }
 })
 
 test('self-hosted code fonts resolve under a base URL subpath', async () => {

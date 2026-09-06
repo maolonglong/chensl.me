@@ -14,12 +14,12 @@
   <ul class="blog-posts">
     {{ range .Pages }}
       <li>
-        <span>
+        <a href="{{ .RelPermalink }}">
+          <span>{{ .LinkTitle }}</span>
           <time datetime="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">
             {{ .Date.Format "01-02" }}
           </time>
-        </span>
-        <a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
+        </a>
       </li>
     {{ end }}
   </ul>

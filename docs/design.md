@@ -95,6 +95,8 @@ Mono:  ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco,
 | `h2` | `1.4rem` | 650 | Top margin for section breaks |
 | `h3` | `1.15rem` | 650 | |
 | Body | `1rem` | 400 | `line-height: 1.75` (reading web, looser than print) |
+| Article body | `1.0625rem` | 400 | 17px at the default root size; same 1.75 line-height |
+| Code blocks | `1rem` | 400 | Keep code size independent of article prose |
 | Meta / footer / list dates | `0.875rem` | 400 | Muted color; dates mono in lists |
 | Inline code | `0.875em` | inherit | Padded surface chip |
 
@@ -134,8 +136,9 @@ Unmodified files and the SIL OFL 1.1 license live in `static/fonts/jetbrains-mon
 
 ### Post list
 
-- Group by publish year (`GroupByDate "2006"`), `MM-DD` + title.
-- Separate entries by 6px so wrapped titles remain distinct; year headings use a 1.5em top margin.
+- Group by publish year (`GroupByDate "2006"`), title on the left and `MM-DD` on the right.
+- Make each row one link with 8px block padding (at least 44px tall at default sizes), a 16px column gap, and natural title wrapping. Dates never wrap. Year headings use a 1.5em top margin.
+- Keep this an archive: no excerpts, cards, separators, or reading-time labels.
 - Visited titles → `--visited-color`.
 - Empty: `还没有文章`.
 - **Caveat:** a “2024 年终总结” dated January 2025 appears under **2025**.
@@ -143,6 +146,7 @@ Unmodified files and the SIL OFL 1.1 license live in `static/fonts/jetbrains-mon
 ### Post page
 
 - Title `h1`, muted date (`params.dateFormat`, default `2006-01-02`).
+- Enlarge article prose only; navigation, headings, metadata, code blocks, and TOC (`0.9rem`) keep their independent sizes.
 - TOC: collapsed `<details class="toc">`, summary `目录`, only if ≥ 3 `h2`/`h3`. Depth from `hugo.toml` (`startLevel = 2`, `endLevel = 3`).
 - Tighten `.toc + h2/h3` top margin so posts that open on a heading do not leave a hole.
 - Do not control TOC via front matter; heading count is the only switch.

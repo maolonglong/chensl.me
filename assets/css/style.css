@@ -277,6 +277,7 @@ code, pre, kbd, samp {
 }
 
 pre {
+    font-size: 1rem;
     line-height: 1.65;
     tab-size: 4;
 }
@@ -307,6 +308,10 @@ footer {
     line-height: 1.3;
     letter-spacing: -0.02em;
     margin: 0.67em 0;
+}
+
+.post-content {
+    font-size: 1.0625rem;
 }
 
 .post-meta {
@@ -359,19 +364,18 @@ ul.blog-posts {
     padding: unset;
 }
 
-ul.blog-posts li {
-    display: flex;
+ul.blog-posts li a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: baseline;
+    column-gap: 16px;
+    padding-block: 8px;
 }
 
-ul.blog-posts li + li {
-    margin-top: 6px;
-}
-
-ul.blog-posts li span {
-    flex: 0 0 64px;
+ul.blog-posts time {
     font-family: var(--font-mono);
     font-size: 0.875rem;
+    white-space: nowrap;
     color: var(--muted-color);
 }
 
@@ -420,7 +424,7 @@ input:focus-visible {
 /* table of contents */
 .toc {
     margin-bottom: 24px;
-    font-size: 0.9em;
+    font-size: 0.9rem;
 }
 
 .toc + h2,
