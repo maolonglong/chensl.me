@@ -1,7 +1,7 @@
 {{ define "title" }}{{ .Title }} | {{ site.Title }}{{ end }}
 
 {{ define "main" }}
-  <h1>{{ .Title }}</h1>
+  <h1 class="visually-hidden">{{ .Title }}</h1>
   {{ .Content }}
 
   {{ partial "post-list.html" (dict "pages" .RegularPages) }}

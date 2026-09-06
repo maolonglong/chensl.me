@@ -271,6 +271,7 @@ test('page shell keeps headings in main and marks only the current navigation en
     if (current) assert.ok(nav.includes(current), file)
   }
   const blog = await readFile(path.join(destination, 'blog/index.html'), 'utf8')
+  assert.match(blog, /<h1 class="visually-hidden">博客<\/h1>/)
   const lists = [...blog.matchAll(/<ul class="blog-posts">([\s\S]*?)<\/ul>/g)]
   assert.ok(lists.length > 0, 'missing post lists')
   for (const [, list] of lists) {
