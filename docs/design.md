@@ -124,7 +124,7 @@ Unmodified files and the SIL OFL 1.1 license live in `static/fonts/jetbrains-mon
 - Keep the page's `h1` in main content, not the repeated site name. Section titles are visually hidden but remain available to assistive technology; the active nav entry identifies the section visually.
 - Underline the current navigation entry: `aria-current="page"` for an exact match, `location` for the containing blog section.
 - The home page relies on the navigation's blog link; do not repeat it in the biography.
-- Keep the home introduction playful: the emoji opener, a brief edited ChatGPT exchange with concrete personal details, and the author's final double-check reply. Social links use short names under “在别处”.
+- Keep the home introduction playful: the emoji opener and a brief edited ChatGPT exchange with concrete personal details. Social links use short names under “在别处”.
 
 ## Components
 
