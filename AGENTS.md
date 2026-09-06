@@ -4,6 +4,7 @@
 
 - Hugo personal site deployed as Cloudflare Workers static assets through Wrangler.
 - Never patch generated output in `public/`, `resources/_gen/`, `.wrangler/`, or `node_modules/`.
+- Manage external skills under `.agents/skills/` with `npx skills`. Do not hand-edit installed files or `skills-lock.json`; commit skill changes and the lockfile together.
 
 ## Commands
 
