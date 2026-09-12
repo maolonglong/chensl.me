@@ -1,79 +1,39 @@
-/* Based on Hugo's Catppuccin styles, with AA contrast derivatives for code. */
-/* Latte accents are darkened; comments use Subtext in both themes. */
-/* Code block background uses mantle/crust for contrast against the page base. */
+/* One ink-blue accent; neutral strings and comments keep long code blocks quiet. */
+.bg, .chroma {
+    color: light-dark(#3d3d3a, #d4d3cd);
+    background-color: light-dark(#f0eee6, #252523);
+}
 
-.bg { color:light-dark(#4c4f69,#cdd6f4);background-color:light-dark(#e6e9ef,#11111b); }
-.chroma { color:light-dark(#4c4f69,#cdd6f4);background-color:light-dark(#e6e9ef,#11111b);-webkit-text-size-adjust:none; }
-.chroma .err { color:light-dark(#ae0c2f,#f38ba8); }
-.chroma .lnlinks { outline:none;text-decoration:none;color:inherit; }
-.chroma .lntd { vertical-align:top;padding:0;margin:0;border:0; }
-.chroma .lntable { border-spacing:0;padding:0;margin:0;border:0; }
-.chroma .hl { background-color:light-dark(#dce0e8,#313244); }
-.chroma .lnt { white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:light-dark(#5c5f77,#a6adc8); }
-.chroma .ln { white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:light-dark(#5c5f77,#a6adc8); }
-.chroma .line { display:flex; }
-.chroma .k { color:light-dark(#702fc4,#cba6f7); }
-.chroma .kc { color:light-dark(#933a06,#fab387); }
-.chroma .kd { color:light-dark(#ae0c2f,#f38ba8); }
-.chroma .kn { color:light-dark(#0f6065,#94e2d5); }
-.chroma .kp { color:light-dark(#702fc4,#cba6f7); }
-.chroma .kr { color:light-dark(#702fc4,#cba6f7); }
-.chroma .kt { color:light-dark(#ae0c2f,#f38ba8); }
-.chroma .na { color:light-dark(#174fbd,#89b4fa); }
-.chroma .nc { color:light-dark(#784d10,#f9e2af); }
-.chroma .no { color:light-dark(#784d10,#f9e2af); }
-.chroma .nd { color:light-dark(#174fbd,#89b4fa);font-weight:bold; }
-.chroma .ni { color:light-dark(#0f6065,#94e2d5); }
-.chroma .ne { color:light-dark(#933a06,#fab387); }
-.chroma .nl { color:light-dark(#025c80,#89dceb); }
-.chroma .nn { color:light-dark(#933a06,#fab387); }
-.chroma .py { color:light-dark(#933a06,#fab387); }
-.chroma .nt { color:light-dark(#702fc4,#cba6f7); }
-.chroma .nb { color:light-dark(#025c80,#89dceb); }
-.chroma .bp { color:light-dark(#025c80,#89dceb); }
-.chroma .nv { color:light-dark(#774b41,#f5e0dc); }
-.chroma .vc { color:light-dark(#774b41,#f5e0dc); }
-.chroma .vg { color:light-dark(#774b41,#f5e0dc); }
-.chroma .vi { color:light-dark(#774b41,#f5e0dc); }
-.chroma .vm { color:light-dark(#774b41,#f5e0dc); }
-.chroma .nf { color:light-dark(#174fbd,#89b4fa); }
-.chroma .fm { color:light-dark(#174fbd,#89b4fa); }
-.chroma .s { color:light-dark(#28631b,#a6e3a1); }
-.chroma .sa { color:light-dark(#ae0c2f,#f38ba8); }
-.chroma .sb { color:light-dark(#28631b,#a6e3a1); }
-.chroma .sc { color:light-dark(#28631b,#a6e3a1); }
-.chroma .dl { color:light-dark(#174fbd,#89b4fa); }
-.chroma .sd { color:light-dark(#5c5f77,#a6adc8); }
-.chroma .s2 { color:light-dark(#28631b,#a6e3a1); }
-.chroma .se { color:light-dark(#174fbd,#89b4fa); }
-.chroma .sh { color:light-dark(#5c5f77,#a6adc8); }
-.chroma .si { color:light-dark(#28631b,#a6e3a1); }
-.chroma .sx { color:light-dark(#28631b,#a6e3a1); }
-.chroma .sr { color:light-dark(#0f6065,#94e2d5); }
-.chroma .s1 { color:light-dark(#28631b,#a6e3a1); }
-.chroma .ss { color:light-dark(#28631b,#a6e3a1); }
-.chroma .m { color:light-dark(#933a06,#fab387); }
-.chroma .mb { color:light-dark(#933a06,#fab387); }
-.chroma .mf { color:light-dark(#933a06,#fab387); }
-.chroma .mh { color:light-dark(#933a06,#fab387); }
-.chroma .mi { color:light-dark(#933a06,#fab387); }
-.chroma .il { color:light-dark(#933a06,#fab387); }
-.chroma .mo { color:light-dark(#933a06,#fab387); }
-.chroma .o { color:light-dark(#025c80,#89dceb);font-weight:bold; }
-.chroma .ow { color:light-dark(#025c80,#89dceb);font-weight:bold; }
-.chroma .c { color:light-dark(#5c5f77,#a6adc8);font-style:italic; }
-.chroma .ch { color:light-dark(#5c5f77,#a6adc8);font-style:italic; }
-.chroma .cm { color:light-dark(#5c5f77,#a6adc8);font-style:italic; }
-.chroma .c1 { color:light-dark(#5c5f77,#a6adc8);font-style:italic; }
-.chroma .cs { color:light-dark(#5c5f77,#a6adc8);font-style:italic; }
-.chroma .cp { color:light-dark(#5c5f77,#a6adc8);font-style:italic; }
-.chroma .cpf { color:light-dark(#5c5f77,#a6adc8);font-weight:bold;font-style:italic; }
-.chroma .gd { color:light-dark(#ae0c2f,#f38ba8);background-color:light-dark(#dce0e8,#313244); }
-.chroma .ge { font-style:italic; }
-.chroma .gr { color:light-dark(#ae0c2f,#f38ba8); }
-.chroma .gh { color:light-dark(#933a06,#fab387);font-weight:bold; }
-.chroma .gi { color:light-dark(#28631b,#a6e3a1);background-color:light-dark(#dce0e8,#313244); }
-.chroma .gs { font-weight:bold; }
-.chroma .gu { color:light-dark(#933a06,#fab387);font-weight:bold; }
-.chroma .gt { color:light-dark(#ae0c2f,#f38ba8); }
-.chroma .gl { text-decoration:underline; }
+.chroma { -webkit-text-size-adjust: none; }
+.chroma .lnlinks { outline: none; text-decoration: none; color: inherit; }
+.chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
+.chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
+.chroma .line { display: flex; }
+.chroma .hl, .chroma .gd, .chroma .gi {
+    background-color: light-dark(#e8e6dc, #353530);
+}
+
+.chroma .lnt, .chroma .ln {
+    white-space: pre;
+    -webkit-user-select: none;
+    user-select: none;
+    margin-right: 0.4em;
+    padding: 0 0.4em;
+    color: light-dark(#5b5953, #b0aea5);
+}
+
+.chroma .k, .chroma .kc, .chroma .kd, .chroma .kn,
+.chroma .kp, .chroma .kr, .chroma .kt, .chroma .nt,
+.chroma .nf, .chroma .fm, .chroma .nd, .chroma .se {
+    color: light-dark(#1b365d, #94b4d4);
+}
+
+.chroma .c, .chroma .ch, .chroma .cm, .chroma .c1,
+.chroma .cs, .chroma .cp, .chroma .cpf, .chroma .sd {
+    color: light-dark(#5b5953, #b0aea5);
+}
+
+.chroma .err, .chroma .gr, .chroma .gt { text-decoration: underline wavy; }
+.chroma .gd { text-decoration: line-through; }
+.chroma .ge, .chroma .gl { text-decoration: underline; }
+.chroma .gs, .chroma .gh, .chroma .gu { font-weight: bold; }

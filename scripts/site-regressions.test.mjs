@@ -232,22 +232,37 @@ test('site checker rejects stale locked tool versions and Hugo checksums', async
   }
 })
 
-test('syntax colors meet AA contrast on code, highlighted lines, and diff surfaces', async () => {
+test('reading and syntax palettes meet AA contrast in both themes', async () => {
   const css = await readFile(path.join(root, 'assets/css/syntax.css'), 'utf8')
   const foregrounds = [...css.matchAll(/(?:[{;]\s*)color:\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/g)]
   const backgrounds = [...css.matchAll(/background-color:\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/g)]
   assert.ok(foregrounds.length > 0 && backgrounds.length > 0, 'missing syntax palette')
+  const style = await readFile(path.join(root, 'assets/css/style.css'), 'utf8')
+  const tokens = Object.fromEntries([...style.matchAll(/--([\w-]+):\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/g)]
+    .map(([, name, light, dark]) => [name, [null, light, dark]]))
+  const readingColors = ['text-color', 'heading-color', 'muted-color', 'link-color', 'link-hover-color', 'blockquote-color']
+  for (const name of [...readingColors, 'background-color', 'selection-color', 'mark-background-color']) {
+    assert.ok(tokens[name], `missing ${name}`)
+  }
+  const theme = await readFile(path.join(root, 'layouts/_partials/theme.html'), 'utf8')
+  for (const [index, mode] of [[1, 'light'], [2, 'dark']]) {
+    assert.match(theme, new RegExp(`content="${tokens['background-color'][index]}"[^>]+data-theme-color="${mode}"`))
+  }
+  const manifest = JSON.parse(await readFile(path.join(root, 'static/site.webmanifest'), 'utf8'))
+  assert.equal(manifest.theme_color, tokens['background-color'][1])
+  assert.equal(manifest.background_color, tokens['background-color'][1])
+  const pairs = foregrounds.flatMap(foreground => backgrounds.map(background => [foreground, background]))
+  pairs.push(...readingColors.map(name => [tokens[name], tokens['background-color']]))
+  pairs.push([tokens['text-color'], tokens['selection-color']], [tokens['text-color'], tokens['mark-background-color']])
   const luminance = hex => hex.slice(1).match(/../g)
     .map(channel => Number.parseInt(channel, 16) / 255)
     .map(channel => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
     .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0)
   for (const mode of [1, 2]) {
-    for (const foreground of foregrounds) {
-      for (const background of backgrounds) {
-        const values = [luminance(foreground[mode]), luminance(background[mode])].sort((a, b) => a - b)
-        const contrast = (values[1] + 0.05) / (values[0] + 0.05)
-        assert.ok(contrast >= 4.5, `${foreground[mode]} on ${background[mode]}: ${contrast.toFixed(2)}:1`)
-      }
+    for (const [foreground, background] of pairs) {
+      const values = [luminance(foreground[mode]), luminance(background[mode])].sort((a, b) => a - b)
+      const contrast = (values[1] + 0.05) / (values[0] + 0.05)
+      assert.ok(contrast >= 4.5, `${foreground[mode]} on ${background[mode]}: ${contrast.toFixed(2)}:1`)
     }
   }
 })
@@ -269,6 +284,10 @@ test('page shell keeps headings in main and marks only the current navigation en
     assert.ok(nav, file)
     assert.equal([...nav.matchAll(/aria-current=/g)].length, current ? 1 : 0, file)
     if (current) assert.ok(nav.includes(current), file)
+    const toggle = nav.match(/<button\b[^>]*data-theme-toggle[^>]*>([\s\S]*?)<\/button>/)?.[1]
+    assert.ok(toggle, `missing theme toggle: ${file}`)
+    assert.match(toggle, /<svg\b[^>]*viewBox="0 0 24 24"[^>]*aria-hidden="true"[^>]*focusable="false"/)
+    assert.deepEqual([...toggle.matchAll(/data-theme-icon="([^"]+)"/g)].map(([, mode]) => mode), ['auto', 'light', 'dark'])
   }
   const blog = await readFile(path.join(destination, 'blog/index.html'), 'utf8')
   assert.match(blog, /<h1 class="visually-hidden">博客<\/h1>/)
@@ -283,26 +302,43 @@ test('page shell keeps headings in main and marks only the current navigation en
   }
 })
 
-test('self-hosted code fonts resolve under a base URL subpath', async () => {
+test('serif fonts resolve on every page and code fonts stay conditional under a subpath', async () => {
   const destination = await temporaryDirectory('hugo-code-fonts-')
   const result = run(process.env.HUGO_BIN ?? 'hugo', [
     '--baseURL', 'https://example.test/sub/', '--destination', destination, '--minify', '--quiet',
   ], root)
   assert.equal(result.status, 0, result.stderr)
-  for (const file of ['index.html', 'blog/index.html', '404.html']) {
-    const html = await readFile(path.join(destination, file), 'utf8')
-    assert.doesNotMatch(html, /@font-face/, file)
-  }
-  for (const file of ['blog/buddy/index.html', 'blog/thin-agent-thick-harness/index.html']) {
+  for (const [file, hasCode] of [
+    ['index.html', false], ['blog/index.html', false], ['404.html', false],
+    ['blog/buddy/index.html', true], ['blog/thin-agent-thick-harness/index.html', true],
+  ]) {
     const html = await readFile(path.join(destination, file), 'utf8')
     const faces = [...html.matchAll(/@font-face\{[^}]+\}/g)]
-    assert.equal(faces.length, 4, file)
-    for (const [face] of faces) {
+    assert.equal(faces.length, hasCode ? 4 : 0, file)
+    const stylesheet = html.match(/<link\b[^>]*href=["']?(\/sub\/css\/serif[^ "'>]+)[^>]*>/)?.[1]
+    assert.ok(stylesheet, 'missing shared serif stylesheet')
+    const css = await readFile(path.join(destination, stylesheet.slice('/sub/'.length)), 'utf8')
+    const serifFaces = [...css.matchAll(/@font-face\{[^}]+\}/g)]
+    assert.equal(serifFaces.length, 510)
+    for (const weight of [400, 500]) {
+      const weighted = serifFaces.filter(([face]) => face.includes(`font-weight:${weight};`))
+      assert.equal(weighted.length, 255)
+      const ranges = new Set()
+      for (const [face] of weighted) {
+        const range = face.match(/unicode-range:([^;}]+)/)?.[1]
+        assert.ok(range, face)
+        assert.ok(!ranges.has(range), 'duplicate Unicode range')
+        ranges.add(range)
+      }
+    }
+    if (!hasCode) assert.doesNotMatch(html, /fonts\/jetbrains-mono/, file)
+    for (const [face] of [...faces, ...serifFaces]) {
       assert.match(face, /font-display:swap/)
       const url = face.match(/url\(["']?(\/sub\/fonts\/[^)"']+)['"]?\)/)?.[1]
       assert.ok(url, face)
       const font = await readFile(path.join(destination, url.slice('/sub/'.length)))
       assert.equal(font.toString('ascii', 0, 4), 'wOF2')
+      if (url.includes('/tsanger-jinkai02/')) assert.ok(font.length < 256 * 1024, url)
     }
     assert.doesNotMatch(html, /rel=["']?preload/)
   }

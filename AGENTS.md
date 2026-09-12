@@ -18,7 +18,7 @@
 
 ## Task-specific guidance
 
-- Before changing layouts or CSS, read [the design guide](docs/design.md) for theme invariants, file ownership, and browser verification. Preserve the Bear-inspired single column, Catppuccin Latte/Mocha palette, and framework-free site.
+- Before changing layouts or CSS, read [the design guide](docs/design.md) for theme invariants, file ownership, and browser verification. Preserve the Kami typography, warm paper/charcoal palette, and framework-free site.
 - Before evaluating or performing dependency upgrades, read [the upgrade guide](README.md#dependency-upgrades) for release-note collection and version synchronization.
 - Before changing `build.sh`, read [the build-script guide](README.md#build-script) for safety constraints and verification.
 

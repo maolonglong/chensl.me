@@ -1,5 +1,5 @@
-<meta name="theme-color" content="#eff1f5" media="(prefers-color-scheme: light)" data-theme-color="light">
-<meta name="theme-color" content="#1e1e2e" media="(prefers-color-scheme: dark)" data-theme-color="dark">
+<meta name="theme-color" content="#f5f4ed" media="(prefers-color-scheme: light)" data-theme-color="light">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)" data-theme-color="dark">
 <script>
   (() => {
     "use strict";
@@ -10,11 +10,6 @@
       auto: "自动",
       light: "浅色",
       dark: "深色"
-    };
-    const icons = {
-      auto: "🖥️",
-      light: "🌝",
-      dark: "🌚"
     };
     const root = document.documentElement;
     const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
@@ -57,10 +52,6 @@
         return;
       }
 
-      const label = toggle.querySelector("[data-theme-label]");
-      if (label) {
-        label.textContent = icons[mode];
-      }
       toggle.dataset.themeMode = mode;
       toggle.setAttribute("aria-label", `主题：${labels[mode]}。切换为${labels[nextMode()]}`);
       root.dataset.themeReady = "";

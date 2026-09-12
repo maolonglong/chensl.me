@@ -1,216 +1,103 @@
 # Design
 
-Design like a calm personal technical blog: Bear Blog bones, Catppuccin paint, system type, almost no chrome.
+**Warm paper, ink-blue links, and Tsanger JinKai typography: a personal book for the screen.**
 
-This file owns visual and interaction rules, rationale, and browser verification for layout and CSS changes. Root [`AGENTS.md`](../AGENTS.md) points here rather than duplicating the details.
+## Direction
 
-## Lineage
+[Kami](https://github.com/tw93/Kami) is the visual foundation, not merely a documentation reference. The owner chose its paper-like direction over the former Bear/Catppuccin theme. Keep Hugo, URLs, content, SEO, RSS, and static deployment; do not preserve the previous palette or system-ui typography.
 
-| Source | What we took |
-|--------|----------------|
-| [Bear Blog](https://bearblog.dev) | Single-column reading, plain nav, content-first HTML, minimal JS |
-| [Catppuccin](https://catppuccin.com/palette/) Latte + Mocha | Pastel light/dark pair, named roles (base/text/blue/…) |
-| [Catppuccin style guide](https://github.com/catppuccin/catppuccin/blob/main/docs/style-guide.md) | Role → color mapping, opacity rules for selection/highlights |
-| [Kami](https://github.com/tw93/Kami) design discipline | One-sentence aesthetic, numbered invariants, reject lists, token tables — not Kami’s parchment/serif look |
-
-This is **not** a Kami document skin and **not** a Vercel report shell. Borrow structure from good design docs; keep the site’s own face.
-
-## One sentence
-
-**Narrow system-ui column on Catppuccin Latte/Mocha, blue links, almost no decoration, theme that follows the reader.**
-
-## Priority order
-
-When requirements compete, protect them in this order:
-
-1. Readable body text and honest light/dark contrast (legibility first — Catppuccin’s own rule).
-2. Existing Hugo templates, tokens, and static build (do not invent a parallel design system).
-3. Bear-like restraint: one column, few controls, no product-UI chrome.
-4. Catppuccin role consistency (blue = links, yellow family = marks/warnings, surfaces for code).
-5. Small interaction polish (hover, focus, reduced motion) without new dependencies.
-
-Ask before changing brand-level choices (palette family, measure, adding a framework). Otherwise omit unknowns and stay inside tokens.
+The home page is a personal title page, the blog index a quiet year-grouped contents list, and articles a single reading column. This is not a product landing page: no pricing, feature cards, invented testimonials, or marketing copy.
 
 ## Invariants
 
-Each has a real cost. Override only with an explicit product decision.
+1. Use warm parchment in light mode and warm charcoal in dark mode; no pure white/black canvas or cool-gray surfaces.
+2. Ink blue is the only chromatic accent. Dark-mode links use a lighter blue for contrast, not the daytime blue on black.
+3. Body and headings use the same Chinese serif family, TsangerJinKai02. Body weight is 400; headings and strong emphasis are 500, not synthetic bold.
+4. Hierarchy comes from type, space, alignment, and wording. No decorative side bars, gradients, shadows, card grids, or hero artwork.
+5. Preserve readable code in JetBrains Mono. Syntax uses ink blue for keywords/functions and neutral text for other tokens. Diff signs and deletion strikes carry meaning without red/green.
+6. The reading measure is `42rem`; the masthead may span `52rem`. No sticky navigation or article sidebars.
+7. Theme modes remain `auto` → `light` → `dark`. Auto has no `data-theme` and follows the OS. Set `color-scheme` for forced modes; all palette pairs use CSS `light-dark()`.
+8. Body links remain visibly identifiable, with underlines in articles and footer. Keep `aria-current`, labels, keyboard focus, and the skip link.
+9. Load fonts from this site's own origin, use `font-display: swap`, and keep readable fallbacks. Do not add a runtime font CDN or framework.
+10. Use screen reading metrics rather than copying print point sizes or page-density targets. Never shrink code to fit a narrow viewport; let its container scroll.
 
-1. **Page canvas is Catppuccin base**, never pure `#fff` / `#000`. Light = Latte base `#eff1f5`; dark = Mocha base `#1e1e2e`.
-2. **Body and headings use Text** (`#4c4f69` / `#cdd6f4`), not a second “brand black.”
-3. **Links are Blue**; hover may shift to Sky; visited list titles may use Lavender. Latte uses darker derivatives of these roles to meet WCAG AA against Base. Do not invent a fourth link hue.
-4. **Muted meta uses readable Subtext** (Latte `subtext1` / Mocha `subtext0`), not low-contrast Overlay.
-5. **Borders and rules use Surface** (we use `surface2` for table rules and quote bars), not pure gray hex.
-6. **Inline code sits on Surface0**; fenced blocks sit on **Mantle/Crust-like** Chroma backgrounds for contrast against base.
-7. **Mark / highlight uses Yellow wash** (opacity), never Blue — Blue is reserved for links (Catppuccin: yellow → warnings/highlight intent).
-8. **Selection uses Overlay at ~25% opacity** (Catppuccin selection guidance).
-9. **Measure stays ~`42rem`**, single column, centered. No multi-column article chrome, no sticky app header.
-10. **System fonts for body and chrome** (no webfont download for body). Code alone uses self-hosted JetBrains Mono with system/CJK fallbacks.
-11. **Theme modes are `auto` | `light` | `dark`**. Auto = no `data-theme`; keep `color-scheme` aligned so `light-dark()` syntax colors track the active theme.
-12. **No client framework, no utility CSS framework, no icon pack.** Native HTML elements; emoji is acceptable for the theme toggle only.
-13. **Hierarchy comes from type, weight, and space** before borders, cards, or color fills.
-14. **Touch devices must not sticky-hover**; hover styles only apply under `@media (hover: hover)`. Inline links in blog post bodies and footer prose stay underlined; structurally clear links elsewhere underline on hover only.
+## Tokens
 
-## Color tokens
+The source of truth is `assets/css/style.css`. New rules use semantic variables, not independent hex values.
 
-Semantic CSS variables live in `assets/css/style.css`. Prefer variables over raw hex in new rules.
+| Role | Light | Dark | Variable |
+|---|---|---|---|
+| Canvas | `#f5f4ed` | `#141413` | `--background-color` |
+| Headings | `#141413` | `#faf9f5` | `--heading-color` |
+| Body | `#3d3d3a` | `#d4d3cd` | `--text-color` |
+| Metadata | `#6b6a64` | `#b0aea5` | `--muted-color` |
+| Links | `#1b365d` | `#94b4d4` | `--link-color` |
+| Link hover | `#2d5a8a` | `#bfd2e5` | `--link-hover-color` |
+| Code surface | `#f0eee6` | `#252523` | `--code-background-color` |
+| Code text | `#3d3d3a` | `#d4d3cd` | `--code-color` |
+| Quotes | `#504e49` | `#b0aea5` | `--blockquote-color` |
+| Rules / marks | `#e8e6dc` | `#3d3d3a` | `--border-color`, `--mark-background-color` |
+| Selection | `#dce3eb` | `#354354` | `--selection-color` |
 
-### Role map (Catppuccin names → site tokens)
+Syntax colors live in `assets/css/syntax.css`, using the same warm palette. Text must reach 4.5:1 against code, highlighted-line, and diff backgrounds in both themes. Comments use darker warm gray in light mode so they remain readable on highlighted lines.
 
-| Role | Latte | Mocha | CSS variable(s) |
-|------|-------|-------|-----------------|
-| Background pane (Base) | `#eff1f5` | `#1e1e2e` | `--background-color` |
-| Body / headline (Text) | `#4c4f69` | `#cdd6f4` | `--text-color`, `--heading-color` |
-| Muted / meta (Subtext) | `#5c5f77` | `#a6adc8` | `--muted-color` |
-| Quote text (Subtext1) | `#5c5f77` | `#bac2de` | `--blockquote-color` |
-| Rules / quote bar (Surface2) | `#acb0be` | `#585b70` | `--blockquote-border-color` |
-| Inline code bg (Surface0) | `#ccd0da` | `#313244` | `--code-background-color` |
-| Inline code fg (Text) | `#4c4f69` | `#cdd6f4` | `--code-color` |
-| Link (Blue) | `#1c60e8` | `#89b4fa` | `--link-color` |
-| Link hover (Sky) | `#04759f` | `#89dceb` | `--link-hover-color` |
-| Visited (Lavender) | `#5264c4` | `#b4befe` | `--visited-color` |
-| Selection (Overlay2 @ ~25%) | `rgba(124,127,147,.25)` | `rgba(147,153,178,.25)` | `--selection-color` |
-| Mark (Yellow @ opacity) | `rgba(223,142,29,.2)` | `rgba(249,226,175,.22)` | `--mark-background-color` |
+## Typography and fonts
 
-Syntax highlighting derives from Hugo Chroma **catppuccin-latte / catppuccin-mocha** in `assets/css/syntax.css` with CSS `light-dark()`. Preserve hue roles, not inaccessible upstream values: Latte accents are darkened toward black in sRGB, while comments and line numbers use Subtext. All foregrounds must reach **4.5:1** against code, highlighted-line, and diff backgrounds in both themes. The regression test checks the palette; browser checks verify the rendered result. Do not overwrite these adjustments when refreshing Chroma styles.
+| Role | Size | Weight | Line height |
+|---|---|---|---|
+| Site title | `1.5rem` | 500 | 1.3 |
+| Home title | `1.75rem`–`2.5rem` | 500 | 1.3 |
+| Article title | `1.75rem`–`2.25rem` | 500 | 1.3 |
+| H2 / H3 | `1.5rem` / `1.15rem` | 500 | 1.3 |
+| Body | `1.0625rem` | 400 | 1.85 |
+| Article body | `1.125rem`, `1.0625rem` at ≤600px | 400 | 1.85 |
+| Code blocks | `0.9375rem` | 400 | 1.65 |
+| Metadata / nav / footer | `0.875rem` | 400 | inherited |
 
-**Flavors we do not ship:** Frappé, Macchiato. Do not mix flavors across one theme mode.
+Headings use balanced wrapping; paragraphs and lists use `text-wrap: pretty`. Do not force justification, broad CJK tracking, or single-line titles on narrow screens.
 
-**Accent budget:** chromatic color is mostly links + syntax + occasional mark. Do not paint headings, cards, or section chrome in Mauve/Pink/Green “for personality.”
+`assets/css/serif.css` declares self-hosted TsangerJinKai02 W04 (400) and W05 (500), split into 128-codepoint Unicode blocks. Each weight preserves all 29,092 original codepoints in 255 WOFF2 subsets; browsers request only ranges needed by the page. Coverage is independent of current articles. The shared stylesheet is fingerprinted and linked rather than repeated inline. The owner confirmed personal non-commercial use. These fonts are not covered by the repository's code license; see [font usage, provenance, and regeneration](../static/fonts/tsanger-jinkai02/NOTICE.md). Commercial reuse requires authorization from the font vendor.
 
-## Typography
+Fallbacks are Noto Serif SC, Source Han Serif SC, Songti SC, STSong, Charter, Georgia, and generic serif. They are not downloaded. Code keeps self-hosted JetBrains Mono 2.304, with system mono and CJK serif fallback and ligatures disabled. Its four original faces and OFL license remain under `static/fonts/jetbrains-mono-2.304/`. Code font declarations are included only on pages containing code, including inline-only code.
 
-```text
-Sans:  system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-       "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
-       "Noto Sans CJK SC", sans-serif
+All font URLs use Hugo `relURL`, including subpath deployments. No preloads: show fallback text while fonts arrive. Keep cold-home JinKai transfers below the browser regression budget of 4 MiB; do not add more weights casually.
 
-Mono:  ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco,
-       Consolas, "Liberation Mono", monospace
-```
+## Pages and components
 
-| Role | Size | Weight | Notes |
-|------|------|--------|-------|
-| Site title (`header .site-title`) | `1.5rem` | 650 | Plain text link; stays heading color on hover |
-| Article `h1` | `1.75rem` | 650 | Slight negative tracking |
-| `h2` | `1.4rem` | 650 | Top margin for section breaks |
-| `h3` | `1.15rem` | 650 | |
-| Body | `1rem` | 400 | `line-height: 1.75` (reading web, looser than print) |
-| Article body | `1.0625rem` | 400 | 17px at the default root size; same 1.75 line-height |
-| Code blocks | `1rem` | 400 | Keep code size independent of article prose |
-| Meta / footer / list dates | `0.875rem` | 400 | Muted color; dates mono in lists |
-| Inline code | `0.875em` | inherit | Padded surface chip |
+- **Masthead:** site name left, plain navigation and a monochrome theme symbol right. It is wider than the article on desktop and keeps modest side padding on narrow screens. Both header and navigation wrap when needed, including at 200% text size; never clip or hide controls to fit.
+- **Home:** center the existing greeting and introductory sentence; keep the personal dialogue and social section left aligned. Preserve the author's words and emojis. Horizontal rules in the source become whitespace, not ornaments.
+- **Archive:** year heading, title left, `MM-DD` right. Whole-row links have 8px block padding and natural title wrapping; dates never wrap. No excerpts, cards, tags, or reading-time labels. Empty state remains `还没有文章`.
+- **Articles:** title, date, optional collapsed native TOC, then content. TOC appears only with at least three H2/H3 headings; depth comes from `hugo.toml`, not front matter.
+- **Tables:** neutral bottom rules, 10px vertical cell padding, no colored headers or vertical grid. Respect Markdown alignment. Tables scroll at ≤480px; inspect wide tables on both sides of that breakpoint.
+- **Quotes:** indentation, warm secondary text, and breathing room; no side border or forced italic.
+- **Media:** preserve descriptive alt text, intrinsic dimensions, lazy loading, and absolute RSS image URLs. Images stay within the reading column. No third-party image cards.
+- **Footer:** quiet Hugo/Kami credit. No decorative rule or additional navigation.
+- **404:** retain the existing message and return-home link, with the shared typography and theme.
 
-- Indent: **2 spaces** in Hugo templates, **4 spaces** in CSS.
-- Prefer `text-wrap: balance` on headings and `pretty` on paragraphs/lists where supported.
-- Do not introduce display serifs or downloaded variable fonts without an explicit request.
+The toggle uses inline SVG half-circle (auto), sun (light), and moon (dark) icons on a shared `24 × 24` viewBox, rendered at `20 × 20` with a 1.5-unit stroke. A fixed 24px grid-centered button and 44px hit area keep placement independent of font metrics. CSS selects the icon using `data-theme-mode`; the SVG is hidden from assistive technology and the button's accessible label announces current and next modes. Do not replace these icons with font glyphs or add an icon library. The toggle stays hidden until initialized and disappears without JavaScript. Storage failures must not prevent switching on the current page. Theme-color metadata matches the canvas. Hover rules remain under `(hover: hover)` and reduced motion disables the small active transition.
 
-Code (`code`, `pre`, `kbd`, `samp`) prepends **JetBrains Mono 2.304** to the system mono and sans/CJK stacks; body, headings, navigation, and list dates remain system fonts. Keep existing sizes and disable ligatures. Four official WOFF2 faces preserve real regular/bold/italic/bold-italic without synthetic styles. They load only when used, with `font-display: swap`, no preload, and no third-party requests. Each face is about 90–96 KiB; a typical highlighted article uses three faces (~276 KiB), cached across pages.
+## Ownership
 
-Unmodified files and the SIL OFL 1.1 license live in `static/fonts/jetbrains-mono-2.304/`, from the official [v2.304 release](https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304) (`fonts/webfonts/` and `OFL.txt`). Keep the versioned URLs and license when updating. Hugo templates `assets/css/fonts.css` URLs with `relURL` so subpath deployments also work. Include font faces only on pages containing code (including inline-only code), preventing speculative font downloads on home, list, and 404 pages.
-
-## Layout shell
-
-```text
-[ skip link ]
-[ title ]
-[ nav: 首页 博客 RSS  (theme) ]
-[ main ]
-[ footer: Hugo / Bear credit ]
-```
-
-- Max width `--width: 42rem`, body padding `20px`.
-- Internal links: `.RelPermalink` / `relURL`. Absolute URLs only for canonical, RSS, and social meta.
-- Skip link → `#main`. Preserve focus-visible rings using `--link-color`.
-- Keep the page's `h1` in main content, not the repeated site name. Section titles are visually hidden but remain available to assistive technology; the active nav entry identifies the section visually.
-- Underline the current navigation entry: `aria-current="page"` for an exact match, `location` for the containing blog section.
-- The home page relies on the navigation's blog link; do not repeat it in the biography.
-- Keep the home introduction playful: the emoji opener and a brief edited ChatGPT exchange with concrete personal details. Social links use short names under “在别处”.
-
-## Components
-
-### Theme toggle
-
-- Cycle **auto → light → dark** (`localStorage` key `color-theme`; auto clears storage).
-- Icons: auto `🖥️`, light `🌝`, dark `🌚` (emoji, not an icon font).
-- Hidden until `data-theme-ready`; hidden entirely without JS.
-- `meta theme-color`: Latte base / Mocha base, swapped via `media`.
-
-### Post list
-
-- Group by publish year (`GroupByDate "2006"`), title on the left and `MM-DD` on the right.
-- Make each row one link with 8px block padding (at least 44px tall at default sizes), a 16px column gap, and natural title wrapping. Dates never wrap. Year headings use a 1.5em top margin.
-- Keep this an archive: no excerpts, cards, separators, or reading-time labels.
-- Visited titles → `--visited-color`.
-- Empty: `还没有文章`.
-- **Caveat:** a “2024 年终总结” dated January 2025 appears under **2025**.
-
-### Post page
-
-- Title `h1`, muted date (`params.dateFormat`, default `2006-01-02`).
-- Enlarge article prose only; navigation, headings, metadata, code blocks, and TOC (`0.9rem`) keep their independent sizes.
-- TOC: collapsed `<details class="toc">`, summary `目录`, only if ≥ 3 `h2`/`h3`. Depth from `hugo.toml` (`startLevel = 2`, `endLevel = 3`).
-- Tighten `.toc + h2/h3` top margin so posts that open on a heading do not leave a hole.
-- Do not control TOC via front matter; heading count is the only switch.
-
-### Tables, quotes, media
-
-- Tables: full width, bottom borders, first/last cell flush to measure; horizontal scroll under ~480px. Inline `text-align` from Markdown wins over default left align.
-- Blockquote: 3px surface bar, token text color, **no forced italic** (Bear-quiet, not magazine pull-quote).
-- Markdown images: descriptive alt text; page resources render with intrinsic dimensions, lazy loading, and absolute URLs in RSS.
-- Use local page resources for images and ordinary links for GitHub repositories, not live third-party image cards. The build checks image URLs against `static/_headers`' CSP.
-- Images: `max-width: 100%`, auto height.
-- Footnotes: native Hugo markup; do not restyle into cards.
-
-## Interaction & motion
-
-- Default to stillness. No marquee, no scroll-jacking, no parallax.
-- Inline links in blog post bodies and footer prose stay underlined; structurally clear links elsewhere underline on hover only.
-- Hover affordances only with fine pointers (`hover: hover`).
-- Theme toggle respects `prefers-reduced-motion`.
-- Expand toggle hit target with a quiet `::before`, not visible padding chrome.
-
-## Reject list
-
-Do not ship these “modern blog” reflexes:
-
-- Pure white/black canvas or non-Catppuccin random pastels
-- Gradient text, glassmorphism, glow, blob backgrounds, hero illustrations
-- Card grids for posts, colored icon tiles, badge piles
-- Sticky glass nav, hamburger menus, reading-progress gimmicks
-- Webfont marketing stacks (Inter + fancy display) replacing system UI
-- A second accent family “to liven things up”
-- Restoring tags/search UI without an explicit product decision
-- Editing `public/` or other generated output by hand
-- Large inline `<style>` in layouts instead of `assets/css/*`
-- Dark-mode colors that only follow OS while `data-theme` is forced (break `color-scheme` + `light-dark()` pairing)
-
-Restraint is **clear hierarchy and quiet surfaces**, not empty margins and thin gray everything.
-
-## Sources of truth
-
-| Surface | Path |
-|---------|------|
+| Surface | File |
+|---|---|
 | Tokens, type, components | `assets/css/style.css` |
-| Chroma / fenced code | `assets/css/syntax.css` |
-| Markdown images | `layouts/_markup/render-image.html`, `render-image.rss.xml` |
-| Theme bootstrap + toggle | `layouts/_partials/theme.html` |
-| Shell | `layouts/baseof.html` |
-| Post chrome | `layouts/page.html` |
-| Year list | `layouts/_partials/post-list.html` |
-| TOC depth, mark extension, taxonomies off | `hugo.toml` |
+| Body font declarations | `assets/css/serif.css` |
+| Code font declarations / syntax | `assets/css/fonts.css`, `assets/css/syntax.css` |
+| Shell, home class, font loading | `layouts/baseof.html` |
+| Theme bootstrap and toggle | `layouts/_partials/theme.html` |
+| Article chrome / archive rows | `layouts/page.html`, `layouts/_partials/post-list.html` |
+| Markdown images / RSS images | `layouts/_markup/render-image.html`, `render-image.rss.xml` |
 
-## Verify visually
+## Verification
 
-After layout or CSS changes, check **light and dark**, desktop and ~390px width, on:
+Run `just check` after output changes. It includes the production build, site validation, palette contrast checks, and font URL checks under a subpath. Do not edit generated output.
 
-1. Home  
-2. Blog index (year groups)  
-3. One long post (TOC + code)  
-4. 404  
+With the preview running, run `node scripts/check-browser.mjs <preview-url>` (requires `agent-browser`). It checks actual cold-home font transfers and header bounds at 320, 390, 768, and 1280px with 100% and 200% root text sizes.
+
+Inspect browser screenshots in light and dark at 1280px and 390px on home, archive, a long article with code and TOC, and 404. Also inspect 320px, 768px, and both sides of the 480px and 600px breakpoints for affected tables and navigation. Capture at 2× and await `document.fonts.ready`; confirm actual rendered CJK font use, not just the CSS family declaration.
+
+Check TOC open/closed, code horizontal scrolling, long titles, tables, quotes, focus-visible, theme cycling and persistence, forced theme opposite the OS, and OS changes in auto mode. Ensure no page-level horizontal overflow. Screenshots from viewport resizing are Chromium responsive checks, not real phone testing.
 
 ## Out of scope
 
-- Frappé / Macchiato flavors  
-- Tag taxonomies, client search, comment widgets  
-- Design-system packages, CSS-in-JS, component libraries  
-- Print/PDF skins (see Kami if you need documents — different product)
+Framework migrations, client search, comments, taxonomies, print/PDF skins, new routes, and product-page components. They require a separate request.

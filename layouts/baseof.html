@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ site.Language.Locale | default "zh-CN" }}">
-<!-- Built with Hugo, inspired by Bear Blog -->
+<!-- Built with Hugo, typeset in the spirit of Kami -->
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,6 +21,10 @@
   {{- with resources.Get "css/style.css" }}
     {{- $css := . | minify -}}
     <style>{{ $css.Content | safeCSS }}</style>
+  {{- end }}
+  {{- with resources.Get "css/serif.css" }}
+    {{- $css := . | resources.ExecuteAsTemplate "css/serif.css" $ | minify | fingerprint -}}
+    <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
   {{- end }}
   {{- if findRE `<(?:code|pre|kbd|samp)(?:\s|>)` .Content 1 }}
     {{- with resources.Get "css/fonts.css" }}
@@ -51,12 +55,24 @@
         <a href="{{ .RelPermalink }}">RSS</a>
       {{ end }}
       <button class="theme-toggle" type="button" data-theme-toggle>
-        <span data-theme-label aria-live="polite">🖥️</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <g data-theme-icon="auto">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor" stroke="none" />
+          </g>
+          <g data-theme-icon="light">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+          </g>
+          <g data-theme-icon="dark">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+          </g>
+        </svg>
       </button>
     </nav>
     {{ end }}
   </header>
-  <main id="main"{{ if and .IsPage (eq .Section "blog") }} class="post-content"{{ end }}>
+  <main id="main"{{ if .IsHome }} class="home-content"{{ else if and .IsPage (eq .Section "blog") }} class="post-content"{{ end }}>
     {{ block "main" . }}{{ end }}
   </main>
   <footer>
@@ -64,7 +80,7 @@
       <span>
         基于 <a href="https://gohugo.io">Hugo</a> 构建
         /
-        灵感来自 <a href="https://bearblog.dev">Bear Blog</a>
+        排版灵感来自 <a href="https://github.com/tw93/Kami">Kami</a>
       </span>
     {{ end }}
   </footer>

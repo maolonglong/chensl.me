@@ -1,0 +1,11 @@
+{{- range os.ReadDir "static/fonts/tsanger-jinkai02/subsets" }}
+{{- $parts := split (strings.TrimSuffix ".woff2" .Name) "-" }}
+@font-face {
+    font-family: "TsangerJinKai02";
+    src: url('{{ printf "fonts/tsanger-jinkai02/subsets/%s" .Name | relURL }}') format("woff2");
+    font-weight: {{ index $parts 0 }};
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+{{ index $parts 1 }}-{{ index $parts 2 }};
+}
+{{ end -}}
