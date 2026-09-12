@@ -14,7 +14,7 @@
     unicode-range: U+{{ index $parts 1 }}-{{ index $parts 2 }};
 }
 {{ end -}}
-{{- with site.Data.serif }}
+{{- with hugo.Data.serif }}
 {{- $ranges := .coreRanges }}
 {{- range .weights }}
 @font-face {

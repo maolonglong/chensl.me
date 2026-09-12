@@ -199,7 +199,7 @@ test('site checker enforces CSP image sources', async () => {
 test('site checker accepts an explicitly allowed HTTPS image origin', async () => {
   const fixture = await checkerFixture()
   await write(fixture, 'public/_headers', `/*
-  Content-Security-Policy: default-src 'self'; img-src 'self' https://images.example; object-src 'none'
+  Content-Security-Policy: default-src 'self'; img-src 'self' https://images.example; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; object-src 'none'
 
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
@@ -211,6 +211,20 @@ test('site checker accepts an explicitly allowed HTTPS image origin', async () =
 <img src="https://images.example/image.png" alt="Remote" loading="lazy" decoding="async">`)
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 0, result.stderr)
+})
+
+test('site checker requires Cloudflare Web Analytics CSP sources', async () => {
+  for (const [source, directive] of [
+    ['https://static.cloudflareinsights.com', 'script-src'],
+    ['https://cloudflareinsights.com', 'connect-src'],
+  ]) {
+    const fixture = await checkerFixture()
+    const headers = await readFile(path.join(root, 'static/_headers'), 'utf8')
+    await write(fixture, 'public/_headers', headers.replace(source, ''))
+    const result = run(process.execPath, [checker], fixture)
+    assert.equal(result.status, 1, result.stdout)
+    assert.match(result.stderr, new RegExp(`CSP ${directive} must allow ${source.replaceAll('.', '\\.')}`))
+  }
 })
 
 test('site checker requires immutable caching for fonts and fingerprinted CSS', async () => {
