@@ -1,17 +1,11 @@
 {
   "version": 1,
   "skills": {
-    "agent-browser": {
-      "source": "vercel-labs/agent-browser",
-      "sourceType": "github",
-      "skillPath": "skills/agent-browser/SKILL.md",
-      "computedHash": "a674b7d81066e3cc471a7512ddb4ae724418cbfefa75cbb050b0dc430e4d57a0"
-    },
     "check": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/check/SKILL.md",
-      "computedHash": "2859887bc3045091e12a2d97e543bec8469505e220d2d199fb0af4ca3bebc554"
+      "computedHash": "b5b8157f4092d7dfea0aa6960154e078b8407692e9b854b7f4ce4461af700979"
     },
     "gh": {
       "source": "cli/cli",
@@ -23,7 +17,7 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/hunt/SKILL.md",
-      "computedHash": "80b50e44c197f661ae6f84f95d95958a65c94de8097542bdee97ddb18e3ae823"
+      "computedHash": "29c671afa26f8d05f3a147bbc5efaaebb65ca0c671eeb6d62ae696fedc4ea980"
     },
     "kami": {
       "source": "tw93/kami",
@@ -35,25 +29,25 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/learn/SKILL.md",
-      "computedHash": "8c9be99ad5bde7d71b88aef45bf318f844207b260dd49434c93b2e887221e433"
+      "computedHash": "0952966d0a355e47bbc61196decf83ec25e1ad9ff9e1dd189ac80bf799fd252d"
     },
     "read": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/read/SKILL.md",
-      "computedHash": "81611c7c7ea3adc65cc2df759f340f6e1828f37262a723bde51cf6ffa69bb3e9"
+      "computedHash": "e562768ab75632651d5e49f1ff7e26989881cf6ecabf5db0c364c3d9ae6a57b9"
     },
     "think": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/think/SKILL.md",
-      "computedHash": "50bbae21386287defdd8d2b6cbe403465ee672143780a5ca9059afa41f0a41cc"
+      "computedHash": "f7662f9fb9f19050a6391b2b2bd16ce4fcc92e004cfd06a4540209ba7a621bb3"
     },
     "write": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/write/SKILL.md",
-      "computedHash": "4763815f3277dfcb4e6c83a88eae688c3816196b287eab668a4c03b204785562"
+      "computedHash": "74ed79fcfa21f524cc5ffc4983df1bb2e05188d910325a69cdf974ebd29e0ca9"
     }
   }
 }

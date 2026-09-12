@@ -30,7 +30,7 @@ This skill is a catalog of smells, not a checklist to run top to bottom. Use it 
 
 - **Over-editing is failure, equal to under-editing.** If a sentence is already natural, clear, and stable, leave it. Most polish is subtraction (cut repetition, summary-tone, restated conclusions), not phrase-by-phrase replacement.
 - **A piece has a speaker.** Smooth prose that could belong to anyone has lost something. Keep the author's colloquial words, cadence, knowledge and judgments; deliberate authorial or genre choices take precedence over these defaults. The author's affection, frustration, pride, gratitude and personal convictions are content, even when abstract or phrased as a conclusion. Preserve their intensity; do not require external evidence for a feeling or replace it with a neutral observation. Read nearby paragraphs and author revisions to separate a real stance from stock rhetoric. If that distinction is uncertain, keep the sentence. Do not invent emotion or turn "what I did" into "what you must do."
-- **Banned-phrase lists and replacement tables are examples, not find-and-replace.** A flagged word that reads naturally in context stays. Match the smell, not the string. When source material exists, grep it before flagging a phrase: the author's own wording gets restored, not paraphrased.
+- **Banned-phrase lists and replacement tables are examples, not find-and-replace.** A flagged word that reads naturally in context stays. Match the smell, not the string. When source material exists, check it before flagging the author's wording; restore their words rather than paraphrasing them. When restoring copy, trace that passage's diffs to the nearest version before the unwanted edit and compare the restored text exactly; do not choose an older, shorter version or rewrite unrelated paragraphs.
 - **Prefer fewer, stronger edits.** Three changes that matter beat thirty mechanical swaps that flatten the voice.
 
 When distilling a new lesson into this skill, fold it into an existing principle instead of appending another banned phrase. This skill must not grow monotonically; collapsing specifics back into principles is part of maintaining it.
@@ -78,25 +78,25 @@ Load `references/write-product-localization.md` and follow its review procedure.
 Activate when: PDF, document, white paper, "review this document", "check this document", "审稿"
 
 Review checklist:
-- **Privacy scan**: Detect PII (names, companies, employment dates, salary hints, location details). Hard stop if any text implies job seeking, competitor info, or personal data leakage.
+- **Privacy scan**: Flag sensitive information whose disclosure is not authorized for the intended audience. Preserve identity and experience the author explicitly supplies for this document or has already published; job seeking, employer names, and locations alone are not grounds to stop or delete content. Resolve uncertain disclosure before exposing it.
 - **Tone consistency**: Flag voice shifts, register mismatches, formulaic phrasing.
 - **Bilingual validation**: For CN/EN pairs, confirm translation accuracy and terminology consistency. Apply Bilingual Review Mode rules.
 - **Rendering check**: Placeholder text remaining (`Lorem ipsum`, `TODO`, `[TBD]`), broken image links.
 - **Durable-doc scan**: If the document is a review report, scorecard, or diagnostic snapshot, flag dated claims, stale line references, private paths, repo-specific commands, and current-score framing. Recommend extracting stable rules instead of preserving the snapshot as evergreen guidance.
 
-Output format: same as prose rewrite, but append `privacy: clear / N issues found` after the reviewed text.
+Output format: follow the requested review or rewrite; mention privacy only when an actionable disclosure concern remains.
 
 ## Paragraph Coherence Mode
 
 Activate when: "连贯性", "段落连贯", "可读性", "coherence", "flow check", "段落顺不顺"
 
-Do not rewrite. Instead, work through each paragraph in sequence:
+For review requests, report issues; for explicit rewrite or file-edit requests, apply the minimal authorized fixes. Check each paragraph for:
 1. Flag transitions that abruptly shift topic without a signal.
 2. Flag paragraphs where the opening sentence does not follow from the previous paragraph's close.
 3. Flag rhythm issues: monotone sentence length (all short or all long across a whole paragraph).
 4. Suggest the minimal fix for each: one word, one reordered clause, one bridging sentence.
 
-Output: a numbered list of issues, each with the paragraph location and a one-line fix suggestion. Then ask if the user wants any applied.
+Output: for review, a numbered list with paragraph locations and minimal fix suggestions; for rewriting, the revised text or scoped file changes. Do not ask again to apply already-authorized edits.
 
 ## Tweet / Social Post Mode
 
@@ -106,7 +106,7 @@ Load `references/write-zh-release-notes.md` for the five announcement rules (com
 
 ## Hard Rules
 
-- **Meaning first, style second.** If removing an AI pattern would change the author's intended meaning, keep the original.
+- **Meaning first, style second.** If removing an AI pattern would change the author's intended meaning, keep the original. Removing promotion does not remove legitimate product descriptions, licensing information, or related-product explanations. Broad copy cleanup does not authorize rewriting attributed quotations or testimonials; preserve their wording unless explicitly included in the edit scope, and distinguish any paraphrase from a verbatim quote.
 - **No silent restructuring.** Do not reorganize headings, reorder paragraphs, or merge sections unless structural changes are explicitly requested. Edit in place. Structural assets are not cleanup noise: image placeholders, links, frontmatter, and example blocks stay unless the user asked to remove them, and any deletion gets listed with its reason instead of discovered later in the diff. (Exception: `references/mode-long-form.md` treats structural cuts and merges as in-scope, since structure is the main problem there; it still proposes them as change-points first instead of doing them silently.)
 - **No invented first-person experience.** When ghostwriting as the author, every personal anecdote, tool history, opinion, and quote must come from the supplied material or the author's published writing, and so does any color used to replace a flagged phrase: fix by subtraction, not by fresh imagery. The material lacking an example is a question to ask, not a gap to fill. Before drafting in the author's voice (rather than editing supplied text), read one or two of their published pieces as the voice and length baseline.
 - **Material gate before drafting long-form.** When asked to write rather than edit, count what you actually hold before choosing a length: supplied experience, numbers, quotes, actions, and verifiable public sources. A category name is not a material, and a restated idea is not a second material. Reasoning connects material; it does not breed material. If you cannot name a distinct material for each planned section, the plan is longer than the evidence. Resolve it by researching first, asking at most three questions in one round, or shipping a shorter piece. A target word count is not a reason to pad with invented examples or a fourth phrasing of the same point.
