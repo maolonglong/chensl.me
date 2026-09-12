@@ -303,8 +303,33 @@ pre {
 }
 
 blockquote {
-    margin: 1.5em 1.25em;
+    margin: 1.75em 0;
+    padding-inline: 1.5em;
     color: var(--blockquote-color);
+}
+
+blockquote > :first-child {
+    margin-top: 0;
+}
+
+blockquote > :last-child {
+    margin-bottom: 0;
+}
+
+.alert {
+    padding: 1em 1.25em;
+    border-radius: var(--radius);
+    background-color: var(--code-background-color);
+}
+
+.alert-heading {
+    margin-bottom: 0.35em;
+    color: var(--heading-color);
+    font-weight: 500;
+}
+
+.alert-heading + * {
+    margin-top: 0.35em;
 }
 
 footer {

@@ -80,6 +80,7 @@ All font URLs use Hugo `relURL`, including subpath deployments. No preloads: sho
 - **Articles:** title, date, optional collapsed native TOC, then content. TOC appears only with at least three H2/H3 headings; depth comes from `hugo.toml`, not front matter.
 - **Tables:** neutral bottom rules, 10px vertical cell padding, no colored headers or vertical grid. Respect Markdown alignment. Tables scroll at ≤480px; inspect wide tables on both sides of that breakpoint.
 - **Quotes:** indentation, warm secondary text, and breathing room; no side border or forced italic.
+- **Alerts:** GitHub-style `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, and `[!CAUTION]` blockquotes render as labeled, quiet filled callouts. Keep all five within the warm neutral palette; labels, not additional accent colors, convey the type.
 - **Media:** preserve descriptive alt text, intrinsic dimensions, lazy loading, and absolute RSS image URLs. Images stay within the reading column. No third-party image cards.
 - **Footer:** quiet Hugo/Kami credit. No decorative rule or additional navigation.
 - **404:** retain the existing message and return-home link, with the shared typography and theme.

@@ -321,6 +321,14 @@ test('page shell keeps headings in main and marks only the current navigation en
       assert.match(row.trim(), /^<a href="\/blog\/[^\"]+">\s*<span>[^<]+<\/span>\s*<time datetime="[^\"]+">\s*\d{2}-\d{2}\s*<\/time>\s*<\/a>$/)
     }
   }
+
+  const alert = await readFile(path.join(destination, 'blog/thinking-vs-research/index.html'), 'utf8')
+  assert.match(alert, /<blockquote class="alert alert-note">\s*<p class="alert-heading">提示<\/p>/)
+  assert.doesNotMatch(alert, /\[!NOTE\]/)
+
+  const quote = await readFile(path.join(destination, 'blog/2024-review/index.html'), 'utf8')
+  assert.match(quote, /<blockquote>\s*<p>对技术的看法[\s\S]*?<cite>2023 年终总结 - 我叫尤加利/)
+  assert.doesNotMatch(quote, /<blockquote class="alert/)
 })
 
 test('serif fonts resolve on every page and code fonts stay conditional under a subpath', async () => {
