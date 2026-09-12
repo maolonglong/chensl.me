@@ -1,3 +1,8 @@
+{{- /*
+  Complete fallback coverage, declared first. Overlapping `unicode-range` declarations resolve in
+  reverse source order, so the core subset below wins for every character this site already uses
+  and these blocks only load for characters newer articles introduce.
+*/ -}}
 {{- range os.ReadDir "static/fonts/tsanger-jinkai02/subsets" }}
 {{- $parts := split (strings.TrimSuffix ".woff2" .Name) "-" }}
 @font-face {
@@ -9,3 +14,16 @@
     unicode-range: U+{{ index $parts 1 }}-{{ index $parts 2 }};
 }
 {{ end -}}
+{{- with site.Data.serif }}
+{{- $ranges := .coreRanges }}
+{{- range .weights }}
+@font-face {
+    font-family: "TsangerJinKai02";
+    src: url('{{ printf "fonts/tsanger-jinkai02/core-%v.woff2" . | relURL }}') format("woff2");
+    font-weight: {{ . }};
+    font-style: normal;
+    font-display: swap;
+    unicode-range: {{ $ranges | safeCSS }};
+}
+{{ end -}}
+{{- end -}}

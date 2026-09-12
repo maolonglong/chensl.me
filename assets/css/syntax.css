@@ -9,7 +9,7 @@
 .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
 .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
 .chroma .line { display: flex; }
-.chroma .hl, .chroma .gd, .chroma .gi {
+.chroma .hl {
     background-color: light-dark(#e8e6dc, #353530);
 }
 
@@ -34,6 +34,5 @@
 }
 
 .chroma .err, .chroma .gr, .chroma .gt { text-decoration: underline wavy; }
-.chroma .gd { text-decoration: line-through; }
 .chroma .ge, .chroma .gl { text-decoration: underline; }
 .chroma .gs, .chroma .gh, .chroma .gu { font-weight: bold; }

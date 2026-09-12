@@ -198,11 +198,29 @@ test('site checker enforces CSP image sources', async () => {
 
 test('site checker accepts an explicitly allowed HTTPS image origin', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'public/_headers', `/*\n  Content-Security-Policy: default-src 'self'; img-src 'self' https://images.example; object-src 'none'\n`)
+  await write(fixture, 'public/_headers', `/*
+  Content-Security-Policy: default-src 'self'; img-src 'self' https://images.example; object-src 'none'
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/css/*
+  Cache-Control: public, max-age=31536000, immutable
+`)
   await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
 <img src="https://images.example/image.png" alt="Remote" loading="lazy" decoding="async">`)
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 0, result.stderr)
+})
+
+test('site checker requires immutable caching for fonts and fingerprinted CSS', async () => {
+  const fixture = await checkerFixture()
+  const headers = await readFile(path.join(root, 'static/_headers'), 'utf8')
+  await write(fixture, 'public/_headers', headers.replace(/^\/fonts\/\*\n[\s\S]*?\n\n/m, ''))
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /\/fonts\/\* as immutable/)
+  assert.doesNotMatch(result.stderr, /\/css\/\* as immutable/)
 })
 
 test('site checker validates same-origin social images', async () => {
@@ -240,7 +258,10 @@ test('reading and syntax palettes meet AA contrast in both themes', async () => 
   const style = await readFile(path.join(root, 'assets/css/style.css'), 'utf8')
   const tokens = Object.fromEntries([...style.matchAll(/--([\w-]+):\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/g)]
     .map(([, name, light, dark]) => [name, [null, light, dark]]))
-  const readingColors = ['text-color', 'heading-color', 'muted-color', 'link-color', 'link-hover-color', 'blockquote-color']
+  const readingColors = [
+    'text-color', 'heading-color', 'muted-color',
+    'link-color', 'link-hover-color', 'visited-color', 'blockquote-color',
+  ]
   for (const name of [...readingColors, 'background-color', 'selection-color', 'mark-background-color']) {
     assert.ok(tokens[name], `missing ${name}`)
   }
@@ -319,17 +340,23 @@ test('serif fonts resolve on every page and code fonts stay conditional under a 
     assert.ok(stylesheet, 'missing shared serif stylesheet')
     const css = await readFile(path.join(destination, stylesheet.slice('/sub/'.length)), 'utf8')
     const serifFaces = [...css.matchAll(/@font-face\{[^}]+\}/g)]
-    assert.equal(serifFaces.length, 510)
+    assert.equal(serifFaces.length, 512)
     for (const weight of [400, 500]) {
       const weighted = serifFaces.filter(([face]) => face.includes(`font-weight:${weight};`))
-      assert.equal(weighted.length, 255)
+      assert.equal(weighted.length, 256)
       const ranges = new Set()
-      for (const [face] of weighted) {
+      for (const [face] of weighted.filter(([face]) => face.includes('/subsets/'))) {
         const range = face.match(/unicode-range:([^;}]+)/)?.[1]
         assert.ok(range, face)
         assert.ok(!ranges.has(range), 'duplicate Unicode range')
         ranges.add(range)
       }
+      assert.equal(ranges.size, 255)
+    }
+    // Overlapping ranges resolve in reverse source order, so the core subsets must be declared last.
+    for (const [face] of serifFaces.slice(-2)) {
+      assert.match(face, /url\([^)]*\/fonts\/tsanger-jinkai02\/core-[45]00\.woff2\)/)
+      assert.ok((face.match(/unicode-range:([^;}]+)/)[1].match(/U\+/g) ?? []).length > 500, 'core range too coarse')
     }
     if (!hasCode) assert.doesNotMatch(html, /fonts\/jetbrains-mono/, file)
     for (const [face] of [...faces, ...serifFaces]) {
@@ -338,10 +365,69 @@ test('serif fonts resolve on every page and code fonts stay conditional under a 
       assert.ok(url, face)
       const font = await readFile(path.join(destination, url.slice('/sub/'.length)))
       assert.equal(font.toString('ascii', 0, 4), 'wOF2')
-      if (url.includes('/tsanger-jinkai02/')) assert.ok(font.length < 256 * 1024, url)
+      if (url.includes('/subsets/')) assert.ok(font.length < 128 * 1024, url)
+      if (url.includes('/core-')) assert.ok(font.length < 320 * 1024, url)
     }
     assert.doesNotMatch(html, /rel=["']?preload/)
   }
   const license = await readFile(path.join(destination, 'fonts/jetbrains-mono-2.304/OFL.txt'), 'utf8')
   assert.match(license, /SIL OPEN FONT LICENSE Version 1\.1/)
+})
+
+test('a cold visit stays within the serif font transfer budget on every page', async () => {
+  const budget = 640 * 1024
+  const destination = await temporaryDirectory('hugo-font-budget-')
+  const result = run(process.env.HUGO_BIN ?? 'hugo', [
+    '--destination', destination, '--minify', '--quiet',
+  ], root)
+  assert.equal(result.status, 0, result.stderr)
+
+  const index = await readFile(path.join(destination, 'index.html'), 'utf8')
+  const stylesheet = index.match(/<link\b[^>]*href=["']?(\/css\/serif[^ "'>]+)/)?.[1]
+  assert.ok(stylesheet, 'missing serif stylesheet')
+  const css = await readFile(path.join(destination, stylesheet.slice(1)), 'utf8')
+  // A character picks the last declared face whose range covers it, so match faces in reverse.
+  const faces = [...css.matchAll(/@font-face\{([^}]+)\}/g)].reverse().map(([, body]) => ({
+    weight: Number(body.match(/font-weight:(\d+)/)[1]),
+    url: body.match(/url\(['"]?([^)'"]+)['"]?\)/)[1],
+    ranges: body.match(/unicode-range:([^;}]+)/)[1].split(',').map(token => {
+      const [start, end] = token.trim().slice(2).split('-')
+      return [Number.parseInt(start, 16), Number.parseInt(end ?? start, 16)]
+    }),
+  }))
+  assert.ok(faces.length > 0, 'missing serif faces')
+  const sizes = new Map()
+  const sizeOf = async url => {
+    if (!sizes.has(url)) sizes.set(url, (await readFile(path.join(destination, url.slice(1)))).length)
+    return sizes.get(url)
+  }
+
+  const entities = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0' }
+  const plainText = markup => markup
+    .replace(/<(script|style)\b[\s\S]*?<\/\1>/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&#x([\da-f]+);/gi, (_, hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, decimal) => String.fromCodePoint(Number(decimal)))
+    .replace(/&(\w+);/g, (whole, name) => entities[name] ?? whole)
+
+  // Headings and strong text use weight 500 and body text 400; charge every character to both.
+  for (const page of [
+    'index.html', 'blog/index.html', '404.html',
+    'blog/buddy/index.html', 'blog/1brc-in-zig/index.html',
+  ]) {
+    const html = await readFile(path.join(destination, page), 'utf8')
+    const codepoints = new Set([...plainText(html)].map(character => character.codePointAt(0)))
+    const needed = new Set()
+    for (const codepoint of codepoints) {
+      for (const weight of [400, 500]) {
+        const face = faces.find(candidate => candidate.weight === weight
+          && candidate.ranges.some(([start, end]) => codepoint >= start && codepoint <= end))
+        if (face) needed.add(face.url)
+      }
+    }
+    let total = 0
+    for (const url of needed) total += await sizeOf(url)
+    assert.ok(total <= budget,
+      `${page}: ${(total / 1024).toFixed(0)} KiB across ${needed.size} files exceeds ${budget / 1024} KiB`)
+  }
 })

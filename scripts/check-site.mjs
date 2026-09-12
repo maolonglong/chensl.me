@@ -196,6 +196,13 @@ const imgSourceTokens = csp?.match(/(?:^|;)\s*img-src\s+([^;]+)/i)?.[1].trim().s
 if (!csp || imgSourceTokens.length === 0) {
   errors.push('public/_headers must define img-src in the global Content-Security-Policy')
 }
+// Workers Assets defaults to `max-age=0, must-revalidate`, which would revalidate every font.
+for (const immutable of ['/fonts/*', '/css/*']) {
+  const rule = headers.match(new RegExp(`^${immutable.replace('*', '\\*')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`, 'm'))?.[1] ?? ''
+  if (!/^\s*Cache-Control:.*\bimmutable\b/mi.test(rule)) {
+    errors.push(`public/_headers must mark ${immutable} as immutable so fingerprinted assets are not revalidated`)
+  }
+}
 const homeHtml = htmlByFile.get(path.join(outputDir, 'index.html')) ?? ''
 const canonicalTag = [...homeHtml.matchAll(/<link\b[^>]*>/gi)]
   .find(match => getAttributes(match[0]).get('rel')?.split(/\s+/).some(value => value.toLowerCase() === 'canonical'))?.[0]

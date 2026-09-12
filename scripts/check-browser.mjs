@@ -21,8 +21,9 @@ try {
       loaded: [...document.fonts].some(f => f.family.toLowerCase().includes('tsanger') && f.status === 'loaded') };
   })`)
   console.log('Cold home fonts:', fonts)
-  if (!fonts.loaded || fonts.bytes === 0 || fonts.bytes > 4 * 1024 * 1024) {
-    failures.push('Home must load actual JinKai fonts using at most 4 MiB on a cold visit')
+  // `just check` models this budget statically; this confirms the browser agrees in practice.
+  if (!fonts.loaded || fonts.bytes === 0 || fonts.bytes > 640 * 1024 || fonts.requests > 4) {
+    failures.push('Home must load actual JinKai fonts in at most 4 requests and 640 KiB on a cold visit')
   }
   for (const width of [320, 390, 768, 1280]) {
     browser('set', 'viewport', String(width), '844', '2')

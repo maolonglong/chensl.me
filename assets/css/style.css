@@ -25,6 +25,7 @@
     --muted-color: light-dark(#6b6a64, #b0aea5);
     --link-color: light-dark(#1b365d, #94b4d4);
     --link-hover-color: light-dark(#2d5a8a, #bfd2e5);
+    --visited-color: light-dark(#4a5d78, #7e93a8);
     --code-background-color: light-dark(#f0eee6, #252523);
     --code-color: light-dark(#3d3d3a, #d4d3cd);
     --blockquote-color: light-dark(#504e49, #b0aea5);
@@ -396,6 +397,11 @@ ul.blog-posts time {
     font-size: 0.875rem;
     white-space: nowrap;
     color: var(--muted-color);
+}
+
+/* Already-read entries recede within the same ink hue rather than taking a second accent. */
+ul.blog-posts li a:visited {
+    color: var(--visited-color);
 }
 
 .visually-hidden {
