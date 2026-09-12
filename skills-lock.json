@@ -25,6 +25,12 @@
       "skillPath": "skills/hunt/SKILL.md",
       "computedHash": "80b50e44c197f661ae6f84f95d95958a65c94de8097542bdee97ddb18e3ae823"
     },
+    "kami": {
+      "source": "tw93/kami",
+      "sourceType": "github",
+      "skillPath": "skills/kami/SKILL.md",
+      "computedHash": "aedaa9aecf5a00a83195ca93865ee936a941006c44bc99622670ab6cc55b42c9"
+    },
     "learn": {
       "source": "tw93/Waza",
       "sourceType": "github",
