@@ -130,12 +130,11 @@ if (!existsSync(outputDir)) {
   process.exit(1)
 }
 
-const [buildScript, justfile, miseConfig, miseLock, ciWorkflow] = await Promise.all([
+const [buildScript, justfile, miseConfig, miseLock] = await Promise.all([
   readFile(path.join(root, 'build.sh'), 'utf8'),
   readFile(path.join(root, 'justfile'), 'utf8'),
   readFile(path.join(root, 'mise.toml'), 'utf8'),
   readFile(path.join(root, 'mise.lock'), 'utf8'),
-  readFile(path.join(root, '.github/workflows/ci.yml'), 'utf8'),
 ])
 
 function lockedToolVersion(tool) {
@@ -156,15 +155,6 @@ if (!buildScript.includes('build --cleanDestinationDir')) {
 }
 if (!justfile.includes('hugo --cleanDestinationDir')) {
   errors.push('just build must build with --cleanDestinationDir')
-}
-const miseNodeVersion = miseConfig.match(/^node = "([^"]+)"/m)?.[1]
-const ciNodeVersion = ciWorkflow.match(/node-version:\s*["']?([^\s"']+)/)?.[1]
-if (!miseNodeVersion || miseNodeVersion !== ciNodeVersion) {
-  errors.push(`Node.js version mismatch: CI=${ciNodeVersion ?? 'missing'}, mise.toml=${miseNodeVersion ?? 'missing'}`)
-}
-const lockNodeVersion = lockedToolVersion('node')
-if (!miseNodeVersion || miseNodeVersion !== lockNodeVersion) {
-  errors.push(`Node.js version mismatch: mise.toml=${miseNodeVersion ?? 'missing'}, mise.lock=${lockNodeVersion ?? 'missing'}`)
 }
 
 const buildArchives = new Map([...buildScript.matchAll(/hugo_archive="([^"]+)"\s*\n\s*hugo_checksum="([a-f\d]{64})"/g)]

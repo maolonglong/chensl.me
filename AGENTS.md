@@ -9,12 +9,12 @@
 
 ## Commands
 
-- Install Node tooling: `corepack pnpm install --frozen-lockfile`
+- Install Node tooling: `pnpm install --frozen-lockfile`
 - Preview: `just server`
 - Production build: `just build`
-- Cloudflare preview: `corepack pnpm exec wrangler dev`
-- Cloudflare dry run: `corepack pnpm exec wrangler deploy --dry-run`
-- Manual deploy only when explicitly requested: `corepack pnpm exec wrangler deploy`
+- Cloudflare preview: `pnpm exec wrangler dev`
+- Cloudflare dry run: `pnpm exec wrangler deploy --dry-run`
+- Manual deploy only when explicitly requested: `pnpm exec wrangler deploy`
 
 ## Task-specific guidance
 
@@ -25,7 +25,7 @@
 ## Verification
 
 - Run `just check` for changes to site output (including content, layouts, CSS, links, and RSS) or build behavior. It includes the production build; do not run `just build` separately.
-- For Cloudflare configuration or dependency changes, run `corepack pnpm exec wrangler deploy --dry-run` without deploying.
+- For Cloudflare configuration or dependency changes, run `pnpm exec wrangler deploy --dry-run` without deploying.
 - For layout or CSS changes, inspect rendered output using the design guide's browser coverage.
 - For tooling-only changes, run the affected checks. Documentation-only changes outside site content need no site build; check referenced commands and links instead.
 

@@ -248,17 +248,15 @@ test('site checker validates same-origin social images', async () => {
   assert.match(result.stderr, /missing internal URL "https:\/\/chensl\.me\/missing-twitter\.png"/)
 })
 
-test('site checker rejects stale locked tool versions and Hugo checksums', async () => {
+test('site checker rejects a stale locked Hugo version and checksums', async () => {
   const fixture = await checkerFixture()
   const lock = await readFile(path.join(fixture, 'mise.lock'), 'utf8')
   await write(fixture, 'mise.lock', lock
     .replace(/(\[\[tools\.hugo\]\]\s*version = ")[^"]+/, '$10.0.0')
-    .replace(/(\[\[tools\.node\]\]\s*version = ")[^"]+/, '$10.0.0')
     .replace(/sha256:[a-f\d]{64}/g, `sha256:${'0'.repeat(64)}`))
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
   assert.match(result.stderr, /Hugo version mismatch: mise.toml=.*mise.lock=0.0.0/)
-  assert.match(result.stderr, /Node.js version mismatch: mise.toml=.*mise.lock=0.0.0/)
   for (const platform of ['macos-arm64', 'macos-x64', 'linux-arm64', 'linux-x64']) {
     assert.ok(result.stderr.includes(`does not match mise.lock for ${platform}`))
   }

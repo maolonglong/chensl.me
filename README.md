@@ -4,14 +4,14 @@ Source for [chensl.me](https://chensl.me), a personal site and technical blog bu
 
 ## Setup
 
-Hugo and Node.js versions are managed by [mise](https://mise.jdx.dev/):
+Hugo, `just`, and ShellCheck are managed by [mise](https://mise.jdx.dev/). Node.js 26 and pnpm are expected to be available in the development environment:
 
 ```sh
 mise install
-corepack pnpm install --frozen-lockfile
+pnpm install --frozen-lockfile
 ```
 
-The task runner, [`just`](https://github.com/casey/just), must also be installed. Python 3 is used by the site checks for XML validation; these checks use only the Python standard library.
+Python 3 is used by the site checks for XML validation; these checks use only the Python standard library.
 
 ## Development
 
@@ -24,13 +24,13 @@ just check   # build and run all site checks
 After changing dependencies or Cloudflare configuration, run a deployment dry run. Wrangler runs `build.sh` and the site validation as part of this command:
 
 ```sh
-corepack pnpm exec wrangler deploy --dry-run
+pnpm exec wrangler deploy --dry-run
 ```
 
 Manual deployment, only when explicitly requested:
 
 ```sh
-corepack pnpm exec wrangler deploy
+pnpm exec wrangler deploy
 ```
 
 ## CI and deployment
@@ -59,7 +59,7 @@ node scripts/fetch-release-notes.mjs --repo OWNER/REPO --from CURRENT_TAG --to T
 Use `--to latest` only when targeting the latest stable release. Add `--include-prereleases` only when prerelease compatibility is in scope.
 
 - Hugo: update `mise.toml`, `mise.lock`, and the version plus every platform checksum in `build.sh` together. Verify both `./build.sh` and `CI=true ./build.sh`.
-- Node.js: update `mise.toml`, `mise.lock`, and `node-version` in `.github/workflows/ci.yml` together.
+- Node.js: update `node-version` in `.github/workflows/ci.yml`; Amp orbs provide Node.js for development.
 
 Run the deployment dry run described above after dependency changes.
 
