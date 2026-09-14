@@ -5,9 +5,11 @@
 */ -}}
 {{- range os.ReadDir "static/fonts/tsanger-jinkai02/subsets" }}
 {{- $parts := split (strings.TrimSuffix ".woff2" .Name) "-" }}
+{{- $path := printf "static/fonts/tsanger-jinkai02/subsets/%s" .Name }}
+{{- $version := printf "%.12s" (crypto.SHA256 (os.ReadFile $path)) }}
 @font-face {
     font-family: "TsangerJinKai02";
-    src: url('{{ printf "fonts/tsanger-jinkai02/subsets/%s" .Name | relURL }}') format("woff2");
+    src: url('{{ printf "%s?v=%s" (printf "fonts/tsanger-jinkai02/subsets/%s" .Name | relURL) $version }}') format("woff2");
     font-weight: {{ index $parts 0 }};
     font-style: normal;
     font-display: swap;
@@ -17,9 +19,11 @@
 {{- with hugo.Data.serif }}
 {{- $ranges := .coreRanges }}
 {{- range .weights }}
+{{- $path := printf "static/fonts/tsanger-jinkai02/core-%v.woff2" . }}
+{{- $version := printf "%.12s" (crypto.SHA256 (os.ReadFile $path)) }}
 @font-face {
     font-family: "TsangerJinKai02";
-    src: url('{{ printf "fonts/tsanger-jinkai02/core-%v.woff2" . | relURL }}') format("woff2");
+    src: url('{{ printf "%s?v=%s" (printf "fonts/tsanger-jinkai02/core-%v.woff2" . | relURL) $version }}') format("woff2");
     font-weight: {{ . }};
     font-style: normal;
     font-display: swap;

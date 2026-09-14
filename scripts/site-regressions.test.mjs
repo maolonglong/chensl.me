@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -375,7 +376,7 @@ test('serif fonts resolve on every page and code fonts stay conditional under a 
     }
     // Overlapping ranges resolve in reverse source order, so the core subsets must be declared last.
     for (const [face] of serifFaces.slice(-2)) {
-      assert.match(face, /url\([^)]*\/fonts\/tsanger-jinkai02\/core-[45]00\.woff2\)/)
+      assert.match(face, /url\([^)]*\/fonts\/tsanger-jinkai02\/core-[45]00\.woff2\?v=[a-f\d]{12}\)/)
       assert.ok((face.match(/unicode-range:([^;}]+)/)[1].match(/U\+/g) ?? []).length > 500, 'core range too coarse')
     }
     if (!hasCode) assert.doesNotMatch(html, /fonts\/jetbrains-mono/, file)
@@ -383,7 +384,10 @@ test('serif fonts resolve on every page and code fonts stay conditional under a 
       assert.match(face, /font-display:swap/)
       const url = face.match(/url\(["']?(\/sub\/fonts\/[^)"']+)['"]?\)/)?.[1]
       assert.ok(url, face)
-      const font = await readFile(path.join(destination, url.slice('/sub/'.length)))
+      const [pathname, query] = url.split('?')
+      const font = await readFile(path.join(destination, pathname.slice('/sub/'.length)))
+      const version = createHash('sha256').update(font).digest('hex').slice(0, 12)
+      assert.equal(query, `v=${version}`)
       assert.equal(font.toString('ascii', 0, 4), 'wOF2')
       if (url.includes('/subsets/')) assert.ok(font.length < 128 * 1024, url)
       if (url.includes('/core-')) assert.ok(font.length < 320 * 1024, url)
@@ -418,7 +422,7 @@ test('a cold visit stays within the serif font transfer budget on every page', a
   assert.ok(faces.length > 0, 'missing serif faces')
   const sizes = new Map()
   const sizeOf = async url => {
-    if (!sizes.has(url)) sizes.set(url, (await readFile(path.join(destination, url.slice(1)))).length)
+    if (!sizes.has(url)) sizes.set(url, (await readFile(path.join(destination, url.split('?')[0].slice(1)))).length)
     return sizes.get(url)
   }
 

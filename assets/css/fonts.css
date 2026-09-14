@@ -4,9 +4,11 @@
     (dict "file" "Italic" "weight" 400 "style" "italic")
     (dict "file" "BoldItalic" "weight" 700 "style" "italic")
 }}
+{{- $relative := printf "fonts/jetbrains-mono-2.304/JetBrainsMono-%s.woff2" .file }}
+{{- $version := printf "%.12s" (crypto.SHA256 (os.ReadFile (printf "static/%s" $relative))) }}
 @font-face {
     font-family: "JetBrains Mono";
-    src: url('{{ printf "fonts/jetbrains-mono-2.304/JetBrainsMono-%s.woff2" .file | relURL }}') format("woff2");
+    src: url('{{ printf "%s?v=%s" ($relative | relURL) $version }}') format("woff2");
     font-weight: {{ .weight }};
     font-style: {{ .style }};
     font-display: swap;
