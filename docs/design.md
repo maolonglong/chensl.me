@@ -2,11 +2,27 @@
 
 **Warm paper, ink-blue links, and Tsanger JinKai typography: a personal book for the screen.**
 
+This is a decision system for the site, not a mood board or a component catalog. Use it to decide what to preserve, what to remove, where a change belongs, and how to verify the result.
+
 ## Direction
 
 [Kami](https://github.com/tw93/Kami) is the visual foundation, not merely a documentation reference. The owner chose its paper-like direction over the former Bear/Catppuccin theme. Keep Hugo, URLs, content, SEO, RSS, and static deployment; do not preserve the previous palette or system-ui typography.
 
 The home page is a personal title page, the blog index a quiet year-grouped contents list, and articles a single reading column. This is not a product landing page: no pricing, feature cards, invented testimonials, or marketing copy.
+
+Design for three reader jobs: recognize whose site this is, find an article, and read it without the interface competing for attention. The author's words are the subject; typography, spacing, and navigation support them.
+
+## Decision order
+
+When requirements compete, protect them in this order:
+
+1. Preserve the author's content, factual meaning, URLs, dates, metadata, SEO, RSS, and static delivery.
+2. Preserve semantic HTML, keyboard access, readable contrast, text resizing, and narrow-screen use.
+3. Make the current reader job obvious: identity on home, scanning in the archive, sustained reading in articles.
+4. Preserve the warm-paper, ink-blue, JinKai identity with the smallest visual vocabulary that works.
+5. Refine spacing, wrapping, interaction, and detail without weakening the first four priorities.
+
+Do not rewrite content to rescue a weak layout, hide controls to make a header fit, or add decoration to fill sparse material. Recompose the layout or remove the unnecessary element instead.
 
 ## Invariants
 
@@ -20,6 +36,20 @@ The home page is a personal title page, the blog index a quiet year-grouped cont
 8. Body links remain visibly identifiable, with underlines in articles and footer. Keep `aria-current`, labels, keyboard focus, and the skip link.
 9. Load fonts from this site's own origin, use `font-display: swap`, and keep readable fallbacks. Do not add a runtime font CDN or framework.
 10. Use screen reading metrics rather than copying print point sizes or page-density targets. Never shrink code to fit a narrow viewport; let its container scroll.
+
+## Composition and rhythm
+
+Choose geometry before adding components. Each page has one dominant reading path:
+
+- **Home:** greeting → introduction → personal details and links.
+- **Archive:** year → article title → date. Titles carry more weight than dates.
+- **Article:** title → date and optional contents → uninterrupted body.
+
+Align the masthead and footer to the wider `52rem` shell and reading content to the `42rem` column. Within either track, every element should share an edge, baseline, or deliberate center. Do not introduce a new alignment for decoration alone.
+
+Spacing communicates relationships. Keep a heading close to the content it introduces, paragraphs at one reading rhythm, and section changes clearly larger. Let one parent own each gap; do not stack child margins and wrapper gaps to patch isolated cases. Empty space should frame content, not expose an underfilled grid or missing idea.
+
+Use the first viewport as orientation, not spectacle. It should reveal the site identity and page purpose without an oversized hero, setup copy, or delayed content. When a page feels flat, strengthen type scale, wording, alignment, or spacing before adding a surface, icon, color, or effect.
 
 ## Tokens
 
@@ -47,8 +77,8 @@ Syntax colors live in `assets/css/syntax.css`, using the same warm palette. Text
 | Role | Size | Weight | Line height |
 |---|---|---|---|
 | Site title | `1.5rem` | 500 | 1.3 |
-| Home title | `1.75rem`–`2.5rem` | 500 | 1.3 |
-| Article title | `1.75rem`–`2.25rem` | 500 | 1.3 |
+| Home title | `1.75rem` to `2.5rem` | 500 | 1.3 |
+| Article title | `1.75rem` to `2.25rem` | 500 | 1.3 |
 | H2 / H3 | `1.5rem` / `1.15rem` | 500 | 1.3 |
 | Body | `1.0625rem` | 400 | 1.85 |
 | Article body | `1.125rem`, `1.0625rem` at ≤600px | 400 | 1.85 |
@@ -87,6 +117,35 @@ All font URLs use Hugo `relURL`, including subpath deployments. No preloads: sho
 
 The toggle uses inline SVG half-circle (auto), sun (light), and moon (dark) icons on a shared `24 × 24` viewBox, rendered at `20 × 20` with a 1.5-unit stroke. A fixed 24px grid-centered button and 44px hit area keep placement independent of font metrics. CSS selects the icon using `data-theme-mode`; the SVG is hidden from assistive technology and the button's accessible label announces current and next modes. Do not replace these icons with font glyphs or add an icon library. The toggle stays hidden until initialized and disappears without JavaScript. Storage failures must not prevent switching on the current page. Theme-color metadata matches the canvas. Hover rules remain under `(hover: hover)` and reduced motion disables the small active transition.
 
+## Accessibility and responsive behavior
+
+Source order is reading order. Keep one descriptive `h1`, ordered headings, landmarks, native controls, semantic tables, useful link text, descriptive image alternatives, and visible focus. Do not rely on color, hover, motion, or position alone to convey meaning.
+
+Reflow before shrinking. Header controls wrap; archive titles wrap while dates remain intact; tables and code scroll locally only when their exact structure needs preserving. Do not conceal page overflow, clip text, break words character by character, or reduce body text below the established scale to hold a desktop composition.
+
+Light and dark modes must preserve the same hierarchy, affordances, and contrast. Motion is optional feedback only: the complete reading experience must work without it and with reduced motion enabled.
+
+## Reject these defaults
+
+- Generic centered hero copy followed by cards, metrics, badges, or feature grids.
+- Decorative gradients, glows, textures, blobs, colored rails, glass, or ornamental shadows.
+- Cards, borders, or background panels used to repair weak grouping or hierarchy.
+- All-caps eyebrows, tracked labels, decorative section numbers, and tiny muted prose.
+- Icons, illustrations, screenshots, or animation that carry no information.
+- Sticky navigation, floating controls, scroll-reveal effects, or reading progress ornament.
+- A second accent hue, arbitrary hex values, one-off font sizes, or synthetic font weights.
+- Desktop layouts merely scaled down instead of recomposed for narrow screens.
+
+Restraint still needs hierarchy. Preserve one clear focal point, make supporting material recede, and remove anything that does not improve identity, navigation, reading, or understanding.
+
+## Working method
+
+1. Read the affected content, template, styles, and existing responsive states before designing.
+2. State the reader job and the current hierarchy. Fix ownership or composition before adjusting isolated pixels.
+3. Change the narrowest source of truth listed below. Reuse semantic tokens and existing elements; do not layer a parallel theme or component system on top.
+4. Render real content, including the longest or densest affected state. Inspect hierarchy first, then wrapping and alignment, then color and detail.
+5. Run the static and browser checks under [Verification](#verification). Fix the highest-impact shared defect, render again, and stop when no known material issue remains.
+
 ## Ownership
 
 | Surface | File |
@@ -112,6 +171,17 @@ Inspect browser screenshots in light and dark at 1280px and 390px on home, archi
 
 Check TOC open/closed, code horizontal scrolling, long titles, tables, quotes, focus-visible, theme cycling and persistence, forced theme opposite the OS, and OS changes in auto mode. Ensure no page-level horizontal overflow. Screenshots from viewport resizing are Chromium responsive checks, not real phone testing.
 
+Review rendered changes in this order:
+
+1. **Purpose:** Is the site identity and page's reader job obvious in the first viewport?
+2. **Hierarchy:** Is there one stable reading path and a clear focal point?
+3. **Typography:** Are type roles, line lengths, wrapping, alignment, and spacing consistent?
+4. **Restraint:** Can any surface, rule, icon, label, or effect be removed without losing meaning or usability?
+5. **Reflow:** Does every required state work at narrow widths and 200% text without page overflow?
+6. **Access:** Are semantics, labels, focus, contrast, alternatives, and reduced-motion behavior intact?
+
 ## Out of scope
 
-Framework migrations, client search, comments, taxonomies, print/PDF skins, new routes, and product-page components. They require a separate request.
+This guide does not define an editorial voice, rewrite article content, or provide a general-purpose component library. It intentionally omits report storytelling, dashboards, charts, calculators, product marketing sections, and application UI patterns; the site does not need them.
+
+Framework migrations, client search, comments, taxonomies, print/PDF skins, new routes, and product-page components require a separate request.
