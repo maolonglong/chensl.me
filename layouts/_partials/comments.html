@@ -1,0 +1,61 @@
+{{- $light := resources.Get "css/giscus-light.css" | minify | fingerprint -}}
+{{- $dark := resources.Get "css/giscus-dark.css" | minify | fingerprint -}}
+<section class="comments" aria-labelledby="comments-title">
+  <h2 id="comments-title">评论</h2>
+  <div class="giscus"></div>
+  <noscript><p class="comments-unavailable">启用 JavaScript 后可以查看和发表评论。</p></noscript>
+</section>
+<script>
+  (() => {
+    "use strict";
+
+    const themes = {
+      light: new URL({{ $light.RelPermalink | jsonify | safeJS }}, window.location.origin).href,
+      dark: new URL({{ $dark.RelPermalink | jsonify | safeJS }}, window.location.origin).href
+    };
+    const resolvedTheme = () => document.documentElement.dataset.theme
+      || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    Object.assign(script.dataset, {
+      repo: {{ site.Params.comments.repo | jsonify | safeJS }},
+      repoId: {{ site.Params.comments.repoID | jsonify | safeJS }},
+      category: {{ site.Params.comments.category | jsonify | safeJS }},
+      categoryId: {{ site.Params.comments.categoryID | jsonify | safeJS }},
+      mapping: "pathname",
+      strict: "1",
+      reactionsEnabled: "1",
+      emitMetadata: "0",
+      inputPosition: "top",
+      theme: themes[resolvedTheme()],
+      lang: "zh-CN",
+      loading: "lazy"
+    });
+
+    const syncTheme = themeName => {
+      const theme = themes[themeName];
+      script.dataset.theme = theme;
+      document.querySelector("iframe.giscus-frame")?.contentWindow.postMessage({
+        giscus: { setConfig: { theme } }
+      }, "https://giscus.app");
+    };
+
+    window.addEventListener("site-theme-change", event => {
+      syncTheme(event.detail.theme);
+    });
+
+    const container = document.querySelector(".giscus");
+    const frameObserver = new MutationObserver(() => {
+      const frame = container.querySelector("iframe.giscus-frame");
+      if (!frame) {
+        return;
+      }
+      frameObserver.disconnect();
+      frame.addEventListener("load", () => syncTheme(resolvedTheme()), { once: true });
+    });
+    frameObserver.observe(container, { childList: true });
+    container.append(script);
+  })();
+</script>

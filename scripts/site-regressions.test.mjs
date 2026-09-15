@@ -200,13 +200,14 @@ test('site checker enforces CSP image sources', async () => {
 test('site checker accepts an explicitly allowed HTTPS image origin', async () => {
   const fixture = await checkerFixture()
   await write(fixture, 'public/_headers', `/*
-  Content-Security-Policy: default-src 'self'; img-src 'self' https://images.example; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; object-src 'none'
+  Content-Security-Policy: default-src 'self'; img-src 'self' https://images.example; script-src 'self' https://giscus.app https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; frame-src https://giscus.app; object-src 'none'
 
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
 
 /css/*
   Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
 `)
   await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
 <img src="https://images.example/image.png" alt="Remote" loading="lazy" decoding="async">`)
@@ -214,14 +215,17 @@ test('site checker accepts an explicitly allowed HTTPS image origin', async () =
   assert.equal(result.status, 0, result.stderr)
 })
 
-test('site checker requires Cloudflare Web Analytics CSP sources', async () => {
+test('site checker requires third-party CSP sources', async () => {
   for (const [source, directive] of [
+    ['https://giscus.app', 'script-src'],
+    ['https://giscus.app', 'frame-src'],
     ['https://static.cloudflareinsights.com', 'script-src'],
     ['https://cloudflareinsights.com', 'connect-src'],
   ]) {
     const fixture = await checkerFixture()
     const headers = await readFile(path.join(root, 'static/_headers'), 'utf8')
-    await write(fixture, 'public/_headers', headers.replace(source, ''))
+    const expression = new RegExp(`(${directive}[^;]*)${source.replaceAll('.', '\\.')}`)
+    await write(fixture, 'public/_headers', headers.replace(expression, '$1'))
     const result = run(process.execPath, [checker], fixture)
     assert.equal(result.status, 1, result.stdout)
     assert.match(result.stderr, new RegExp(`CSP ${directive} must allow ${source.replaceAll('.', '\\.')}`))
@@ -236,6 +240,15 @@ test('site checker requires immutable caching for fonts and fingerprinted CSS', 
   assert.equal(result.status, 1, result.stdout)
   assert.match(result.stderr, /\/fonts\/\* as immutable/)
   assert.doesNotMatch(result.stderr, /\/css\/\* as immutable/)
+})
+
+test('site checker requires cross-origin access for giscus themes', async () => {
+  const fixture = await checkerFixture()
+  const headers = await readFile(path.join(root, 'static/_headers'), 'utf8')
+  await write(fixture, 'public/_headers', headers.replace(/^\s*Access-Control-Allow-Origin:\s*\*\s*$/m, ''))
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /allow cross-origin CSS/)
 })
 
 test('site checker validates same-origin social images', async () => {
@@ -301,6 +314,43 @@ test('reading and syntax palettes meet AA contrast in both themes', async () => 
   }
 })
 
+test('giscus themes meet AA contrast for reading and controls', async () => {
+  const luminance = hex => hex.slice(1).match(/../g)
+    .map(channel => Number.parseInt(channel, 16) / 255)
+    .map(channel => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0)
+  const contrast = (foreground, background) => {
+    const values = [luminance(foreground), luminance(background)].sort((a, b) => a - b)
+    return (values[1] + 0.05) / (values[0] + 0.05)
+  }
+  for (const mode of ['light', 'dark']) {
+    const css = await readFile(path.join(root, `assets/css/giscus-${mode}.css`), 'utf8')
+    const tokens = Object.fromEntries([...css.matchAll(/--([\w-]+):\s*(#[a-f\d]{6});/g)]
+      .map(([, name, value]) => [name, value]))
+    for (const [foreground, background] of [
+      ['color-fg-default', 'color-canvas-default'],
+      ['color-fg-muted', 'color-canvas-default'],
+      ['color-accent-fg', 'color-canvas-default'],
+      ['color-btn-text', 'color-btn-bg'],
+      ['color-btn-primary-text', 'color-btn-primary-bg'],
+    ]) {
+      const ratio = contrast(tokens[foreground], tokens[background])
+      assert.ok(ratio >= 4.5, `${mode}: ${foreground} on ${background}: ${ratio.toFixed(2)}:1`)
+    }
+  }
+})
+
+test('giscus themes distinguish the fixed-width toolbar state', async () => {
+  for (const mode of ['light', 'dark']) {
+    const css = await readFile(path.join(root, `assets/css/giscus-${mode}.css`), 'utf8')
+    const selected = css.match(/\.gsc-comment-box:has\(\.gsc-is-fixed-width\) \.gsc-toolbar-item\s*\{([^}]+)\}/)?.[1]
+    assert.ok(selected, `${mode}: missing fixed-width toolbar state`)
+    assert.match(selected, /color:\s*var\(--color-accent-fg\)/)
+    assert.match(selected, /background-color:\s*var\(--color-accent-subtle\)/)
+    assert.match(selected, /box-shadow:\s*inset 0 0 0 1px var\(--color-accent-muted\)/)
+  }
+})
+
 test('page shell keeps headings in main and marks only the current navigation entry', async () => {
   const destination = await temporaryDirectory('hugo-page-shell-')
   const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)
@@ -342,6 +392,18 @@ test('page shell keeps headings in main and marks only the current navigation en
   const quote = await readFile(path.join(destination, 'blog/2024-review/index.html'), 'utf8')
   assert.match(quote, /<blockquote>\s*<p>对技术的看法[\s\S]*?<cite>2023 年终总结 - 我叫尤加利/)
   assert.doesNotMatch(quote, /<blockquote class="alert/)
+
+  const post = await readFile(path.join(destination, 'blog/buddy/index.html'), 'utf8')
+  assert.match(post, /<section class="comments" aria-labelledby="comments-title">/)
+  assert.match(post, /repo:\s*"maolonglong\/chensl\.me"/)
+  assert.match(post, /mapping:\s*"pathname",\s*strict:\s*"1"/)
+  assert.match(post, /loading:\s*"lazy"/)
+  assert.match(post, /giscus-(?:light|dark)\.min\.[a-f\d]+\.css/)
+  assert.match(post, /site-theme-change/)
+  assert.match(post, /new MutationObserver/)
+  assert.match(post, /frame\.addEventListener\("load",\s*\(\)\s*=>\s*syncTheme\(resolvedTheme\(\)\)/)
+  assert.doesNotMatch(blog, /giscus\.app\/client\.js/)
+  assert.doesNotMatch(await readFile(path.join(destination, 'index.html'), 'utf8'), /giscus\.app\/client\.js/)
 })
 
 test('serif fonts resolve on every page and code fonts stay conditional under a subpath', async () => {

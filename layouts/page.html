@@ -18,4 +18,8 @@
   {{ end }}
 
   {{ .Content }}
+
+  {{ if and (eq .Section "blog") (ne .Params.comments false) }}
+    {{ partial "comments.html" . }}
+  {{ end }}
 {{ end }}

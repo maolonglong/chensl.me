@@ -1,0 +1,104 @@
+main {
+    color-scheme: dark;
+    --primary-default: 148, 180, 212;
+    --bg-default: 37, 37, 35;
+    --color-prettylights-syntax-comment: #b0aea5;
+    --color-prettylights-syntax-constant: #94b4d4;
+    --color-prettylights-syntax-entity: #94b4d4;
+    --color-prettylights-syntax-storage-modifier-import: #d4d3cd;
+    --color-prettylights-syntax-entity-tag: #d4d3cd;
+    --color-prettylights-syntax-keyword: #94b4d4;
+    --color-prettylights-syntax-string: #b0aea5;
+    --color-prettylights-syntax-variable: #d4d3cd;
+    --color-prettylights-syntax-brackethighlighter-unmatched: #f07478;
+    --color-prettylights-syntax-invalid-illegal-text: #faf9f5;
+    --color-prettylights-syntax-invalid-illegal-bg: #8c1d27;
+    --color-prettylights-syntax-carriage-return-text: #faf9f5;
+    --color-prettylights-syntax-carriage-return-bg: #b4232c;
+    --color-prettylights-syntax-string-regexp: #94b4d4;
+    --color-prettylights-syntax-markup-list: #b0aea5;
+    --color-prettylights-syntax-markup-heading: #94b4d4;
+    --color-prettylights-syntax-markup-italic: #d4d3cd;
+    --color-prettylights-syntax-markup-bold: #d4d3cd;
+    --color-prettylights-syntax-markup-deleted-text: #f5c2c4;
+    --color-prettylights-syntax-markup-deleted-bg: #54252a;
+    --color-prettylights-syntax-markup-inserted-text: #b8d8bb;
+    --color-prettylights-syntax-markup-inserted-bg: #273d2b;
+    --color-prettylights-syntax-markup-changed-text: #e3cd9b;
+    --color-prettylights-syntax-markup-changed-bg: #4a3c20;
+    --color-prettylights-syntax-markup-ignored-text: #d4d3cd;
+    --color-prettylights-syntax-markup-ignored-bg: #354354;
+    --color-prettylights-syntax-meta-diff-range: #94b4d4;
+    --color-prettylights-syntax-brackethighlighter-angle: #b0aea5;
+    --color-prettylights-syntax-sublimelinter-gutter-mark: #86847d;
+    --color-prettylights-syntax-constant-other-reference-link: #94b4d4;
+    --color-btn-text: #d4d3cd;
+    --color-btn-bg: #252523;
+    --color-btn-border: #3d3d3a;
+    --color-btn-shadow: 0 0 transparent;
+    --color-btn-inset-shadow: 0 0 transparent;
+    --color-btn-hover-bg: #323230;
+    --color-btn-hover-border: #66645f;
+    --color-btn-active-bg: #354354;
+    --color-btn-active-border: #94b4d4;
+    --color-btn-selected-bg: #354354;
+    --color-btn-primary-text: #141413;
+    --color-btn-primary-bg: #94b4d4;
+    --color-btn-primary-border: #94b4d4;
+    --color-btn-primary-hover-bg: #bfd2e5;
+    --color-btn-primary-hover-border: #bfd2e5;
+    --color-btn-primary-selected-bg: #94b4d4;
+    --color-btn-primary-selected-shadow: 0 0 transparent;
+    --color-btn-primary-disabled-text: #3d3d3a;
+    --color-btn-primary-disabled-bg: #687f96;
+    --color-btn-primary-disabled-border: #687f96;
+    --color-action-list-item-default-hover-bg: rgb(148 180 212 / 12%);
+    --color-segmented-control-bg: #252523;
+    --color-segmented-control-button-bg: #141413;
+    --color-segmented-control-button-selected-border: #66645f;
+    --color-fg-default: #d4d3cd;
+    --color-fg-muted: #b0aea5;
+    --color-fg-subtle: #86847d;
+    --color-canvas-default: #141413;
+    --color-canvas-overlay: #141413;
+    --color-canvas-inset: #252523;
+    --color-canvas-subtle: #252523;
+    --color-border-default: #66645f;
+    --color-border-muted: #3d3d3a;
+    --color-neutral-muted: rgb(176 174 165 / 15%);
+    --color-accent-fg: #94b4d4;
+    --color-accent-emphasis: #94b4d4;
+    --color-accent-muted: rgb(148 180 212 / 35%);
+    --color-accent-subtle: #354354;
+    --color-success-fg: #9bc7a0;
+    --color-attention-fg: #e3cd9b;
+    --color-attention-muted: rgb(227 205 155 / 35%);
+    --color-attention-subtle: #4a3c20;
+    --color-danger-fg: #f07478;
+    --color-danger-muted: rgb(240 116 120 / 35%);
+    --color-danger-subtle: #54252a;
+    --color-primer-shadow-inset: 0 0 transparent;
+    --color-scale-gray-7: #252523;
+    --color-scale-blue-8: #354354;
+    --color-social-reaction-bg-hover: #252523;
+    --color-social-reaction-bg-reacted-hover: #354354;
+}
+
+.gsc-comment-box:has(.gsc-is-fixed-width) .gsc-toolbar-item {
+    color: var(--color-accent-fg);
+    background-color: var(--color-accent-subtle);
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 1px var(--color-accent-muted);
+}
+
+main .pagination-loader-container {
+    background-image: url("https://github.com/images/modules/pulls/progressive-disclosure-line-dark.svg");
+}
+
+main .gsc-loading-image {
+    background-image: url("https://github.githubassets.com/images/mona-loading-dark.gif");
+}
+
+.gsc-comment:not(.gsc-reply-box) .gsc-replies {
+    border-radius: 0;
+}

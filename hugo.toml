@@ -39,6 +39,11 @@ capitalizeListTitles = false
   [params.author]
     email = 'shaolong.chen@outlook.it'
     name = 'Shaolong Chen'
+  [params.comments]
+    repo = 'maolonglong/chensl.me'
+    repoID = 'MDEwOlJlcG9zaXRvcnk0MDY3MzAwMDI='
+    category = 'Announcements'
+    categoryID = 'DIC_kwDOGD41Es4ClVVI'
 
 [[menus.main]]
   name = '首页'

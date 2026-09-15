@@ -46,6 +46,7 @@
       document.querySelectorAll("meta[data-theme-color]").forEach(element => {
         element.media = element.dataset.themeColor === theme ? "all" : "not all";
       });
+      window.dispatchEvent(new CustomEvent("site-theme-change", { detail: { theme } }));
 
       const toggle = document.querySelector("[data-theme-toggle]");
       if (!toggle) {

@@ -364,6 +364,25 @@ footer {
     margin: 0 0 32px;
 }
 
+.comments {
+    margin-top: 3.5rem;
+}
+
+.giscus,
+.giscus-frame {
+    width: 100%;
+}
+
+.giscus-frame {
+    display: block;
+    border: 0;
+}
+
+.comments-unavailable {
+    color: var(--muted-color);
+    font-size: 0.875rem;
+}
+
 .highlight {
     margin-block: 1em;
     overflow-x: auto;
