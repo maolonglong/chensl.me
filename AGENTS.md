@@ -18,16 +18,33 @@
 
 ## Task-specific guidance
 
-- Before changing layouts or CSS, read [the design guide](docs/design.md) for theme invariants, file ownership, and browser verification. Preserve the Kami typography, warm paper/charcoal palette, and framework-free site.
+- Before changing layouts or CSS, read [the design language](docs/design.md). Site-specific implementation constraints and browser coverage are below.
 - Before evaluating or performing dependency upgrades, read [the upgrade guide](README.md#dependency-upgrades) for release-note collection and version synchronization.
 - Before changing `build.sh`, read [the build-script guide](README.md#build-script) for safety constraints and verification.
+
+## Site design implementation
+
+- Keep the framework-free personal-site structure: introductory home, year-grouped archive, single-column articles, and shared 404. Preserve the author's words, emojis, dates, and credits.
+- `assets/css/style.css` owns semantic tokens, typography, and components; `assets/css/syntax.css` owns syntax colors. Reuse these variables rather than adding a parallel palette. Keep the `42rem` reading measure and `52rem` shell unless a layout change explicitly calls for different geometry.
+- `layouts/baseof.html` owns the shell and font loading; `layouts/page.html` and `layouts/_partials/post-list.html` own article chrome and archive rows. Preserve the collapsed native TOC threshold of three H2/H3 headings and its depth configuration in `hugo.toml`.
+- `layouts/_partials/theme.html` owns theme bootstrap and switching. Preserve `auto` → `light` → `dark`, OS tracking in auto, forced `color-scheme`, persistence, storage-failure handling, accessible labels, and the no-JavaScript fallback. Keep the SVG icons and 44px target, not font glyphs or an icon library.
+- Keep this site's alerts and syntax within the warm neutral/ink-blue palette. Diff signs carry addition/deletion meaning. Preserve underlined article/footer links, archive visited-link styling, and visible focus.
+- `assets/css/serif.css` and `data/serif.json` own JinKai declarations; `assets/css/fonts.css` owns the code fonts. Keep JinKai first for mixed Chinese/Latin text, real 400/500 weights, self-hosted fonts, `font-display: swap`, fingerprinted CSS, content-versioned font URLs, and code fonts loaded only where needed. Do not add font CDNs or preloads.
+- Preserve complete fallback font coverage and core-subset precedence. Follow [font licensing and regeneration](static/fonts/tsanger-jinkai02/NOTICE.md) when changing fonts or regenerating with `scripts/subset-fonts.py`. The fonts are not covered by the repository's code license. The cold-visit font budget is 640 KiB.
+- Markdown media belongs to `layouts/_markup/render-image.html` and `layouts/_markup/render-image.rss.xml`. Preserve alt text, dimensions, lazy loading, and absolute RSS image URLs.
 
 ## Verification
 
 - Run `just check` for changes to site output (including content, layouts, CSS, links, and RSS) or build behavior. It includes the production build; do not run `just build` separately.
 - For Cloudflare configuration or dependency changes, run `pnpm exec wrangler deploy --dry-run` without deploying.
-- For layout or CSS changes, inspect rendered output using the design guide's browser coverage.
+- For layout or CSS changes, use the browser coverage below.
 - For tooling-only changes, run the affected checks. Documentation-only changes outside site content need no site build; check referenced commands and links instead.
+
+### Browser coverage
+
+- With the preview running, run `node scripts/check-browser.mjs <preview-url>` (requires `agent-browser`). It checks actual font loading and header bounds at 320, 390, 768, and 1280px with 100% and 200% text sizes.
+- Inspect light/dark screenshots at 1280px and 390px on home, archive, a long article with code and TOC, and 404. For affected tables and navigation, also inspect 320px, 768px, and both sides of the 480px and 600px breakpoints.
+- Capture at 2× after `document.fonts.ready`; confirm the actual CJK font, not only its CSS declaration. Check affected TOC open/closed states, long titles, tables, quotes, code scrolling, focus, theme cycling/persistence, forced theme opposite the OS, and OS changes in auto mode. Ensure no page-level overflow. Chromium resizing is not real phone testing.
 
 ## Hugo Conventions
 
