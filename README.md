@@ -46,7 +46,7 @@ When reporting a shipped change, distinguish pushed, CI passed, and deployment c
 
 Articles live under `content/blog`, with `title`, `date`, and `description` in front matter. Keep each article's existing front matter format. Put article-specific images in the article's page bundle and reference them with relative paths and descriptive alt text. Remote image sources must be explicitly allowed by `static/_headers`; prefer local images and ordinary repository links.
 
-See [the design guide](docs/design.md) before changing layouts or styles. Agent instructions are documented in [AGENTS.md](AGENTS.md).
+Agent instructions are documented in [AGENTS.md](AGENTS.md).
 
 ### Dependency upgrades
 

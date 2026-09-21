@@ -18,7 +18,6 @@
 
 ## Task-specific guidance
 
-- Before changing layouts or CSS, read [the design language](docs/design.md). Site-specific implementation constraints and browser coverage are below.
 - Before evaluating or performing dependency upgrades, read [the upgrade guide](README.md#dependency-upgrades) for release-note collection and version synchronization.
 - Before changing `build.sh`, read [the build-script guide](README.md#build-script) for safety constraints and verification.
 
