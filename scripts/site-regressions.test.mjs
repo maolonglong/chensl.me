@@ -404,6 +404,11 @@ test('page shell keeps headings in main and marks only the current navigation en
   assert.match(post, /frame\.addEventListener\("load",\s*\(\)\s*=>\s*syncTheme\(resolvedTheme\(\)\)/)
   assert.doesNotMatch(blog, /giscus\.app\/client\.js/)
   assert.doesNotMatch(await readFile(path.join(destination, 'index.html'), 'utf8'), /giscus\.app\/client\.js/)
+
+  // The kaomoji is decoration; reading it aloud character by character helps nobody.
+  const notFound = await readFile(path.join(destination, '404.html'), 'utf8')
+  assert.match(notFound, /<p class="kaomoji" aria-hidden="true">ʕノ•ᴥ•ʔノ ︵ ┻━┻<\/p>/)
+  assert.doesNotMatch(notFound, /<h2\b/)
 })
 
 test('fence titles reach the page as a caption', async () => {
