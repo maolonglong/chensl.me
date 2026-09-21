@@ -1,0 +1,30 @@
+{{- /*
+  Table render hook.
+
+  Mirrors Hugo's built-in table markup but wraps it in a focusable scroll
+  container, so a table wider than the reading measure scrolls without
+  overflowing the page and stays reachable by keyboard. Wrapping preserves the
+  table's semantics; making the <table> itself a scroll box does not.
+*/ -}}
+<div class="table-scroll" tabindex="0" role="region" aria-label="表格">
+  <table>
+    <thead>
+      {{- range .THead }}
+      <tr>
+        {{- range . }}
+        <th{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>{{ .Text }}</th>
+        {{- end }}
+      </tr>
+      {{- end }}
+    </thead>
+    <tbody>
+      {{- range .TBody }}
+      <tr>
+        {{- range . }}
+        <td{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>{{ .Text }}</td>
+        {{- end }}
+      </tr>
+      {{- end }}
+    </tbody>
+  </table>
+</div>

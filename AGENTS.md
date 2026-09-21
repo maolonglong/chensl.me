@@ -31,6 +31,7 @@
 - `assets/css/serif.css` and `data/serif.json` own JinKai declarations; `assets/css/fonts.css` owns the code fonts. Keep JinKai first for mixed Chinese/Latin text, real 400/500 weights, self-hosted fonts, `font-display: swap`, fingerprinted CSS, content-versioned font URLs, and code fonts loaded only where needed. Do not add font CDNs or preloads.
 - Preserve complete fallback font coverage and core-subset precedence. Follow [font licensing and regeneration](static/fonts/tsanger-jinkai02/NOTICE.md) when changing fonts or regenerating with `scripts/subset-fonts.py`. The fonts are not covered by the repository's code license. The cold-visit font budget is 640 KiB.
 - Markdown media belongs to `layouts/_markup/render-image.html` and `layouts/_markup/render-image.rss.xml`. Preserve alt text, dimensions, lazy loading, and absolute RSS image URLs.
+- `layouts/_markup/render-table.html` owns tables. Keep the focusable `.table-scroll` wrapper and its column alignment. Do not make the `<table>` itself the scroll box; that costs the table its role in the accessibility tree.
 - `layouts/_markup/render-codeblock.html` owns code blocks. A fence title must use Hugo's brace syntax, ```` ```go {title="db/user.go"} ````; a bare `title="..."` is dropped silently. Keep the caption and keep `title` off the `.highlight` wrapper so the block gains no tooltip.
 
 ## Verification

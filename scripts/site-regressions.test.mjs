@@ -428,6 +428,27 @@ test('fence titles reach the page as a caption', async () => {
   assert.doesNotMatch(post, /<div class="highlight"[^>]*\btitle=/)
 })
 
+test('tables scroll without losing their semantics', async () => {
+  const destination = await temporaryDirectory('hugo-table-')
+  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)
+  assert.equal(result.status, 0, result.stderr)
+
+  const post = await readFile(path.join(destination, 'blog/dockertest/index.html'), 'utf8')
+  const table = post.match(/<div class="table-scroll"[^>]*>[\s\S]*?<\/div>/)?.[0]
+  assert.ok(table, 'missing scrollable table wrapper')
+  assert.match(table, /tabindex="0"/)
+  assert.match(table, /role="region"/)
+  assert.match(table, /aria-label="[^"]+"/)
+  assert.match(table, /<table>\s*<thead>[\s\S]*<tbody>[\s\S]*<\/table>/)
+  assert.match(table, /<th style="text-align: center">实际开发<\/th>/)
+  assert.match(table, /<td style="text-align: center"><a href="https:\/\/github\.com\/alicebob\/miniredis">Miniredis<\/a><\/td>/)
+  assert.doesNotMatch(post, /<table[^>]*style=/)
+
+  // A <table> turned into a scroll box loses its role in the accessibility tree.
+  const style = await readFile(path.join(root, 'assets/css/style.css'), 'utf8')
+  assert.doesNotMatch(style, /table\s*\{[^}]*display:\s*block/)
+})
+
 test('serif fonts resolve on every page and code fonts stay conditional under a subpath', async () => {
   const destination = await temporaryDirectory('hugo-code-fonts-')
   const result = run(process.env.HUGO_BIN ?? 'hugo', [

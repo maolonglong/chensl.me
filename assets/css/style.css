@@ -235,9 +235,18 @@ button {
     cursor: pointer;
 }
 
+.table-scroll {
+    margin-block: 1.5em;
+    overflow-x: auto;
+}
+
+.table-scroll:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 4px;
+}
+
 table {
     width: 100%;
-    margin: 1.5em 0;
     border-collapse: collapse;
 }
 
@@ -262,13 +271,6 @@ td:first-child {
 th:last-child,
 td:last-child {
     padding-right: 0;
-}
-
-@media (max-width: 480px) {
-    table {
-        display: block;
-        overflow-x: auto;
-    }
 }
 
 hr {
