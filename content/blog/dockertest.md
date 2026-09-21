@@ -109,20 +109,20 @@ go get github.com/stretchr/testify
 migrate create -ext sql -dir migrations -tz=Local init
 ```
 
-```sql title="migrations/20220501170742_init.up.sql"
+```sql {title="migrations/20220501170742_init.up.sql"}
 CREATE TABLE IF NOT EXISTS `users` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `name` VARCHAR(255) UNIQUE NOT NULL
 );
 ```
 
-```sql title="migrations/20220501170742_init.down.sql"
+```sql {title="migrations/20220501170742_init.down.sql"}
 DROP TABLE IF EXISTS `users`;
 ```
 
 对应的 Go 结构体：
 
-```go title="model/user.go"
+```go {title="model/user.go"}
 package model
 
 type User struct {
@@ -133,7 +133,7 @@ type User struct {
 
 然后是这次需要测试的方法：
 
-```go title="db/user.go"
+```go {title="db/user.go"}
 package db
 
 import (
@@ -169,7 +169,7 @@ func (db *UserDB) Add(ctx context.Context, u *model.User) error {
 
 简单封装一下 dockertest 和 sqlx（借鉴了 [google/exposure-notifications-server](https://github.com/google/exposure-notifications-server/blob/9b73ca040965e3177db3c36df211a275bf6dcfa6/pkg/database/database_util.go#L69) 的代码）
 
-```go title="db/db.go"
+```go {title="db/db.go"}
 package db
 
 import (
@@ -285,7 +285,7 @@ func migrateUp(db *sql.DB) error {
 
 借助 `TestMain`，在其他单测执行前，准备好环境：
 
-```go title="db/db_test.go"
+```go {title="db/db_test.go"}
 package db
 
 import (
@@ -307,7 +307,7 @@ func TestMain(m *testing.M) {
 
 🎉 几乎和普通单元测试没有区别
 
-```go title="db/user_test.go"
+```go {title="db/user_test.go"}
 package db
 
 import (

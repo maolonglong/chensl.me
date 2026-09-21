@@ -406,6 +406,28 @@ test('page shell keeps headings in main and marks only the current navigation en
   assert.doesNotMatch(await readFile(path.join(destination, 'index.html'), 'utf8'), /giscus\.app\/client\.js/)
 })
 
+test('fence titles reach the page as a caption', async () => {
+  const destination = await temporaryDirectory('hugo-codeblock-')
+  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)
+  assert.equal(result.status, 0, result.stderr)
+
+  const sources = await Promise.all(['content/blog/dockertest.md', 'content/blog/overlayfs/index.md']
+    .map(relative => readFile(path.join(root, relative), 'utf8')))
+  // Hugo only parses fence attributes inside braces; a bare `title="..."` is dropped silently.
+  for (const source of sources) {
+    assert.doesNotMatch(source, /^```\w+ (?!\{)\S+=/m, 'fence attributes must be wrapped in braces')
+  }
+  const titles = sources.flatMap(source => [...source.matchAll(/^```\w+ \{title="([^"]+)"\}$/gm)].map(([, title]) => title))
+  assert.ok(titles.length >= 8, `expected titled fences, found ${titles.length}`)
+
+  const post = await readFile(path.join(destination, 'blog/dockertest/index.html'), 'utf8')
+  for (const title of titles.filter(title => title.includes('db/'))) {
+    assert.match(post, new RegExp(`<figure class="code-figure">\\s*<figcaption>${title.replaceAll('.', '\\.').replaceAll('/', '\\/')}</figcaption>`))
+  }
+  // The caption carries the filename; a duplicate tooltip over the whole block does not.
+  assert.doesNotMatch(post, /<div class="highlight"[^>]*\btitle=/)
+})
+
 test('serif fonts resolve on every page and code fonts stay conditional under a subpath', async () => {
   const destination = await temporaryDirectory('hugo-code-fonts-')
   const result = run(process.env.HUGO_BIN ?? 'hugo', [

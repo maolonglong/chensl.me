@@ -20,7 +20,7 @@ description: 本文介绍了 OverlayFS 的基本概念及其在 Docker 中的应
 
 用 vagrant 跑一个带有 docker 的虚拟机：
 
-```rb title="Vagrantfile"
+```rb {title="Vagrantfile"}
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 

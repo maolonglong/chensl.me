@@ -1,10 +1,22 @@
 {{- /*
   Default code block render hook.
 
-  Mirrors Hugo's built-in behavior (Chroma highlighting + wrapping) but also
-  marks the page as containing a code block so baseof.html can conditionally
-  inline syntax.css.
+  Mirrors Hugo's built-in behavior (Chroma highlighting + wrapping), renders the
+  optional `{title="..."}` fence attribute as a caption, and marks the page as
+  containing a code block so baseof.html can conditionally inline syntax.css.
 */ -}}
 {{- .Page.Store.Set "hasCodeBlock" true -}}
 {{- $result := transform.HighlightCodeBlock . -}}
-{{- $result.Wrapped -}}
+{{- with .Attributes.title -}}
+  {{- /*
+    Hugo copies fence attributes onto the wrapper, so `title` would also become a
+    native tooltip covering the whole block. The caption already carries it.
+  */ -}}
+  {{- $wrapped := replaceRE `^<div class="highlight"[^>]*>` `<div class="highlight">` ($result.Wrapped | string) 1 -}}
+  <figure class="code-figure">
+    <figcaption>{{ . }}</figcaption>
+    {{ $wrapped | safeHTML }}
+  </figure>
+{{- else -}}
+  {{- $result.Wrapped -}}
+{{- end -}}
