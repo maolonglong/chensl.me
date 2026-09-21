@@ -443,6 +443,32 @@ mark {
     border-radius: 4px;
 }
 
+/* footnotes: references, not a continuation of the argument, so they recede */
+.footnotes {
+    font-size: 0.9375rem;
+    color: var(--muted-color);
+}
+
+.footnotes hr {
+    margin-block: 3em 1.75em;
+}
+
+.footnotes ol {
+    padding-left: 1.75em;
+}
+
+.footnotes li + li {
+    margin-top: 0.75em;
+}
+
+.footnotes li > :first-child {
+    margin-top: 0;
+}
+
+.footnotes li > :last-child {
+    margin-bottom: 0;
+}
+
 /* blog post list */
 .posts-year {
     font-size: 1.15rem;
