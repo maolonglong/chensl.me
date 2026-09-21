@@ -299,6 +299,45 @@ Node titles carry function first, protocol noun second. A bare protocol noun out
 
 In-diagram copy holds objects, boundaries, and actions only; argument stays in prose. CJK copy inside nodes uses short labels with commas, slashes, and semicolons, never the CJK full stop (。). If a line needs a full stop, it is a sentence, and sentences live in the document, not the diagram.
 
+### Executable architecture geometry
+
+Keep HTML as the only source: mark the existing visible node rectangle with
+`data-node="api"`, the line or polyline shaft with `data-edge="enqueue"`,
+`data-from="api"`, and `data-to="queue"`. Mark a relationship label's existing
+background rectangle with `data-label-for="enqueue"`. IDs stay stable when text
+or positions change. Do not mark arrowheads, legends, or boundary frames as nodes.
+The architecture figure and the board's main path demonstrate this contract.
+
+`python3 scripts/build.py --check` checks the shipped templates;
+`python3 scripts/build.py --check-style filled.html` checks a filled document.
+These checks report duplicate IDs, missing endpoints, overlapping node rectangles
+or label masks, lines through nodes or other labels, and endpoints that do not
+attach outward within 8 SVG units of the named node edge. The board's intentional
+4px standoff remains valid. Rectangle-edge grazing and crossing a real boundary
+frame are allowed; neither means passing through a node.
+
+This is a bounded static check, not a browser layout engine. Marked geometry uses
+numeric SVG user coordinates on `rect`, `line`, and `polyline`, without inline
+style or ancestor transforms/styles. Do not override its geometry through CSS,
+animation, or reuse elements. Curved paths and unmarked diagrams remain outside
+this contract. Text must fit its label mask at the final display size; inspect
+actual Chinese and Latin font rendering in the visual pass. A passing mask check
+does not establish text fit, arrowhead visibility, or factual architecture accuracy.
+
+Preserve meaningful relationship labels: protocol, action, direction, and
+synchronous/asynchronous behavior. When a label does not fit, move its mask and
+text together, widen the corridor, or reroute the edge. Do not shrink text or
+remove meaning to pass a check. Multiple branches need separate attachment points;
+keep their order stable and leave room at corners.
+
+Record verified source paths and the source revision in the existing `prompt.md`
+blocks, including evidence for relationships, not just component names. Source
+existence alone does not prove a call or dependency. During updates distinguish
+changed relationships from moved boxes; preserve stable IDs for unchanged objects.
+
+The semantic-geometry approach draws on [Archify](https://github.com/tt-a1i/archify).
+Kami retains static SVG and its existing typography; no Archify runtime is bundled.
+
 ### Terminology sync
 
 The diagram and its host document are one vocabulary. When prose renames an object, the same change updates: SVG `<text>` labels, `<title>` and `<desc>`, `prompt.md`, the re-exported PNG, and any cross-references. A diagram that still shows the old name is a bug, not a style issue.

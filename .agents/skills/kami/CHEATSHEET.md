@@ -69,6 +69,16 @@ Full pass in SKILL.md Step 2.1. The one contract worth repeating: a number you c
 Screen (px) ≈ pt × 1.33.
 Minimum floor: web text >= 12px, PDF text >= 9pt.
 
+### Typography cross-check (from Pierrick Calvez, "A Five-Minute Guide to Better Typography")
+
+- **Set blocks, not glyphs**: judge a paragraph as an even gray shape, not one nice letter at a time.
+- **Measure**: reading body ~40-70 characters per line; hold screen prose to the ~720px reading column, print to the A4 margins.
+- **Optical > mathematical alignment**: aligned when it looks aligned; nudge back quotes, bullets, and big display caps by eye.
+- **Line-spacing maps onto Kami tiers**: short ~1.2x → tight/dense tiers; long reading ~1.5x → reading tier. Never invent 1.6+ on a print body.
+- **Hierarchy = contrast (size / weight / space)**, not ornament. Use the next registered size step, never an in-between size or a decorative rule.
+- **Left-align body; centre only short display lines.** No centred paragraphs or lists.
+- **Do NOT import multi-weight**: the guide wants Light/Regular/Medium/Bold; Kami serif is 400 body + 500 headings only, no 700, no Light. Emphasis is size, space, and ink-blue. Also skip its em-dash / ornamental-punctuation habits (see anti-patterns #28). Full cross-check: `references/design.md` §2 «External principles cross-check».
+
 ## Font stacks
 
 Each language uses a single serif for the entire page. `--sans` always equals `var(--serif)`.

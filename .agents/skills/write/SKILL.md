@@ -1,7 +1,7 @@
 ---
 name: write
-description: "Rewrites and polishes prose in Chinese or English, removes AI-like wording, and reviews product localization copy while preserving intent for drafts, docs, release notes, launch copy, and social posts. Use when users ask in any language to draft, rewrite, proofread, localize, polish release notes, remove AI-like wording, or prepare launch and social copy. Not for code comments, commit messages, or inline docs."
-when_to_use: "帮我写, 改稿, 润色, 去AI味, 写一段, 审稿, 文档review, 本地化文案, 多语言文案, i18n copy, localization copy, check this document, 推特, twitter, X推文, tweet, social post, 连贯性, 段落连贯, draft, edit text, proofread, sound natural, polish, rewrite"
+description: "Rewrites and polishes Chinese or English prose and product copy. Use when drafting, editing, localizing, or cutting AI tone. Not for code comments or commit messages."
+when_to_use: "改稿, 润色, 去AI味, 帮我写文案, 审稿, 文档review, 本地化文案, 多语言文案, i18n copy, localization copy, check this document, 推特, twitter, X推文, tweet, social post, draft, edit text, proofread, sound natural, polish, rewrite"
 dispatch_intent: "Writing, editing prose, polish, release notes, launch/social copy, remove AI tone"
 ---
 
@@ -113,6 +113,7 @@ Load `references/write-zh-release-notes.md` for the five announcement rules (com
 - **Shorter than the first draft wants to be.** Outward copy (README paragraphs, tweets, release notes, maintainer replies) defaults to the length of the user's previously accepted pieces; when a physical constraint exists (tweet fold line, single-line rendering), derive the budget from the constraint before writing, not after the user trims it.
 - **Artifact-grounded claims.** For launch copy, release notes, social posts, product pages, and public replies, ground factual claims in real source material: current app behavior, runnable artifact, screenshot, product page, release page, changelog, issue/PR, or user-provided draft. Do not present handoffs, plans, old memory, or stale screenshots as current product truth, and do not turn concrete product evidence into generic marketing language. Compare the draft against the shipping artifact and tighten until the two agree.
 - **No em-dash.** Never produce em-dash (U+2014) or en-dash (U+2013) in Chinese or English output. Em-dash is the strongest AI-tone fingerprint in this style of writing. Use commas, periods, colons, or parentheses to break clauses. Hyphen-minus (`-`) inside compound words is allowed; replace it with a space or a period when possible. When editing a draft that contains em-dashes, replace every one before returning the text.
+- **A bundled out-of-scope ask gets named, not quietly done.** Code comments, commit messages, and inline docs are not prose work: when a request bundles one with the writing, say so in one line and deliver only the prose.
 - **Match the requested handoff.** Pasted-text rewrites need no explanation. Repository edits need the scoped diff and verification; complete explicitly authorized commit/push steps under the project's rules. A prose-only output convention must not hide unfinished delivery.
 
 ## Punctuation Gate

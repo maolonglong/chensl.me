@@ -1,6 +1,6 @@
 ---
 name: kami
-description: 'Typeset professional documents and product landing pages: resumes, one-pagers, white papers, letters, portfolios, slide decks, landing pages. Templates use warm backgrounds, ink-blue accents, and serif fonts. CN uses TsangerJinKai02, EN uses Charter, JA uses YuMincho (best-effort). Triggers on "做 PDF / 排版 / 一页纸 / 白皮书 / 作品集 / 简历 / PPT / slides / Marp / markdown slides / マークダウンのスライド / 落地页 / 官网 / landing page / product page", or "build me a resume / make a one-pager / design a slide deck / turn this into a PDF / make this presentable / create a landing page".'
+description: 'Typeset professional documents with Kami templates: resumes, one-pagers, white papers, letters, portfolios, and slide decks. Use when asked to 做 PDF / 排版 / 简历 / 一页纸 / PPT / slides, or to create a Kami landing page. Not for auditing or restyling an existing product site.'
 ---
 
 # kami · 紙
@@ -293,7 +293,7 @@ Pick the tier that matches the task. Default to the lowest tier that covers the 
 - **CSS stays untouched during content fill.** Layout adjustments go through the Layout-tweak tier (Step 3) and stay within spec; any real style change syncs `references/design.md` and the sibling templates, never a single file
 - Content follows `writing.md`: data over adjectives, distinctive phrasing over industry clichés
 - Avoid patterns listed in `references/anti-patterns.md`: emptiness, fabrication, mimicry, excess, source gaps, tone contamination, landing page, image slots, slides
-- **Before filling, read the quality bar for your document type** in `writing.md` section "Quality bars by document type". Structure is necessary but not sufficient: a resume bullet needs Action + Scope + Result + Business Outcome; an equity report needs variant perception + quantified catalysts; slides need assertion-evidence titles. Meeting the quality bar is as important as filling every placeholder.
+- **Before filling, read the quality bar for your document type** in `writing.md` section "Quality bars by document type". Structure is necessary but not sufficient: a resume bullet needs Action + Honest Scope + Observable Result, with business outcomes when relevant; an equity report needs variant perception + quantified catalysts; slides need assertion-evidence titles. Meeting the quality bar is as important as filling every placeholder.
 
 ### Do not generate
 

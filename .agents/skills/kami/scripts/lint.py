@@ -29,6 +29,7 @@ from shared import (
     rel_to_root,
 )
 from tokens import ROOT_BLOCK, parse_root_vars
+from diagram_geometry import scan_geometry
 
 # Font-stack vars legitimately differ between a base template and its locale
 # variants (-en, -ko); every other :root var must match across the pair.
@@ -98,7 +99,8 @@ def scan_text(raw_text: str, path: Path, line_offset: int = 0) -> list[Finding]:
     can be scanned with the same rules as a template, reporting line numbers
     back in the enclosing document via `line_offset`.
     """
-    findings: list[Finding] = []
+    findings = [Finding(path, line_offset + line, "diagram-geometry", message)
+                for line, message in scan_geometry(raw_text)]
     text = _strip_css_block_comments(raw_text)
     lines = text.splitlines()
     is_en = path.name.endswith("-en.html")

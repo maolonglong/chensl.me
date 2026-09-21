@@ -214,7 +214,7 @@ Structure is necessary but not sufficient. These bars define what separates comp
 
 ### Resume
 
-**Impact formula**: Action + Scope + Measurable Result + Business Outcome. Every bullet must answer "what did I do, at what scale, with what result, and why did it matter?"
+**Impact formula**: Action + Honest Scope + Observable Result. Explain the business outcome when relevant; use verified metrics when available and concrete qualitative evidence otherwise.
 
 | Avoid | Use |
 |---|---|
@@ -245,10 +245,10 @@ Structure is necessary but not sufficient. These bars define what separates comp
 
 **Rules**:
 1. Show 2-3 decision points where you chose between alternatives. Explain the tradeoff, not just the winner
-2. Three-layer outcomes: quantitative metric (conversion rate +80%) + qualitative evidence (user quote) + business context ($1.2M additional annual revenue)
+2. Support outcomes with verified metrics or concrete qualitative evidence, and explain the business context when relevant. Include user quotes only when supplied or sourced
 3. State your exact role and scope: "I designed" vs "I led" vs "I contributed to" are very different signals
 4. 3-5 deep case studies beats 12 shallow ones. Depth is credibility
-5. Always close the loop: every problem introduced must have a measured resolution
+5. Close the loop with an observable result for each problem; state unresolved limits when the evidence does not establish a resolution
 6. Prefer final product screenshots over mockups. If product images are missing, mark the gap rather than filling with unrelated imagery
 
 ### Slides

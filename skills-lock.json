@@ -5,7 +5,7 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/check/SKILL.md",
-      "computedHash": "b5b8157f4092d7dfea0aa6960154e078b8407692e9b854b7f4ce4461af700979"
+      "computedHash": "2074860729e11f4f186dee857eee0f384195ac19adbaf3c30cbc32c4bffe5f85"
     },
     "cloudflare": {
       "source": "cloudflare/skills",
@@ -23,31 +23,37 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/hunt/SKILL.md",
-      "computedHash": "29c671afa26f8d05f3a147bbc5efaaebb65ca0c671eeb6d62ae696fedc4ea980"
+      "computedHash": "e9a18726d94e37b8112408543b964a58a8065c3e7f8e7e42b01e004482531104"
     },
     "kami": {
       "source": "tw93/kami",
       "sourceType": "github",
       "skillPath": "skills/kami/SKILL.md",
-      "computedHash": "aedaa9aecf5a00a83195ca93865ee936a941006c44bc99622670ab6cc55b42c9"
+      "computedHash": "6843314e4922e8dfb05aad400e6ac95acf5fdfb9f9b299248b44ed6969bad571"
     },
     "learn": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/learn/SKILL.md",
-      "computedHash": "0952966d0a355e47bbc61196decf83ec25e1ad9ff9e1dd189ac80bf799fd252d"
+      "computedHash": "ec2107a004186b6d338583a49f7389e4778c5aa6a1751aab456cbe29d1e4f9aa"
     },
     "read": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/read/SKILL.md",
-      "computedHash": "e562768ab75632651d5e49f1ff7e26989881cf6ecabf5db0c364c3d9ae6a57b9"
+      "computedHash": "0003d428807dd49d3e6f2b05ffc3397af1940f24dc4c8ea20ebe22cc4e318349"
     },
     "think": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/think/SKILL.md",
-      "computedHash": "f7662f9fb9f19050a6391b2b2bd16ce4fcc92e004cfd06a4540209ba7a621bb3"
+      "computedHash": "7212fd695d81d2b4dc0423eacd9f1a9803a3307d2e99f3445d1445fa9cd2e792"
+    },
+    "ui": {
+      "source": "tw93/Waza",
+      "sourceType": "github",
+      "skillPath": "skills/ui/SKILL.md",
+      "computedHash": "6f0148766dcdbfe67634829bb7bc3494b208c165f7ad2036ddfe91ceaf7b715e"
     },
     "web-perf": {
       "source": "cloudflare/skills",
@@ -71,7 +77,7 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/write/SKILL.md",
-      "computedHash": "74ed79fcfa21f524cc5ffc4983df1bb2e05188d910325a69cdf974ebd29e0ca9"
+      "computedHash": "5d54f0167cb47b2ae697ebaf63572e2b6b7b0679d3e40a5442e1a8d8cfcc6101"
     }
   }
 }

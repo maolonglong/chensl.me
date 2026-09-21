@@ -196,6 +196,26 @@ Print documents are **tighter** than English web body. English web typically run
 - All-caps overlines: +0.5 to +1pt mandatory
 - **Slide-specific**: print tracking x0.5 at slide scale. Eyebrow max 3px (not 8px), display titles -0.5pt. Large type at 40pt+ will look scattered at print tracking values
 
+### External principles cross-check
+
+A cross-check against Pierrick Calvez, "A Five-Minute Guide to Better Typography" (external reference, read once for calibration, not reprinted here). Where the guide agrees with Kami it sharpens a rule already stated above; where it conflicts, the Kami invariant wins. Use this list to resist "improving" Kami toward habits that suit a Western multi-weight editorial page but break this constraint system.
+
+**Agrees with Kami (apply):**
+
+- **Set blocks, not glyphs.** Type is a beautiful group of letters, not a group of beautiful letters. Judge a paragraph as a shape and an even gray field, not one admirable character at a time. This is why Kami pins measure, line-height, and tracking per context rather than tuning individual words.
+- **Optical alignment beats mathematical alignment.** Text is aligned when it looks aligned, not when the box edges match. Nudge the optical edge back when a quotation mark, a bullet, a large display cap, or a hanging figure pushes a line visually past the margin. This is the same instinct behind the existing display-tracking and «cap both tracks» rules; it is a manual eyeball pass, not a token.
+- **Measure (line length) for reading body: about 40 to 70 characters per line.** Too wide and the eye loses the next line's start; too narrow and rhythm breaks. This is the character-count basis for the reading-measure caps already stated for screen prose (Section 11 «Documentation site», about 720px) and for the natural print measure held by the A4 margins in Section 3. Keep body reading inside this band; do not let a full-frame screen column run edge to edge.
+- **Line-spacing scales with measure and length.** Short blocks read fine near 1.2x the font size; long reading passages want roughly 1.5x. Map this onto Kami's locked tiers, do not invent your own: tight headlines 1.10-1.30, dense body 1.40-1.45, reading body 1.50-1.55. The guide's "1.5x" lands on Kami's reading tier; it is not a licence to reach 1.6+ on a print body (still forbidden above).
+- **Hierarchy comes from contrast, not ornament.** Separate levels with size, weight, and space, and when a step is unclear either skip a weight rather than adding a faint one, or open the size gap. Kami reaches the same end through its fixed ladder: use the next registered size step and the 500/400 weight pair, plus spacing, never a new in-between size (see «Ladder discipline») and never a decorative rule (see «Subtractive rule»).
+- **Left-align body; centre only short display lines.** Ragged-right left alignment gives the eye a stable return edge for running text. Centring is for a cover title, a short subtitle, or a single pinned callout line, never for paragraphs or lists. This matches the left-edge discipline in «Feature rows» and the centred-cover exceptions in the Deck Recipe.
+- **Kerning and tracking are optical tools for large and small type.** Spend them on display sizes and all-caps or small-caps labels, exactly where the Letter-spacing rules above already allow it. Do not track body copy for effect.
+
+**Conflicts with Kami (do not import):**
+
+- **Multi-weight typeface families.** The guide advises choosing a face with many weights (Light, Regular, Medium, Bold) and orchestrating them. Kami forbids this for the serif: body is 400, headings are 500, and that is the whole range. No 700 (synthetic bold is banned), no Light. Emphasis is carried by size, space, and ink-blue, per «Weight» and invariant 5. Do not add a weight step to a Kami serif document.
+- **Western ornamental punctuation habits.** Editorial guides written for English print lean on the em dash and decorative punctuation. Kami constrains dashes and decoration deliberately: see the no-em-dash rule in `references/anti-patterns.md` #28 and the list-marker rule in «Lists» (no faux en-dash bullets). Do not import em-dash-heavy phrasing or ornamental marks from the guide.
+- **Do not reprint the guide.** Keep this a distilled cross-check. Do not paste a full translation or a substantial verbatim excerpt of the source into the repo.
+
 ---
 
 ## 3. Spacing
@@ -777,7 +797,9 @@ CSS alone cannot prevent "the last two lines of a chapter pushed onto a fresh pa
 
 Long-doc table-of-contents rows should link to stable chapter ids and use
 WeasyPrint `target-counter(attr(href), page)` for rendered page numbers. Do not
-hand-fill page numerals; any pagination-affecting edit will make them drift.
+hand-fill page numerals; any pagination-affecting edit will make them drift. Keep
+the row anchor a block and float the numeral right: a flex anchor makes WeasyPrint
+70.0 resolve every page number to 0 (production.md pitfall 24).
 
 **Cascading break-inside**: when two `break-inside: avoid` blocks sit next to each other and the first would split, both get pushed to the next page together. A chapter with more than two `break-inside: avoid` blocks (quote + table + callout, etc.) near a page boundary is at high risk of leaving 40-80mm of trailing whitespace on the previous page. Fix by splitting the chapter, or downgrade one block (allow the table to break with a repeating header `<thead>`).
 
@@ -1139,7 +1161,7 @@ Certain copy surfaces must render as one line; a wrap there reads as a defect, n
 - Single-line at 375px as well: key-fact tokens (price line, platform line, CTA labels, hero chips).
 - Check container geometry and forced breaks first, then shorten redundant wording without losing facts or approved meaning. Never shrink the font, force it with `<br>`, or shave padding to buy one word of width.
 - Any component whose height depends on its text (carousel captions, rotating taglines) must be verified with the longest shipped locale; a wrap that appears in one locale makes the component jump between slides.
-- One wrap found means sweeping every surface in this list across every locale, not fixing the reported spot (see `AGENTS.md` «Critical Line-Break Scan» for the PDF-side counterpart).
+- One wrap found means sweeping every surface in this list across every locale, not fixing the reported spot (the PDF-side counterpart is `python3 scripts/build.py --check-orphans` plus `--check-density`).
 
 ### Decorative layers
 

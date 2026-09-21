@@ -1,7 +1,7 @@
 ---
 name: check
-description: "Reviews code diffs, PRs, issue queues, release readiness, commits, pushes, publishing, and project audits. Use when users ask in any language for code review, issue or PR triage, release gates, publishing follow-through, or project audits. Not for debugging root causes or prose review."
-when_to_use: "review, 看看代码, 检查一下, 有没有问题, 是否需要优化, 合并前, 继续优化, 优化代码, 看看issue, 看看PR, release, publish, push, release reaction, GitHub reaction, 发布, 提交, 关闭issue, 发布表情, release表情, close issue, issue close, review my code, check changes, before merge, before release, 值得发布, ready to release, code review, code-review, audit, project audit, 项目体检, 项目评分, 给项目打分, 深入分析项目代码, 评估项目质量, 代码质量评分, scorecard, linus review, rate this codebase, score this project"
+description: "Reviews diffs, PRs, release readiness, and publishing follow-through. Use when asked to review, triage issues or PRs, or ship. Not for debugging root causes or prose."
+when_to_use: "review, 看看代码, 检查一下, 合并前, 看看issue, 看看PR, release, publish, push, release reaction, GitHub reaction, 发布, 提交, 关闭issue, 发布表情, release表情, close issue, issue close, review my code, check changes, before merge, before release, 值得发布, ready to release, code review, code-review, audit, project audit, 项目体检, 项目评分, 给项目打分, 深入分析项目代码, 评估项目质量, 代码质量评分, scorecard, linus review, rate this codebase, score this project"
 dispatch_intent: "Code review, before merge, release gates, generated artifacts, safety sinks, publish/push/reaction follow-through, triage issues/PRs, project-wide code-quality audit scorecard"
 ---
 
@@ -19,7 +19,7 @@ Read the diff and find the problems. Review, audit, triage, and readiness reques
 - Done when: findings, fixes, shipped state, or blockers are stated with the commands, artifacts, or remote state that prove them.
 - Evidence: worktree status, diff, public project docs, manifests, CI, package contents, release or registry state, and current command output.
 - Output: concise findings first, then verification and shipped-state summary when applicable. Multi-step or ship-action runs, and any request with several items or screenshots, close with a numbered completion ledger (done / not applicable / remaining), never a narrative that leaves the user asking "is everything done".
-- Authorization: read-only intent may inspect the worktree and remote state but may not edit files, apply autofixes, commit, push, publish, comment, close, merge, or change branches. Each write or public action needs current-turn authorization, except when the user explicitly authorizes a named batch that contains it.
+- Authorization: read-only intent may inspect the worktree and remote state but may not edit files, apply autofixes, commit, push, publish, comment, close, merge, or change branches. Each write or public action needs authorization from the current request, or from an authorization still in force for the same unfinished task: one that named this action and goal and has not been withdrawn. A later turn that asks for progress or says "continue" does not revoke it and does not have to repeat it. A new action, a wider scope, a changed goal, or a risk the original authorization did not cover needs its own. Approval of a draft is not approval to commit, push, publish, or delete.
 
 ## Durable Context Preflight
 
@@ -71,8 +71,8 @@ Before reviewing, extract project constraints from repository context:
 1. Read the diff and identify changed languages, frameworks, manifests, generated outputs, release files, and CI workflows.
 2. Inspect public project files only as needed: README, AGENTS/CLAUDE instructions when present, package manifests, lockfiles, build configs, test configs, workflow files, and release notes.
 3. Compress the findings into review context: verification commands, protected or generated files, release artifacts, domain risks, and public reply rules.
-4. Apply the stricter rule when project context and this skill overlap.
-5. If project docs or CI name a verification command, prefer that over auto-detection.
+4. Where project context and this skill state overlapping requirements that can both be met, satisfy the stricter one. Where the project states an explicit exception, the project wins and the report names it: stricter is not a licence to overrule a decision the project wrote down, and it does not reorder the host's own instruction precedence.
+5. If project docs or CI name a verification command, prefer that over auto-detection, and read the workflow rather than the sentence describing it. A doc claiming CI enforces something is a claim; where no job runs it, trusting the sentence skips the manual check it replaced. A linter, a compiled helper, or a platform tier present locally but not in CI, or the reverse, means a green run on one side predicts nothing about the other.
 
 For the context shape, see `references/project-context.md`.
 
@@ -162,7 +162,7 @@ When a diff touches a skill, plugin, marketplace entry, installer, package allow
 
 ## Hard Rules
 
-- **No unverified claims.** Do not write "I verified X", "I ran Y", "tests pass", or "this fixes Z" unless the shell output is in this turn's transcript. If you reason about behavior without running, say "based on reading the code" instead of "I verified". Every verification claim in the sign-off must point to a command that actually ran in this session.
+- **No unverified claims.** Do not write "I verified X", "I ran Y", "tests pass", or "this fixes Z" unless the shell output is in this turn's transcript. If you reason about behavior without running, say "based on reading the code" instead of "I verified". Every verification claim in the sign-off must point to a command that actually ran in this session, or be labelled as reused evidence naming the commit and inputs it came from and what was re-checked to confirm it still applies. Reuse the project allows is fine; presenting it as this session's run is not.
 - **Re-read source-of-truth facts.** Refresh line numbers, worktree state, fallback behavior, locale coverage, artifact state, and the identity of any issue, PR, or thread in the current turn before citing or posting to it. Earlier context and reviewer notes are leads, not evidence.
 - **Public replies follow `references/public-reply.md`**: short natural paragraphs, one thanks, no bullet structure, in the reporter's language.
 
@@ -261,13 +261,13 @@ Use the project's known verification command appropriate to the changed surface.
 
 A failed check needs diagnosis; no detected command is a discovery gap, not proof of failure or of no verification surface. Inspect project docs, manifests, and CI for an appropriate check. Complete a read-only review with explicit evidence limits when no check is available. Block a fix or readiness claim only when required evidence is missing or failing, and ask for a command only if it cannot be recovered from project context.
 
-For bug fixes: a regression test that fails on the old code must exist before the fix is done.
+For bug fixes: a regression test that fails on the old code must exist before the fix is done. Establish expected behavior independently of the implementation: updating a snapshot does not prove it is correct. For agent instructions, keyword checks prove text retention only; behavior checks inspect tool actions and resulting files or artifacts, including forbidden side effects. Exercise a known-good and a known-bad case before relying on a new checker, and compare baseline and candidate under the same runtime and inputs.
 
 In a dirty or multi-agent checkout, a passing local build or test run is not proof your change is sound: unrelated WIP already in the tree can supply missing symbols, mask a break, or fail for reasons unrelated to you. Verify in isolation -- `git worktree add --detach <known-good-commit>`, `git apply` only the diff of the files you own, then build/test there. The clean isolated pass is the real signal; the contaminated local pass is not.
 
 ## Document Review
 
-For document, PDF, white paper, or prose review, route to `/write` (Document Review Mode). `/check` handles code diffs and release artifacts only.
+For document, PDF, white paper, or prose review, route to `/write` (Document Review Mode). `/check` handles code diffs and release artifacts only. If `/write` is not installed, say the request belongs to it and stop there rather than taking the prose review.
 
 ## Gotchas
 
