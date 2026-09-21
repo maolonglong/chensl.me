@@ -111,13 +111,23 @@ h2 {
     text-wrap: balance;
 }
 
+/*
+  Every level must outrank the 1.125rem article body. Space carries the rest of
+  the hierarchy: a wide gap above detaches the heading from the previous
+  section, a narrow gap below binds it to its own text.
+*/
 h3 {
-    font-size: 1.15rem;
-    margin-top: 2em;
+    font-size: 1.25rem;
+    margin: 2.25em 0 0.5em;
+    text-wrap: balance;
 }
 
-h4 {
-    font-size: 1rem;
+/* Below h3 the reading measure has no size left to spend, so these sit on the body floor. */
+h4,
+h5,
+h6 {
+    font-size: 1.125rem;
+    margin: 2em 0 0.5em;
 }
 
 p, li {

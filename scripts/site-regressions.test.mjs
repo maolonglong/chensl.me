@@ -565,3 +565,20 @@ test('a cold visit stays within the serif font transfer budget on every page', a
       `${page}: ${(total / 1024).toFixed(0)} KiB across ${needed.size} files exceeds ${budget / 1024} KiB`)
   }
 })
+
+test('every heading level outranks the article body size', async () => {
+  const style = await readFile(path.join(root, 'assets/css/style.css'), 'utf8')
+  const rem = declaration => {
+    const value = style.match(new RegExp(`(?:^|\\n)${declaration}\\s*\\{[^}]*?font-size:\\s*([\\d.]+)rem`, 's'))?.[1]
+    assert.ok(value, `missing font-size for ${declaration}`)
+    return Number(value)
+  }
+  const body = rem('\\.post-content')
+  const deep = 'h4,\\nh5,\\nh6'
+  for (const selector of ['h2', 'h3', deep]) {
+    assert.ok(rem(selector) >= body,
+      `${selector.replaceAll('\\n', ' ')} at ${rem(selector)}rem does not outrank the ${body}rem article body`)
+  }
+  assert.ok(rem('h2') > rem('h3'), 'h2 must outrank h3')
+  assert.ok(rem('h3') > rem(deep), 'h3 must outrank h4/h5/h6')
+})
