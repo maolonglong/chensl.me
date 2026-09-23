@@ -1,95 +1,41 @@
-{{- $title := cond .IsHome site.Title (.Title | default site.Title) -}}
-{{- $description := .Description | default site.Params.description -}}
-{{- if and (not .Description) .Summary -}}
-  {{- $description = .Summary | plainify | truncate 160 -}}
-{{- end -}}
-{{- $url := .Permalink -}}
-{{- $imageURL := "og-image.png" | absURL -}}
-{{- with .Params.image -}}
-  {{- $image := . -}}
-  {{- $lowerImage := lower $image -}}
-  {{- if or (hasPrefix $lowerImage "http://") (hasPrefix $lowerImage "https://") -}}
-    {{- $imageURL = $image -}}
-  {{- else if hasPrefix $image "//" -}}
-    {{- $imageURL = printf "https:%s" $image -}}
-  {{- else -}}
-    {{- with $.Resources.GetMatch $image -}}
-      {{- $imageURL = .Permalink -}}
-    {{- else -}}
-      {{- $imageURL = strings.TrimPrefix "/" $image | absURL -}}
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
-{{- $locale := site.Language.Locale | default "zh-CN" -}}
-{{- $ogLocale := replace $locale "-" "_" -}}
+{{- $title := cond .IsHome site.Title .Title -}}
+{{- $description := or .Description (.Summary | plainify | truncate 160) site.Params.description -}}
+{{- $image := "og-image.png" | absURL -}}
+{{- $author := site.Params.author.name -}}
 {{- $isArticle := and .IsPage (eq .Section "blog") -}}
-{{- $authorName := "" -}}
-{{- with site.Params.author -}}
-  {{- if reflect.IsMap . -}}
-    {{- with .name }}{{ $authorName = . }}{{ end -}}
-  {{- else -}}
-    {{- $authorName = . -}}
-  {{- end -}}
-{{- end -}}
-
 <meta name="description" content="{{ $description }}">
-{{- with $authorName }}
-<meta name="author" content="{{ . }}">
-{{- end }}
-
+<meta name="author" content="{{ $author }}">
 <meta property="og:site_name" content="{{ site.Title }}">
-<meta property="og:locale" content="{{ $ogLocale }}">
+<meta property="og:locale" content="{{ replace site.Language.Locale "-" "_" }}">
 <meta property="og:title" content="{{ $title }}">
 <meta property="og:type" content="{{ cond $isArticle "article" "website" }}">
-<meta property="og:url" content="{{ $url }}">
+<meta property="og:url" content="{{ .Permalink }}">
 <meta property="og:description" content="{{ $description }}">
-<meta property="og:image" content="{{ $imageURL }}">
+<meta property="og:image" content="{{ $image }}">
 {{- if $isArticle }}
 <meta property="article:published_time" content="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
-{{- if not .Lastmod.IsZero }}
 <meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">
 {{- end }}
-{{- end }}
-
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{{ $title }}">
 <meta name="twitter:description" content="{{ $description }}">
-<meta name="twitter:image" content="{{ $imageURL }}">
-
-{{- $schemaType := "WebPage" -}}
-{{- if .IsHome -}}
-  {{- $schemaType = "WebSite" -}}
-{{- else if $isArticle -}}
-  {{- $schemaType = "BlogPosting" -}}
-{{- else if .IsSection -}}
-  {{- $schemaType = "CollectionPage" -}}
-{{- end -}}
+<meta name="twitter:image" content="{{ $image }}">
 {{- $schema := dict
   "@context" "https://schema.org"
-  "@type" $schemaType
+  "@type" (cond .IsHome "WebSite" (cond $isArticle "BlogPosting" (cond .IsSection "CollectionPage" "WebPage")))
   "name" $title
-  "headline" $title
-  "url" $url
-  "description" ($description | plainify | truncate 200)
-  "inLanguage" $locale
-  "image" $imageURL
+  "url" .Permalink
+  "description" $description
+  "inLanguage" site.Language.Locale
+  "author" (dict "@type" "Person" "name" $author)
 -}}
-{{- if $isArticle -}}
+{{- if $isArticle }}
   {{- $schema = merge $schema (dict
+    "headline" $title
+    "image" $image
     "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00")
-    "mainEntityOfPage" (dict "@type" "WebPage" "@id" $url)
+    "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00")
+    "mainEntityOfPage" .Permalink
   ) -}}
-  {{- if not .Lastmod.IsZero -}}
-    {{- $schema = merge $schema (dict "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00")) -}}
-  {{- end -}}
-  {{- with $authorName -}}
-    {{- $schema = merge $schema (dict "author" (dict "@type" "Person" "name" .)) -}}
-  {{- end -}}
-{{- else if .IsHome -}}
-  {{- with $authorName -}}
-    {{- $schema = merge $schema (dict "author" (dict "@type" "Person" "name" .)) -}}
-  {{- end -}}
-{{- end -}}
-<script type="application/ld+json">
-  {{ $schema | jsonify | safeJS }}
-</script>
+{{- end }}
+<script type="application/ld+json">{{ $schema | jsonify | safeJS }}</script>

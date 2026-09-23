@@ -1,59 +1,50 @@
 <!DOCTYPE html>
-<html lang="{{ site.Language.Locale | default "zh-CN" }}">
-<!-- Built with Hugo, typeset in the spirit of Kami -->
+<html lang="{{ site.Language.Locale }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   {{ partial "theme.html" . }}
-  <title>{{ block "title" . }}{{ site.Title }}{{ end }}</title>
-  {{ if eq .Kind "404" }}
-    <meta name="robots" content="noindex">
-  {{ else }}
-    {{ block "canonical" . }}
-      <link rel="canonical" href="{{ .Permalink }}">
-    {{ end }}
-    {{ partial "seo.html" . }}
-  {{ end }}
-  {{ block "head" . }}{{ end }}
+  <title>{{ block "title" . }}{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} | {{ site.Title }}{{ end }}{{ end }}</title>
+  {{- if eq .Kind "404" }}
+  <meta name="robots" content="noindex">
+  {{- else }}
+  <link rel="canonical" href="{{ .Permalink }}">
+  {{ partial "seo.html" . }}
+  {{- end }}
   {{ partial "favicons.html" . }}
-  {{- /* Force content rendering so code block render hooks populate .Store before we check it. */ -}}
-  {{- $_ := .Content -}}
-  {{- with resources.Get "css/style.css" }}
-    {{- $css := . | minify -}}
-    <style>{{ $css.Content | safeCSS }}</style>
+  {{- /* Render the content first: the code block hook records in .Store whether syntax colors are needed. */}}
+  {{- $content := .Content }}
+  {{- with resources.Get "css/style.css" | minify }}
+  <style>{{ .Content | safeCSS }}</style>
   {{- end }}
-  {{- with resources.Get "css/serif.css" }}
-    {{- $css := . | resources.ExecuteAsTemplate "css/serif.css" $ | minify | fingerprint -}}
-    <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+  {{- with resources.Get "css/serif.css" | resources.ExecuteAsTemplate "css/serif.css" . | minify | fingerprint }}
+  <link rel="stylesheet" href="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}">
   {{- end }}
-  {{- if findRE `<(?:code|pre|kbd|samp)(?:\s|>)` .Content 1 }}
-    {{- with resources.Get "css/fonts.css" }}
-      {{- $css := . | resources.ExecuteAsTemplate "css/fonts.css" $ | minify -}}
-      <style>{{ $css.Content | safeCSS }}</style>
-    {{- end }}
+  {{- if findRE `<(?:code|pre|kbd|samp)[\s>]` $content 1 }}
+  {{- with resources.Get "css/fonts.css" | resources.ExecuteAsTemplate "css/fonts.css" . | minify }}
+  <style>{{ .Content | safeCSS }}</style>
+  {{- end }}
   {{- end }}
   {{- if .Store.Get "hasCodeBlock" }}
-    {{- with resources.Get "css/syntax.css" }}
-      {{- $css := . | minify -}}
-      <style>{{ $css.Content | safeCSS }}</style>
-    {{- end }}
+  {{- with resources.Get "css/syntax.css" | minify }}
+  <style>{{ .Content | safeCSS }}</style>
   {{- end }}
-  {{ with or (.OutputFormats.Get "rss") (site.Home.OutputFormats.Get "rss") }}
-    <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
-  {{ end }}
+  {{- end }}
+  {{- with site.Home.OutputFormats.Get "rss" }}
+  <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
+  {{- end }}
 </head>
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
-  <header>
-    <p class="site-title"><a class="title" href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a></p>
-    {{ block "nav" . }}
+  <header class="site-header">
+    <p class="site-title"><a href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a></p>
     <nav aria-label="主导航">
-      {{ range site.Menus.main }}
-        <a href="{{ .URL }}"{{ if $.IsMenuCurrent .Menu . }} aria-current="page"{{ else if and .Page (not .Page.IsHome) (.Page.IsAncestor $) }} aria-current="location"{{ end }}>{{ .Name }}</a>
-      {{ end }}
-      {{ with site.Home.OutputFormats.Get "rss" }}
-        <a href="{{ .RelPermalink }}">RSS</a>
-      {{ end }}
+      {{- range site.Menus.main }}
+      <a href="{{ .URL }}"{{ if $.IsMenuCurrent .Menu . }} aria-current="page"{{ else if and .Page (not .Page.IsHome) (.Page.IsAncestor $) }} aria-current="location"{{ end }}>{{ .Name }}</a>
+      {{- end }}
+      {{- with site.Home.OutputFormats.Get "rss" }}
+      <a href="{{ .RelPermalink }}" type="application/rss+xml">RSS</a>
+      {{- end }}
       <button class="theme-toggle" type="button" data-theme-toggle>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <g data-theme-icon="auto">
@@ -70,19 +61,12 @@
         </svg>
       </button>
     </nav>
-    {{ end }}
   </header>
-  <main id="main"{{ if .IsHome }} class="home-content"{{ else if and .IsPage (eq .Section "blog") }} class="post-content"{{ end }}>
-    {{ block "main" . }}{{ end }}
+  <main id="main">
+    {{- block "main" . }}{{ end }}
   </main>
-  <footer>
-    {{ block "footer" . }}
-      <span>
-        基于 <a href="https://gohugo.io">Hugo</a> 构建
-        /
-        排版灵感来自 <a href="https://github.com/tw93/Kami">Kami</a>
-      </span>
-    {{ end }}
+  <footer class="site-footer">
+    <p>基于 <a href="https://gohugo.io">Hugo</a> 构建 / 排版灵感来自 <a href="https://github.com/tw93/Kami">Kami</a></p>
   </footer>
 </body>
 </html>

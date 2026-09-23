@@ -1,30 +1,21 @@
-{{- $pages := .pages -}}
+{{- /* Archive rows grouped by year. Takes the pages to list. */ -}}
+{{- range . }}
+  {{- if not .Title }}{{ errorf "Blog post %q is missing a title" .Path }}{{ end }}
+  {{- if .Date.IsZero }}{{ errorf "Blog post %q is missing a date" .Path }}{{ end }}
+{{- end }}
 
-{{ range $pages }}
-  {{- if not .Title }}
-    {{- errorf "Blog post %q is missing a title" .Path }}
+{{- range .GroupByDate "2006" }}
+<h2 class="posts-year">{{ .Key }}</h2>
+<ul class="blog-posts">
+  {{- range .Pages }}
+  <li>
+    <a href="{{ .RelPermalink }}">
+      <span>{{ .LinkTitle }}</span>
+      <time datetime="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">{{ .Date.Format "01-02" }}</time>
+    </a>
+  </li>
   {{- end }}
-  {{- if .Date.IsZero }}
-    {{- errorf "Blog post %q is missing a date" .Path }}
-  {{- end }}
-{{ end }}
-
-{{ range $pages.GroupByDate "2006" }}
-  <h2 class="posts-year">{{ .Key }}</h2>
-  <ul class="blog-posts">
-    {{ range .Pages }}
-      <li>
-        <a href="{{ .RelPermalink }}">
-          <span>{{ .LinkTitle }}</span>
-          <time datetime="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">
-            {{ .Date.Format "01-02" }}
-          </time>
-        </a>
-      </li>
-    {{ end }}
-  </ul>
-{{ else }}
-  <ul class="blog-posts">
-    <li>还没有文章</li>
-  </ul>
-{{ end }}
+</ul>
+{{- else }}
+<p class="blog-posts-empty">还没有文章</p>
+{{- end }}

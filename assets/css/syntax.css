@@ -22,10 +22,14 @@
     color: light-dark(#5b5953, #b0aea5);
 }
 
+/* Keywords carry the one accent; declared names stand out by ink weight, not a second hue. */
 .chroma .k, .chroma .kc, .chroma .kd, .chroma .kn,
-.chroma .kp, .chroma .kr, .chroma .kt, .chroma .nt,
-.chroma .nf, .chroma .fm, .chroma .nd, .chroma .se {
+.chroma .kp, .chroma .kr, .chroma .kt, .chroma .nt, .chroma .se {
     color: light-dark(#1b365d, #94b4d4);
+}
+
+.chroma .nf, .chroma .fm, .chroma .nd {
+    color: light-dark(#141413, #faf9f5);
 }
 
 .chroma .c, .chroma .ch, .chroma .cm, .chroma .c1,

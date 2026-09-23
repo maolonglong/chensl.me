@@ -1,59 +1,33 @@
-{{- $authorEmail := "" }}
-{{- with site.Params.author }}
-  {{- if reflect.IsMap . }}
-    {{- with .email }}
-      {{- $authorEmail = . }}
-    {{- end }}
-  {{- end }}
-{{- end }}
-
-{{- $authorName := "" }}
-{{- with site.Params.author }}
-  {{- if reflect.IsMap . }}
-    {{- with .name }}
-      {{- $authorName = . }}
-    {{- end }}
-  {{- else }}
-    {{- $authorName  = . }}
-  {{- end }}
-{{- end }}
-
-{{- $pages := slice }}
-{{- if .IsHome }}
-{{- /* Keep the home feed scoped to blog posts, matching the home page listing. */ -}}
-{{- $pages = where site.RegularPages "Section" "blog" }}
-{{- else if .IsSection }}
-{{- $pages = .RegularPages }}
-{{- else }}
-{{- $pages = .Pages }}
-{{- end }}
-{{- $limit := .Site.Config.Services.RSS.Limit }}
-{{- if ge $limit 1 }}
-{{- $pages = $pages | first $limit }}
-{{- end }}
+{{- /* Every feed carries blog posts only, newest first, with full content. */ -}}
+{{- $pages := where site.RegularPages "Section" "blog" -}}
+{{- if .IsSection }}{{ $pages = .RegularPages }}{{ end -}}
+{{- with site.Config.Services.RSS.Limit }}{{ if ge . 1 }}{{ $pages = first . $pages }}{{ end }}{{ end -}}
+{{- $author := printf "%s (%s)" site.Params.author.email site.Params.author.name -}}
+{{- $rfc822 := "Mon, 02 Jan 2006 15:04:05 -0700" -}}
 {{- printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>{{ if .IsHome }}{{ .Site.Title }}{{ else if eq .Title .Site.Title }}{{ .Site.Title }}{{ else }}{{ with .Title }}{{ . }} on {{ end }}{{ .Site.Title }}{{ end }}</title>
+    <title>{{ site.Title }}</title>
     <link>{{ .Permalink }}</link>
-    <description>Recent content {{ if not .IsHome }}{{ if ne .Title .Site.Title }}{{ with .Title }}in {{ . }} {{ end }}{{ end }}{{ end }}on {{ .Site.Title }}</description>
+    <description>{{ .Description | default site.Params.description }}</description>
     <generator>Hugo</generator>
-    <language>{{ site.Language.Locale }}</language>{{ with $authorEmail }}
-    <managingEditor>{{.}}{{ with $authorName }} ({{ . }}){{ end }}</managingEditor>{{ end }}{{ with $authorEmail }}
-    <webMaster>{{ . }}{{ with $authorName }} ({{ . }}){{ end }}</webMaster>{{ end }}{{ with .Site.Copyright }}
-    <copyright>{{ . }}</copyright>{{ end }}{{ if gt (len $pages) 0 }}
-    <lastBuildDate>{{ (index $pages.ByLastmod.Reverse 0).Lastmod.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>{{ end }}
-    {{- with .OutputFormats.Get "RSS" }}
+    <language>{{ site.Language.Locale }}</language>
+    <managingEditor>{{ $author }}</managingEditor>
+    <webMaster>{{ $author }}</webMaster>
+    {{- with $pages }}
+    <lastBuildDate>{{ (index .ByLastmod.Reverse 0).Lastmod.Format $rfc822 }}</lastBuildDate>
+    {{- end }}
+    {{- with .OutputFormats.Get "rss" }}
     {{ printf "<atom:link href=%q rel=\"self\" type=%q />" .Permalink .MediaType | safeHTML }}
     {{- end }}
     {{- range $pages }}
     <item>
       <title>{{ .Title }}</title>
       <link>{{ .Permalink }}</link>
-      <pubDate>{{ .PublishDate.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
-      {{- with $authorEmail }}<author>{{ . }}{{ with $authorName }} ({{ . }}){{ end }}</author>{{ end }}
+      <pubDate>{{ .PublishDate.Format $rfc822 }}</pubDate>
+      <author>{{ $author }}</author>
       <guid>{{ .Permalink }}</guid>
-      <description>{{ .Summary | transform.XMLEscape | safeHTML }}</description>
+      <description>{{ or .Description .Summary | transform.XMLEscape | safeHTML }}</description>
       <content:encoded>{{ .Content | transform.XMLEscape | safeHTML }}</content:encoded>
     </item>
     {{- end }}

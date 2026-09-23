@@ -1,25 +1,26 @@
-{{ define "title" }}{{ .Title }} | {{ site.Title }}{{ end }}
-
 {{ define "main" }}
-  <h1>{{ .Title }}</h1>
+  <article class="post">
+    <header class="post-header">
+      <h1>{{ .Title }}</h1>
+      <p class="post-meta">
+        <time datetime="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">{{ .Date.Format site.Params.dateFormat }}</time>
+      </p>
+    </header>
 
-  <p class="post-meta">
-    <time datetime="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">
-      {{ .Date.Format (site.Params.dateFormat | default "02 Jan, 2006") }}
-    </time>
-  </p>
-
-  {{ $headings := findRE `<h[23][ >]` .Content }}
-  {{ if ge (len $headings) 3 }}
+    {{- /* A contents list earns its place from three H2/H3 headings; hugo.toml sets the depth. */}}
+    {{- if ge (len (findRE `<h[23][\s>]` .Content)) 3 }}
     <details class="toc">
       <summary>目录</summary>
       {{ .TableOfContents }}
     </details>
-  {{ end }}
+    {{- end }}
 
-  {{ .Content }}
+    <div class="prose">
+      {{ .Content }}
+    </div>
+  </article>
 
-  {{ if and (eq .Section "blog") (ne .Params.comments false) }}
-    {{ partial "comments.html" . }}
-  {{ end }}
+  {{- if and (eq .Section "blog") (ne .Params.comments false) }}
+  {{ partial "comments.html" . }}
+  {{- end }}
 {{ end }}

@@ -46,7 +46,9 @@ test('image render hooks handle valid resource and URL variants', async () => {
   for (const name of ['render-image.html', 'render-image.rss.xml']) {
     await cp(path.join(root, 'layouts/_markup', name), path.join(fixture, 'layouts/_markup', name))
   }
-  await cp(path.join(root, 'layouts/_partials/seo.html'), path.join(fixture, 'layouts/_partials/seo.html'))
+  for (const name of ['markdown-image.html', 'seo.html']) {
+    await cp(path.join(root, 'layouts/_partials', name), path.join(fixture, 'layouts/_partials', name))
+  }
   for (const name of ['pixel.png', 'café image.png']) {
     await cp(path.join(root, 'static/favicon-16x16.png'), path.join(fixture, 'content/blog/render', name))
   }
@@ -61,7 +63,6 @@ title = 'Fixture'
 `)
   await write(fixture, 'content/_index.md', `+++
 title = 'Home'
-image = '//cdn.example.test/card.png'
 +++
 `)
   await write(fixture, 'content/blog/render/index.md', `+++
@@ -85,7 +86,7 @@ date = 2026-01-01
 
   const html = await readFile(path.join(fixture, 'out/index.html'), 'utf8')
   const rss = await readFile(path.join(fixture, 'out/index.xml'), 'utf8')
-  assert.match(html, /og:image" content="https:\/\/cdn\.example\.test\/card\.png"/)
+  assert.match(html, /og:image" content="https:\/\/example\.test\/sub\/og-image\.png"/)
   assert.match(imageWithAlt(html, 'svg'), /src="\/sub\/blog\/render\/shape\.svg"/)
   assert.doesNotMatch(imageWithAlt(html, 'svg'), /\bwidth=/)
   assert.match(imageWithAlt(html, 'query'), /src="\/sub\/blog\/render\/pixel\.png\?v=1#frag"/)
@@ -573,7 +574,7 @@ test('every heading level outranks the article body size', async () => {
     assert.ok(value, `missing font-size for ${declaration}`)
     return Number(value)
   }
-  const body = rem('\\.post-content')
+  const body = rem('\\.post')
   const deep = 'h4,\\nh5,\\nh6'
   for (const selector of ['h2', 'h3', deep]) {
     assert.ok(rem(selector) >= body,

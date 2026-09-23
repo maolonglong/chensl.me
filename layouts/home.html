@@ -1,9 +1,5 @@
-{{ define "title" }}{{ site.Title }}{{ end }}
-
 {{ define "main" }}
-  {{ if .Content }}
+  <div class="home prose">
     {{ .Content }}
-  {{ else }}
-    {{ partial "post-list.html" (dict "pages" (where site.RegularPages "Section" "blog")) }}
-  {{ end }}
+  </div>
 {{ end }}

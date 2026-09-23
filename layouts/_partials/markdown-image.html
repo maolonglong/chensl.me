@@ -1,0 +1,39 @@
+{{- /*
+  Renders a Markdown image for the page or the feed.
+
+  Page-bundle images and site-root paths resolve to site URLs: relative on the page,
+  absolute in RSS, where readers resolve against the feed rather than the article.
+  Remote and data URLs pass through. Anything else fails the build instead of shipping
+  a broken image.
+*/ -}}
+{{- $hook := .hook -}}
+{{- $absolute := .absolute -}}
+{{- $url := urls.Parse $hook.Destination -}}
+{{- $scheme := lower $url.Scheme -}}
+{{- $isProtocolRelative := and (not $scheme) $url.Host -}}
+{{- $isRemote := or (eq $scheme "http") (eq $scheme "https") $isProtocolRelative -}}
+{{- $isData := eq $scheme "data" -}}
+{{- $src := $hook.Destination -}}
+{{- $resource := false -}}
+{{- $isLocal := not (or $isRemote $isData) -}}
+{{- if $isProtocolRelative -}}
+  {{- $src = printf "https:%s" $src -}}
+{{- else if and $isLocal (hasPrefix $url.Path "/") -}}
+  {{- $path := strings.TrimPrefix "/" $url.Path -}}
+  {{- $src = cond $absolute (absURL $path) (relURL $path) -}}
+{{- else if $isLocal -}}
+  {{- $resource = $hook.PageInner.Resources.Get $url.Path -}}
+  {{- if not $resource -}}
+    {{- errorf "Unable to resolve image %q in %s" $hook.Destination $hook.Position -}}
+  {{- end -}}
+  {{- $src = cond $absolute $resource.Permalink $resource.RelPermalink -}}
+{{- end -}}
+{{- if $isLocal -}}
+  {{- with $url.RawQuery }}{{ $src = printf "%s?%s" $src . }}{{ end -}}
+  {{- with $url.Fragment }}{{ $src = printf "%s#%s" $src . }}{{ end -}}
+{{- end -}}
+<img src="{{ $src | safeURL }}" alt="{{ $hook.PlainText }}" loading="lazy" decoding="async"
+  {{- if reflect.IsImageResourceWithMeta $resource }} width="{{ $resource.Width }}" height="{{ $resource.Height }}"{{ end }}
+  {{- with $hook.Title }} title="{{ . }}"{{ end }}
+  {{- if $isRemote }} referrerpolicy="no-referrer"{{ end }}>
+{{- /* Chomp trailing newline. */ -}}

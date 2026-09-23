@@ -1,5 +1,9 @@
+/* ------------------------------------------------------------------ tokens */
+
 :root {
-    --width: 42rem;
+    --measure: 42rem;
+    --gutter: 24px;
+    --radius: 6px;
     --font-serif:
         "TsangerJinKai02",
         "Noto Serif SC",
@@ -10,15 +14,14 @@
         Georgia,
         serif;
     --font-mono:
+        "JetBrains Mono",
         ui-monospace,
         "SFMono-Regular",
         "SF Mono",
         Menlo,
-        Monaco,
         Consolas,
         "Liberation Mono",
-        monospace;
-    --radius: 6px;
+        var(--font-serif);
     --background-color: light-dark(#f5f4ed, #141413);
     --heading-color: light-dark(#141413, #faf9f5);
     --text-color: light-dark(#3d3d3a, #d4d3cd);
@@ -43,72 +46,39 @@
     color-scheme: dark;
 }
 
+/* -------------------------------------------------------------------- base */
+
 html {
     font-family: var(--font-serif);
     font-size: 100%;
     font-synthesis: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
-body {
-    font-size: 1.0625rem;
-    font-weight: 400;
-    line-height: 1.85;
-    margin: auto;
-    padding: 32px 24px;
-    max-width: 52rem;
-    text-align: left;
-    background-color: var(--background-color);
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    color: var(--text-color);
-}
-
-body > header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 64px;
-}
-
-main {
-    max-width: var(--width);
-    margin-inline: auto;
-}
-
-.home-content > h1 {
-    margin: 0 0 20px;
-    text-align: center;
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-}
-
-.home-content > h1 + p {
-    text-align: center;
-    margin-bottom: 48px;
-}
-
-.home-content > hr {
-    border: 0;
-    margin: 32px 0;
-}
-
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-weight: 500;
     line-height: 1.3;
     color: var(--heading-color);
+    text-wrap: balance;
+    /* Break titles at spaces and punctuation, not inside a word like 单元; overflow-wrap still rescues a segment wider than the line. */
+    word-break: keep-all;
 }
 
 h1 {
-    font-size: clamp(1.75rem, 4vw, 2.25rem);
     margin: 0 0 16px;
-    text-wrap: balance;
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    line-height: 1.25;
 }
 
 h2 {
-    font-size: 1.5rem;
     margin: 2em 0 0.75em;
-    text-wrap: balance;
+    font-size: 1.5rem;
 }
 
 /*
@@ -117,41 +87,167 @@ h2 {
   section, a narrow gap below binds it to its own text.
 */
 h3 {
-    font-size: 1.25rem;
     margin: 2.25em 0 0.5em;
-    text-wrap: balance;
+    font-size: 1.25rem;
 }
 
 /* Below h3 the reading measure has no size left to spend, so these sit on the body floor. */
 h4,
 h5,
 h6 {
-    font-size: 1.125rem;
     margin: 2em 0 0.5em;
+    font-size: 1.125rem;
 }
 
-p, li {
+/* A subsection that opens its section belongs to that heading, not after a pause. */
+h2 + :is(h3, h4, h5, h6),
+h3 + :is(h4, h5, h6) {
+    margin-top: 1em;
+}
+
+p,
+li {
     text-wrap: pretty;
+}
+
+strong,
+b {
+    font-weight: 500;
+    color: var(--heading-color);
 }
 
 a {
     color: var(--link-color);
-    cursor: pointer;
     text-decoration: none;
 }
 
-.post-content a,
-footer a {
-    text-decoration: underline;
-    text-decoration-thickness: 0.08em;
-    text-underline-offset: 0.15em;
+@media (hover: hover) {
+    a:hover {
+        color: var(--link-hover-color);
+        text-decoration: underline;
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.2em;
+    }
 }
 
-nav a {
+:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+::selection {
+    background-color: var(--selection-color);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+button {
+    margin: 0;
+    font: inherit;
+    cursor: pointer;
+}
+
+hr {
+    margin-block: 2em;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+}
+
+mark {
+    padding: 1px 4px;
+    color: inherit;
+    background-color: var(--mark-background-color);
+    border-radius: 4px;
+}
+
+code,
+kbd,
+pre,
+samp {
+    font-family: var(--font-mono);
+    font-variant-ligatures: none;
+}
+
+cite {
+    font-style: normal;
+}
+
+.visually-hidden,
+.skip-link:not(:focus) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
     white-space: nowrap;
+    border: 0;
 }
 
-header nav {
+/* ------------------------------------------------------------------- shell */
+
+/*
+  Header, main, and footer share one column, so the site title, the first
+  letter of every article, and the footer all hang from the same left edge.
+  The column fills the viewport height so short pages keep the footer down.
+*/
+body {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: calc(var(--measure) + 2 * var(--gutter));
+    margin: 0 auto;
+    padding: 32px var(--gutter);
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    overflow-wrap: break-word;
+}
+
+main {
+    flex: 1;
+}
+
+.skip-link {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    padding: 8px 16px;
+    color: var(--background-color);
+    background: var(--link-color);
+}
+
+.site-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 64px;
+}
+
+.site-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.site-title a {
+    color: var(--heading-color);
+    text-decoration: none;
+}
+
+.site-header nav {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -159,48 +255,29 @@ header nav {
     font-size: 0.875rem;
 }
 
-nav a,
-.title,
-.toc a,
-a.footnote-ref {
-    text-decoration: none;
+.site-header nav a {
+    white-space: nowrap;
 }
 
-nav a[aria-current] {
+.site-header nav a[aria-current] {
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.25em;
 }
 
-@media (hover: hover) {
-    a:hover {
-        color: var(--link-hover-color);
-        text-decoration: underline;
-    }
-}
-
-::selection {
-    background-color: var(--selection-color);
-}
-
-a:focus-visible {
-    outline: 2px solid var(--link-color);
-    outline-offset: 2px;
-    border-radius: 2px;
-}
-
+/* A 24px glyph with a 44px hit area; hidden until the script can label it. */
 .theme-toggle {
     position: relative;
     display: grid;
-    place-items: center;
     flex: none;
+    place-items: center;
     width: 24px;
     height: 24px;
-    visibility: hidden;
     padding: 0;
-    border: 0;
-    background: transparent;
     color: var(--heading-color);
+    background: transparent;
+    border: 0;
+    visibility: hidden;
     touch-action: manipulation;
     transition: opacity 100ms ease-out;
 }
@@ -229,29 +306,147 @@ a:focus-visible {
     opacity: 0.65;
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .theme-toggle {
-        transition: none;
-    }
+.site-footer {
+    margin-top: 72px;
+    padding-top: 20px;
+    font-size: 0.875rem;
+    color: var(--muted-color);
+    border-top: 1px solid var(--border-color);
 }
 
-strong, b {
+.site-footer p {
+    margin: 0;
+}
+
+/* Running-text links are underlined so they never depend on color alone. */
+.site-footer a,
+.prose a:not(.footnote-ref) {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+}
+
+/* ------------------------------------------------------------------- prose */
+
+.post {
+    font-size: 1.125rem;
+}
+
+.prose > :first-child {
+    margin-top: 0;
+}
+
+.prose > :last-child {
+    margin-bottom: 0;
+}
+
+.prose :is(ul, ol) {
+    padding-left: 1.5em;
+}
+
+.prose li::marker {
+    color: var(--muted-color);
+}
+
+.prose img {
+    border-radius: var(--radius);
+}
+
+blockquote {
+    margin: 1.75em 0;
+    padding-inline: 1.5em;
+    color: var(--blockquote-color);
+}
+
+blockquote > :first-child {
+    margin-top: 0;
+}
+
+blockquote > :last-child {
+    margin-bottom: 0;
+}
+
+blockquote cite {
+    color: var(--muted-color);
+}
+
+/* Alerts are a quiet filled note; the heading names the kind, color does not. */
+.alert {
+    padding: 1em 1.25em;
+    color: var(--text-color);
+    background-color: var(--code-background-color);
+    border-radius: var(--radius);
+}
+
+.alert-heading {
+    margin-bottom: 0.35em;
     font-weight: 500;
     color: var(--heading-color);
 }
 
-button {
-    margin: 0;
-    cursor: pointer;
+.alert-heading + * {
+    margin-top: 0.35em;
 }
 
+/* ------------------------------------------------------------------- code */
+
+:not(pre) > code {
+    padding: 2px 5px;
+    font-size: 0.875em;
+    color: var(--code-color);
+    background-color: var(--code-background-color);
+    border-radius: 4px;
+}
+
+pre {
+    font-size: 0.875rem;
+    line-height: 1.65;
+    tab-size: 4;
+}
+
+pre code {
+    font-size: inherit;
+}
+
+.highlight {
+    margin-block: 1.5em;
+    overflow-x: auto;
+    border-radius: var(--radius);
+}
+
+.highlight pre {
+    box-sizing: border-box;
+    width: max-content;
+    min-width: 100%;
+    margin: 0;
+    padding: 14px 18px;
+}
+
+/* `{title="path/to/file"}` on a fence: the filename is data, so it gets a label, not a frame. */
+.code-figure {
+    margin: 1.5em 0;
+}
+
+.code-figure figcaption {
+    padding-bottom: 0.4em;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--muted-color);
+}
+
+.code-figure .highlight {
+    margin-block: 0;
+}
+
+/* ------------------------------------------------------------------ tables */
+
+/* The wrapper scrolls so the <table> keeps its role in the accessibility tree. */
 .table-scroll {
     margin-block: 1.5em;
     overflow-x: auto;
 }
 
 .table-scroll:focus-visible {
-    outline: 2px solid var(--link-color);
     outline-offset: 4px;
 }
 
@@ -283,167 +478,42 @@ td:last-child {
     padding-right: 0;
 }
 
-hr {
-    border: 0;
-    border-top: 1px solid var(--border-color);
-    margin-block: 2em;
+/* ------------------------------------------------------------- disclosure */
+
+details > summary {
+    color: var(--link-color);
+    cursor: pointer;
 }
 
-img {
-    max-width: 100%;
-    height: auto;
+.prose details {
+    margin-block: 1.5em;
 }
 
-code, pre, kbd, samp {
-    font-family: "JetBrains Mono", var(--font-mono), var(--font-serif);
-    font-variant-ligatures: none;
-}
-
-:not(pre) > code,
-.code {
-    font-size: 0.875em;
-    padding: 2px 5px;
-    background-color: var(--code-background-color);
-    color: var(--code-color);
-    border-radius: 4px;
-}
-
-pre {
+.toc {
+    margin-bottom: 32px;
     font-size: 0.9375rem;
-    line-height: 1.65;
-    tab-size: 4;
 }
 
-blockquote {
-    margin: 1.75em 0;
-    padding-inline: 1.5em;
-    color: var(--blockquote-color);
+.toc ul {
+    margin: 0.5em 0 0;
+    padding-left: 1.25em;
 }
 
-blockquote > :first-child {
+.toc ul ul {
     margin-top: 0;
 }
 
-blockquote > :last-child {
-    margin-bottom: 0;
-}
-
-.alert {
-    padding: 1em 1.25em;
-    border-radius: var(--radius);
-    background-color: var(--code-background-color);
-}
-
-.alert-heading {
-    margin-bottom: 0.35em;
-    color: var(--heading-color);
-    font-weight: 500;
-}
-
-.alert-heading + * {
-    margin-top: 0.35em;
-}
-
-footer {
-    max-width: var(--width);
-    margin: 56px auto 0;
-    padding: 24px 0 8px;
-    text-align: center;
-    font-size: 0.875rem;
+.toc li::marker {
     color: var(--muted-color);
 }
 
-.title,
-.title:hover {
-    color: var(--heading-color);
+.toc a {
     text-decoration: none;
 }
 
-.site-title {
-    font-size: 1.5rem;
-    font-weight: 500;
-    line-height: 1.3;
-    margin: 0;
-}
+/* --------------------------------------------------------------- footnotes */
 
-.post-content {
-    font-size: 1.125rem;
-}
-
-.post-meta {
-    font-size: 0.875rem;
-    color: var(--muted-color);
-    margin: 0 0 32px;
-}
-
-.comments {
-    margin-top: 3.5rem;
-}
-
-.giscus,
-.giscus-frame {
-    width: 100%;
-}
-
-.giscus-frame {
-    display: block;
-    border: 0;
-}
-
-.comments-unavailable {
-    color: var(--muted-color);
-    font-size: 0.875rem;
-}
-
-/* `{title="path/to/file"}` on a fence: the filename is data, so it gets a label, not a frame. */
-.code-figure {
-    margin: 1em 0;
-}
-
-.code-figure figcaption {
-    padding-bottom: 0.4em;
-    font-family: "JetBrains Mono", var(--font-mono), var(--font-serif);
-    font-size: 0.8125rem;
-    color: var(--muted-color);
-}
-
-.code-figure .highlight {
-    margin-block: 0;
-}
-
-.highlight {
-    margin-block: 1em;
-    overflow-x: auto;
-    border-radius: var(--radius);
-    background: transparent;
-    color: inherit;
-}
-
-.highlight pre,
-pre.chroma {
-    margin: 0;
-    padding: 12px 15px;
-    border-radius: var(--radius);
-    box-sizing: border-box;
-    min-width: 100%;
-    width: max-content;
-}
-
-pre code {
-    padding: 0;
-    background: transparent;
-    color: inherit;
-    border-radius: 0;
-}
-
-mark {
-    padding: 1px 4px;
-    background-color: var(--mark-background-color);
-    color: inherit;
-    border-radius: 4px;
-}
-
-/* footnotes: references, not a continuation of the argument, so they recede */
+/* References, not a continuation of the argument, so they recede. */
 .footnotes {
     font-size: 0.9375rem;
     color: var(--muted-color);
@@ -469,80 +539,109 @@ mark {
     margin-bottom: 0;
 }
 
-/* blog post list */
-.posts-year {
-    font-size: 1.15rem;
-    letter-spacing: 0;
-    color: var(--muted-color);
-    margin: 1.5em 0 0.5em;
+/* -------------------------------------------------------------------- post */
+
+.post-header {
+    margin-bottom: 40px;
 }
 
-ul.blog-posts {
-    list-style-type: none;
-    padding: unset;
-}
-
-ul.blog-posts li a {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: baseline;
-    column-gap: 16px;
-    padding-block: 8px;
-}
-
-ul.blog-posts time {
-    font-variant-numeric: tabular-nums;
+.post-meta {
+    margin: 0;
     font-size: 0.875rem;
-    white-space: nowrap;
     color: var(--muted-color);
+    font-variant-numeric: tabular-nums;
 }
 
-/* Already-read entries recede within the same ink hue rather than taking a second accent. */
-ul.blog-posts li a:visited {
-    color: var(--visited-color);
+.comments {
+    margin-top: 72px;
 }
 
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+.comments h2 {
+    margin-top: 0;
+}
+
+.giscus,
+.giscus-frame {
+    width: 100%;
+}
+
+.giscus-frame {
+    display: block;
     border: 0;
 }
 
-/* skip link */
-.skip-link {
-    position: absolute;
-    left: -9999px;
-    top: auto;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
+.comments-unavailable {
+    font-size: 0.875rem;
+    color: var(--muted-color);
 }
 
-.skip-link:focus {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: auto;
-    height: auto;
-    padding: 8px 16px;
-    background: var(--link-color);
-    color: var(--background-color);
-    z-index: 100;
+/* -------------------------------------------------------------------- home */
+
+.home > h1 {
+    font-size: clamp(2rem, 6vw, 2.5rem);
 }
 
-/* 404 page */
+.home > h1 + p {
+    margin-top: 0;
+    font-size: 1.125rem;
+    color: var(--muted-color);
+}
+
+/* The home page's `---` marks a pause between parts, not a rule to look at. */
+.home > hr {
+    margin-block: 40px;
+    border: 0;
+}
+
+/* ----------------------------------------------------------------- archive */
+
+.posts-year {
+    margin: 2em 0 0.25em;
+    font-size: 1.125rem;
+    color: var(--muted-color);
+    font-variant-numeric: tabular-nums;
+}
+
+main > .posts-year:first-of-type {
+    margin-top: 0;
+}
+
+.blog-posts {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.blog-posts a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 16px;
+    align-items: baseline;
+    padding-block: 8px;
+}
+
+.blog-posts time {
+    font-size: 0.875rem;
+    color: var(--muted-color);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Already-read entries recede within the same ink hue rather than taking a second accent. */
+.blog-posts a:visited {
+    color: var(--visited-color);
+}
+
+/* --------------------------------------------------------------------- 404 */
+
+/* The message sits in the middle of whatever height the shell leaves between header and footer. */
+main:has(> .not-found) {
+    display: grid;
+    align-content: center;
+}
+
 .not-found {
     text-align: center;
-    display: flex;
-    flex-flow: column;
-    justify-content: center;
-    min-height: 40vh;
 }
 
 /* The serif's box-drawing glyphs do not join; the monospace stack keeps the table flipped. */
@@ -554,52 +653,40 @@ ul.blog-posts li a:visited {
     color: var(--heading-color);
 }
 
-/* button / input focus */
-button:focus-visible,
-input:focus-visible {
-    outline: 2px solid var(--link-color);
-    outline-offset: 2px;
-}
-
-/* table of contents */
-.toc {
-    margin-bottom: 24px;
-    font-size: 0.9rem;
-}
-
-.toc + h2,
-.toc + h3 {
-    margin-top: 1em;
-}
-
-.toc summary {
-    color: var(--link-color);
-    cursor: pointer;
-}
-
-.toc ul {
-    padding-left: 20px;
-}
+/* ------------------------------------------------------------------ narrow */
 
 @media (max-width: 600px) {
-    body {
-        padding: 24px 20px;
+    :root {
+        --gutter: 20px;
     }
 
-    body > header {
-        gap: 12px;
+    body {
+        padding-block: 24px;
+    }
+
+    .site-header {
         margin-bottom: 48px;
     }
 
-    header nav {
+    .site-header nav {
         gap: 12px;
     }
 
-    .post-content {
+    .post {
         font-size: 1.0625rem;
     }
 
-    .home-content > h1 + p {
-        margin-bottom: 32px;
+    pre {
+        font-size: 0.8125rem;
+    }
+
+    .home > hr {
+        margin-block: 32px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-toggle {
+        transition: none;
     }
 }
