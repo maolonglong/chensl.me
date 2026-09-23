@@ -1,7 +1,11 @@
 {{- /*
-  Complete fallback coverage, declared first. Overlapping `unicode-range` declarations resolve in
-  reverse source order, so the core subset below wins for every character this site already uses
-  and these blocks only load for characters newer articles introduce.
+  The web serves W04 alone and declares it for 400-500, so headings and bold text reuse the
+  regular glyphs: hierarchy comes from size and ink, never from a second multi-hundred-KiB file
+  or a synthesized bold.
+
+  Complete fallback coverage is declared first. Overlapping `unicode-range` declarations resolve
+  in reverse source order, so the core subset below wins for every character this site already
+  uses and these blocks only load for characters newer articles introduce.
 */ -}}
 {{- range os.ReadDir "static/fonts/tsanger-jinkai02/subsets" }}
 {{- $parts := split (strings.TrimSuffix ".woff2" .Name) "-" }}
@@ -10,24 +14,18 @@
 @font-face {
     font-family: "TsangerJinKai02";
     src: url('{{ printf "%s?v=%s" (printf "fonts/tsanger-jinkai02/subsets/%s" .Name | relURL) $version }}') format("woff2");
-    font-weight: {{ index $parts 0 }};
+    font-weight: 400 500;
     font-style: normal;
     font-display: swap;
     unicode-range: U+{{ index $parts 1 }}-{{ index $parts 2 }};
 }
 {{ end -}}
-{{- with hugo.Data.serif }}
-{{- $ranges := .coreRanges }}
-{{- range .weights }}
-{{- $path := printf "static/fonts/tsanger-jinkai02/core-%v.woff2" . }}
-{{- $version := printf "%.12s" (crypto.SHA256 (os.ReadFile $path)) }}
+{{- $version := printf "%.12s" (crypto.SHA256 (os.ReadFile "static/fonts/tsanger-jinkai02/core-400.woff2")) }}
 @font-face {
     font-family: "TsangerJinKai02";
-    src: url('{{ printf "%s?v=%s" (printf "fonts/tsanger-jinkai02/core-%v.woff2" . | relURL) $version }}') format("woff2");
-    font-weight: {{ . }};
+    src: url('{{ printf "%s?v=%s" ("fonts/tsanger-jinkai02/core-400.woff2" | relURL) $version }}') format("woff2");
+    font-weight: 400 500;
     font-style: normal;
     font-display: swap;
-    unicode-range: {{ $ranges | safeCSS }};
+    unicode-range: {{ hugo.Data.serif.coreRanges | safeCSS }};
 }
-{{ end -}}
-{{- end -}}

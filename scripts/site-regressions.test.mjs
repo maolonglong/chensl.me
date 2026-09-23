@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -472,24 +472,22 @@ test('serif fonts resolve on every page and code fonts stay conditional under a 
     assert.ok(stylesheet, 'missing shared serif stylesheet')
     const css = await readFile(path.join(destination, stylesheet.slice('/sub/'.length)), 'utf8')
     const serifFaces = [...css.matchAll(/@font-face\{[^}]+\}/g)]
-    assert.equal(serifFaces.length, 512)
-    for (const weight of [400, 500]) {
-      const weighted = serifFaces.filter(([face]) => face.includes(`font-weight:${weight};`))
-      assert.equal(weighted.length, 256)
-      const ranges = new Set()
-      for (const [face] of weighted.filter(([face]) => face.includes('/subsets/'))) {
-        const range = face.match(/unicode-range:([^;}]+)/)?.[1]
-        assert.ok(range, face)
-        assert.ok(!ranges.has(range), 'duplicate Unicode range')
-        ranges.add(range)
-      }
-      assert.equal(ranges.size, 255)
+    // The web ships W04 alone: every face covers 400-500, so headings and bold text reuse the
+    // regular glyphs instead of fetching W05 or synthesizing a fake bold.
+    assert.equal(serifFaces.length, 256)
+    for (const [face] of serifFaces) assert.match(face, /font-weight:400 500;/)
+    const ranges = new Set()
+    for (const [face] of serifFaces.filter(([face]) => face.includes('/subsets/'))) {
+      const range = face.match(/unicode-range:([^;}]+)/)?.[1]
+      assert.ok(range, face)
+      assert.ok(!ranges.has(range), 'duplicate Unicode range')
+      ranges.add(range)
     }
-    // Overlapping ranges resolve in reverse source order, so the core subsets must be declared last.
-    for (const [face] of serifFaces.slice(-2)) {
-      assert.match(face, /url\([^)]*\/fonts\/tsanger-jinkai02\/core-[45]00\.woff2\?v=[a-f\d]{12}\)/)
-      assert.ok((face.match(/unicode-range:([^;}]+)/)[1].match(/U\+/g) ?? []).length > 500, 'core range too coarse')
-    }
+    assert.equal(ranges.size, 255)
+    // Overlapping ranges resolve in reverse source order, so the core subset must be declared last.
+    const [core] = serifFaces.at(-1)
+    assert.match(core, /url\([^)]*\/fonts\/tsanger-jinkai02\/core-400\.woff2\?v=[a-f\d]{12}\)/)
+    assert.ok((core.match(/unicode-range:([^;}]+)/)[1].match(/U\+/g) ?? []).length > 500, 'core range too coarse')
     if (!hasCode) assert.doesNotMatch(html, /fonts\/jetbrains-mono/, file)
     for (const [face] of [...faces, ...serifFaces]) {
       assert.match(face, /font-display:swap/)
@@ -505,6 +503,8 @@ test('serif fonts resolve on every page and code fonts stay conditional under a 
     }
     assert.doesNotMatch(html, /rel=["']?preload/)
   }
+  const served = await readdir(path.join(destination, 'fonts/tsanger-jinkai02'), { recursive: true })
+  assert.deepEqual(served.filter(name => /(?:^|\/)(?:core-)?500[-.]/.test(name)), [], 'W05 must not be served')
   const license = await readFile(path.join(destination, 'fonts/jetbrains-mono-2.304/OFL.txt'), 'utf8')
   assert.match(license, /SIL OPEN FONT LICENSE Version 1\.1/)
 })
@@ -523,7 +523,6 @@ test('a cold visit stays within the serif font transfer budget on every page', a
   const css = await readFile(path.join(destination, stylesheet.slice(1)), 'utf8')
   // A character picks the last declared face whose range covers it, so match faces in reverse.
   const faces = [...css.matchAll(/@font-face\{([^}]+)\}/g)].reverse().map(([, body]) => ({
-    weight: Number(body.match(/font-weight:(\d+)/)[1]),
     url: body.match(/url\(['"]?([^)'"]+)['"]?\)/)[1],
     ranges: body.match(/unicode-range:([^;}]+)/)[1].split(',').map(token => {
       const [start, end] = token.trim().slice(2).split('-')
@@ -545,7 +544,7 @@ test('a cold visit stays within the serif font transfer budget on every page', a
     .replace(/&#(\d+);/g, (_, decimal) => String.fromCodePoint(Number(decimal)))
     .replace(/&(\w+);/g, (whole, name) => entities[name] ?? whole)
 
-  // Headings and strong text use weight 500 and body text 400; charge every character to both.
+  // One face serves both weights, so each character costs the one file that covers it.
   for (const page of [
     'index.html', 'blog/index.html', '404.html',
     'blog/buddy/index.html', 'blog/1brc-in-zig/index.html',
@@ -554,11 +553,8 @@ test('a cold visit stays within the serif font transfer budget on every page', a
     const codepoints = new Set([...plainText(html)].map(character => character.codePointAt(0)))
     const needed = new Set()
     for (const codepoint of codepoints) {
-      for (const weight of [400, 500]) {
-        const face = faces.find(candidate => candidate.weight === weight
-          && candidate.ranges.some(([start, end]) => codepoint >= start && codepoint <= end))
-        if (face) needed.add(face.url)
-      }
+      const face = faces.find(candidate => candidate.ranges.some(([start, end]) => codepoint >= start && codepoint <= end))
+      if (face) needed.add(face.url)
     }
     let total = 0
     for (const url of needed) total += await sizeOf(url)

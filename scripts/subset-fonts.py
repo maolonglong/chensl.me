@@ -2,12 +2,13 @@
 # requires-python = ">=3.11"
 # dependencies = ["fonttools==4.65.0", "brotli==1.2.0"]
 # ///
-"""Build JinKai W04/W05 web fonts: a core subset for this site plus complete fallback ranges.
+"""Build the JinKai W04 web font: a core subset for this site plus complete fallback ranges.
 
 The core subset holds every character the built site renders, so a cold visit downloads one
 file per weight instead of dozens of blocks. The 128-codepoint blocks stay as a complete
 fallback for characters newer articles introduce before the next regeneration; `serif.css`
-declares them first so the narrower core wins wherever it applies.
+declares them first so the narrower core wins wherever it applies. W05 stays out of the web
+build: `serif.css` declares W04 for weights 400-500.
 """
 
 import html
@@ -20,7 +21,7 @@ from pathlib import Path
 from fontTools import subset
 from fontTools.ttLib import TTFont
 
-FACES = [("W04", 400), ("W05", 500)]
+FACE, WEIGHT = "W04", 400
 root = Path(__file__).resolve().parents[1]
 source = Path(sys.argv[1])
 fonts = root / "static/fonts/tsanger-jinkai02"
@@ -74,51 +75,42 @@ def css_ranges(codepoints: set[int]) -> str:
 
 corpus = site_codepoints()
 generated: set[Path] = set()
-core_coverage: set[int] | None = None
 
-for face, weight in FACES:
-    original = TTFont(source / f"TsangerJinKai02-{face}.ttf", recalcTimestamp=False)
-    codepoints = set(original.getBestCmap())
-    original.flavor = None
-    buffer = io.BytesIO()
-    original.save(buffer)
-    raw = buffer.getvalue()
+original = TTFont(source / f"TsangerJinKai02-{FACE}.ttf", recalcTimestamp=False)
+codepoints = set(original.getBestCmap())
+original.flavor = None
+buffer = io.BytesIO()
+original.save(buffer)
+raw = buffer.getvalue()
 
-    core = corpus & codepoints
-    assert core_coverage is None or core == core_coverage, "Weights disagree on core coverage"
-    core_coverage = core
-    core_path = fonts / f"core-{weight}.woff2"
-    subset_font(raw, core, core_path)
-    generated.add(core_path)
+core = corpus & codepoints
+assert core, "Empty core subset"
+core_path = fonts / f"core-{WEIGHT}.woff2"
+subset_font(raw, core, core_path)
+generated.add(core_path)
 
-    covered: set[int] = set()
-    blocks = sorted({codepoint // 128 for codepoint in codepoints})
-    for block in blocks:
-        start, end = block * 128, block * 128 + 127
-        selected = codepoints.intersection(range(start, end + 1))
-        path = blocks_dir / f"{weight}-{start:x}-{end:x}.woff2"
-        subset_font(raw, selected, path)
-        generated.add(path)
-        assert not covered.intersection(selected), f"Overlapping coverage: {path}"
-        covered.update(selected)
-    assert covered == codepoints, f"Incomplete coverage: {face}"
-    core_size = core_path.stat().st_size / 1024
-    print(
-        f"{face}: core {len(core)} glyphs / {core_size:.0f} KiB, "
-        f"{len(blocks)} fallback subsets, all {len(covered)} codepoints preserved",
-        flush=True,
-    )
+covered: set[int] = set()
+blocks = sorted({codepoint // 128 for codepoint in codepoints})
+for block in blocks:
+    start, end = block * 128, block * 128 + 127
+    selected = codepoints.intersection(range(start, end + 1))
+    path = blocks_dir / f"{WEIGHT}-{start:x}-{end:x}.woff2"
+    subset_font(raw, selected, path)
+    generated.add(path)
+    assert not covered.intersection(selected), f"Overlapping coverage: {path}"
+    covered.update(selected)
+assert covered == codepoints, f"Incomplete coverage: {FACE}"
+print(
+    f"{FACE}: core {len(core)} glyphs / {core_path.stat().st_size / 1024:.0f} KiB, "
+    f"{len(blocks)} fallback subsets, all {len(covered)} codepoints preserved",
+    flush=True,
+)
 
-assert core_coverage, "Empty core subset"
 manifest = root / "data/serif.json"
 manifest.parent.mkdir(exist_ok=True)
 manifest.write_text(
     json.dumps(
-        {
-            "weights": [weight for _, weight in FACES],
-            "coreGlyphs": len(core_coverage),
-            "coreRanges": css_ranges(core_coverage),
-        },
+        {"coreGlyphs": len(core), "coreRanges": css_ranges(core)},
         indent=2,
         ensure_ascii=True,
     )
