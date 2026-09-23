@@ -31,6 +31,22 @@ SELECT SUM(DISTINCT o.amount) AS revenue
 FROM orders AS o
 JOIN order_lines AS l USING (order_id);
 
+-- Fix: aggregate line items to the order grain before joining.
+WITH lines_by_order AS (
+    SELECT order_id, COUNT(*) AS line_count
+    FROM order_lines
+    GROUP BY order_id
+)
+SELECT SUM(o.amount) AS revenue, SUM(l.line_count) AS line_count
+FROM orders AS o
+LEFT JOIN lines_by_order AS l USING (order_id);
+
+-- Plain SQL answers revenue by category without complaint: 200 + 300 = 500.
+SELECT l.category, SUM(o.amount) AS revenue
+FROM orders AS o
+JOIN order_lines AS l USING (order_id)
+GROUP BY l.category;
+
 CREATE SEMANTIC VIEW shop AS
 TABLES (
     o AS orders PRIMARY KEY (order_id),
@@ -68,6 +84,26 @@ SELECT SUM(o.amount) AS revenue, SUM(r.amount) AS refunded
 FROM orders AS o
 JOIN order_lines AS l USING (order_id)
 LEFT JOIN refunds AS r USING (order_id);
+
+-- Fix: aggregate each child table to the order grain, then join.
+WITH lines_by_order AS (
+    SELECT order_id, COUNT(*) AS line_count
+    FROM order_lines
+    GROUP BY order_id
+),
+refunds_by_order AS (
+    SELECT order_id, SUM(amount) AS refunded
+    FROM refunds
+    GROUP BY order_id
+)
+SELECT
+    SUM(o.amount) AS revenue,
+    SUM(r.refunded) AS refunded,
+    SUM(o.amount - COALESCE(r.refunded, 0)) AS net_revenue,
+    SUM(l.line_count) AS line_count
+FROM orders AS o
+LEFT JOIN lines_by_order AS l USING (order_id)
+LEFT JOIN refunds_by_order AS r USING (order_id);
 
 CREATE OR REPLACE SEMANTIC VIEW shop AS
 TABLES (
@@ -110,6 +146,9 @@ CREATE TABLE store_visits (store VARCHAR, converted INTEGER, visits INTEGER);
 INSERT INTO store_visits VALUES ('A', 1, 2), ('B', 9, 90);
 
 SELECT AVG(converted / visits) AS avg_of_rates FROM store_visits;
+
+-- Fix: sum numerator and denominator, then divide.
+SELECT SUM(converted) / SUM(visits) AS conversion_rate FROM store_visits;
 
 CREATE SEMANTIC VIEW funnel AS
 TABLES (

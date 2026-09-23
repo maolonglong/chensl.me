@@ -76,6 +76,21 @@ JOIN order_lines AS l USING (order_id);
 
 结果是 300，错得更远。`SUM(DISTINCT)` 按金额去重，O1 和 O2 恰好都是 100，被当成了同一笔。去重应该按订单这个实体，而不是按碰巧相同的数值。要是测试数据里没有两笔金额相同的订单，这个错误根本不会暴露。
 
+正确的手写方式是先把“多”的一侧聚合到订单上，让每笔订单只剩一行，再去 join：
+
+```sql
+WITH lines_by_order AS (
+    SELECT order_id, COUNT(*) AS line_count
+    FROM order_lines
+    GROUP BY order_id
+)
+SELECT SUM(o.amount) AS revenue, SUM(l.line_count) AS line_count
+FROM orders AS o
+LEFT JOIN lines_by_order AS l USING (order_id);
+```
+
+收入 400，明细 4 条，都对了。只算收入的话直接对 `orders` 求和就行，这里把明细条数也带上，是为了和后面的 Semantic View 对照。写法不难，难的是每次都要记得判断：哪张表在“多”的一侧，要先聚合到什么粒度。
+
 现在把同样的表定义成一个 Semantic View：
 
 ```sql
@@ -114,7 +129,7 @@ SELECT * FROM semantic_view('shop', metrics := ['revenue', 'line_count']);
 |---:|---:|
 | 400 | 4 |
 
-收入 400，明细 4 条，两张表的指标放在同一个查询里，数字都对。按门店分组也没问题，A 店收入 200、明细 3 条，B 店收入 200、明细 1 条。
+和手写的结果一样，只是 join 和预聚合都不用写了。按门店分组也没问题，A 店收入 200、明细 3 条，B 店收入 200、明细 1 条。
 
 再试一开始那个问题，按商品类别看订单收入：
 
@@ -133,7 +148,7 @@ cardinality, inferred: FK is not PK/UNIQUE). This would inflate
 aggregation results. ...
 ```
 
-它没有返回一个虚高的数，而是直接拒绝。O1 同时包含外套和鞋，这 100 块该算给哪个类别？数据里没有答案。想回答这个问题，需要明细级别的金额，或者一条大家认可的分摊规则。
+它没有返回一个虚高的数，而是直接拒绝。手写 SQL 按 `l.category` 分组倒是能跑出结果：外套 200，鞋 300，每个类别单看都像回事，加起来却是 500。O1 同时包含外套和鞋，这 100 块该算给哪个类别？数据里没有答案。想回答这个问题，需要明细级别的金额，或者一条大家认可的分摊规则。
 
 报错之前，也可以先问哪些维度能和某个指标一起用：
 
@@ -158,7 +173,32 @@ LEFT JOIN refunds AS r USING (order_id);
 
 收入 700，退款 50，两个数都错了。O1 有 2 条明细、2 笔退款，join 以后变成 2 × 2 = 4 行，订单金额和退款金额各自被复制。明细和退款都挂在订单下面，彼此没有直接关系，一起 join 就会互相放大。这叫 chasm trap。
 
-正确的做法是先把两边各自聚合到订单上，再合并。手写需要 CTE 或子查询，每次都得记得。Semantic View 里只要多声明一张表、一条关系和几个指标：
+正确的做法是把两边各自聚合到订单上，再和订单 join：
+
+```sql
+WITH lines_by_order AS (
+    SELECT order_id, COUNT(*) AS line_count
+    FROM order_lines
+    GROUP BY order_id
+),
+refunds_by_order AS (
+    SELECT order_id, SUM(amount) AS refunded
+    FROM refunds
+    GROUP BY order_id
+)
+SELECT
+    SUM(o.amount) AS revenue,
+    SUM(r.refunded) AS refunded,
+    SUM(o.amount - COALESCE(r.refunded, 0)) AS net_revenue,
+    SUM(l.line_count) AS line_count
+FROM orders AS o
+LEFT JOIN lines_by_order AS l USING (order_id)
+LEFT JOIN refunds_by_order AS r USING (order_id);
+```
+
+收入 400、退款 35、净收入 365、明细 4 条。O3 没有退款，join 以后是 `NULL`，所以净收入里要写 `COALESCE(r.refunded, 0)`。手写时这一步往往顺手就补上了，后面会看到，换到语义层以后它得单独决定。
+
+比起最初的查询，这里多了两个 CTE，而且每多一张挂在订单下面的表，就要再多一个。Semantic View 里只要多声明一张表、一条关系和几个指标：
 
 ```sql
 CREATE OR REPLACE SEMANTIC VIEW shop AS
@@ -230,7 +270,7 @@ FULL OUTER JOIN __sv_grain_1
     ON "__sv_grain_0"."__sv_d0" IS NOT DISTINCT FROM "__sv_grain_1"."__sv_d0"
 ```
 
-订单和退款各自按门店聚合，再按门店合并。退款那一路也 join 了订单表，但只是为了拿到门店，方向是多对一，不会复制退款的行。这就是“先聚合，再 join”，只是现在由语义层来写。
+订单和退款各自按门店聚合，再按门店合并。退款那一路也 join 了订单表，但只是为了拿到门店，方向是多对一，不会复制退款的行。和前面手写的 CTE 是同一个思路，只是这些 CTE 由语义层按查询的维度生成。
 
 如果按商品类别看退款，会得到和上一节一样的 fan trap 报错。退款只记到了订单上，数据里没有它属于哪个类别的信息。
 
@@ -246,6 +286,14 @@ SELECT AVG(converted / visits) AS avg_of_rates FROM store_visits;
 ```
 
 结果是 0.3，也就是 30%。整体转化率应该是 10 / 92，大约 10.87%。A 店只来了 2 个人，却和 90 个人的 B 店占了同样的权重。
+
+手写的正确写法是先分别求和，最后再除：
+
+```sql
+SELECT SUM(converted) / SUM(visits) AS conversion_rate FROM store_visits;
+```
+
+按门店看就加上 `GROUP BY store`。
 
 如果报表里只存了每个门店的转化率，分子和分母都丢了，就再也算不回整体值。Semantic View 存的是公式，而不是算好的结果：
 
@@ -300,7 +348,7 @@ B 店的净收入是 `NULL`。B 店没有退款记录，退款那一路没有 B 
 net_revenue AS revenue - COALESCE(refunded, 0)
 ```
 
-B 店的净收入就变成了 200。
+B 店的净收入就变成了 200。这和手写 SQL 里的 `COALESCE(r.refunded, 0)` 是同一个决定，只是现在写在指标定义里，所有查询都按它算。
 
 类似的决定还有不少。“8 月收入”按下单时间、付款时间还是发货时间算？客户 8 月从华东迁到了华南，这个客户 7 月的收入算哪个地区？这些都得在定义维度和指标时由人来写清楚。Semantic View 负责的是：按写下的定义，用正确的粒度算出来。
 
@@ -360,11 +408,17 @@ SELECT * FROM semantic_view('tpch_sales',
 
 ## 从写查询到选列
 
-回头看这几个例子，Semantic View 做的事情可以归成三件：
+回头对照手写的正确 SQL，Semantic View 做了什么就清楚了：
 
-- 粒度写进指标定义，查询时由它生成先聚合、再合并的 SQL。
-- 指标存的是公式，换个粒度查会重新计算。
-- 算不出正确答案的组合直接报错，不返回一个看起来正常的数。
+| 坑 | 手写时要记住的事 | Semantic View 里的对应 |
+|---|---|---|
+| 扇出 | 先把明细聚合到订单，再 join | 主键和关系标出一对多，指标挂在自己的表上 |
+| 按金额去重 | 按订单去重，而不是按金额 | 主键声明了一行代表什么 |
+| 两张明细表一起 join | 每张明细表各写一个 CTE | 按粒度拆成几段聚合，再合并 |
+| 平均数的平均 | 保留分子和分母，最后再除 | 派生指标存公式，按查询粒度重算 |
+| 按明细维度看订单指标 | 自己意识到这个问题没有答案 | 直接报错 |
+
+每一件事手写 SQL 都能做对，但每次都要重新判断。Semantic View 把这些判断写进定义，之后的查询都按同一套规则来。
 
 Snowflake 的 Will Pugh 把这种变化概括为：“Rather than choosing how to create a query, you choose what dimensions and metrics you want, and the semantic SQL does the rest.”[^sf-traps]
 
