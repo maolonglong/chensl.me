@@ -620,9 +620,11 @@ pre code {
     font-size: inherit;
 }
 
+/* The scroller carries the fill too, so iOS rubber-banding past either end never opens a gap. */
 .highlight {
     margin-block: 1.5em;
     overflow-x: auto;
+    background-color: var(--code-background-color);
     border-radius: var(--radius);
 }
 
