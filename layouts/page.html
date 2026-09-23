@@ -9,11 +9,7 @@
 
     {{- /* A contents list earns its place from three H2/H3 headings; hugo.toml sets the depth. */}}
     {{- if ge (len (findRE `<h[23][\s>]` .Content)) 3 }}
-    {{- .Store.Set "hasTOC" true }}
-    <details class="toc">
-      <summary>目录</summary>
-      {{ .TableOfContents }}
-    </details>
+    {{ partial "floating-toc.html" . }}
     {{- end }}
 
     <div class="prose">

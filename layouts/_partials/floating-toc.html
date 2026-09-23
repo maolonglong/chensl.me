@@ -1,24 +1,24 @@
 {{- /*
-  Keeps the contents list within reach once it scrolls away. The script copies
-  the list at the top into a rail of dashes beside the column, for a pointer
-  that can hover, and into a popover behind a button above back-to-top for
-  everything else. Without JavaScript the list at the top stays the only one.
+  The article's one contents list. It floats in the back-to-top lane from the
+  start: style.css shows it as a rail beside the column where a pointer can
+  hover, and as a popover behind this button everywhere else. Opening needs no
+  JavaScript (CSS for the rail, popovertarget for the button); the script only
+  marks the current section, closes the list after a choice, and lets Escape
+  dismiss the rail's card.
 */ -}}
-<template id="toc-button-template">
-  <button class="toc-button" type="button" popovertarget="toc-panel" aria-label="目录">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-      <path d="M4 6h16M4 12h16M4 18h10" />
-    </svg>
-  </button>
-</template>
+<button class="toc-button" type="button" popovertarget="TableOfContents" aria-label="目录">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M4 6h16M4 12h16M4 18h10" />
+  </svg>
+</button>
+{{ replace .TableOfContents `<nav id="TableOfContents">` `<nav id="TableOfContents" class="toc" popover aria-label="目录">` | safeHTML }}
 <script>
-  (() => {
+  // The list sits above the article, so the headings it points at are parsed only after this runs.
+  document.addEventListener("DOMContentLoaded", () => {
     "use strict";
 
     const list = document.querySelector("#TableOfContents");
-    const top = list?.closest(".toc");
-    const template = document.querySelector("#toc-button-template");
-    if (!top || !template) {
+    if (!list) {
       return;
     }
 
@@ -27,66 +27,24 @@
 
     const entries = [...list.querySelectorAll("a")].flatMap(link => {
       const heading = document.getElementById(decodeURIComponent(link.hash.slice(1)));
-      let level = 1;
-      for (let ul = link.closest("ul"); ul && list.contains(ul); ul = ul.parentElement.closest("ul")) {
-        level += 1;
-      }
-      return heading ? [{ link, heading, level }] : [];
+      return heading ? [{ link, heading }] : [];
     });
 
-    const build = className => {
-      const nav = document.createElement("nav");
-      nav.className = className;
-      nav.setAttribute("aria-label", "目录");
-      const ul = document.createElement("ul");
-      for (const { link, level } of entries) {
-        const item = document.createElement("li");
-        item.dataset.level = level;
-        const anchor = document.createElement("a");
-        anchor.href = link.getAttribute("href");
-        const label = document.createElement("span");
-        label.textContent = link.textContent;
-        anchor.append(label);
-        item.append(anchor);
-        ul.append(item);
-      }
-      nav.append(ul);
-      return nav;
-    };
-
-    const rail = build("toc-rail");
-    const button = template.content.firstElementChild.cloneNode(true);
-    const panel = build("toc-panel");
-    panel.id = "toc-panel";
-    panel.popover = "auto";
-    document.body.append(rail, button, panel);
-
-    new IntersectionObserver(([entry]) => {
-      const visible = !entry.isIntersecting && entry.boundingClientRect.bottom < 0;
-      rail.toggleAttribute("data-visible", visible);
-      button.toggleAttribute("data-visible", visible);
-      if (!visible && panel.matches(":popover-open")) {
-        panel.hidePopover();
-      }
-    }).observe(top);
-
-    let current = -1;
+    let current;
     let pending = false;
     const spy = () => {
       pending = false;
       const root = document.documentElement;
       // The last sections may be too short to reach the line; the bottom of the page belongs to the last.
-      const index = window.innerHeight + window.scrollY >= root.scrollHeight - 1
-        ? entries.length - 1
-        : entries.findLastIndex(({ heading }) => heading.getBoundingClientRect().top <= readingLine);
-      if (index === current) {
+      const entry = window.innerHeight + window.scrollY >= root.scrollHeight - 1
+        ? entries.at(-1)
+        : entries.findLast(({ heading }) => heading.getBoundingClientRect().top <= readingLine);
+      if (entry === current) {
         return;
       }
-      current = index;
-      for (const nav of [rail, panel]) {
-        nav.querySelector("[aria-current]")?.removeAttribute("aria-current");
-        nav.querySelectorAll("a")[index]?.setAttribute("aria-current", "location");
-      }
+      current?.link.removeAttribute("aria-current");
+      entry?.link.setAttribute("aria-current", "location");
+      current = entry;
     };
     const schedule = () => {
       if (!pending) {
@@ -99,29 +57,28 @@
     spy();
 
     // Blurring before the jump folds the rail and lets the fragment set where Tab continues.
-    for (const nav of [rail, panel]) {
-      nav.addEventListener("click", event => {
-        if (!event.target.closest("a")) {
-          return;
-        }
-        if (panel.matches(":popover-open")) {
-          panel.hidePopover();
-        }
-        document.activeElement?.blur();
-      });
-    }
+    list.addEventListener("click", event => {
+      if (!event.target.closest("a")) {
+        return;
+      }
+      if (list.matches(":popover-open")) {
+        list.hidePopover();
+      }
+      document.activeElement?.blur();
+    });
 
-    // Escape dismisses the open rail without moving the pointer or focus, as a hover card should.
+    // Escape dismisses the rail's card without moving the pointer or focus, as a hover card should.
+    // The popover closes on Escape by itself.
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && rail.matches(":hover, :focus-within")) {
-        rail.dataset.dismissed = "";
+      if (event.key === "Escape" && !list.matches(":popover-open") && list.matches(":hover, :focus-within")) {
+        list.dataset.dismissed = "";
       }
     });
-    rail.addEventListener("pointerleave", () => delete rail.dataset.dismissed);
-    rail.addEventListener("focusout", event => {
-      if (!rail.contains(event.relatedTarget)) {
-        delete rail.dataset.dismissed;
+    list.addEventListener("pointerleave", () => delete list.dataset.dismissed);
+    list.addEventListener("focusout", event => {
+      if (!list.contains(event.relatedTarget)) {
+        delete list.dataset.dismissed;
       }
     });
-  })();
+  });
 </script>

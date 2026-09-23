@@ -412,6 +412,28 @@ test('page shell keeps headings in main and marks only the current navigation en
   assert.doesNotMatch(notFound, /<h2\b/)
 })
 
+test('articles carry one contents list that opens without JavaScript', async () => {
+  const destination = await temporaryDirectory('hugo-contents-')
+  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)
+  assert.equal(result.status, 0, result.stderr)
+
+  const post = await readFile(path.join(destination, 'blog/dockertest/index.html'), 'utf8')
+  // The floating contents is the only list, and the page ships it: no template or script builds it.
+  assert.equal([...post.matchAll(/id="TableOfContents"/g)].length, 1)
+  assert.doesNotMatch(post, /<details class="toc"/)
+  assert.match(post, /<nav id="TableOfContents" class="toc" popover aria-label="目录">\s*<ul>/)
+  const button = post.match(/<button class="toc-button"[^>]*>/)?.[0]
+  assert.ok(button, 'missing contents button')
+  assert.match(button, /popovertarget="TableOfContents"/)
+  assert.match(button, /aria-label="目录"/)
+  assert.doesNotMatch(post.slice(0, post.indexOf(button)), /<template\b(?![\s\S]*<\/template>)/, 'contents button must not sit in a template')
+
+  // Fewer than three H2/H3 headings: no list and no button.
+  const short = await readFile(path.join(destination, 'blog/lock-free-queue/index.html'), 'utf8')
+  // The inline stylesheet names these classes on every page, so match the markup, not the words.
+  assert.doesNotMatch(short, /id="TableOfContents"|class="toc-button"/)
+})
+
 test('fence titles reach the page as a caption', async () => {
   const destination = await temporaryDirectory('hugo-codeblock-')
   const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)

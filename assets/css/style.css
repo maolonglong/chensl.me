@@ -330,9 +330,17 @@ main {
   Floating controls share one lane: 20px glyphs on 44px plates of the page's
   own color, so text scrolling beneath never shows through. The lane lines up
   with the column's right edge, and moves out beside the column once a gutter,
-  a button, and a gutter fit there. Back-to-top holds the corner; the contents
-  button stands on top of it.
+  a button, and a gutter fit there. The contents button, there from the start,
+  holds the corner; back-to-top joins above it, so neither ever moves. The
+  contents sit above the article in the source, so z-index keeps positioned
+  content that comes later, such as code blocks, from painting over them.
 */
+.back-to-top,
+.toc-button,
+.toc {
+    z-index: 1;
+}
+
 .back-to-top,
 .toc-button {
     position: fixed;
@@ -350,21 +358,17 @@ main {
     touch-action: manipulation;
 }
 
-.toc-button {
+body:has(.toc-button) .back-to-top {
     bottom: calc(var(--gutter) + 44px + 8px);
 }
 
-.back-to-top,
-.toc-button,
-.toc-rail {
+.back-to-top {
     visibility: hidden;
     opacity: 0;
     transition: opacity 100ms ease-out;
 }
 
-.back-to-top[data-visible],
-.toc-button[data-visible],
-.toc-rail[data-visible] {
+.back-to-top[data-visible] {
     visibility: visible;
     opacity: 1;
 }
@@ -386,12 +390,15 @@ body:has(> .back-to-top) {
     padding-bottom: calc(44px + 2 * var(--gutter));
 }
 
-body:has(> .toc-button) {
+body:has(.toc-button) {
     padding-bottom: calc(2 * 44px + 8px + 2 * var(--gutter));
 }
 
-/* The contents open above both buttons and scroll within the rest of the view. */
-.toc-panel {
+/*
+  The article's one contents list. By default it is a popover the button
+  opens above both buttons, scrolling within the rest of the view.
+*/
+.toc {
     position: fixed;
     inset: auto max(var(--gutter), 50% - var(--measure) / 2) calc(var(--gutter) + 2 * (44px + 8px)) auto;
     box-sizing: border-box;
@@ -408,95 +415,89 @@ body:has(> .toc-button) {
     border-radius: var(--radius);
 }
 
-.toc-panel ul,
-.toc-rail ul {
+.toc ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.toc-panel a {
+.toc a {
     display: block;
     padding-block: 8px;
+    text-decoration: none;
 }
 
-.toc-panel [data-level="3"] a {
+.toc ul ul a {
     padding-left: 1em;
 }
 
 /* The current entry is underlined like the current page in the header. */
-.toc-panel a[aria-current],
-.toc-rail a[aria-current] {
+.toc a[aria-current] {
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.25em;
 }
 
 /*
-  Where a pointer can hover and the lane sits beside the column, the contents
-  stay on screen as a Notion-style rail: a long dash per H2, a short one per
+  Where a pointer can hover and the lane sits beside the column, the same list
+  stays on screen as a Notion-style rail: a long dash per H2, a short one per
   H3, the current one in ink. Hover or keyboard focus opens the rail into a
-  card that covers it, so the pointer never falls off its edge.
+  card that covers it, so the pointer never falls off its edge. Author styles
+  outrank the popover's default `display: none`, so the rail needs no opening.
 */
-.toc-rail {
-    display: none;
-}
-
-.toc-rail a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    height: 12px;
-    text-decoration: none;
-}
-
-.toc-rail a::before {
-    content: "";
-    flex: none;
-    width: 20px;
-    height: 2px;
-    background-color: color-mix(in srgb, var(--muted-color) 35%, var(--background-color));
-    border-radius: 1px;
-}
-
-.toc-rail [data-level="3"] a::before {
-    width: 12px;
-    margin-right: 8px;
-}
-
-.toc-rail a[aria-current]::before {
-    background-color: var(--heading-color);
-}
-
-/* Collapsed, the labels still name the links for assistive technology. */
-.toc-rail span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-}
-
 @media (hover: hover) and (min-width: calc(42rem + 184px)) {
-    .toc-button,
-    .toc-panel {
+    .toc-button {
         display: none;
     }
 
-    .toc-rail {
-        position: fixed;
-        top: 50%;
-        left: min(50% + var(--measure) / 2 + var(--gutter), 100% - var(--gutter) - 44px);
+    .toc {
+        inset: 50% auto auto min(50% + var(--measure) / 2 + var(--gutter), 100% - var(--gutter) - 44px);
         display: block;
-        box-sizing: border-box;
         width: 44px;
+        max-height: none;
+        padding: 0;
+        overflow: visible;
         font-size: 0.875rem;
-        line-height: 1.5;
+        background: none;
+        border: 0;
         translate: 0 -50%;
     }
 
-    .toc-rail:is(:hover, :has(:focus-visible)):not([data-dismissed]) {
+    /* Collapsed, each entry is a 12px row with its label clipped but still naming the link. */
+    .toc a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 12px;
+        padding: 0;
+        overflow: hidden;
+        color: transparent;
+        white-space: nowrap;
+    }
+
+    .toc ul ul a {
+        padding-left: 0;
+    }
+
+    .toc a::before {
+        content: "";
+        flex: none;
+        width: 20px;
+        height: 2px;
+        background-color: color-mix(in srgb, var(--muted-color) 35%, var(--background-color));
+        border-radius: 1px;
+    }
+
+    .toc ul ul a::before {
+        width: 12px;
+        margin-right: 8px;
+    }
+
+    .toc a[aria-current]::before {
+        background-color: var(--heading-color);
+    }
+
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) {
         /* The dashes stay put: the card's padding and border sit to their left. */
         left: min(50% + var(--measure) / 2 + var(--gutter) - 17px, 100% - var(--gutter) - 16rem);
         width: 16rem;
@@ -505,32 +506,34 @@ body:has(> .toc-button) {
         overflow-y: auto;
         background-color: var(--background-color);
         border: 1px solid var(--border-color);
-        border-radius: var(--radius);
     }
 
-    .toc-rail:is(:hover, :has(:focus-visible)):not([data-dismissed]) a {
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) a {
         height: auto;
         padding-block: 4px;
-    }
-
-    .toc-rail:is(:hover, :has(:focus-visible)):not([data-dismissed]) [data-level="3"] span {
-        padding-left: 1em;
-    }
-
-    .toc-rail:is(:hover, :has(:focus-visible)):not([data-dismissed]) span {
-        position: static;
-        width: auto;
-        height: auto;
         overflow: visible;
-        clip-path: none;
+        color: var(--link-color);
         white-space: normal;
+    }
+
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) ul ul a {
+        gap: calc(12px + 1em);
+    }
+
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) a:hover {
+        color: var(--link-hover-color);
     }
 }
 
 @media (min-width: calc(42rem + 184px)) {
     .back-to-top,
-    .toc-button,
-    .toc-panel {
+    .toc-button {
+        right: max(var(--gutter), 50% - var(--measure) / 2 - var(--gutter) - 44px);
+    }
+}
+
+@media (hover: none) and (min-width: calc(42rem + 184px)) {
+    .toc {
         right: max(var(--gutter), 50% - var(--measure) / 2 - var(--gutter) - 44px);
     }
 }
@@ -756,28 +759,6 @@ details > summary {
     margin-block: 1.5em;
 }
 
-.toc {
-    margin-bottom: 32px;
-    font-size: 0.9375rem;
-}
-
-.toc ul {
-    margin: 0.5em 0 0;
-    padding-left: 1.25em;
-}
-
-.toc ul ul {
-    margin-top: 0;
-}
-
-.toc li::marker {
-    color: var(--muted-color);
-}
-
-.toc a {
-    text-decoration: none;
-}
-
 /* --------------------------------------------------------------- footnotes */
 
 /* References, not a continuation of the argument, so they recede. */
@@ -955,9 +936,7 @@ main:has(> .not-found) {
 @media (prefers-reduced-motion: reduce) {
     .theme-toggle,
     .code-copy,
-    .back-to-top,
-    .toc-button,
-    .toc-rail {
+    .back-to-top {
         transition: none;
     }
 }
@@ -966,7 +945,7 @@ main:has(> .not-found) {
 @media print {
     .back-to-top,
     .toc-button,
-    .toc-rail {
+    .toc {
         display: none;
     }
 }
