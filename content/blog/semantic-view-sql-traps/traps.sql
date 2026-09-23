@@ -223,23 +223,33 @@ TABLES (
 RELATIONSHIPS (
     line_to_order AS l(l_orderkey) REFERENCES o
 )
+FACTS (
+    l.net_price AS l.l_extendedprice * (1 - l.l_discount)
+)
 DIMENSIONS (
     l.shipmode AS l.l_shipmode
 )
 METRICS (
     o.order_total AS SUM(o.o_totalprice),
     o.order_count AS COUNT(*),
-    l.line_count AS COUNT(*)
+    l.line_count AS COUNT(*),
+    l.net_revenue AS SUM(l.net_price)
 );
 
 SELECT * FROM semantic_view('tpch_sales',
     metrics := ['order_total', 'order_count', 'line_count']
 );
 
+-- A line-grain metric built on a fact can be grouped by ship mode.
 SELECT * FROM semantic_view('tpch_sales',
     dimensions := ['shipmode'],
-    metrics := ['line_count']
+    metrics := ['net_revenue']
 ) ORDER BY shipmode;
+
+-- The fact-based total matches the plain SQL over lineitem.
+SELECT * FROM semantic_view('tpch_sales', metrics := ['net_revenue']);
+SELECT SUM(l_extendedprice * (1 - l_discount)) AS net_revenue
+FROM tpch.lineitem;
 
 -- Order total by ship mode: rejected as a fan trap.
 SELECT * FROM semantic_view('tpch_sales',

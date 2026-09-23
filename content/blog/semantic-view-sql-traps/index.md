@@ -373,7 +373,7 @@ SELECT
 
 1.5 万笔订单、6 万多条明细，join 以后订单总额变成了原来的 5 倍。放在真实的报表里，这种错误未必一眼就能看出来。
 
-同样定义一个 Semantic View：
+同样定义一个 Semantic View，这次多了一个 `FACTS` 子句：
 
 ```sql
 CREATE SEMANTIC VIEW tpch_sales AS
@@ -384,13 +384,17 @@ TABLES (
 RELATIONSHIPS (
     line_to_order AS l(l_orderkey) REFERENCES o
 )
+FACTS (
+    l.net_price AS l.l_extendedprice * (1 - l.l_discount)
+)
 DIMENSIONS (
     l.shipmode AS l.l_shipmode
 )
 METRICS (
     o.order_total AS SUM(o.o_totalprice),
     o.order_count AS COUNT(*),
-    l.line_count AS COUNT(*)
+    l.line_count AS COUNT(*),
+    l.net_revenue AS SUM(l.net_price)
 );
 
 SELECT * FROM semantic_view('tpch_sales',
@@ -402,7 +406,28 @@ SELECT * FROM semantic_view('tpch_sales',
 |---:|---:|---:|
 | 2127396830.02 | 15000 | 60175 |
 
-按运输方式（`shipmode`）看明细条数可以，看订单总额会得到和前面一样的 fan trap 报错：一笔订单的几条明细可能走不同的运输方式。
+`FACTS` 是 Semantic View 的第五个构件，前面三笔订单的数据里没有需要它的地方。fact 是行级的命名表达式：`net_price` 是每条明细的折后金额，等于原价乘以 1 减折扣。它本身不聚合，由指标来引用，`net_revenue` 就是对它求和。折扣怎么算只写这一次，其他用到折后金额的指标都引用同一个 fact。
+
+按运输方式（`shipmode`）看订单总额，会得到和前面一样的 fan trap 报错：一笔订单的几条明细可能走不同的运输方式。报错信息给的建议之一，是换成和维度在同一张表上的指标。明细上的折后金额就是这样的指标：
+
+```sql
+SELECT * FROM semantic_view('tpch_sales',
+    dimensions := ['shipmode'],
+    metrics := ['net_revenue']
+) ORDER BY shipmode;
+```
+
+| `shipmode` | `net_revenue` |
+|---|---:|
+| AIR | 288119126.8843 |
+| FOB | 292231642.5268 |
+| MAIL | 295057347.7332 |
+| RAIL | 289935768.2011 |
+| REG AIR | 291508525.3958 |
+| SHIP | 290685560.2993 |
+| TRUCK | 297596971.0534 |
+
+不分组时 `net_revenue` 是 2045134942.0939，和直接在 `lineitem` 上对折后金额求和的结果一致。
 
 想在更大的数据上复现双事实的坑，可以用 DuckDB 的 `tpcds` 扩展生成 TPC-DS 数据。Snowflake 那篇博客的附录里有一条模型在 TPC-DS 上生成的 SQL：它把 `catalog_sales` 和 `web_sales` 两张销售表同时 join 到客户上再求和，正是前面两张明细表一起 join 的问题。[^sf-traps]
 
@@ -422,7 +447,7 @@ SELECT * FROM semantic_view('tpch_sales',
 
 Snowflake 的 Will Pugh 把这种变化概括为：“Rather than choosing how to create a query, you choose what dimensions and metrics you want, and the semantic SQL does the rest.”[^sf-traps]
 
-这也是 Data Agent 需要语义层的原因。模型擅长理解问题，“收入”该对应哪个指标、“按地区”该对应哪个维度，这些交给它合适。join 顺序和聚合粒度则有确定的规则，不必让模型每次重新推一遍。模型只需要选指标和维度，选错时拿到的是一条能看懂的报错，它可以据此换一种问法，或者去问用户。
+这也是 Data Agent 需要语义层的原因。模型擅长理解问题，“收入”该对应哪个指标、“按地区”该对应哪个维度，这些交给它合适。Snowflake 的语义视图可以给表、指标和维度写同义词（`WITH SYNONYMS`）和说明（`COMMENT`），它们不参与计算，作用是帮模型和人把业务说法对上定义。[^sf-create]join 顺序和聚合粒度则有确定的规则，不必让模型每次重新推一遍。模型只需要选指标和维度，选错时拿到的是一条能看懂的报错，它可以据此换一种问法，或者去问用户。
 
 但前提没变：指标得有人定义，定义还得是对的。“活跃客户”到底怎么算，仍然要业务来定。
 
@@ -430,6 +455,7 @@ Snowflake 的 Will Pugh 把这种变化概括为：“Rather than choosing how t
 
 [^context-layer]: Aniruth Narayanan，[Building a Context Layer for AI Agents](https://www.snowflake.com/en/blog/snowflake-internal-context-layer-for-ai-agents/)，2026 年 8 月 17 日。
 [^sf-querying]: Snowflake Documentation，[Querying semantic views](https://docs.snowflake.com/en/user-guide/views-semantic/querying)。
+[^sf-create]: Snowflake Documentation，[CREATE SEMANTIC VIEW](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view)。
 [^duckdb-sv]: [anentropic/duckdb-semantic-views](https://github.com/anentropic/duckdb-semantic-views)，DuckDB 社区扩展，安装页见 [semantic_views](https://duckdb.org/community_extensions/extensions/semantic_views)。
 [^sf-traps]: Will Pugh，[Why Do We Need Semantic Views? Solving BI & SQL Traps](https://www.snowflake.com/en/blog/engineering/why-we-need-semantic-views/)，2026 年 3 月 9 日。
 [^duckdb-changelog]: semantic_views 的 [CHANGELOG](https://github.com/anentropic/duckdb-semantic-views/blob/main/CHANGELOG.md)，参见 0.11.0 和 0.12.0。
