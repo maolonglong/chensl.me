@@ -6,10 +6,20 @@ assert.ok(base, 'Usage: node scripts/check-browser.mjs <preview-url>')
 const session = `site-check-${process.pid}`
 const failures = []
 const browser = (...args) => {
-  const response = JSON.parse(execFileSync('agent-browser', ['--session', session, '--json', ...args], {
-    encoding: 'utf8', timeout: 60_000,
-  }))
-  assert.ok(response.success, JSON.stringify(response.error))
+  let output
+  try {
+    output = execFileSync('agent-browser', ['--session', session, '--json', ...args], {
+      encoding: 'utf8', timeout: 60_000,
+    })
+  } catch (error) {
+    // A failed command exits 1 with its JSON verdict on stdout; anything else (a timeout, a missing binary) is rethrown as is.
+    if (!error.stdout?.trimStart().startsWith('{')) {
+      throw error
+    }
+    output = error.stdout
+  }
+  const response = JSON.parse(output)
+  assert.ok(response.success, `agent-browser ${args.join(' ')}: ${response.error}`)
   return response.data?.result
 }
 const open = pathname => {
