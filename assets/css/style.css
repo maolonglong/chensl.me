@@ -327,11 +327,14 @@ main {
 }
 
 /*
-  A 20px glyph on a 44px plate of the page's own color, so text scrolling
-  beneath never shows through. It lines up with the column's right edge, and
-  moves out beside the column once a gutter, the button, and a gutter fit there.
+  Floating controls share one lane: 20px glyphs on 44px plates of the page's
+  own color, so text scrolling beneath never shows through. The lane lines up
+  with the column's right edge, and moves out beside the column once a gutter,
+  a button, and a gutter fit there. Back-to-top holds the corner; the contents
+  button stands on top of it.
 */
-.back-to-top {
+.back-to-top,
+.toc-button {
     position: fixed;
     right: max(var(--gutter), 50% - var(--measure) / 2);
     bottom: var(--gutter);
@@ -344,37 +347,192 @@ main {
     background-color: var(--background-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
+    touch-action: manipulation;
+}
+
+.toc-button {
+    bottom: calc(var(--gutter) + 44px + 8px);
+}
+
+.back-to-top,
+.toc-button,
+.toc-rail {
     visibility: hidden;
     opacity: 0;
-    touch-action: manipulation;
     transition: opacity 100ms ease-out;
 }
 
-/* 42rem of column plus a gutter, the button, and a gutter on each side. */
-@media (min-width: calc(42rem + 184px)) {
-    .back-to-top {
-        right: max(var(--gutter), 50% - var(--measure) / 2 - var(--gutter) - 44px);
-    }
-}
-
-.back-to-top[data-visible] {
+.back-to-top[data-visible],
+.toc-button[data-visible],
+.toc-rail[data-visible] {
     visibility: visible;
     opacity: 1;
 }
 
-.back-to-top:focus-visible {
+.back-to-top:focus-visible,
+.toc-button:focus-visible {
     border-radius: var(--radius);
 }
 
 @media (hover: hover) {
-    .back-to-top:hover {
+    .back-to-top:hover,
+    .toc-button:hover {
         color: var(--heading-color);
     }
 }
 
-/* The button keeps its own corner below the footer, so the last line never sits under it. */
+/* The buttons keep their own corner below the footer, so the last line never sits under them. */
 body:has(> .back-to-top) {
     padding-bottom: calc(44px + 2 * var(--gutter));
+}
+
+body:has(> .toc-button) {
+    padding-bottom: calc(2 * 44px + 8px + 2 * var(--gutter));
+}
+
+/* The contents open above both buttons and scroll within the rest of the view. */
+.toc-panel {
+    position: fixed;
+    inset: auto max(var(--gutter), 50% - var(--measure) / 2) calc(var(--gutter) + 2 * (44px + 8px)) auto;
+    box-sizing: border-box;
+    width: min(18rem, 100% - 2 * var(--gutter));
+    max-height: calc(100% - 2 * var(--gutter) - 2 * (44px + 8px));
+    margin: 0;
+    padding: 8px 16px;
+    overflow-y: auto;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+
+.toc-panel ul,
+.toc-rail ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.toc-panel a {
+    display: block;
+    padding-block: 8px;
+}
+
+.toc-panel [data-level="3"] a {
+    padding-left: 1em;
+}
+
+/* The current entry is underlined like the current page in the header. */
+.toc-panel a[aria-current],
+.toc-rail a[aria-current] {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.25em;
+}
+
+/*
+  Where a pointer can hover and the lane sits beside the column, the contents
+  stay on screen as a Notion-style rail: a long dash per H2, a short one per
+  H3, the current one in ink. Hover or keyboard focus opens the rail into a
+  card that covers it, so the pointer never falls off its edge.
+*/
+.toc-rail {
+    display: none;
+}
+
+.toc-rail a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 12px;
+    text-decoration: none;
+}
+
+.toc-rail a::before {
+    content: "";
+    flex: none;
+    width: 20px;
+    height: 2px;
+    background-color: color-mix(in srgb, var(--muted-color) 35%, var(--background-color));
+    border-radius: 1px;
+}
+
+.toc-rail [data-level="3"] a::before {
+    width: 12px;
+    margin-right: 8px;
+}
+
+.toc-rail a[aria-current]::before {
+    background-color: var(--heading-color);
+}
+
+/* Collapsed, the labels still name the links for assistive technology. */
+.toc-rail span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (hover: hover) and (min-width: calc(42rem + 184px)) {
+    .toc-button,
+    .toc-panel {
+        display: none;
+    }
+
+    .toc-rail {
+        position: fixed;
+        top: 50%;
+        left: min(50% + var(--measure) / 2 + var(--gutter), 100% - var(--gutter) - 44px);
+        display: block;
+        box-sizing: border-box;
+        width: 44px;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        translate: 0 -50%;
+    }
+
+    .toc-rail:is(:hover, :has(:focus-visible)):not([data-dismissed]) {
+        /* The dashes stay put: the card's padding and border sit to their left. */
+        left: min(50% + var(--measure) / 2 + var(--gutter) - 17px, 100% - var(--gutter) - 16rem);
+        width: 16rem;
+        max-height: calc(100% - 2 * (var(--gutter) + 44px + 8px));
+        padding: 8px 16px;
+        overflow-y: auto;
+        background-color: var(--background-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+    }
+
+    .toc-rail:is(:hover, :has(:focus-visible)):not([data-dismissed]) a {
+        height: auto;
+        padding-block: 4px;
+    }
+
+    .toc-rail:is(:hover, :has(:focus-visible)):not([data-dismissed]) [data-level="3"] span {
+        padding-left: 1em;
+    }
+
+    .toc-rail:is(:hover, :has(:focus-visible)):not([data-dismissed]) span {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip-path: none;
+        white-space: normal;
+    }
+}
+
+@media (min-width: calc(42rem + 184px)) {
+    .back-to-top,
+    .toc-button,
+    .toc-panel {
+        right: max(var(--gutter), 50% - var(--measure) / 2 - var(--gutter) - 44px);
+    }
 }
 
 /* ------------------------------------------------------------------- prose */
@@ -797,14 +955,18 @@ main:has(> .not-found) {
 @media (prefers-reduced-motion: reduce) {
     .theme-toggle,
     .code-copy,
-    .back-to-top {
+    .back-to-top,
+    .toc-button,
+    .toc-rail {
         transition: none;
     }
 }
 
-/* Scrolled at print time, the button would stamp itself on every page. */
+/* Scrolled at print time, the floating controls would stamp themselves on every page. */
 @media print {
-    .back-to-top {
+    .back-to-top,
+    .toc-button,
+    .toc-rail {
         display: none;
     }
 }

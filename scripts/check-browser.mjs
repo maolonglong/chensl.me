@@ -56,6 +56,7 @@ try {
             footerGap: Math.round(innerHeight - footer.bottom),
             footerOffset: Math.round(footer.left - main.left),
             backToTop: document.querySelectorAll('.back-to-top').length,
+            floatingContents: document.querySelectorAll('.toc-rail, .toc-button').length,
           };
           document.documentElement.style.fontSize = '';
           return result;
@@ -75,6 +76,10 @@ try {
         // Only articles are long enough to need a way back up.
         if (layout.backToTop !== (pathname === '/blog/dockertest/' ? 1 : 0)) {
           failures.push(`${label}: expected a back-to-top button on articles only (${JSON.stringify(layout)})`)
+        }
+        // Only an article with a contents list gets it again once the list scrolls away: one rail and one button.
+        if (layout.floatingContents !== (pathname === '/blog/dockertest/' ? 2 : 0)) {
+          failures.push(`${label}: expected floating contents on articles with a contents list only (${JSON.stringify(layout)})`)
         }
       }
     }
@@ -152,6 +157,120 @@ try {
     }
   }
 
+  // Once the contents list at the top scrolls away, it stays within reach: a Notion-style rail beside the
+  // column where a pointer can hover, and a button above back-to-top that opens it as a popover elsewhere.
+  const contents = `(() => {
+    const box = element => element ? element.getBoundingClientRect().toJSON() : null;
+    const shown = element => !!element && getComputedStyle(element).display !== 'none' && getComputedStyle(element).visibility === 'visible';
+    const rail = document.querySelector('.toc-rail'), button = document.querySelector('.toc-button');
+    const panel = document.querySelector('.toc-panel');
+    const panelOpen = !!panel && panel.matches(':popover-open');
+    const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    return {
+      rail: shown(rail) ? box(rail) : null, button: shown(button) ? box(button) : null,
+      panel: panelOpen ? box(panel) : null, backToTop: box(document.querySelector('.back-to-top')),
+      main: box(document.querySelector('main')), footer: box(document.querySelector('body > footer')),
+      comments: box(document.querySelector('.comments')),
+      current: [...document.querySelectorAll('.toc-rail [aria-current], .toc-panel [aria-current]')].map(a => decodeURIComponent(a.hash)),
+      first: decodeURIComponent(document.querySelector('#TableOfContents a')?.hash ?? ''),
+      last: decodeURIComponent([...document.querySelectorAll('#TableOfContents a')].at(-1)?.hash ?? ''),
+      hash: decodeURIComponent(location.hash), targetTop: target ? Math.round(target.getBoundingClientRect().top) : null,
+      focused: document.activeElement.tagName, width: innerWidth, height: innerHeight, page: document.documentElement.scrollWidth,
+    };
+  })()`
+  const settle = script => browser('eval', `new Promise(resolve => {
+    ${script};
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve(${contents})));
+  })`)
+  const pastList = `scrollTo(0, scrollY + document.querySelector('.toc').getBoundingClientRect().bottom + 1)`
+  const apart = (a, b) => !a || !b || a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top
+  const inside = (a, state) => !!a && a.left >= 0 && a.top >= 0 && a.right <= state.width && a.bottom <= state.height
+  const covers = (outer, inner) => !!outer && !!inner && outer.left <= inner.left && outer.top <= inner.top && outer.right >= inner.right && outer.bottom >= inner.bottom
+
+  for (const width of [1024, 1280]) {
+    browser('set', 'viewport', String(width), '844', '2')
+    open('/blog/dockertest/')
+    const label = `/blog/dockertest/ contents rail at ${width}px`
+    const atTop = settle('scrollTo(0, 0)')
+    if (atTop.rail || atTop.button) {
+      failures.push(`${label}: floating contents must wait until the list at the top scrolls away (${JSON.stringify(atTop)})`)
+    }
+    const past = settle(pastList)
+    if (!inside(past.rail, past) || past.button || Math.abs(past.rail.left - past.backToTop.left) > 1 || past.rail.left < past.main.right + 23 || !apart(past.rail, past.backToTop)) {
+      failures.push(`${label}: rail must hang beside the column on back-to-top's line, clear of it (${JSON.stringify(past)})`)
+    }
+    if (!past.rail) {
+      continue
+    }
+    // The Dockertest H2 is followed at once by an H3; arriving at the H2 must still mark the H2.
+    const section = settle(`document.getElementById('dockertest').scrollIntoView()`)
+    if (section.current.length !== 2 || section.current.some(hash => hash !== '#dockertest')) {
+      failures.push(`${label}: the heading at the top of the view must be the current entry (${JSON.stringify(section.current)})`)
+    }
+    const end = settle('scrollTo(0, document.documentElement.scrollHeight)')
+    if (end.current.length !== 2 || end.current.some(hash => hash !== end.last)) {
+      failures.push(`${label}: the last entry must be current at the bottom of the page (${JSON.stringify(end.current)})`)
+    }
+    // Keyboard focus opens the rail into a card; Enter jumps to the heading and closes it again.
+    settle(pastList)
+    browser('focus', '.toc-rail li:first-child a')
+    const focused = settle('')
+    if (!covers(focused.rail, past.rail) || !inside(focused.rail, focused) || focused.rail.width < 200 || !apart(focused.rail, focused.backToTop)) {
+      failures.push(`${label}: focus must open the rail into a card within the view, clear of back-to-top (${JSON.stringify(focused)})`)
+    }
+    browser('press', 'Enter')
+    const jumped = settle('')
+    if (jumped.hash !== jumped.first || Math.abs(jumped.targetTop) > 1 || !jumped.rail || jumped.rail.width > past.rail.width + 1 || jumped.focused !== 'BODY') {
+      failures.push(`${label}: Enter must jump to the heading and fold the card back into the rail (${JSON.stringify(jumped)})`)
+    }
+    // Hover opens the same card, and the card covers the rail so the pointer never falls off its edge.
+    browser('hover', '.toc-rail')
+    const hovered = settle('')
+    if (!covers(hovered.rail, past.rail) || !inside(hovered.rail, hovered) || hovered.rail.width < 200 || !apart(hovered.rail, hovered.backToTop)) {
+      failures.push(`${label}: hover must open the rail into a card that covers it (${JSON.stringify(hovered)})`)
+    }
+  }
+
+  for (const [width, size] of [[390, '100%'], [390, '200%'], [768, '100%']]) {
+    browser('set', 'viewport', String(width), '844', '2')
+    open('/blog/dockertest/')
+    browser('eval', `document.documentElement.style.fontSize = '${size}'`)
+    const label = `/blog/dockertest/ contents button at ${width}px / ${size}`
+    const atTop = settle('scrollTo(0, 0)')
+    if (atTop.rail || atTop.button) {
+      failures.push(`${label}: floating contents must wait until the list at the top scrolls away (${JSON.stringify(atTop)})`)
+    }
+    const past = settle(pastList)
+    if (past.rail || !inside(past.button, past) || Math.abs(past.button.right - past.backToTop.right) > 1 || past.backToTop.top - past.button.bottom < 7 || past.page > past.width) {
+      failures.push(`${label}: the button must stand just above back-to-top (${JSON.stringify(past)})`)
+    }
+    if (!past.button) {
+      continue
+    }
+    const end = settle('scrollTo(0, document.documentElement.scrollHeight)')
+    if (!apart(end.button, end.footer) || !apart(end.button, end.comments)) {
+      failures.push(`${label}: at the bottom the button must stay clear of the footer and comments (${JSON.stringify(end)})`)
+    }
+    browser('click', '.toc-button')
+    const opened = settle('')
+    if (!inside(opened.panel, opened) || !apart(opened.panel, opened.button) || !apart(opened.panel, opened.backToTop) || !opened.current.includes(opened.last)) {
+      failures.push(`${label}: the button must open the contents above both buttons (${JSON.stringify(opened)})`)
+    }
+    browser('click', '.toc-panel li:nth-child(2) a')
+    const jumped = settle('')
+    if (jumped.panel || Math.abs(jumped.targetTop) > 1 || !jumped.hash) {
+      failures.push(`${label}: choosing an entry must close the contents and jump to the heading (${JSON.stringify(jumped)})`)
+    }
+    browser('eval', `document.documentElement.style.fontSize = ''`)
+  }
+
+  // Fewer than three headings means no contents list, so nothing floats either.
+  open('/blog/lock-free-queue/')
+  const short = settle('scrollTo(0, document.documentElement.scrollHeight)')
+  if (short.rail || short.button || browser('eval', `document.querySelectorAll('.toc-rail, .toc-button, .toc-panel').length`) !== 0) {
+    failures.push('/blog/lock-free-queue/ must not float a contents list it does not have')
+  }
+
   // Every code block gets one copy button pinned inside its top-right corner, even when the code scrolls.
   browser('set', 'viewport', '320', '844', '2')
   open('/blog/dockertest/')
@@ -190,4 +309,4 @@ try {
   browser('close')
 }
 assert.deepEqual(failures, [], failures.join('\n'))
-console.log('Browser font budget, text-resize, page-shell, code-copy, and back-to-top checks passed.')
+console.log('Browser font budget, text-resize, page-shell, code-copy, back-to-top, and floating contents checks passed.')

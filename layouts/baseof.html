@@ -71,6 +71,9 @@
   {{- if .Store.Get "hasCodeBlock" }}
   {{ partial "code-copy.html" . }}
   {{- end }}
+  {{- if .Store.Get "hasTOC" }}
+  {{ partial "floating-toc.html" . }}
+  {{- end }}
   {{- if .IsPage }}
   {{ partial "back-to-top.html" . }}
   {{- end }}
