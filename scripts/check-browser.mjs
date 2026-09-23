@@ -279,21 +279,30 @@ try {
     failures.push(`/blog/lock-free-queue/ must float no contents and keep back-to-top in the corner (${JSON.stringify(short)})`)
   }
 
-  // Every code block gets one copy button pinned inside its top-right corner, even when the code scrolls.
+  // Every code block gets one copy button inside its top-right corner that stays put while the
+  // code scrolls, and a wide first line can always be scrolled out from under it.
   browser('set', 'viewport', '320', '844', '2')
   open('/blog/dockertest/')
   const copy = browser('eval', `(() => {
     const blocks = [...document.querySelectorAll('.highlight')];
+    const button = block => block.parentElement.querySelectorAll('.code-copy');
     const placed = blocks.every(block => {
-      const buttons = block.parentElement.querySelectorAll('.code-copy');
-      if (buttons.length !== 1) return false;
-      const b = buttons[0].getBoundingClientRect(), r = block.getBoundingClientRect();
+      if (button(block).length !== 1) return false;
+      const b = button(block)[0].getBoundingClientRect(), r = block.getBoundingClientRect();
       return b.width >= 24 && b.top >= r.top && b.right <= r.right && b.right <= innerWidth;
     });
-    return { blocks: blocks.length, placed, expected: blocks[0]?.querySelector('code').textContent.replace(/\\n$/, '') };
+    const wide = blocks.filter(block => block.scrollWidth > block.clientWidth);
+    const firstLineClear = wide.every(block => {
+      block.scrollLeft = block.scrollWidth;
+      const range = document.createRange();
+      range.selectNodeContents(block.querySelector('.line'));
+      return range.getBoundingClientRect().right <= button(block)[0].getBoundingClientRect().left;
+    });
+    return { blocks: blocks.length, placed, wide: wide.length, firstLineClear,
+      expected: blocks[0]?.querySelector('code').textContent.replace(/\\n$/, '') };
   })()`)
-  if (copy.blocks === 0 || !copy.placed) {
-    failures.push(`Code blocks must each carry one copy button inside their top-right corner (${JSON.stringify(copy)})`)
+  if (copy.blocks === 0 || !copy.placed || copy.wide === 0 || !copy.firstLineClear) {
+    failures.push(`Code blocks must each carry one copy button in their top-right corner that a scrolled first line can clear (${JSON.stringify(copy)})`)
   } else {
     // Headless Chrome denies clipboard reads, so record what reaches the real writeText and let it run.
     browser('eval', `(() => {

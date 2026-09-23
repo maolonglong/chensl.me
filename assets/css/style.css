@@ -678,30 +678,46 @@ pre code {
 }
 
 /*
-  An 18px glyph in a 44px square of the code's own fill, flush with the corner so
-  scrolled code never peeks past it. It appears on hover where hover exists.
+  After Expressive Code: a small plate of the code's own fill over the first
+  line, inset by half the code's end padding, with a 44px hit area. Touch
+  screens always show it; where a pointer can hover, it appears with the block.
 */
 .code-copy {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 4px;
+    right: 9px;
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     color: var(--muted-color);
     background-color: var(--code-background-color);
-    border: 0;
-    border-radius: 0 var(--radius);
-    cursor: pointer;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    opacity: 0.75;
     touch-action: manipulation;
+    transition: opacity 100ms ease-out;
 }
 
-/* The ring follows the button's corner and stays inside the block. */
+.code-copy::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+}
+
 .code-copy:focus-visible {
-    outline-offset: -2px;
-    border-radius: 0 var(--radius);
+    border-radius: var(--radius);
+}
+
+.code-copy:focus-visible,
+.code-copy:active {
+    opacity: 1;
+}
+
+/* The first line ends clear of the button once it is scrolled to its end. */
+.code-block .line:first-child {
+    padding-right: 32px;
 }
 
 .code-copy [data-copy-icon="done"],
@@ -716,17 +732,19 @@ pre code {
 @media (hover: hover) {
     .code-copy {
         opacity: 0;
-        transition: opacity 100ms ease-out;
     }
 
     .code-block:hover .code-copy,
-    .code-copy:focus-visible,
+    .code-block:focus-within .code-copy,
     .code-copy[data-state] {
-        opacity: 1;
+        opacity: 0.75;
     }
 
-    .code-copy:hover {
+    .code-block .code-copy:hover,
+    .code-block .code-copy:focus-visible,
+    .code-block .code-copy:active {
         color: var(--heading-color);
+        opacity: 1;
     }
 }
 
