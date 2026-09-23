@@ -55,6 +55,7 @@ try {
             navWrapped: nav.top >= title.bottom && Math.abs(nav.left - main.left) <= 1,
             footerGap: Math.round(innerHeight - footer.bottom),
             footerOffset: Math.round(footer.left - main.left),
+            backToTop: document.querySelectorAll('.back-to-top').length,
           };
           document.documentElement.style.fontSize = '';
           return result;
@@ -71,7 +72,83 @@ try {
         if (layout.footerGap > 64) {
           failures.push(`${label}: footer floats ${layout.footerGap}px above the viewport bottom`)
         }
+        // Only articles are long enough to need a way back up.
+        if (layout.backToTop !== (pathname === '/blog/dockertest/' ? 1 : 0)) {
+          failures.push(`${label}: expected a back-to-top button on articles only (${JSON.stringify(layout)})`)
+        }
       }
+    }
+  }
+
+  // The back-to-top button waits a screen down, then floats clear of the footer, the comments, and, when there is room, the text column.
+  for (const width of [320, 390, 768, 1280]) {
+    browser('set', 'viewport', String(width), '844', '2')
+    open('/blog/dockertest/')
+    for (const size of ['100%', '200%']) {
+      const top = browser('eval', `new Promise(resolve => {
+        document.documentElement.style.fontSize = '${size}';
+        const button = document.querySelector('.back-to-top');
+        const settle = () => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
+        const box = element => element.getBoundingClientRect();
+        const apart = (a, b) => a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
+        (async () => {
+          scrollTo(0, 0);
+          await settle();
+          const hiddenAtTop = !button || getComputedStyle(button).visibility === 'hidden';
+          scrollTo(0, document.documentElement.scrollHeight);
+          await settle();
+          const b = button ? box(button) : null;
+          const result = {
+            hiddenAtTop,
+            visible: !!button && getComputedStyle(button).visibility === 'visible',
+            inViewport: !!b && b.width >= 44 && b.height >= 44 && b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight,
+            clearOfFooter: !!b && apart(b, box(document.querySelector('body > footer'))),
+            clearOfComments: !!b && apart(b, box(document.querySelector('.comments'))),
+            outsideColumn: !!b && b.left >= box(document.querySelector('main')).right,
+            columnOffset: b ? Math.round(box(document.querySelector('main')).right - b.right) : null,
+          };
+          document.documentElement.style.fontSize = '';
+          scrollTo(0, 0);
+          resolve(result);
+        })();
+      })`)
+      const label = `/blog/dockertest/ back-to-top at ${width}px / ${size}`
+      if (!top.hiddenAtTop || !top.visible || !top.inViewport || !top.clearOfFooter || !top.clearOfComments) {
+        failures.push(`${label}: button must hide at the top and float clear of the footer and comments at the bottom (${JSON.stringify(top)})`)
+      }
+      // Without room beside the column, the button still hangs from its right edge.
+      if (!top.outsideColumn && Math.abs(top.columnOffset) > 1) {
+        failures.push(`${label}: button must line up with the text column's right edge (${JSON.stringify(top)})`)
+      }
+      if (width === 1280 && size === '100%' && !top.outsideColumn) {
+        failures.push(`${label}: button must sit beside the text column when there is room (${JSON.stringify(top)})`)
+      }
+    }
+  }
+
+  // From the very bottom, one press returns to the top within a second, leaves the URL alone, and a keyboard press lands on the site title.
+  browser('set', 'viewport', '1280', '844', '2')
+  open('/blog/semantic-view-sql-traps/')
+  const bottom = browser('eval', `new Promise(resolve => {
+    scrollTo(0, document.documentElement.scrollHeight);
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve({ scrollY, button: !!document.querySelector('.back-to-top') })));
+  })`)
+  if (!bottom.button) {
+    failures.push('Back-to-top button is missing from the longest article')
+  } else {
+    browser('focus', '.back-to-top')
+    browser('press', 'Enter')
+    const back = browser('eval', `new Promise(resolve => {
+      const start = performance.now();
+      (function poll() {
+        const elapsed = Math.round(performance.now() - start);
+        scrollY === 0 || elapsed > 3000
+          ? resolve({ from: ${bottom.scrollY}, scrollY, elapsed, url: location.href, focused: document.activeElement.matches('.site-title a') })
+          : requestAnimationFrame(poll);
+      })();
+    })`)
+    if (back.scrollY !== 0 || back.elapsed > 1000 || back.url.includes('#') || !back.focused) {
+      failures.push(`Back-to-top must reach the top within 1s without a URL fragment and hand keyboard focus to the site title (${JSON.stringify(back)})`)
     }
   }
 
@@ -113,4 +190,4 @@ try {
   browser('close')
 }
 assert.deepEqual(failures, [], failures.join('\n'))
-console.log('Browser font budget, text-resize, page-shell, and code-copy checks passed.')
+console.log('Browser font budget, text-resize, page-shell, code-copy, and back-to-top checks passed.')

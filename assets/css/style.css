@@ -326,6 +326,57 @@ main {
     text-underline-offset: 0.2em;
 }
 
+/*
+  A 20px glyph on a 44px plate of the page's own color, so text scrolling
+  beneath never shows through. It lines up with the column's right edge, and
+  moves out beside the column once a gutter, the button, and a gutter fit there.
+*/
+.back-to-top {
+    position: fixed;
+    right: max(var(--gutter), 50% - var(--measure) / 2);
+    bottom: var(--gutter);
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: var(--muted-color);
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    visibility: hidden;
+    opacity: 0;
+    touch-action: manipulation;
+    transition: opacity 100ms ease-out;
+}
+
+/* 42rem of column plus a gutter, the button, and a gutter on each side. */
+@media (min-width: calc(42rem + 184px)) {
+    .back-to-top {
+        right: max(var(--gutter), 50% - var(--measure) / 2 - var(--gutter) - 44px);
+    }
+}
+
+.back-to-top[data-visible] {
+    visibility: visible;
+    opacity: 1;
+}
+
+.back-to-top:focus-visible {
+    border-radius: var(--radius);
+}
+
+@media (hover: hover) {
+    .back-to-top:hover {
+        color: var(--heading-color);
+    }
+}
+
+/* The button keeps its own corner below the footer, so the last line never sits under it. */
+body:has(> .back-to-top) {
+    padding-bottom: calc(44px + 2 * var(--gutter));
+}
+
 /* ------------------------------------------------------------------- prose */
 
 .post {
@@ -745,7 +796,15 @@ main:has(> .not-found) {
 
 @media (prefers-reduced-motion: reduce) {
     .theme-toggle,
-    .code-copy {
+    .code-copy,
+    .back-to-top {
         transition: none;
+    }
+}
+
+/* Scrolled at print time, the button would stamp itself on every page. */
+@media print {
+    .back-to-top {
+        display: none;
     }
 }

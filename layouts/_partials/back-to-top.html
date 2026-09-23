@@ -1,0 +1,46 @@
+{{- /*
+  Returns a long article to its top. The script builds the button, so
+  no-JavaScript readers never see a control that cannot work.
+*/ -}}
+<template id="back-to-top-template">
+  <button class="back-to-top" type="button" aria-label="回到顶部">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M5 4h14M12 20V9m-6 6 6-6 6 6" />
+    </svg>
+  </button>
+</template>
+<script>
+  (() => {
+    "use strict";
+
+    const template = document.querySelector("#back-to-top-template");
+    if (!template) {
+      return;
+    }
+
+    const button = template.content.firstElementChild.cloneNode(true);
+    document.body.append(button);
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    // The button waits a screen down, where the header has long left the view.
+    const update = () => button.toggleAttribute("data-visible", window.scrollY > window.innerHeight);
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+
+    button.addEventListener("click", event => {
+      if (reduceMotion.matches) {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      } else {
+        // Desktop Chrome glides a long article for 1.5s; skip to the last screen and glide only that.
+        if (window.scrollY > window.innerHeight) {
+          window.scrollTo({ top: window.innerHeight, behavior: "instant" });
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      // Enter and Space report no clicks; continue the keyboard from the top of the page.
+      if (event.detail === 0) {
+        document.querySelector(".site-title a")?.focus({ preventScroll: true });
+      }
+    });
+  })();
+</script>
