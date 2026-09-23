@@ -65,6 +65,7 @@ h6 {
     font-weight: 500;
     line-height: 1.3;
     color: var(--heading-color);
+    letter-spacing: 0;
     text-wrap: balance;
     /* Break titles at spaces and punctuation, not inside a word like 单元; overflow-wrap still rescues a segment wider than the line. */
     word-break: keep-all;
@@ -170,6 +171,7 @@ pre,
 samp {
     font-family: var(--font-mono);
     font-variant-ligatures: none;
+    letter-spacing: 0;
 }
 
 cite {
@@ -205,8 +207,14 @@ body {
     max-width: calc(var(--measure) + 2 * var(--gutter));
     margin: 0 auto;
     padding: 32px var(--gutter);
-    font-size: 1.0625rem;
-    line-height: 1.85;
+    /*
+      JinKai reads best set a little open and led a little tight: 0.02em is
+      Kami's 0.3pt at this size, and 1.7 keeps a wrapped line closer to its
+      own paragraph than to the next.
+    */
+    font-size: 1.125rem;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
     color: var(--text-color);
     background-color: var(--background-color);
     overflow-wrap: break-word;
@@ -320,6 +328,7 @@ main {
 
 /* Running-text links are underlined so they never depend on color alone. */
 .site-footer a,
+.not-found a,
 .prose a:not(.footnote-ref) {
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
@@ -407,7 +416,7 @@ body:has(.toc-button) {
     margin: 0;
     padding: 8px 16px;
     overflow-y: auto;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     line-height: 1.5;
     color: var(--text-color);
     background-color: var(--background-color);
@@ -439,6 +448,18 @@ body:has(.toc-button) {
 }
 
 /*
+  Without popover support nothing hides the closed list, so it would sit open
+  over the text behind a button that does nothing. The rail below needs no
+  popover and still shows.
+*/
+@supports not selector(:popover-open) {
+    .toc-button,
+    .toc {
+        display: none;
+    }
+}
+
+/*
   Where a pointer can hover and the lane sits beside the column, the same list
   stays on screen as a Notion-style rail: a long dash per H2, a short one per
   H3, the current one in ink. Hover or keyboard focus opens the rail into a
@@ -457,7 +478,6 @@ body:has(.toc-button) {
         max-height: none;
         padding: 0;
         overflow: visible;
-        font-size: 0.875rem;
         background: none;
         border: 0;
         translate: 0 -50%;
@@ -540,10 +560,6 @@ body:has(.toc-button) {
 
 /* ------------------------------------------------------------------- prose */
 
-.post {
-    font-size: 1.125rem;
-}
-
 .prose > :first-child {
     margin-top: 0;
 }
@@ -554,6 +570,10 @@ body:has(.toc-button) {
 
 .prose :is(ul, ol) {
     padding-left: 1.5em;
+}
+
+.prose li + li {
+    margin-top: 0.25em;
 }
 
 .prose li::marker {
@@ -765,7 +785,7 @@ details > summary {
 
 /* References, not a continuation of the argument, so they recede. */
 .footnotes {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     color: var(--muted-color);
 }
 
@@ -831,10 +851,11 @@ details > summary {
     font-size: clamp(2rem, 6vw, 2.5rem);
 }
 
+/* The lede is description, not metadata: one step up, in the quote's olive rather than the dates' gray. */
 .home > h1 + p {
     margin-top: 0;
-    font-size: 1.125rem;
-    color: var(--muted-color);
+    font-size: 1.25rem;
+    color: var(--blockquote-color);
 }
 
 /* The home page's `---` marks a pause between parts, not a rule to look at. */
@@ -912,6 +933,7 @@ main:has(> .not-found) {
 
     body {
         padding-block: 24px;
+        font-size: 1.0625rem;
     }
 
     .site-header {
@@ -920,10 +942,6 @@ main:has(> .not-found) {
 
     .site-header nav {
         gap: 12px;
-    }
-
-    .post {
-        font-size: 1.0625rem;
     }
 
     pre {

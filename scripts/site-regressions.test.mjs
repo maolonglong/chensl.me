@@ -592,7 +592,7 @@ test('every heading level outranks the article body size', async () => {
     assert.ok(value, `missing font-size for ${declaration}`)
     return Number(value)
   }
-  const body = rem('\\.post')
+  const body = rem('body')
   const deep = 'h4,\\nh5,\\nh6'
   for (const selector of ['h2', 'h3', deep]) {
     assert.ok(rem(selector) >= body,
