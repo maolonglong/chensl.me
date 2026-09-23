@@ -74,8 +74,43 @@ try {
       }
     }
   }
+
+  // Every code block gets one copy button pinned inside its top-right corner, even when the code scrolls.
+  browser('set', 'viewport', '320', '844', '2')
+  open('/blog/dockertest/')
+  const copy = browser('eval', `(() => {
+    const blocks = [...document.querySelectorAll('.highlight')];
+    const placed = blocks.every(block => {
+      const buttons = block.parentElement.querySelectorAll('.code-copy');
+      if (buttons.length !== 1) return false;
+      const b = buttons[0].getBoundingClientRect(), r = block.getBoundingClientRect();
+      return b.width >= 24 && b.top >= r.top && b.right <= r.right && b.right <= innerWidth;
+    });
+    return { blocks: blocks.length, placed, expected: blocks[0]?.querySelector('code').textContent.replace(/\\n$/, '') };
+  })()`)
+  if (copy.blocks === 0 || !copy.placed) {
+    failures.push(`Code blocks must each carry one copy button inside their top-right corner (${JSON.stringify(copy)})`)
+  } else {
+    // Headless Chrome denies clipboard reads, so record what reaches the real writeText and let it run.
+    browser('eval', `(() => {
+      const write = navigator.clipboard.writeText.bind(navigator.clipboard);
+      navigator.clipboard.writeText = text => { window.copiedText = text; return write(text); };
+    })()`)
+    browser('find', 'first', '.code-copy', 'click')
+    // "已复制" is announced only after the browser accepts the write.
+    const { copied, status } = browser('eval', `new Promise(resolve => {
+      const status = document.querySelector('.code-copy-status'), start = Date.now();
+      (function poll() {
+        status?.textContent || Date.now() - start > 1000
+          ? resolve({ copied: window.copiedText, status: status?.textContent }) : setTimeout(poll, 20);
+      })();
+    })`)
+    if (copied !== copy.expected || status !== '已复制') {
+      failures.push(`Copy button must copy the code without its trailing newline and announce it (${JSON.stringify({ copied, status })})`)
+    }
+  }
 } finally {
   browser('close')
 }
 assert.deepEqual(failures, [], failures.join('\n'))
-console.log('Browser font budget, text-resize, and page-shell checks passed.')
+console.log('Browser font budget, text-resize, page-shell, and code-copy checks passed.')

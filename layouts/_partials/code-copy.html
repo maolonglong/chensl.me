@@ -1,0 +1,65 @@
+{{- /*
+  Adds a copy button to every code block. The script builds the buttons, so
+  RSS and no-JavaScript readers never see a control that cannot work.
+*/ -}}
+<template id="code-copy-template">
+  <button class="code-copy" type="button" aria-label="复制代码">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <g data-copy-icon="idle">
+        <rect x="8" y="8" width="12" height="12" rx="2" />
+        <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+      </g>
+      <g data-copy-icon="done">
+        <path d="m5 12.5 4.5 4.5L19 7.5" />
+      </g>
+    </svg>
+  </button>
+</template>
+<script>
+  (() => {
+    "use strict";
+
+    const template = document.querySelector("#code-copy-template");
+    // The Clipboard API needs a secure context; without it there is nothing to offer.
+    if (!template || !navigator.clipboard) {
+      return;
+    }
+
+    const status = document.createElement("span");
+    status.className = "visually-hidden code-copy-status";
+    status.setAttribute("role", "status");
+    document.body.append(status);
+
+    document.querySelectorAll(".highlight").forEach(highlight => {
+      const code = highlight.querySelector("code");
+      if (!code) {
+        return;
+      }
+
+      // .highlight scrolls sideways, so the button hangs from a still wrapper instead.
+      const block = document.createElement("div");
+      block.className = "code-block";
+      highlight.before(block);
+      const button = template.content.firstElementChild.cloneNode(true);
+      block.append(highlight, button);
+
+      let reset;
+      button.addEventListener("click", async () => {
+        let copied = true;
+        try {
+          // Chroma ends every block with a newline; pasted into a shell, it would run the command.
+          await navigator.clipboard.writeText(code.textContent.replace(/\n$/, ""));
+        } catch {
+          copied = false;
+        }
+        clearTimeout(reset);
+        button.dataset.state = copied ? "done" : "failed";
+        status.textContent = copied ? "已复制" : "复制失败";
+        reset = setTimeout(() => {
+          delete button.dataset.state;
+          status.textContent = "";
+        }, 2000);
+      });
+    });
+  })();
+</script>

@@ -438,6 +438,64 @@ pre code {
     margin-block: 0;
 }
 
+/* The script wraps each block so the copy button stays in the corner while the code scrolls. */
+.code-block {
+    position: relative;
+}
+
+/*
+  An 18px glyph in a 44px square of the code's own fill, flush with the corner so
+  scrolled code never peeks past it. It appears on hover where hover exists.
+*/
+.code-copy {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: var(--muted-color);
+    background-color: var(--code-background-color);
+    border: 0;
+    border-radius: 0 var(--radius);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* The ring follows the button's corner and stays inside the block. */
+.code-copy:focus-visible {
+    outline-offset: -2px;
+    border-radius: 0 var(--radius);
+}
+
+.code-copy [data-copy-icon="done"],
+.code-copy[data-state="done"] [data-copy-icon="idle"] {
+    display: none;
+}
+
+.code-copy[data-state="done"] [data-copy-icon="done"] {
+    display: inline;
+}
+
+@media (hover: hover) {
+    .code-copy {
+        opacity: 0;
+        transition: opacity 100ms ease-out;
+    }
+
+    .code-block:hover .code-copy,
+    .code-copy:focus-visible,
+    .code-copy[data-state] {
+        opacity: 1;
+    }
+
+    .code-copy:hover {
+        color: var(--heading-color);
+    }
+}
+
 /* ------------------------------------------------------------------ tables */
 
 /* The wrapper scrolls so the <table> keeps its role in the accessibility tree. */
@@ -686,7 +744,8 @@ main:has(> .not-found) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .theme-toggle {
+    .theme-toggle,
+    .code-copy {
         transition: none;
     }
 }

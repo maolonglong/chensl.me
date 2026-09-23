@@ -68,5 +68,8 @@
   <footer class="site-footer">
     <p>基于 <a href="https://gohugo.io">Hugo</a> 构建 / 排版灵感来自 <a href="https://github.com/tw93/Kami">Kami</a></p>
   </footer>
+  {{- if .Store.Get "hasCodeBlock" }}
+  {{ partial "code-copy.html" . }}
+  {{- end }}
 </body>
 </html>
