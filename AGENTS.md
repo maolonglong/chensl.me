@@ -44,7 +44,7 @@
 
 ### Browser coverage
 
-- With the preview running, run `node scripts/check-browser.mjs <preview-url>` (requires `agent-browser`, verified with 0.38.1; its commands and `--json` shape are version-specific). It checks actual font loading, then header bounds, column alignment, footer placement, and page overflow on home, archive, a long article, and 404 at 320, 390, 768, and 1280px with 100% and 200% text sizes.
+- With the preview running, run `node scripts/check-browser.mjs <preview-url>` (requires `agent-browser`, verified with 0.38.1; its commands and `--json` shape are version-specific). It checks actual font loading, then header bounds, column alignment, footer placement, and page overflow on home, archive, a long article, and 404 at 320, 390, 768, and 1280px with 100% and 200% text sizes. On articles it also checks the code copy button, back-to-top, and the floating contents (rail beside the column, button and popover elsewhere).
 - Inspect light/dark screenshots at 1280px and 390px on home, archive, a long article with code and TOC, and 404. For affected tables and navigation, also inspect 320px, 768px, and both sides of the 480px and 600px breakpoints.
 - Capture at 2× after `document.fonts.ready`; confirm the actual CJK font, not only its CSS declaration. Check affected TOC open/closed states, long titles, tables, quotes, code scrolling, focus, theme cycling/persistence, forced theme opposite the OS, and OS changes in auto mode. Ensure no page-level overflow. Chromium resizing is not real phone testing.
 
