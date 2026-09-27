@@ -455,7 +455,9 @@ test('site checker rejects relative RSS images and CSP-blocked images', async ()
 test('JinKai declarations preserve precedence, versioning, and cold-visit budget', async () => {
   const { dist } = await behaviorFixture()
   const index = await readFile(path.join(dist, 'index.html'), 'utf8')
-  const faces = [...index.matchAll(/@font-face\s*\{([^}]+)\}/g)].map(([, body]) => body)
+  const faces = [...index.matchAll(/@font-face\s*\{([^}]+)\}/g)]
+    .map(([, body]) => body)
+    .filter((body) => body.includes('TsangerJinKai02'))
   assert.equal(faces.length, 257)
   for (const face of faces) {
     assert.match(face, /font-weight:\s*400 500/)
@@ -504,14 +506,11 @@ test('JinKai declarations preserve precedence, versioning, and cold-visit budget
   )
 })
 
-test('code fonts remain conditional and no page preloads fonts', async () => {
+test('shared layouts declare code fonts without preloading them', async () => {
   const { dist } = await behaviorFixture()
-  for (const [file, hasCode] of [
-    ['index.html', false],
-    ['blog/render/index.html', true],
-  ]) {
+  for (const file of ['index.html', 'blog/render/index.html', 'blog/older/index.html']) {
     const html = await readFile(path.join(dist, file), 'utf8')
-    assert.equal(/font-family:\s*['"]?JetBrains Mono/.test(html), hasCode, file)
+    assert.match(html, /font-family:\s*['"]?JetBrains Mono/, file)
     assert.doesNotMatch(html, /rel=["']preload["']/)
   }
 })
@@ -527,7 +526,9 @@ test('font subsets follow edited content and remain deterministic across builds'
   const dist = await buildAstro(fixture)
   async function subsets() {
     const html = await readFile(path.join(dist, 'index.html'), 'utf8')
-    const faces = [...html.matchAll(/@font-face\s*\{([^}]+)\}/g)].map(([, face]) => face)
+    const faces = [...html.matchAll(/@font-face\s*\{([^}]+)\}/g)]
+      .map(([, face]) => face)
+      .filter((face) => face.includes('TsangerJinKai02'))
     return Promise.all(
       faces.slice(-2).map(async (css) => {
         const url = css.match(/url\(["']?([^)'"]+)/)[1]

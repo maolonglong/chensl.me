@@ -59,7 +59,7 @@ Articles live under `src/content/blog`, with YAML front matter (`title`, `pubDat
 
 `src/lib/markdown.mjs` customizes the official Unified Markdown processor for this site's alerts, tables, footnote presentation, and code captions. Heading and footnote anchors follow Astro defaults. Fence captions use `title="db/user.go"` without braces. The blog's single RSS feed at `/index.xml` renders collection content through Astro's experimental Container API so optimized images work in feed readers, without a second Markdown parser. `src/lib/assets.ts` generates content-versioned Giscus theme CSS.
 
-Astro's Fonts API serves local fonts with content-hashed URLs. `src/lib/fonts.mjs` generates common and article JinKai subsets from source at build time and dev-server startup; publishing new text needs no manual font command. During development, restart the server to refresh the optimized subsets; complete fallback ranges cover new characters meanwhile. Code fonts are declared only on pages with code. Font licenses and fallback regeneration instructions are in `public/fonts/tsanger-jinkai02/NOTICE.md`.
+Astro's Fonts API serves local fonts with content-hashed URLs. `src/lib/fonts.mjs` generates common and article JinKai subsets from source at build time and dev-server startup; publishing new text needs no manual font command. During development, restart the server to refresh the optimized subsets; complete fallback ranges cover new characters meanwhile. The shared layout declares code fonts without preloading; the browser downloads them only when used, on any page. Font licenses and fallback regeneration instructions are in `public/fonts/tsanger-jinkai02/NOTICE.md`.
 
 Agent instructions are documented in [AGENTS.md](AGENTS.md).
 

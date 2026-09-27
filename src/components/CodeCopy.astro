@@ -27,11 +27,13 @@
     'use strict'
     const template = document.querySelector<HTMLTemplateElement>('#code-copy-template')
     if (!template || !navigator.clipboard) return
+    const highlights = document.querySelectorAll('.prose .highlight')
+    if (!highlights.length) return
     const status = document.createElement('span')
     status.className = 'visually-hidden code-copy-status'
     status.setAttribute('role', 'status')
     document.body.append(status)
-    document.querySelectorAll('.highlight').forEach((highlight) => {
+    highlights.forEach((highlight) => {
       const code = highlight.querySelector('code')
       if (!code) return
       const block = document.createElement('div')

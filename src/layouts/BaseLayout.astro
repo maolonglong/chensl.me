@@ -1,9 +1,7 @@
 ---
 import '../styles/global.css'
 import '../styles/floating-controls.css'
-import syntaxCss from '../styles/syntax.css?raw'
 import BackToTop from '../components/BackToTop.astro'
-import CodeCopy from '../components/CodeCopy.astro'
 import Theme from '../components/Theme.astro'
 import ThemeToggle from '../components/ThemeToggle.astro'
 import { Font } from 'astro:assets'
@@ -15,8 +13,6 @@ export interface Props {
   updatedDate?: Date
   article?: boolean
   notFound?: boolean
-  hasCode?: boolean
-  hasCodeBlock?: boolean
 }
 
 const {
@@ -26,8 +22,6 @@ const {
   updatedDate,
   article = false,
   notFound = false,
-  hasCode = false,
-  hasCodeBlock = false,
 } = Astro.props
 const siteTitle = '~chensl'
 const isHome = Astro.url.pathname === '/'
@@ -112,8 +106,7 @@ const blogCurrent =
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <Font cssVariable="--font-jinkai" preload={false} />
-    {(hasCode || hasCodeBlock) && <Font cssVariable="--font-jetbrains" preload={false} />}
-    {hasCodeBlock && <style is:global set:html={syntaxCss} />}
+    <Font cssVariable="--font-jetbrains" preload={false} />
     <link
       rel="alternate"
       type="application/rss+xml"
@@ -151,7 +144,6 @@ const blogCurrent =
         <a href="https://github.com/tw93/Kami">Kami</a>
       </p>
     </footer>
-    {hasCodeBlock && <CodeCopy />}
     {article && <BackToTop />}
   </body>
 </html>

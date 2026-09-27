@@ -3,6 +3,7 @@ import { render, type CollectionEntry } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import FloatingToc from '../../components/FloatingToc.astro'
 import Comments from '../../components/Comments.astro'
+import CodeCopy from '../../components/CodeCopy.astro'
 import { publishedPosts, displayDate } from '../../lib/posts'
 export async function getStaticPaths() {
   return (await publishedPosts()).map((post) => ({ params: { id: post.id }, props: { post } }))
@@ -12,18 +13,9 @@ interface Props {
 }
 const { post } = Astro.props
 const { Content, headings } = await render(post)
-const html = post.rendered?.html ?? ''
-const hasCode = /<(?:code|pre|kbd|samp)[\s>]/.test(html)
-const hasCodeBlock = /<pre[\s>]/.test(html)
 ---
 
-<BaseLayout
-  {...post.data}
-  updatedDate={post.data.updatedDate ?? post.data.pubDate}
-  article
-  hasCode={hasCode}
-  hasCodeBlock={hasCodeBlock}
->
+<BaseLayout {...post.data} updatedDate={post.data.updatedDate ?? post.data.pubDate} article>
   <article class="post">
     <header class="post-header">
       <h1>{post.data.title}</h1>
@@ -35,6 +27,7 @@ const hasCodeBlock = /<pre[\s>]/.test(html)
     <div class="prose">
       <Content />
     </div>
+    <CodeCopy />
   </article>
   {post.data.comments && <Comments />}
 </BaseLayout>
@@ -48,5 +41,18 @@ const hasCodeBlock = /<pre[\s>]/.test(html)
     font-size: 0.875rem;
     color: var(--muted-color);
     font-variant-numeric: tabular-nums;
+  }
+  /* Markdown descendants do not carry this component's scope attribute. */
+  .prose :global(.astro-code),
+  .prose :global(.astro-code span) {
+    color: light-dark(var(--shiki-light), var(--shiki-dark));
+    background-color: var(--code-background-color);
+  }
+  .prose :global(.astro-code) {
+    -webkit-text-size-adjust: none;
+  }
+  .prose :global(.astro-code .line) {
+    display: inline-block;
+    min-height: 1em;
   }
 </style>

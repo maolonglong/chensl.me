@@ -67,6 +67,23 @@ try {
     )
   }
 
+  // Code added to a standalone page must work without article metadata or layout flags.
+  const standaloneCode = browser(
+    'eval',
+    `(async () => {
+      const code = document.createElement('code');
+      code.textContent = 'const answer = 42';
+      document.querySelector('main').append(code);
+      await new Promise(requestAnimationFrame);
+      await document.fonts.ready;
+      const loaded = getComputedStyle(code).fontFamily.includes('JetBrains') &&
+        [...document.fonts].some(f => f.family.includes('JetBrains') && f.status === 'loaded');
+      code.remove();
+      return loaded;
+    })()`,
+  )
+  assert.equal(standaloneCode, true, 'Standalone pages must load code fonts on demand')
+
   for (const width of [320, 390, 768, 1280]) {
     browser('set', 'viewport', String(width), '844', '2')
     for (const pathname of pages) {
@@ -464,6 +481,58 @@ try {
       `/blog/lock-free-queue/ must float no contents and keep back-to-top in the corner (${JSON.stringify(short)})`,
     )
   }
+
+  // Cold visits must load code fonts only for actual code, without adding copy UI for inline code.
+  for (const [route, hasCode] of [
+    ['/blog/2024-review/', false],
+    ['/blog/thin-agent-thick-harness/', true],
+  ]) {
+    browser('close')
+    open(route)
+    const state = browser(
+      'eval',
+      `(() => {
+        const sources = [...document.styleSheets]
+          .filter(sheet => !sheet.href || new URL(sheet.href).origin === location.origin)
+          .flatMap(sheet => [...sheet.cssRules])
+          .filter(rule => rule instanceof CSSFontFaceRule && rule.style.fontFamily.includes('JetBrains'))
+          .map(rule => new URL(rule.style.src.match(/url\\(["']?([^"')]+)/)[1], location.href).href);
+        return { blocks: document.querySelectorAll('pre').length,
+        controls: document.querySelectorAll('.code-copy,.code-copy-status').length,
+        requested: performance.getEntriesByType('resource').some(entry => sources.includes(entry.name)),
+        codeFont: [...document.fonts].some(f => f.family.includes('JetBrains') && f.status === 'loaded') };
+      })()`,
+    )
+    assert.deepEqual(
+      state,
+      { blocks: 0, controls: 0, requested: hasCode, codeFont: hasCode },
+      route,
+    )
+  }
+
+  // Scoped article styles must reach rendered Markdown in both color schemes.
+  open('/blog/dockertest/')
+  for (const scheme of ['light', 'dark']) {
+    browser('eval', `document.documentElement.dataset.theme = '${scheme}'`)
+    const colors = browser(
+      'eval',
+      `(() => {
+        const tokens = [...document.querySelectorAll('.astro-code span[style]')];
+        const probe = document.createElement('span');
+        document.body.append(probe);
+        const matches = tokens.every(token => {
+          probe.style.color = token.style.getPropertyValue('--shiki-${scheme}');
+          return getComputedStyle(token).color === getComputedStyle(probe).color;
+        });
+        probe.remove();
+        return { tokens: tokens.length, matches,
+          line: getComputedStyle(document.querySelector('.astro-code .line')).display };
+      })()`,
+    )
+    assert.ok(colors.tokens > 0 && colors.matches, `${scheme}: syntax colors must match Shiki`)
+    assert.equal(colors.line, 'inline-block')
+  }
+  console.log('No-code and inline-code articles, scoped light/dark syntax colors passed.')
 
   // Every code block gets one copy button inside its top-right corner that stays put while the
   // code scrolls, and a wide first line can always be scrolled out from under it.
