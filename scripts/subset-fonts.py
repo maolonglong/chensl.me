@@ -6,9 +6,9 @@
 
 The core subset holds every character the built site renders, so a cold visit downloads one
 file per weight instead of dozens of blocks. The 128-codepoint blocks stay as a complete
-fallback for characters newer articles introduce before the next regeneration; `serif.css`
+fallback for characters newer articles introduce before the next regeneration; `src/lib/assets.ts`
 declares them first so the narrower core wins wherever it applies. W05 stays out of the web
-build: `serif.css` declares W04 for weights 400-500.
+build: `src/lib/assets.ts` declares W04 for weights 400-500.
 """
 
 import html
@@ -24,17 +24,17 @@ from fontTools.ttLib import TTFont
 FACE, WEIGHT = "W04", 400
 root = Path(__file__).resolve().parents[1]
 source = Path(sys.argv[1])
-fonts = root / "static/fonts/tsanger-jinkai02"
+fonts = root / "public/fonts/tsanger-jinkai02"
 blocks_dir = fonts / "subsets"
 blocks_dir.mkdir(parents=True, exist_ok=True)
 
 
 def site_codepoints() -> set[int]:
-    """Characters the built site renders, taken from Hugo's output rather than the sources."""
-    public = root / "public"
-    pages = sorted(public.rglob("*.html")) + sorted(public.rglob("*.xml"))
+    """Characters the built site renders, taken from Astro's output rather than the sources."""
+    output = root / "dist"
+    pages = sorted(output.rglob("*.html")) + sorted(output.rglob("*.xml"))
     if not pages:
-        sys.exit("No built site found. Run `just build` before regenerating fonts.")
+        sys.exit("No built site found. Run `pnpm build` before regenerating fonts.")
     codepoints: set[int] = set()
     for page in pages:
         markup = re.sub(r"<(script|style)\b.*?</\1>", "", page.read_text("utf8"), flags=re.S)

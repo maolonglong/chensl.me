@@ -1,0 +1,110 @@
+<button class="theme-toggle" type="button" data-theme-toggle>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <g data-theme-icon="auto">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor" stroke="none" />
+    </g>
+    <g data-theme-icon="light">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+    </g>
+    <g data-theme-icon="dark">
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+    </g>
+  </svg>
+</button>
+
+<script>
+  type Mode = 'auto' | 'light' | 'dark'
+  const storageKey = 'color-theme'
+  const modes: Mode[] = ['auto', 'light', 'dark']
+  const labels = { auto: '自动', light: '浅色', dark: '深色' }
+  const root = document.documentElement
+  const toggle = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!
+  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+  const isMode = (value: string | null | undefined): value is Mode => modes.includes(value as Mode)
+  let mode: Mode = isMode(root.dataset.theme) ? root.dataset.theme : 'auto'
+  const nextMode = () => modes[(modes.indexOf(mode) + 1) % modes.length]
+  const applyTheme = () => {
+    if (mode === 'auto') delete root.dataset.theme
+    else root.dataset.theme = mode
+    const theme = mode === 'auto' ? (systemTheme.matches ? 'dark' : 'light') : mode
+    document.querySelectorAll<HTMLMetaElement>('meta[data-theme-color]').forEach((element) => {
+      element.media = element.dataset.themeColor === theme ? 'all' : 'not all'
+    })
+    window.dispatchEvent(new CustomEvent('site-theme-change', { detail: { theme } }))
+    toggle.dataset.themeMode = mode
+    toggle.setAttribute('aria-label', `主题：${labels[mode]}。切换为${labels[nextMode()]}`)
+    root.dataset.themeReady = ''
+  }
+  applyTheme()
+  toggle.addEventListener('click', () => {
+    mode = nextMode()
+    try {
+      if (mode === 'auto') localStorage.removeItem(storageKey)
+      else localStorage.setItem(storageKey, mode)
+    } catch {}
+    applyTheme()
+  })
+  systemTheme.addEventListener('change', () => {
+    if (mode === 'auto') applyTheme()
+  })
+  window.addEventListener('storage', (event) => {
+    if (event.key !== storageKey && event.key !== null) return
+    mode = isMode(event.newValue) ? event.newValue : 'auto'
+    applyTheme()
+  })
+</script>
+
+<style>
+  .theme-toggle {
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: var(--heading-color);
+    background: transparent;
+    border: 0;
+    visibility: hidden;
+    touch-action: manipulation;
+    transition: opacity 100ms ease-out;
+  }
+  :global(:root[data-theme-ready]) .theme-toggle {
+    visibility: visible;
+  }
+  .theme-toggle::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+  }
+  .theme-toggle [data-theme-icon] {
+    display: none;
+  }
+  .theme-toggle[data-theme-mode='auto'] [data-theme-icon='auto'],
+  .theme-toggle[data-theme-mode='light'] [data-theme-icon='light'],
+  .theme-toggle[data-theme-mode='dark'] [data-theme-icon='dark'] {
+    display: inline;
+  }
+  .theme-toggle:active {
+    opacity: 0.65;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle {
+      transition: none;
+    }
+  }
+</style>

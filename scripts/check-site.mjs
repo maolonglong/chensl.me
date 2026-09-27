@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 
 const root = process.cwd()
-const outputDir = path.join(root, 'public')
+const outputDir = path.join(root, 'dist')
 const errors = []
 
 async function walk(directory) {
@@ -12,7 +12,7 @@ async function walk(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const entryPath = path.join(directory, entry.name)
     if (entry.isDirectory()) {
-      files.push(...await walk(entryPath))
+      files.push(...(await walk(entryPath)))
     } else {
       files.push(entryPath)
     }
@@ -31,14 +31,17 @@ function getAttributes(tag) {
 
 function decodeXmlEntities(value) {
   const named = { amp: '&', apos: "'", gt: '>', lt: '<', quot: '"' }
-  return value.replace(/&(?:#(\d+)|#x([\da-f]+)|(amp|apos|gt|lt|quot));/gi, (match, decimal, hex, name) => {
-    if (name) {
-      return named[name.toLowerCase()]
-    }
+  return value.replace(
+    /&(?:#(\d+)|#x([\da-f]+)|(amp|apos|gt|lt|quot));/gi,
+    (match, decimal, hex, name) => {
+      if (name) {
+        return named[name.toLowerCase()]
+      }
 
-    const codePoint = Number.parseInt(decimal ?? hex, decimal ? 10 : 16)
-    return codePoint <= 0x10ffff ? String.fromCodePoint(codePoint) : match
-  })
+      const codePoint = Number.parseInt(decimal ?? hex, decimal ? 10 : 16)
+      return codePoint <= 0x10ffff ? String.fromCodePoint(codePoint) : match
+    },
+  )
 }
 
 function pageUrlFor(file, basePath, siteOrigin) {
@@ -60,7 +63,9 @@ function isInternalUrl(value, file, basePath, siteOrigin) {
 
 function isSvgUrl(value, file, basePath, siteOrigin) {
   try {
-    return new URL(value.replaceAll('&amp;', '&'), pageUrlFor(file, basePath, siteOrigin)).pathname.toLowerCase().endsWith('.svg')
+    return new URL(value.replaceAll('&amp;', '&'), pageUrlFor(file, basePath, siteOrigin)).pathname
+      .toLowerCase()
+      .endsWith('.svg')
   } catch {
     return false
   }
@@ -104,7 +109,7 @@ function internalReferenceError(value, file, outputFiles, anchorsByFile, basePat
     candidates.add(path.posix.join(relative, 'index.html'))
     candidates.add(`${relative}.html`)
   }
-  const target = [...candidates].find(candidate => outputFiles.has(candidate))
+  const target = [...candidates].find((candidate) => outputFiles.has(candidate))
   if (!target) {
     return `references missing internal URL ${JSON.stringify(value)}`
   }
@@ -126,65 +131,36 @@ function internalReferenceError(value, file, outputFiles, anchorsByFile, basePat
 }
 
 if (!existsSync(outputDir)) {
-  console.error('public/ does not exist; build the site before running checks.')
+  console.error('dist/ does not exist; build the site before running checks.')
   process.exit(1)
 }
 
-const [buildScript, justfile, miseConfig, miseLock] = await Promise.all([
-  readFile(path.join(root, 'build.sh'), 'utf8'),
-  readFile(path.join(root, 'justfile'), 'utf8'),
-  readFile(path.join(root, 'mise.toml'), 'utf8'),
-  readFile(path.join(root, 'mise.lock'), 'utf8'),
-])
-
-function lockedToolVersion(tool) {
-  return miseLock.match(new RegExp(`\\[\\[tools\\.${tool}\\]\\]\\s*\\nversion = "([^"]+)"`))?.[1]
-}
-
-const buildHugoVersion = buildScript.match(/hugo_version="([^"]+)"/)?.[1]
-const miseHugoVersion = miseConfig.match(/^hugo = "([^"]+)"/m)?.[1]
-if (!buildHugoVersion || buildHugoVersion !== miseHugoVersion) {
-  errors.push(`Hugo version mismatch: build.sh=${buildHugoVersion ?? 'missing'}, mise.toml=${miseHugoVersion ?? 'missing'}`)
-}
-const lockHugoVersion = lockedToolVersion('hugo')
-if (!miseHugoVersion || miseHugoVersion !== lockHugoVersion) {
-  errors.push(`Hugo version mismatch: mise.toml=${miseHugoVersion ?? 'missing'}, mise.lock=${lockHugoVersion ?? 'missing'}`)
-}
-if (!buildScript.includes('build --cleanDestinationDir')) {
-  errors.push('build.sh must build with --cleanDestinationDir')
-}
-if (!justfile.includes('hugo --cleanDestinationDir')) {
-  errors.push('just build must build with --cleanDestinationDir')
-}
-
-const buildArchives = new Map([...buildScript.matchAll(/hugo_archive="([^"]+)"\s*\n\s*hugo_checksum="([a-f\d]{64})"/g)]
-  .map(match => [match[1], match[2]]))
-for (const platform of ['macos-arm64', 'macos-x64', 'linux-arm64', 'linux-x64']) {
-  const section = miseLock.match(new RegExp(`\\[tools\\.hugo\\."platforms\\.${platform}"\\]([\\s\\S]*?)(?=\\n\\[|$)`))?.[1] ?? ''
-  const checksum = section.match(/checksum = "sha256:([a-f\d]{64})"/)?.[1]
-  const archive = section.match(/url = "[^"]*\/([^/"]+)"/)?.[1]
-  const buildArchive = archive?.replace(miseHugoVersion, '${hugo_version}')
-  if (!archive || !checksum || buildArchives.get(buildArchive) !== checksum) {
-    errors.push(`build.sh Hugo archive/checksum does not match mise.lock for ${platform}`)
-  }
-}
-
 const files = await walk(outputDir)
-const outputFiles = new Set(files.map(file => path.relative(outputDir, file).split(path.sep).join('/')))
-for (const required of ['index.html', 'blog/index.html', '404.html', 'index.xml', 'blog/index.xml', '_headers']) {
+const outputFiles = new Set(
+  files.map((file) => path.relative(outputDir, file).split(path.sep).join('/')),
+)
+for (const required of ['index.html', 'blog/index.html', '404.html', 'index.xml', '_headers']) {
   if (!outputFiles.has(required)) {
-    errors.push(`Missing required output public/${required}`)
+    errors.push(`Missing required output dist/${required}`)
   }
 }
 
-const htmlFiles = files.filter(file => file.endsWith('.html'))
-const htmlByFile = new Map(await Promise.all(htmlFiles.map(async file => [file, await readFile(file, 'utf8')])))
-const headers = outputFiles.has('_headers') ? await readFile(path.join(outputDir, '_headers'), 'utf8') : ''
+const htmlFiles = files.filter((file) => file.endsWith('.html'))
+const htmlByFile = new Map(
+  await Promise.all(htmlFiles.map(async (file) => [file, await readFile(file, 'utf8')])),
+)
+const headers = outputFiles.has('_headers')
+  ? await readFile(path.join(outputDir, '_headers'), 'utf8')
+  : ''
 const globalHeaders = headers.match(/^\/\*\s*\n((?:[ \t].*(?:\n|$))*)/m)?.[1] ?? ''
-const csp = globalHeaders.match(/^\s*Content-Security-Policy:\s*(.+)$/mi)?.[1]
-const imgSourceTokens = csp?.match(/(?:^|;)\s*img-src\s+([^;]+)/i)?.[1].trim().split(/\s+/) ?? []
+const csp = globalHeaders.match(/^\s*Content-Security-Policy:\s*(.+)$/im)?.[1]
+const imgSourceTokens =
+  csp
+    ?.match(/(?:^|;)\s*img-src\s+([^;]+)/i)?.[1]
+    .trim()
+    .split(/\s+/) ?? []
 if (!csp || imgSourceTokens.length === 0) {
-  errors.push('public/_headers must define img-src in the global Content-Security-Policy')
+  errors.push('dist/_headers must define img-src in the global Content-Security-Policy')
 }
 for (const [directive, source] of [
   ['script-src', 'https://giscus.app'],
@@ -192,24 +168,37 @@ for (const [directive, source] of [
   ['script-src', 'https://static.cloudflareinsights.com'],
   ['connect-src', 'https://cloudflareinsights.com'],
 ]) {
-  const tokens = csp?.match(new RegExp(`(?:^|;)\\s*${directive}\\s+([^;]+)`, 'i'))?.[1].trim().split(/\s+/) ?? []
+  const tokens =
+    csp
+      ?.match(new RegExp(`(?:^|;)\\s*${directive}\\s+([^;]+)`, 'i'))?.[1]
+      .trim()
+      .split(/\s+/) ?? []
   if (!tokens.includes(source)) {
-    errors.push(`public/_headers CSP ${directive} must allow ${source}`)
+    errors.push(`dist/_headers CSP ${directive} must allow ${source}`)
   }
 }
 // Workers Assets defaults to `max-age=0, must-revalidate`, which would revalidate every font.
 for (const immutable of ['/fonts/*', '/css/*']) {
-  const rule = headers.match(new RegExp(`^${immutable.replace('*', '\\*')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`, 'm'))?.[1] ?? ''
-  if (!/^\s*Cache-Control:.*\bimmutable\b/mi.test(rule)) {
-    errors.push(`public/_headers must mark ${immutable} as immutable so fingerprinted assets are not revalidated`)
+  const rule =
+    headers.match(
+      new RegExp(`^${immutable.replace('*', '\\*')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`, 'm'),
+    )?.[1] ?? ''
+  if (!/^\s*Cache-Control:.*\bimmutable\b/im.test(rule)) {
+    errors.push(
+      `dist/_headers must mark ${immutable} as immutable so fingerprinted assets are not revalidated`,
+    )
   }
-  if (immutable === '/css/*' && !/^\s*Access-Control-Allow-Origin:\s*\*\s*$/mi.test(rule)) {
-    errors.push('public/_headers must allow cross-origin CSS so giscus can load its custom themes')
+  if (immutable === '/css/*' && !/^\s*Access-Control-Allow-Origin:\s*\*\s*$/im.test(rule)) {
+    errors.push('dist/_headers must allow cross-origin CSS so giscus can load its custom themes')
   }
 }
 const homeHtml = htmlByFile.get(path.join(outputDir, 'index.html')) ?? ''
-const canonicalTag = [...homeHtml.matchAll(/<link\b[^>]*>/gi)]
-  .find(match => getAttributes(match[0]).get('rel')?.split(/\s+/).some(value => value.toLowerCase() === 'canonical'))?.[0]
+const canonicalTag = [...homeHtml.matchAll(/<link\b[^>]*>/gi)].find((match) =>
+  getAttributes(match[0])
+    .get('rel')
+    ?.split(/\s+/)
+    .some((value) => value.toLowerCase() === 'canonical'),
+)?.[0]
 const canonicalUrl = canonicalTag ? getAttributes(canonicalTag).get('href') : null
 let basePath = '/'
 let siteOrigin = 'https://site.invalid'
@@ -223,7 +212,7 @@ try {
   basePath = `/${basePath.replace(/^\/+|\/+$/g, '')}`
   basePath = basePath === '/' ? basePath : `${basePath}/`
 } catch {
-  errors.push('Unable to determine the site base path from public/index.html')
+  errors.push('Unable to determine the site base path from dist/index.html')
 }
 
 const anchorsByFile = new Map()
@@ -249,9 +238,18 @@ for (const [file, html] of htmlByFile) {
     const tag = match[0]
     const attributes = getAttributes(tag)
     const lowerTag = tag.toLowerCase()
-    const url = attributes.get(lowerTag.startsWith('<a') || lowerTag.startsWith('<link') ? 'href' : 'src')
+    const url = attributes.get(
+      lowerTag.startsWith('<a') || lowerTag.startsWith('<link') ? 'href' : 'src',
+    )
     if (url && isInternalUrl(url, file, basePath, siteOrigin)) {
-      const error = internalReferenceError(url, file, outputFiles, anchorsByFile, basePath, siteOrigin)
+      const error = internalReferenceError(
+        url,
+        file,
+        outputFiles,
+        anchorsByFile,
+        basePath,
+        siteOrigin,
+      )
       if (error) {
         errors.push(`${relative} ${error}`)
       }
@@ -275,18 +273,22 @@ for (const [file, html] of htmlByFile) {
       imageUrl = null
     }
     // ponytail: supports our CSP's self/data/exact HTTPS origins; extend with tests before adopting wildcards or path sources.
-    const imageAllowed = imageUrl && (
-      (imageUrl.origin === siteOrigin && imgSourceTokens.includes("'self'"))
-      || (imageUrl.protocol === 'data:' && imgSourceTokens.includes('data:'))
-      || (imageUrl.protocol === 'https:' && imgSourceTokens.includes(imageUrl.origin))
-    )
+    const imageAllowed =
+      imageUrl &&
+      ((imageUrl.origin === siteOrigin && imgSourceTokens.includes("'self'")) ||
+        (imageUrl.protocol === 'data:' && imgSourceTokens.includes('data:')) ||
+        (imageUrl.protocol === 'https:' && imgSourceTokens.includes(imageUrl.origin)))
     if (!imageAllowed) {
       errors.push(`${relative} contains an image blocked by CSP img-src: ${JSON.stringify(src)}`)
     }
-    if (isInternalUrl(src, file, basePath, siteOrigin)
-      && !isSvgUrl(src, file, basePath, siteOrigin)
-      && (!attributes.has('width') || !attributes.has('height'))) {
-      errors.push(`${relative} contains a local image without intrinsic dimensions: ${JSON.stringify(src)}`)
+    if (
+      isInternalUrl(src, file, basePath, siteOrigin) &&
+      !isSvgUrl(src, file, basePath, siteOrigin) &&
+      (!attributes.has('width') || !attributes.has('height'))
+    ) {
+      errors.push(
+        `${relative} contains a local image without intrinsic dimensions: ${JSON.stringify(src)}`,
+      )
     }
   }
 
@@ -294,20 +296,37 @@ for (const [file, html] of htmlByFile) {
     const attributes = getAttributes(match[0])
     const key = (attributes.get('property') ?? attributes.get('name') ?? '').toLowerCase()
     const value = attributes.get('content')
-    if ((key === 'og:image' || key === 'twitter:image') && value && isInternalUrl(value, file, basePath, siteOrigin)) {
-      const error = internalReferenceError(value, file, outputFiles, anchorsByFile, basePath, siteOrigin)
+    if (
+      (key === 'og:image' || key === 'twitter:image') &&
+      value &&
+      isInternalUrl(value, file, basePath, siteOrigin)
+    ) {
+      const error = internalReferenceError(
+        value,
+        file,
+        outputFiles,
+        anchorsByFile,
+        basePath,
+        siteOrigin,
+      )
       if (error) errors.push(`${relative} ${error}`)
     }
   }
 }
 
-const xmlFiles = files.filter(file => file.endsWith('.xml'))
-const xmlDocuments = await Promise.all(xmlFiles.map(async file => ({
-  file: path.relative(root, file),
-  requiredFeed: ['index.xml', 'blog/index.xml'].includes(path.relative(outputDir, file).split(path.sep).join('/')),
-  xml: await readFile(file, 'utf8'),
-})))
-const python = spawnSync('python3', ['-c', String.raw`
+const xmlFiles = files.filter((file) => file.endsWith('.xml'))
+const xmlDocuments = await Promise.all(
+  xmlFiles.map(async (file) => ({
+    file: path.relative(root, file),
+    requiredFeed: path.relative(outputDir, file) === 'index.xml',
+    xml: await readFile(file, 'utf8'),
+  })),
+)
+const python = spawnSync(
+  'python3',
+  [
+    '-c',
+    String.raw`
 import json, re, sys, xml.etree.ElementTree as ET
 documents = json.load(sys.stdin)
 errors = []
@@ -338,7 +357,10 @@ for document in documents:
             if not (item.findtext(field) or '').strip():
                 errors.append(f'{name} item {index} is missing {field}')
 print(json.dumps(errors))
-`], { input: JSON.stringify(xmlDocuments), encoding: 'utf8' })
+`,
+  ],
+  { input: JSON.stringify(xmlDocuments), encoding: 'utf8' },
+)
 if (python.error?.code === 'ENOENT') {
   errors.push('Python 3 is required to validate generated XML')
 } else if (python.status !== 0) {

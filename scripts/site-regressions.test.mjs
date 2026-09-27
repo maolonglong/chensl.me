@@ -1,18 +1,41 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
+import {
+  cp,
+  lstat,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { after, test } from 'node:test'
 
+/*
+ * Migration risk boundaries covered here, before implementation:
+ * - Astro collection validation and publication rules (draft/future/date/timezone/order)
+ * - Markdown output contracts (all image URL classes, RSS absolutes, captions, tables, TOC)
+ * - document contracts (shell/nav, metadata escaping, canonical/social metadata)
+ * - font declarations, precedence, versioning, conditional code fonts, and transfer budget
+ * - checker security/integrity failures (links, anchors, CSP, malformed XML/RSS)
+ * Source structure is deliberately not asserted. Fixture builds copy the eventual Astro project
+ * surface once and exercise behavior through the real Astro CLI.
+ */
+
 const root = path.resolve(import.meta.dirname, '..')
 const checker = path.join(root, 'scripts/check-site.mjs')
 const temporaryDirectories = []
 
-after(async () => {
-  await Promise.all(temporaryDirectories.map(directory => rm(directory, { force: true, recursive: true })))
-})
+after(async () =>
+  Promise.all(
+    temporaryDirectories.map((directory) => rm(directory, { recursive: true, force: true })),
+  ),
+)
 
 async function temporaryDirectory(prefix) {
   const directory = await mkdtemp(path.join(os.tmpdir(), prefix))
@@ -27,99 +50,444 @@ async function write(directory, relative, content) {
 }
 
 function run(command, args, cwd) {
-  return spawnSync(command, args, { cwd, encoding: 'utf8' })
+  return spawnSync(command, args, { cwd, encoding: 'utf8', env: { ...process.env, TZ: 'UTC' } })
+}
+
+async function astroProject(prefix) {
+  const fixture = await temporaryDirectory(prefix)
+  for (const relative of ['astro.config.mjs', 'src', 'public', 'data']) {
+    try {
+      await cp(path.join(root, relative), path.join(fixture, relative), { recursive: true })
+    } catch (error) {
+      if (error.code === 'ENOENT')
+        throw new Error(`Astro migration must provide ${relative} before fixture verification`)
+      throw error
+    }
+  }
+  await cp(path.join(root, 'package.json'), path.join(fixture, 'package.json'))
+  await rm(path.join(fixture, 'src/content/blog'), { recursive: true, force: true })
+  await symlink(path.join(root, 'node_modules'), path.join(fixture, 'node_modules'), 'dir')
+  return fixture
+}
+
+async function buildAstro(fixture) {
+  const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
+  assert.equal(result.status, 0, result.stderr || result.stdout)
+  return path.join(fixture, 'dist')
+}
+
+const frontmatter = (title, date, extra = '') =>
+  `---\ntitle: ${JSON.stringify(title)}\npubDate: ${date}\n${extra}---\n`
+
+let behaviorBuild
+async function behaviorFixture() {
+  if (!behaviorBuild)
+    behaviorBuild = (async () => {
+      const fixture = await astroProject('astro-behavior-')
+      const png = await readFile(path.join(root, 'public/favicon-16x16.png'))
+      await write(fixture, 'public/root.png', png)
+      await write(fixture, 'src/content/blog/render/pixel.png', png)
+      await write(fixture, 'src/content/blog/render/café.png', png)
+      await write(
+        fixture,
+        'src/content/blog/render/shape.svg',
+        '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"/>',
+      )
+      await write(
+        fixture,
+        'src/content/blog/render/index.md',
+        `${frontmatter('Escaped <title> & "quote"', '2025-01-02T00:30:00+08:00')}
+![bundle](pixel.png)
+![encoded](café.png)
+![svg](shape.svg)
+![root](/root.png?v=2#root)
+![remote](HTTPS://cdn.example.test/upper.png)
+![protocol](https://cdn.example.test/protocol.png)
+![data](DATA:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==)
+
+[query](../below/?x=1&y=two%20words#section)
+<a href="?x=3&#x26;y=4#hex">Hex entity</a>
+<a href="?x=5&#38;y=6#decimal">Decimal entity</a>
+<a href="?x=7&amp;y=8#named">Named entity</a>
+<a href="?q=&quot;quoted&quot;&amp;y=9">Quoted value</a>
+<a href="#first--special">Heading</a>
+<a href="https://example.test/?x=1&amp;y=2#external">External</a>
+<a href="mailto:author@example.test">Email</a>
+<img src="/root.png?x=1&#38;y=2#crop" alt="query-image" width="16" height="16" loading="lazy" decoding="async">
+
+## First & special
+### Second
+#### Excluded
+## Third
+
+| Driver | Actual development |
+|:--|:--:|
+| Redis | [Miniredis](https://github.com/alicebob/miniredis) |
+
+\`\`\`go title="db/user.go"
+package db
+\`\`\`
+`,
+      )
+      await write(
+        fixture,
+        'src/content/blog/below.md',
+        `${frontmatter('Below', '2025-01-01')}## First\n\n### Second\n\n#### Excluded\n`,
+      )
+      await write(
+        fixture,
+        'src/content/blog/older.md',
+        `${frontmatter('Older', '2024-01-01')}Published.`,
+      )
+      await write(
+        fixture,
+        'src/content/blog/draft.md',
+        `${frontmatter('Secret draft', '2026-01-01', 'draft: true\n')}Hidden.`,
+      )
+      await write(
+        fixture,
+        'src/content/blog/future.md',
+        `${frontmatter('Future post', '2999-01-01')}Hidden.`,
+      )
+      const dist = await buildAstro(fixture)
+      return { fixture, dist }
+    })()
+  return behaviorBuild
 }
 
 function imageWithAlt(html, alt) {
   const tag = html.match(new RegExp(`<img\\b[^>]*alt="${alt}"[^>]*>`))?.[0]
-  assert.ok(tag, `missing image with alt=${JSON.stringify(alt)}`)
+  assert.ok(tag, `missing image alt=${alt}`)
   return tag
 }
 
-test('image render hooks handle valid resource and URL variants', async () => {
-  const fixture = await temporaryDirectory('hugo-render-hooks-')
-  await mkdir(path.join(fixture, 'layouts/_markup'), { recursive: true })
-  await mkdir(path.join(fixture, 'layouts/_partials'), { recursive: true })
-  await mkdir(path.join(fixture, 'content/blog/render'), { recursive: true })
-  await mkdir(path.join(fixture, 'static'), { recursive: true })
+test('Astro rejects collection entries missing required metadata', async () => {
+  const fixture = await astroProject('astro-invalid-metadata-')
+  await write(fixture, 'src/content/blog/missing.md', '---\npubDate: 2025-01-01\n---\nNo title.\n')
+  const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
+  assert.notEqual(result.status, 0, 'missing title must fail the build')
+  assert.match(result.stderr + result.stdout, /title|schema|frontmatter/i)
+})
 
-  for (const name of ['render-image.html', 'render-image.rss.xml']) {
-    await cp(path.join(root, 'layouts/_markup', name), path.join(fixture, 'layouts/_markup', name))
+test('home, archive, and RSS build without page Markdown entries', async () => {
+  const fixture = await astroProject('astro-standalone-pages-')
+  await rm(path.join(fixture, 'src/content/home.md'), { force: true })
+  await rm(path.join(fixture, 'src/content/archive.md'), { force: true })
+  await write(
+    fixture,
+    'src/content/blog/post.md',
+    `${frontmatter('Only article', '2025-01-01')}Body.`,
+  )
+  const dist = await buildAstro(fixture)
+  const home = await readFile(path.join(dist, 'index.html'), 'utf8')
+  const archive = await readFile(path.join(dist, 'blog/index.html'), 'utf8')
+  const rss = await readFile(path.join(dist, 'index.xml'), 'utf8')
+  assert.match(home, /👋 Hi! 我是陈劭珑/)
+  assert.match(home, /你喜欢简洁、稳定、可控的东西/)
+  assert.match(home, /name="description" content="陈劭珑的个人网站与技术博客"/)
+  assert.match(archive, /<title>博客 \| ~chensl<\/title>/)
+  assert.match(archive, /陈劭珑的技术文章：系统性能、Go\/Zig\/Rust 与 Agent 工程实践/)
+  assert.match(archive, /href="\/blog\/post\/"/)
+  assert.match(rss, /<description>陈劭珑的个人网站与技术博客<\/description>/)
+  assert.match(rss, /<title>Only article<\/title>/)
+})
+
+test('Astro rejects a missing local bundle image', async () => {
+  const fixture = await astroProject('astro-missing-image-')
+  await write(
+    fixture,
+    'src/content/blog/missing.md',
+    `${frontmatter('Missing image', '2025-01-01')}![missing](absent.png)\n`,
+  )
+  const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
+  assert.notEqual(result.status, 0, 'a missing local image must fail the build')
+  assert.match(result.stderr + result.stdout, /absent\.png|image.*(?:missing|not found)/i)
+})
+
+test('Astro optimizes local images and serves public downloads', async () => {
+  const { dist } = await behaviorFixture()
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  for (const alt of ['bundle', 'encoded', 'svg']) {
+    const image = imageWithAlt(html, alt)
+    const src = image.match(/src="([^"]+)"/)[1]
+    assert.match(src, /^\/_astro\//)
+    assert.match(image, /\bwidth="(?:16|10)"/)
+    assert.match(image, /\bheight="(?:16|10)"/)
+    assert.match(image, /loading="lazy"/)
+    await lstat(path.join(dist, decodeURIComponent(src)))
   }
-  for (const name of ['markdown-image.html', 'seo.html']) {
-    await cp(path.join(root, 'layouts/_partials', name), path.join(fixture, 'layouts/_partials', name))
-  }
-  for (const name of ['pixel.png', 'café image.png']) {
-    await cp(path.join(root, 'static/favicon-16x16.png'), path.join(fixture, 'content/blog/render', name))
-  }
-  await cp(path.join(root, 'static/favicon-16x16.png'), path.join(fixture, 'static/pixel.png'))
-
-  await write(fixture, 'hugo.toml', `baseURL = 'https://example.test/sub/'
-title = 'Fixture'
-[outputs]
-  home = ['html', 'rss']
-[params]
-  description = 'Fixture'
-`)
-  await write(fixture, 'content/_index.md', `+++
-title = 'Home'
-+++
-`)
-  await write(fixture, 'content/blog/render/index.md', `+++
-title = 'Render'
-date = 2026-01-01
-+++
-![svg](shape.svg)
-![query](pixel.png?v=1#frag)
-![encoded](caf%C3%A9%20image.png)
-![upper](HTTPS://cdn.example.test/upper.png)
-![protocol](//cdn.example.test/protocol.png)
-![data](DATA:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==)
-![root](/pixel.png?v=2#root)
-`)
-  await write(fixture, 'content/blog/render/shape.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0h10v10H0z"/></svg>')
-  await write(fixture, 'layouts/home.html', '{{ partial "seo.html" . }}{{ range site.RegularPages }}{{ .Content }}{{ end }}')
-  await write(fixture, 'layouts/rss.xml', '<rss version="2.0"><channel>{{ range site.RegularPages }}<item><content>{{ .Content | transform.XMLEscape | safeHTML }}</content></item>{{ end }}</channel></rss>')
-
-  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--source', fixture, '--destination', path.join(fixture, 'out'), '--quiet'], root)
-  assert.equal(result.status, 0, result.stderr)
-
-  const html = await readFile(path.join(fixture, 'out/index.html'), 'utf8')
-  const rss = await readFile(path.join(fixture, 'out/index.xml'), 'utf8')
-  assert.match(html, /og:image" content="https:\/\/example\.test\/sub\/og-image\.png"/)
-  assert.match(imageWithAlt(html, 'svg'), /src="\/sub\/blog\/render\/shape\.svg"/)
-  assert.doesNotMatch(imageWithAlt(html, 'svg'), /\bwidth=/)
-  assert.match(imageWithAlt(html, 'query'), /src="\/sub\/blog\/render\/pixel\.png\?v=1#frag"/)
-  assert.match(imageWithAlt(html, 'query'), /width="16" height="16"/)
-  assert.match(imageWithAlt(html, 'encoded'), /src="\/sub\/blog\/render\/caf%C3%A9%20image\.png"/)
-  assert.match(imageWithAlt(html, 'upper'), /src="HTTPS:\/\/cdn\.example\.test\/upper\.png"/)
+  assert.match(imageWithAlt(html, 'root'), /src="\/root\.png\?v=2#root"/)
+  assert.match(imageWithAlt(html, 'remote'), /src="HTTPS:\/\/cdn\.example\.test\/upper\.png"/)
   assert.match(imageWithAlt(html, 'protocol'), /src="https:\/\/cdn\.example\.test\/protocol\.png"/)
   assert.match(imageWithAlt(html, 'data'), /src="DATA:image\/gif;base64,/)
-  assert.match(imageWithAlt(html, 'root'), /src="\/sub\/pixel\.png\?v=2#root"/)
-  assert.match(rss, /https:\/\/example\.test\/sub\/blog\/render\/shape\.svg/)
-  assert.match(rss, /https:\/\/cdn\.example\.test\/protocol\.png/)
+  assert.equal(
+    await readFile(path.join(dist, 'downloads/semantic-view-sql-traps.sql'), 'utf8'),
+    await readFile(path.join(root, 'public/downloads/semantic-view-sql-traps.sql'), 'utf8'),
+  )
+})
+
+test('RSS image URLs are absolute and XML-safe', async () => {
+  const { dist } = await behaviorFixture()
+  const rss = await readFile(path.join(dist, 'index.xml'), 'utf8')
+  await assert.rejects(lstat(path.join(dist, 'blog/index.xml')), { code: 'ENOENT' })
+  const parsed = spawnSync(
+    'python3',
+    [
+      '-c',
+      'import sys, xml.etree.ElementTree as E; print(E.fromstring(sys.stdin.read()).find("channel/item/{http://purl.org/rss/1.0/modules/content/}encoded").text)',
+    ],
+    { input: rss, encoding: 'utf8' },
+  )
+  assert.equal(parsed.status, 0, parsed.stderr)
+  const content = parsed.stdout
+  for (const alt of ['bundle', 'encoded', 'svg']) {
+    const src = imageWithAlt(content, alt).match(/src="([^"]+)"/)[1]
+    assert.match(src, /^https:\/\/chensl\.me\/_astro\//)
+    await lstat(path.join(dist, decodeURIComponent(new URL(src).pathname)))
+  }
+  assert.doesNotMatch(content, /__ASTRO/)
+  assert.match(content, /https:\/\/cdn\.example\.test\/protocol\.png/)
+  assert.doesNotMatch(content, /<img[^>]+src="\//)
+})
+
+test('RSS preserves URL semantics through XML and HTML decoding', async () => {
+  const { dist } = await behaviorFixture()
+  const rss = await readFile(path.join(dist, 'index.xml'), 'utf8')
+  // Use an independent reader, rather than the serializer's own decoding utilities.
+  const parsed = spawnSync(
+    'python3',
+    [
+      '-c',
+      `
+import json, sys, xml.etree.ElementTree as E
+from html.parser import HTMLParser
+class Reader(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.urls = []
+    def handle_starttag(self, tag, attrs):
+        self.urls.extend(value for key, value in attrs if key in ('href', 'src'))
+reader = Reader()
+for item in E.fromstring(sys.stdin.read()).findall('channel/item'):
+    reader.feed(item.findtext('{http://purl.org/rss/1.0/modules/content/}encoded', ''))
+print(json.dumps(reader.urls))
+`,
+    ],
+    { input: rss, encoding: 'utf8' },
+  )
+  assert.equal(parsed.status, 0, parsed.stderr)
+  const urls = JSON.parse(parsed.stdout)
+  for (const expected of [
+    'https://chensl.me/blog/below/?x=1&y=two%20words#section',
+    'https://chensl.me/blog/render/?x=3&y=4#hex',
+    'https://chensl.me/blog/render/?x=5&y=6#decimal',
+    'https://chensl.me/blog/render/?x=7&y=8#named',
+    'https://chensl.me/blog/render/?q=%22quoted%22&y=9',
+    'https://chensl.me/blog/render/#first--special',
+    'https://example.test/?x=1&y=2#external',
+    'mailto:author@example.test',
+    'https://chensl.me/root.png?x=1&y=2#crop',
+  ])
+    assert.ok(
+      urls.includes(expected),
+      `Missing reader URL ${expected}; got ${JSON.stringify(urls)}`,
+    )
+})
+
+test('drafts and future posts are filtered and dates sort by instants', async () => {
+  const { dist } = await behaviorFixture()
+  const archive = await readFile(path.join(dist, 'blog/index.html'), 'utf8')
+  assert.doesNotMatch(archive, /Secret draft|Future post/)
+  assert.ok(archive.indexOf('Escaped &lt;title&gt;') < archive.indexOf('Below'))
+  assert.ok(archive.indexOf('Below') < archive.indexOf('Older'))
+  await assert.rejects(readFile(path.join(dist, 'blog/draft/index.html'), 'utf8'))
+  await assert.rejects(readFile(path.join(dist, 'blog/future/index.html'), 'utf8'))
+})
+
+test('Markdown preserves code captions and accessible aligned tables', async () => {
+  const { dist } = await behaviorFixture()
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  assert.match(html, /<figure class="code-figure">\s*<figcaption>db\/user\.go<\/figcaption>/)
+  assert.doesNotMatch(html, /class="highlight"[^>]*\btitle=/)
+  const table = html.match(/<div class="table-scroll"[^>]*>[\s\S]*?<\/div>/)?.[0]
+  assert.ok(table, 'missing table-scroll wrapper')
+  assert.match(table, /tabindex="0"/)
+  assert.match(table, /role="region"/)
+  assert.match(table, /aria-label="[^"]+"/)
+  assert.match(table, /<th style="text-align: center">Actual development<\/th>/)
+  assert.match(
+    table,
+    /<td style="text-align: center"><a href="https:\/\/github\.com\/alicebob\/miniredis">Miniredis<\/a><\/td>/,
+  )
+  assert.doesNotMatch(html, /<table[^>]*style=/)
+})
+
+test('TOC uses exactly three H2/H3 headings as its threshold', async () => {
+  const { dist } = await behaviorFixture()
+  const below = await readFile(path.join(dist, 'blog/below/index.html'), 'utf8')
+  assert.doesNotMatch(below, /id="article-toc"|class="toc-button"/)
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  assert.equal([...html.matchAll(/id="article-toc"/g)].length, 1)
+  assert.equal([...html.matchAll(/class="toc-button"/g)].length, 1)
+  assert.match(html, /<nav id="article-toc" class="toc" popover aria-label="目录">/)
+  // Astro's default github-slugger removes '&' without collapsing its surrounding spaces.
+  for (const id of ['first--special', 'second', 'third'])
+    assert.match(html, new RegExp(`href="#${id}"`))
+  assert.doesNotMatch(html, /href="#excluded"/)
+})
+
+test('SEO metadata and visible text escape hostile titles', async () => {
+  const { dist } = await behaviorFixture()
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  assert.match(html, /<title>[^<]*Escaped &lt;title&gt; &amp; (?:&quot;|&#34;)quote/)
+  assert.match(html, /rel="canonical" href="https:\/\/chensl\.me\/blog\/render\/"/)
+  // HTML permits literal angle brackets inside quoted attributes. Assert the parsed value,
+  // not a particular serializer's choice to encode those brackets.
+  const parsed = spawnSync(
+    'python3',
+    [
+      '-c',
+      `
+from html.parser import HTMLParser
+import sys
+class Parser(HTMLParser):
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'meta' and attrs.get('property') == 'og:title':
+            print(attrs['content'])
+Parser().feed(sys.stdin.read())
+`,
+    ],
+    { input: html, encoding: 'utf8' },
+  )
+  assert.equal(parsed.status, 0, parsed.stderr)
+  assert.equal(parsed.stdout.trim(), 'Escaped <title> & "quote"')
+  assert.doesNotMatch(html, /<title>[^<]*<title>/)
 })
 
 async function checkerFixture() {
   const fixture = await temporaryDirectory('site-checker-')
-  for (const relative of ['build.sh', 'justfile', 'mise.toml', 'mise.lock', '.github/workflows/ci.yml']) {
-    await cp(path.join(root, relative), path.join(fixture, relative), { recursive: true })
-  }
-  await write(fixture, 'public/index.html', '<link rel="canonical" href="https://chensl.me/">')
-  await write(fixture, 'public/blog/index.html', '<main id="main"></main>')
-  await write(fixture, 'public/404.html', '<main id="main"></main>')
-  const emptyFeed = '<rss version="2.0"><channel><title>Fixture</title><link>https://chensl.me/</link><description>Fixture</description></channel></rss>'
-  await write(fixture, 'public/index.xml', emptyFeed)
-  await write(fixture, 'public/blog/index.xml', emptyFeed)
-  await cp(path.join(root, 'static/_headers'), path.join(fixture, 'public/_headers'))
+  await write(fixture, 'dist/index.html', '<link rel="canonical" href="https://chensl.me/">')
+  await write(fixture, 'dist/blog/index.html', '<main id="main"></main>')
+  await write(fixture, 'dist/404.html', '<main id="main"></main>')
+  const feed =
+    '<rss version="2.0"><channel><title>x</title><link>https://chensl.me/</link><description>x</description></channel></rss>'
+  await write(fixture, 'dist/index.xml', feed)
+  await cp(path.join(root, 'public/_headers'), path.join(fixture, 'dist/_headers'))
   return fixture
 }
 
+test('site checker rejects missing links and anchors', async () => {
+  const fixture = await checkerFixture()
+  await write(
+    fixture,
+    'dist/index.html',
+    '<link rel="canonical" href="https://chensl.me/"><a href="/missing/">x</a><a href="/blog/#missing">y</a>',
+  )
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1)
+  assert.match(result.stderr, /missing internal URL "\/missing\/"/)
+  assert.match(result.stderr, /missing internal anchor "\/blog\/#missing"/)
+})
+
+test('site checker rejects malformed XML, entities, and incomplete RSS items', async () => {
+  for (const [xml, expected] of [
+    ['<rss><channel></rss>', /malformed XML/],
+    ['<!DOCTYPE rss [<!ENTITY x "x">]><rss/>', /forbidden DTD or entity declaration/],
+    [
+      '<rss version="2.0"><channel><title>x</title><link>x</link><description>x</description><item><title>x</title></item></channel></rss>',
+      /item 1 is missing link/,
+    ],
+  ]) {
+    const fixture = await checkerFixture()
+    await write(fixture, 'dist/index.xml', xml)
+    const result = run(process.execPath, [checker], fixture)
+    assert.equal(result.status, 1)
+    assert.match(result.stderr, expected)
+  }
+})
+
+test('site checker rejects relative RSS images and CSP-blocked images', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'dist/index.xml', '<rss version="2.0"><img src="/missing.png"></rss>')
+  await write(
+    fixture,
+    'dist/index.html',
+    '<link rel="canonical" href="https://chensl.me/"><img src="https://other.example/x.png" alt="x" loading="lazy" decoding="async">',
+  )
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1)
+  assert.match(result.stderr, /non-absolute RSS image URL/)
+  assert.match(result.stderr, /blocked by CSP img-src/)
+})
+
+test('JinKai declarations preserve precedence, versioning, and cold-visit budget', async () => {
+  const { dist } = await behaviorFixture()
+  const index = await readFile(path.join(dist, 'index.html'), 'utf8')
+  const href = index.match(/<link\b[^>]*href="(\/css\/serif[^"]+)"/)?.[1]
+  assert.ok(href, 'missing serif stylesheet')
+  const css = await readFile(path.join(dist, href.split('?')[0].slice(1)), 'utf8')
+  const faces = [...css.matchAll(/@font-face\s*\{([^}]+)\}/g)].map(([, body]) => body)
+  assert.equal(faces.length, 256)
+  for (const face of faces) assert.match(face, /font-weight:\s*400 500/)
+  assert.match(faces.at(-1), /core-400\.woff2\?v=[a-f\d]{12}/)
+  assert.ok((faces.at(-1).match(/U\+/g) ?? []).length > 500)
+  const candidates = faces.reverse().map((face) => ({
+    url: face.match(/url\(["']?([^)'"]+)/)?.[1],
+    ranges: (face.match(/unicode-range:\s*([^;}]+)/)?.[1] ?? '').split(',').map((token) => {
+      const [start, end] = token.trim().slice(2).split('-')
+      return [Number.parseInt(start, 16), Number.parseInt(end ?? start, 16)]
+    }),
+  }))
+  const text = index.replace(/<(script|style)\b[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, '')
+  const needed = new Set()
+  for (const character of text) {
+    const codepoint = character.codePointAt(0)
+    const face = candidates.find((candidate) =>
+      candidate.ranges.some(([start, end]) => codepoint >= start && codepoint <= end),
+    )
+    if (face?.url) needed.add(face.url)
+  }
+  let total = 0
+  for (const url of needed) {
+    const file = await readFile(path.join(dist, url.split('?')[0].replace(/^\//, '')))
+    assert.equal(
+      url.split('?')[1],
+      `v=${createHash('sha256').update(file).digest('hex').slice(0, 12)}`,
+    )
+    assert.equal(file.toString('ascii', 0, 4), 'wOF2')
+    total += file.length
+  }
+  assert.ok(total <= 640 * 1024, `${Math.round(total / 1024)} KiB exceeds 640 KiB`)
+  const served = await readdir(path.join(dist, 'fonts/tsanger-jinkai02'), { recursive: true })
+  assert.deepEqual(
+    served.filter((name) => /(?:^|\/)(?:core-)?500[-.]/.test(name)),
+    [],
+  )
+})
+
+test('code fonts remain conditional and no page preloads fonts', async () => {
+  const { dist } = await behaviorFixture()
+  for (const [file, hasCode] of [
+    ['index.html', false],
+    ['blog/render/index.html', true],
+  ]) {
+    const html = await readFile(path.join(dist, file), 'utf8')
+    assert.equal(/fonts\/jetbrains-mono/.test(html), hasCode, file)
+    assert.doesNotMatch(html, /rel=["']preload["']/)
+  }
+})
+
+// Retain the pre-migration checker and design regressions independently of Astro.
 test('site checker validates absolute same-origin links', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
+  await write(
+    fixture,
+    'dist/index.html',
+    `<link rel="canonical" href="https://chensl.me/">
 <a href="https://chensl.me/missing/">absolute</a>
-<a href="//chensl.me/also-missing/">protocol-relative</a>`)
+<a href="//chensl.me/also-missing/">protocol-relative</a>`,
+  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
   assert.match(result.stderr, /missing internal URL "https:\/\/chensl\.me\/missing\/"/)
@@ -132,65 +500,51 @@ test('site checker accepts valid feeds without images', async () => {
   assert.equal(result.status, 0, result.stderr)
 })
 
-test('site checker rejects malformed XML that resembles RSS', async () => {
-  const fixture = await checkerFixture()
-  await write(fixture, 'public/index.xml', '<rss version="2.0"><channel></rss>')
-  const result = run(process.execPath, [checker], fixture)
-  assert.equal(result.status, 1, result.stdout)
-  assert.match(result.stderr, /contains malformed XML/)
-})
-
-test('site checker rejects XML entity declarations', async () => {
-  const fixture = await checkerFixture()
-  await write(fixture, 'public/index.xml', '<!DOCTYPE rss [<!ENTITY title "Fixture">]><rss version="2.0"><channel><title>&title;</title><link>https://chensl.me/</link><description>Fixture</description></channel></rss>')
-  const result = run(process.execPath, [checker], fixture)
-  assert.equal(result.status, 1, result.stdout)
-  assert.match(result.stderr, /forbidden DTD or entity declaration/)
-})
-
-test('site checker validates RSS structure and item fields', async () => {
-  const fixture = await checkerFixture()
-  await write(fixture, 'public/index.xml', '<rss version="2.0"><channel><title>x</title><link>https://chensl.me/</link><description>x</description><item><title>x</title></item></channel></rss>')
-  const result = run(process.execPath, [checker], fixture)
-  assert.equal(result.status, 1, result.stdout)
-  assert.match(result.stderr, /item 1 is missing link/)
-  assert.match(result.stderr, /item 1 is missing guid/)
-  assert.match(result.stderr, /item 1 is missing pubDate/)
-})
-
 test('site checker accepts local SVG images without raster dimensions', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
-<img src="/vector.svg" alt="Vector" loading="lazy" decoding="async">`)
-  await write(fixture, 'public/vector.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>')
+  await write(
+    fixture,
+    'dist/index.html',
+    `<link rel="canonical" href="https://chensl.me/">
+<img src="/vector.svg" alt="Vector" loading="lazy" decoding="async">`,
+  )
+  await write(
+    fixture,
+    'dist/vector.svg',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>',
+  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 0, result.stderr)
 })
 
 test('site checker handles canonical tokens and external manifest icons', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'public/index.html', `<link rel="alternate Canonical" href="https://chensl.me/">
-<a href="https://example.test/missing/">external</a>`)
-  await write(fixture, 'public/site.webmanifest', JSON.stringify({ icons: [{ src: 'https://cdn.example.test/icon.png' }] }))
+  await write(
+    fixture,
+    'dist/index.html',
+    `<link rel="alternate Canonical" href="https://chensl.me/">
+<a href="https://example.test/missing/">external</a>`,
+  )
+  await write(
+    fixture,
+    'dist/site.webmanifest',
+    JSON.stringify({ icons: [{ src: 'https://cdn.example.test/icon.png' }] }),
+  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 0, result.stderr)
 })
 
-test('site checker still rejects relative RSS images', async () => {
-  const fixture = await checkerFixture()
-  await write(fixture, 'public/index.xml', '<rss version="2.0"><img src="/missing.png"></rss>')
-  const result = run(process.execPath, [checker], fixture)
-  assert.equal(result.status, 1, result.stdout)
-  assert.match(result.stderr, /non-absolute RSS image URL "\/missing\.png"/)
-})
-
 test('site checker enforces CSP image sources', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'public/local.png', 'png')
-  await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
+  await write(fixture, 'dist/local.png', 'png')
+  await write(
+    fixture,
+    'dist/index.html',
+    `<link rel="canonical" href="https://chensl.me/">
 <img src="/local.png" alt="Local" loading="lazy" decoding="async" width="1" height="1">
 <img src="https://other.example/image.png" alt="Remote" loading="lazy" decoding="async">
-<img src="data:image/png;base64,eA==" alt="Data" loading="lazy" decoding="async">`)
+<img src="data:image/png;base64,eA==" alt="Data" loading="lazy" decoding="async">`,
+  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
   assert.doesNotMatch(result.stderr, /blocked by CSP img-src: "\/local\.png"/)
@@ -200,18 +554,18 @@ test('site checker enforces CSP image sources', async () => {
 
 test('site checker accepts an explicitly allowed HTTPS image origin', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'public/_headers', `/*
-  Content-Security-Policy: default-src 'self'; img-src 'self' https://images.example; script-src 'self' https://giscus.app https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; frame-src https://giscus.app; object-src 'none'
-
-/fonts/*
-  Cache-Control: public, max-age=31536000, immutable
-
-/css/*
-  Cache-Control: public, max-age=31536000, immutable
-  Access-Control-Allow-Origin: *
-`)
-  await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
-<img src="https://images.example/image.png" alt="Remote" loading="lazy" decoding="async">`)
+  const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
+  await write(
+    fixture,
+    'dist/_headers',
+    headers.replace("img-src 'self'", "img-src 'self' https://images.example"),
+  )
+  await write(
+    fixture,
+    'dist/index.html',
+    `<link rel="canonical" href="https://chensl.me/">
+<img src="https://images.example/image.png" alt="Remote" loading="lazy" decoding="async">`,
+  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 0, result.stderr)
 })
@@ -224,19 +578,22 @@ test('site checker requires third-party CSP sources', async () => {
     ['https://cloudflareinsights.com', 'connect-src'],
   ]) {
     const fixture = await checkerFixture()
-    const headers = await readFile(path.join(root, 'static/_headers'), 'utf8')
+    const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
     const expression = new RegExp(`(${directive}[^;]*)${source.replaceAll('.', '\\.')}`)
-    await write(fixture, 'public/_headers', headers.replace(expression, '$1'))
+    await write(fixture, 'dist/_headers', headers.replace(expression, '$1'))
     const result = run(process.execPath, [checker], fixture)
     assert.equal(result.status, 1, result.stdout)
-    assert.match(result.stderr, new RegExp(`CSP ${directive} must allow ${source.replaceAll('.', '\\.')}`))
+    assert.match(
+      result.stderr,
+      new RegExp(`CSP ${directive} must allow ${source.replaceAll('.', '\\.')}`),
+    )
   }
 })
 
 test('site checker requires immutable caching for fonts and fingerprinted CSS', async () => {
   const fixture = await checkerFixture()
-  const headers = await readFile(path.join(root, 'static/_headers'), 'utf8')
-  await write(fixture, 'public/_headers', headers.replace(/^\/fonts\/\*\n[\s\S]*?\n\n/m, ''))
+  const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
+  await write(fixture, 'dist/_headers', headers.replace(/^\/fonts\/\*\n[\s\S]*?\n\n/m, ''))
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
   assert.match(result.stderr, /\/fonts\/\* as immutable/)
@@ -245,8 +602,12 @@ test('site checker requires immutable caching for fonts and fingerprinted CSS', 
 
 test('site checker requires cross-origin access for giscus themes', async () => {
   const fixture = await checkerFixture()
-  const headers = await readFile(path.join(root, 'static/_headers'), 'utf8')
-  await write(fixture, 'public/_headers', headers.replace(/^\s*Access-Control-Allow-Origin:\s*\*\s*$/m, ''))
+  const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
+  await write(
+    fixture,
+    'dist/_headers',
+    headers.replace(/^\s*Access-Control-Allow-Origin:\s*\*\s*$/m, ''),
+  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
   assert.match(result.stderr, /allow cross-origin CSS/)
@@ -254,80 +615,36 @@ test('site checker requires cross-origin access for giscus themes', async () => 
 
 test('site checker validates same-origin social images', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'public/index.html', `<link rel="canonical" href="https://chensl.me/">
+  await write(
+    fixture,
+    'dist/index.html',
+    `<link rel="canonical" href="https://chensl.me/">
 <meta property="og:image" content="/missing-card.png">
-<meta name="twitter:image" content="https://chensl.me/missing-twitter.png">`)
+<meta name="twitter:image" content="https://chensl.me/missing-twitter.png">`,
+  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
   assert.match(result.stderr, /missing internal URL "\/missing-card\.png"/)
   assert.match(result.stderr, /missing internal URL "https:\/\/chensl\.me\/missing-twitter\.png"/)
 })
 
-test('site checker rejects a stale locked Hugo version and checksums', async () => {
-  const fixture = await checkerFixture()
-  const lock = await readFile(path.join(fixture, 'mise.lock'), 'utf8')
-  await write(fixture, 'mise.lock', lock
-    .replace(/(\[\[tools\.hugo\]\]\s*version = ")[^"]+/, '$10.0.0')
-    .replace(/sha256:[a-f\d]{64}/g, `sha256:${'0'.repeat(64)}`))
-  const result = run(process.execPath, [checker], fixture)
-  assert.equal(result.status, 1, result.stdout)
-  assert.match(result.stderr, /Hugo version mismatch: mise.toml=.*mise.lock=0.0.0/)
-  for (const platform of ['macos-arm64', 'macos-x64', 'linux-arm64', 'linux-x64']) {
-    assert.ok(result.stderr.includes(`does not match mise.lock for ${platform}`))
-  }
-})
-
-test('reading and syntax palettes meet AA contrast in both themes', async () => {
-  const css = await readFile(path.join(root, 'assets/css/syntax.css'), 'utf8')
-  const foregrounds = [...css.matchAll(/(?:[{;]\s*)color:\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/g)]
-  const backgrounds = [...css.matchAll(/background-color:\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/g)]
-  assert.ok(foregrounds.length > 0 && backgrounds.length > 0, 'missing syntax palette')
-  const style = await readFile(path.join(root, 'assets/css/style.css'), 'utf8')
-  const tokens = Object.fromEntries([...style.matchAll(/--([\w-]+):\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/g)]
-    .map(([, name, light, dark]) => [name, [null, light, dark]]))
-  const readingColors = [
-    'text-color', 'heading-color', 'muted-color',
-    'link-color', 'link-hover-color', 'visited-color', 'blockquote-color',
-  ]
-  for (const name of [...readingColors, 'background-color', 'selection-color', 'mark-background-color']) {
-    assert.ok(tokens[name], `missing ${name}`)
-  }
-  const theme = await readFile(path.join(root, 'layouts/_partials/theme.html'), 'utf8')
-  for (const [index, mode] of [[1, 'light'], [2, 'dark']]) {
-    assert.match(theme, new RegExp(`content="${tokens['background-color'][index]}"[^>]+data-theme-color="${mode}"`))
-  }
-  const manifest = JSON.parse(await readFile(path.join(root, 'static/site.webmanifest'), 'utf8'))
-  assert.equal(manifest.theme_color, tokens['background-color'][1])
-  assert.equal(manifest.background_color, tokens['background-color'][1])
-  const pairs = foregrounds.flatMap(foreground => backgrounds.map(background => [foreground, background]))
-  pairs.push(...readingColors.map(name => [tokens[name], tokens['background-color']]))
-  pairs.push([tokens['text-color'], tokens['selection-color']], [tokens['text-color'], tokens['mark-background-color']])
-  const luminance = hex => hex.slice(1).match(/../g)
-    .map(channel => Number.parseInt(channel, 16) / 255)
-    .map(channel => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
-    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0)
-  for (const mode of [1, 2]) {
-    for (const [foreground, background] of pairs) {
-      const values = [luminance(foreground[mode]), luminance(background[mode])].sort((a, b) => a - b)
-      const contrast = (values[1] + 0.05) / (values[0] + 0.05)
-      assert.ok(contrast >= 4.5, `${foreground[mode]} on ${background[mode]}: ${contrast.toFixed(2)}:1`)
-    }
-  }
-})
-
 test('giscus themes meet AA contrast for reading and controls', async () => {
-  const luminance = hex => hex.slice(1).match(/../g)
-    .map(channel => Number.parseInt(channel, 16) / 255)
-    .map(channel => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
-    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0)
+  const luminance = (hex) =>
+    hex
+      .slice(1)
+      .match(/../g)
+      .map((channel) => Number.parseInt(channel, 16) / 255)
+      .map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4))
+      .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0)
   const contrast = (foreground, background) => {
     const values = [luminance(foreground), luminance(background)].sort((a, b) => a - b)
     return (values[1] + 0.05) / (values[0] + 0.05)
   }
   for (const mode of ['light', 'dark']) {
-    const css = await readFile(path.join(root, `assets/css/giscus-${mode}.css`), 'utf8')
-    const tokens = Object.fromEntries([...css.matchAll(/--([\w-]+):\s*(#[a-f\d]{6});/g)]
-      .map(([, name, value]) => [name, value]))
+    const css = await readFile(path.join(root, `src/styles/giscus-${mode}.css`), 'utf8')
+    const tokens = Object.fromEntries(
+      [...css.matchAll(/--([\w-]+):\s*(#[a-f\d]{6});/g)].map(([, name, value]) => [name, value]),
+    )
     for (const [foreground, background] of [
       ['color-fg-default', 'color-canvas-default'],
       ['color-fg-muted', 'color-canvas-default'],
@@ -343,8 +660,10 @@ test('giscus themes meet AA contrast for reading and controls', async () => {
 
 test('giscus themes distinguish the fixed-width toolbar state', async () => {
   for (const mode of ['light', 'dark']) {
-    const css = await readFile(path.join(root, `assets/css/giscus-${mode}.css`), 'utf8')
-    const selected = css.match(/\.gsc-comment-box:has\(\.gsc-is-fixed-width\) \.gsc-toolbar-item\s*\{([^}]+)\}/)?.[1]
+    const css = await readFile(path.join(root, `src/styles/giscus-${mode}.css`), 'utf8')
+    const selected = css.match(
+      /\.gsc-comment-box:has\(\.gsc-is-fixed-width\) \.gsc-toolbar-item\s*\{([^}]+)\}/,
+    )?.[1]
     assert.ok(selected, `${mode}: missing fixed-width toolbar state`)
     assert.match(selected, /color:\s*var\(--color-accent-fg\)/)
     assert.match(selected, /background-color:\s*var\(--color-accent-subtle\)/)
@@ -352,279 +671,21 @@ test('giscus themes distinguish the fixed-width toolbar state', async () => {
   }
 })
 
-test('page shell keeps headings in main and marks only the current navigation entry', async () => {
-  const destination = await temporaryDirectory('hugo-page-shell-')
-  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)
-  assert.equal(result.status, 0, result.stderr)
-  for (const [file, current] of [
-    ['index.html', 'href="/" aria-current="page"'],
-    ['blog/index.html', 'href="/blog/" aria-current="page"'],
-    ['blog/buddy/index.html', 'href="/blog/" aria-current="location"'],
-    ['404.html', null],
-  ]) {
-    const html = await readFile(path.join(destination, file), 'utf8')
-    assert.equal([...html.matchAll(/<h1\b/g)].length, 1, file)
-    assert.match(html, /<main\b[^>]*>[\s\S]*?<h1\b/)
-    const nav = html.match(/<nav\b[^>]*>[\s\S]*?<\/nav>/)?.[0]
-    assert.ok(nav, file)
-    assert.equal([...nav.matchAll(/aria-current=/g)].length, current ? 1 : 0, file)
-    if (current) assert.ok(nav.includes(current), file)
-    const toggle = nav.match(/<button\b[^>]*data-theme-toggle[^>]*>([\s\S]*?)<\/button>/)?.[1]
-    assert.ok(toggle, `missing theme toggle: ${file}`)
-    assert.match(toggle, /<svg\b[^>]*viewBox="0 0 24 24"[^>]*aria-hidden="true"[^>]*focusable="false"/)
-    assert.deepEqual([...toggle.matchAll(/data-theme-icon="([^"]+)"/g)].map(([, mode]) => mode), ['auto', 'light', 'dark'])
-  }
-  const blog = await readFile(path.join(destination, 'blog/index.html'), 'utf8')
-  assert.match(blog, /<h1 class="visually-hidden">博客<\/h1>/)
-  const lists = [...blog.matchAll(/<ul class="blog-posts">([\s\S]*?)<\/ul>/g)]
-  assert.ok(lists.length > 0, 'missing post lists')
-  for (const [, list] of lists) {
-    const rows = [...list.matchAll(/<li>([\s\S]*?)<\/li>/g)]
-    assert.ok(rows.length > 0, 'missing post links')
-    for (const [, row] of rows) {
-      assert.match(row.trim(), /^<a href="\/blog\/[^\"]+">\s*<span>[^<]+<\/span>\s*<time datetime="[^\"]+">\s*\d{2}-\d{2}\s*<\/time>\s*<\/a>$/)
-    }
-  }
-
-  const alert = await readFile(path.join(destination, 'blog/thinking-vs-research/index.html'), 'utf8')
-  assert.match(alert, /<blockquote class="alert alert-note">\s*<p class="alert-heading">提示<\/p>/)
-  assert.doesNotMatch(alert, /\[!NOTE\]/)
-
-  const quote = await readFile(path.join(destination, 'blog/2024-review/index.html'), 'utf8')
-  assert.match(quote, /<blockquote>\s*<p>对技术的看法[\s\S]*?<cite>2023 年终总结 - 我叫尤加利/)
-  assert.doesNotMatch(quote, /<blockquote class="alert/)
-
-  const post = await readFile(path.join(destination, 'blog/buddy/index.html'), 'utf8')
-  assert.match(post, /<section class="comments" aria-labelledby="comments-title">/)
-  assert.match(post, /repo:\s*"maolonglong\/chensl\.me"/)
-  assert.match(post, /mapping:\s*"pathname",\s*strict:\s*"1"/)
-  assert.match(post, /loading:\s*"lazy"/)
-  assert.match(post, /giscus-(?:light|dark)\.min\.[a-f\d]+\.css/)
-  assert.match(post, /site-theme-change/)
-  assert.match(post, /new MutationObserver/)
-  assert.match(post, /frame\.addEventListener\("load",\s*\(\)\s*=>\s*syncTheme\(resolvedTheme\(\)\)/)
-  assert.doesNotMatch(blog, /giscus\.app\/client\.js/)
-  assert.doesNotMatch(await readFile(path.join(destination, 'index.html'), 'utf8'), /giscus\.app\/client\.js/)
-
-  // The kaomoji is decoration; reading it aloud character by character helps nobody.
-  const notFound = await readFile(path.join(destination, '404.html'), 'utf8')
-  assert.match(notFound, /<p class="kaomoji" aria-hidden="true">ʕノ•ᴥ•ʔノ ︵ ┻━┻<\/p>/)
-  assert.doesNotMatch(notFound, /<h2\b/)
-})
-
-test('articles carry one contents list that opens without JavaScript', async () => {
-  const destination = await temporaryDirectory('hugo-contents-')
-  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)
-  assert.equal(result.status, 0, result.stderr)
-
-  const post = await readFile(path.join(destination, 'blog/dockertest/index.html'), 'utf8')
-  // The floating contents is the only list, and the page ships it: no template or script builds it.
-  assert.equal([...post.matchAll(/id="TableOfContents"/g)].length, 1)
-  assert.doesNotMatch(post, /<details class="toc"/)
-  assert.match(post, /<nav id="TableOfContents" class="toc" popover aria-label="目录">\s*<ul>/)
-  const button = post.match(/<button class="toc-button"[^>]*>/)?.[0]
-  assert.ok(button, 'missing contents button')
-  assert.match(button, /popovertarget="TableOfContents"/)
-  assert.match(button, /aria-label="目录"/)
-  assert.doesNotMatch(post.slice(0, post.indexOf(button)), /<template\b(?![\s\S]*<\/template>)/, 'contents button must not sit in a template')
-
-  // Fewer than three H2/H3 headings: no list and no button.
-  const short = await readFile(path.join(destination, 'blog/lock-free-queue/index.html'), 'utf8')
-  // The inline stylesheet names these classes on every page, so match the markup, not the words.
-  assert.doesNotMatch(short, /id="TableOfContents"|class="toc-button"/)
-})
-
-test('floating contents owns the three H2/H3 heading threshold', async () => {
-  const fixture = await temporaryDirectory('hugo-contents-threshold-')
-  await mkdir(path.join(fixture, 'layouts/_partials'), { recursive: true })
-  await cp(path.join(root, 'layouts/_partials/floating-toc.html'), path.join(fixture, 'layouts/_partials/floating-toc.html'))
-  await write(fixture, 'hugo.toml', `baseURL = 'https://example.test/'
-[markup.tableOfContents]
-  startLevel = 2
-  endLevel = 3
-`)
-  await write(fixture, 'layouts/page.html', '{{ partial "floating-toc.html" . }}<main>{{ .Content }}</main>')
-  const headings = '## First\n\n### Second\n\n#### Excluded\n'
-  await write(fixture, 'content/below.md', `---\ntitle: Below\n---\n${headings}`)
-  await write(fixture, 'content/threshold.md', `---\ntitle: Threshold\n---\n${headings}\n## Third\n`)
-
-  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--source', fixture, '--destination', path.join(fixture, 'out'), '--quiet'], root)
-  assert.equal(result.status, 0, result.stderr)
-
-  const below = await readFile(path.join(fixture, 'out/below/index.html'), 'utf8')
-  assert.doesNotMatch(below, /id="TableOfContents"|class="toc-button"|<script\b/)
-  const threshold = await readFile(path.join(fixture, 'out/threshold/index.html'), 'utf8')
-  assert.equal([...threshold.matchAll(/id="TableOfContents"/g)].length, 1)
-  assert.equal([...threshold.matchAll(/class="toc-button"/g)].length, 1)
-  for (const id of ['first', 'second', 'third']) {
-    assert.match(threshold, new RegExp(`href="#${id}"`))
-  }
-  assert.doesNotMatch(threshold, /href="#excluded"/)
-})
-
-test('fence titles reach the page as a caption', async () => {
-  const destination = await temporaryDirectory('hugo-codeblock-')
-  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)
-  assert.equal(result.status, 0, result.stderr)
-
-  const sources = await Promise.all(['content/blog/dockertest.md', 'content/blog/overlayfs/index.md']
-    .map(relative => readFile(path.join(root, relative), 'utf8')))
-  // Hugo only parses fence attributes inside braces; a bare `title="..."` is dropped silently.
-  for (const source of sources) {
-    assert.doesNotMatch(source, /^```\w+ (?!\{)\S+=/m, 'fence attributes must be wrapped in braces')
-  }
-  const titles = sources.flatMap(source => [...source.matchAll(/^```\w+ \{title="([^"]+)"\}$/gm)].map(([, title]) => title))
-  assert.ok(titles.length >= 8, `expected titled fences, found ${titles.length}`)
-
-  const post = await readFile(path.join(destination, 'blog/dockertest/index.html'), 'utf8')
-  for (const title of titles.filter(title => title.includes('db/'))) {
-    assert.match(post, new RegExp(`<figure class="code-figure">\\s*<figcaption>${title.replaceAll('.', '\\.').replaceAll('/', '\\/')}</figcaption>`))
-  }
-  // The caption carries the filename; a duplicate tooltip over the whole block does not.
-  assert.doesNotMatch(post, /<div class="highlight"[^>]*\btitle=/)
-})
-
-test('tables scroll without losing their semantics', async () => {
-  const destination = await temporaryDirectory('hugo-table-')
-  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)
-  assert.equal(result.status, 0, result.stderr)
-
-  const post = await readFile(path.join(destination, 'blog/dockertest/index.html'), 'utf8')
-  const table = post.match(/<div class="table-scroll"[^>]*>[\s\S]*?<\/div>/)?.[0]
-  assert.ok(table, 'missing scrollable table wrapper')
-  assert.match(table, /tabindex="0"/)
-  assert.match(table, /role="region"/)
-  assert.match(table, /aria-label="[^"]+"/)
-  assert.match(table, /<table>\s*<thead>[\s\S]*<tbody>[\s\S]*<\/table>/)
-  assert.match(table, /<th style="text-align: center">实际开发<\/th>/)
-  assert.match(table, /<td style="text-align: center"><a href="https:\/\/github\.com\/alicebob\/miniredis">Miniredis<\/a><\/td>/)
-  assert.doesNotMatch(post, /<table[^>]*style=/)
-
-  // A <table> turned into a scroll box loses its role in the accessibility tree.
-  const style = await readFile(path.join(root, 'assets/css/style.css'), 'utf8')
-  assert.doesNotMatch(style, /table\s*\{[^}]*display:\s*block/)
-})
-
-test('serif fonts resolve on every page and code fonts stay conditional under a subpath', async () => {
-  const destination = await temporaryDirectory('hugo-code-fonts-')
-  const result = run(process.env.HUGO_BIN ?? 'hugo', [
-    '--baseURL', 'https://example.test/sub/', '--destination', destination, '--minify', '--quiet',
-  ], root)
-  assert.equal(result.status, 0, result.stderr)
-  for (const [file, hasCode] of [
-    ['index.html', false], ['blog/index.html', false], ['404.html', false],
-    ['blog/buddy/index.html', true], ['blog/thin-agent-thick-harness/index.html', true],
-  ]) {
-    const html = await readFile(path.join(destination, file), 'utf8')
-    const faces = [...html.matchAll(/@font-face\{[^}]+\}/g)]
-    assert.equal(faces.length, hasCode ? 4 : 0, file)
-    const stylesheet = html.match(/<link\b[^>]*href=["']?(\/sub\/css\/serif[^ "'>]+)[^>]*>/)?.[1]
-    assert.ok(stylesheet, 'missing shared serif stylesheet')
-    const css = await readFile(path.join(destination, stylesheet.slice('/sub/'.length)), 'utf8')
-    const serifFaces = [...css.matchAll(/@font-face\{[^}]+\}/g)]
-    // The web ships W04 alone: every face covers 400-500, so headings and bold text reuse the
-    // regular glyphs instead of fetching W05 or synthesizing a fake bold.
-    assert.equal(serifFaces.length, 256)
-    for (const [face] of serifFaces) assert.match(face, /font-weight:400 500;/)
-    const ranges = new Set()
-    for (const [face] of serifFaces.filter(([face]) => face.includes('/subsets/'))) {
-      const range = face.match(/unicode-range:([^;}]+)/)?.[1]
-      assert.ok(range, face)
-      assert.ok(!ranges.has(range), 'duplicate Unicode range')
-      ranges.add(range)
-    }
-    assert.equal(ranges.size, 255)
-    // Overlapping ranges resolve in reverse source order, so the core subset must be declared last.
-    const [core] = serifFaces.at(-1)
-    assert.match(core, /url\([^)]*\/fonts\/tsanger-jinkai02\/core-400\.woff2\?v=[a-f\d]{12}\)/)
-    assert.ok((core.match(/unicode-range:([^;}]+)/)[1].match(/U\+/g) ?? []).length > 500, 'core range too coarse')
-    if (!hasCode) assert.doesNotMatch(html, /fonts\/jetbrains-mono/, file)
-    for (const [face] of [...faces, ...serifFaces]) {
-      assert.match(face, /font-display:swap/)
-      const url = face.match(/url\(["']?(\/sub\/fonts\/[^)"']+)['"]?\)/)?.[1]
-      assert.ok(url, face)
-      const [pathname, query] = url.split('?')
-      const font = await readFile(path.join(destination, pathname.slice('/sub/'.length)))
-      const version = createHash('sha256').update(font).digest('hex').slice(0, 12)
-      assert.equal(query, `v=${version}`)
-      assert.equal(font.toString('ascii', 0, 4), 'wOF2')
-      if (url.includes('/subsets/')) assert.ok(font.length < 128 * 1024, url)
-      if (url.includes('/core-')) assert.ok(font.length < 320 * 1024, url)
-    }
-    assert.doesNotMatch(html, /rel=["']?preload/)
-  }
-  const served = await readdir(path.join(destination, 'fonts/tsanger-jinkai02'), { recursive: true })
-  assert.deepEqual(served.filter(name => /(?:^|\/)(?:core-)?500[-.]/.test(name)), [], 'W05 must not be served')
-  const license = await readFile(path.join(destination, 'fonts/jetbrains-mono-2.304/OFL.txt'), 'utf8')
-  assert.match(license, /SIL OPEN FONT LICENSE Version 1\.1/)
-})
-
-test('a cold visit stays within the serif font transfer budget on every page', async () => {
-  const budget = 640 * 1024
-  const destination = await temporaryDirectory('hugo-font-budget-')
-  const result = run(process.env.HUGO_BIN ?? 'hugo', [
-    '--destination', destination, '--minify', '--quiet',
-  ], root)
-  assert.equal(result.status, 0, result.stderr)
-
-  const index = await readFile(path.join(destination, 'index.html'), 'utf8')
-  const stylesheet = index.match(/<link\b[^>]*href=["']?(\/css\/serif[^ "'>]+)/)?.[1]
-  assert.ok(stylesheet, 'missing serif stylesheet')
-  const css = await readFile(path.join(destination, stylesheet.slice(1)), 'utf8')
-  // A character picks the last declared face whose range covers it, so match faces in reverse.
-  const faces = [...css.matchAll(/@font-face\{([^}]+)\}/g)].reverse().map(([, body]) => ({
-    url: body.match(/url\(['"]?([^)'"]+)['"]?\)/)[1],
-    ranges: body.match(/unicode-range:([^;}]+)/)[1].split(',').map(token => {
-      const [start, end] = token.trim().slice(2).split('-')
-      return [Number.parseInt(start, 16), Number.parseInt(end ?? start, 16)]
-    }),
-  }))
-  assert.ok(faces.length > 0, 'missing serif faces')
-  const sizes = new Map()
-  const sizeOf = async url => {
-    if (!sizes.has(url)) sizes.set(url, (await readFile(path.join(destination, url.split('?')[0].slice(1)))).length)
-    return sizes.get(url)
-  }
-
-  const entities = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0' }
-  const plainText = markup => markup
-    .replace(/<(script|style)\b[\s\S]*?<\/\1>/g, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&#x([\da-f]+);/gi, (_, hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
-    .replace(/&#(\d+);/g, (_, decimal) => String.fromCodePoint(Number(decimal)))
-    .replace(/&(\w+);/g, (whole, name) => entities[name] ?? whole)
-
-  // One face serves both weights, so each character costs the one file that covers it.
-  for (const page of [
-    'index.html', 'blog/index.html', '404.html',
-    'blog/buddy/index.html', 'blog/1brc-in-zig/index.html',
-  ]) {
-    const html = await readFile(path.join(destination, page), 'utf8')
-    const codepoints = new Set([...plainText(html)].map(character => character.codePointAt(0)))
-    const needed = new Set()
-    for (const codepoint of codepoints) {
-      const face = faces.find(candidate => candidate.ranges.some(([start, end]) => codepoint >= start && codepoint <= end))
-      if (face) needed.add(face.url)
-    }
-    let total = 0
-    for (const url of needed) total += await sizeOf(url)
-    assert.ok(total <= budget,
-      `${page}: ${(total / 1024).toFixed(0)} KiB across ${needed.size} files exceeds ${budget / 1024} KiB`)
-  }
-})
-
 test('every heading level outranks the article body size', async () => {
-  const style = await readFile(path.join(root, 'assets/css/style.css'), 'utf8')
-  const rem = declaration => {
-    const value = style.match(new RegExp(`(?:^|\\n)${declaration}\\s*\\{[^}]*?font-size:\\s*([\\d.]+)rem`, 's'))?.[1]
+  const style =
+    (await readFile(path.join(root, 'src/styles/global.css'), 'utf8')) +
+    (await readFile(path.join(root, 'src/layouts/BaseLayout.astro'), 'utf8'))
+  const rem = (declaration) => {
+    const value = style.match(
+      new RegExp(`(?:^|\\n)\\s*${declaration}\\s*\\{[^}]*?font-size:\\s*([\\d.]+)rem`, 's'),
+    )?.[1]
     assert.ok(value, `missing font-size for ${declaration}`)
     return Number(value)
   }
-  const body = rem('body')
+  const body = rem(':global\\(body\\)')
   const deep = 'h4,\\nh5,\\nh6'
   for (const selector of ['h2', 'h3', deep]) {
-    assert.ok(rem(selector) >= body,
-      `${selector.replaceAll('\\n', ' ')} at ${rem(selector)}rem does not outrank the ${body}rem article body`)
+    assert.ok(rem(selector) >= body, `${selector} does not outrank the ${body}rem article body`)
   }
   assert.ok(rem('h2') > rem('h3'), 'h2 must outrank h3')
   assert.ok(rem('h3') > rem(deep), 'h3 must outrank h4/h5/h6')

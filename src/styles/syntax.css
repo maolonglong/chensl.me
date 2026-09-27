@@ -1,0 +1,15 @@
+/* Shiki emits both palettes; color-scheme handles auto and explicitly forced themes. */
+.astro-code,
+.astro-code span {
+    color: light-dark(var(--shiki-light), var(--shiki-dark));
+    background-color: var(--code-background-color);
+}
+
+.astro-code {
+    -webkit-text-size-adjust: none;
+}
+
+.astro-code .line {
+    display: inline-block;
+    min-height: 1em;
+}

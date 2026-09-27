@@ -6,19 +6,16 @@
   "workers_dev": true,
   "previews": {},
   "observability": {
-    "enabled": true
+    "enabled": true,
   },
   "assets": {
-    "directory": "public",
-    "not_found_handling": "404-page"
+    "directory": "dist",
+    "not_found_handling": "404-page",
   },
   "routes": [
     {
       "pattern": "chensl.me",
-      "custom_domain": true
-    }
+      "custom_domain": true,
+    },
   ],
-  "build": {
-    "command": "chmod a+x build.sh && ./build.sh && node scripts/check-site.mjs"
-  }
 }

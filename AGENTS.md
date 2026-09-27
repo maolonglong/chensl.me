@@ -1,62 +1,38 @@
 # AGENTS.md
 
-## Project
+## Project boundaries
 
-- Hugo personal site deployed as Cloudflare Workers static assets through Wrangler.
-- Pushing to `main` triggers production deployment through Cloudflare's Git integration, configured outside this repository. GitHub Actions only validates changes; its status does not establish deployment status. See [CI and deployment](README.md#ci-and-deployment).
-- Never patch generated output in `public/`, `resources/_gen/`, `.wrangler/`, or `node_modules/`.
-- Manage external skills under `.agents/skills/` with `npx skills`. Do not hand-edit installed files or `skills-lock.json`; commit skill changes and the lockfile together.
-
-## Commands
-
-- Install Node tooling: `pnpm install --frozen-lockfile`
-- Preview: `just server`
-- Production build: `just build`
-- Cloudflare preview: `pnpm exec wrangler dev`
-- Cloudflare dry run: `pnpm exec wrangler deploy --dry-run`
-- Manual deploy only when explicitly requested: `pnpm exec wrangler deploy`
-
-## Task-specific guidance
-
-- Before evaluating or performing dependency upgrades, read [the upgrade guide](README.md#dependency-upgrades) for release-note collection and version synchronization.
-- Before changing `build.sh`, read [the build-script guide](README.md#build-script) for safety constraints and verification.
-
-## Site design implementation
-
-- Keep the framework-free personal-site structure: introductory home, year-grouped archive, single-column articles, and shared 404. Preserve the author's words, emojis, dates, and credits.
-- `assets/css/style.css` owns semantic tokens, typography, and components; `assets/css/syntax.css` owns syntax colors. Reuse these variables rather than adding a parallel palette. Header, main, and footer share the one `42rem` column so every page hangs from the same left edge, and the shell fills the viewport height so short pages keep the footer at the bottom. `scripts/check-browser.mjs` enforces both.
-- `layouts/baseof.html` owns the shell and font loading; `layouts/page.html` and `layouts/_partials/post-list.html` own article chrome and archive rows. `layouts/_partials/floating-toc.html` owns the article's one contents list: a rail beside the column where a pointer can hover, a popover behind a corner button elsewhere. Keep it server-rendered so it opens without JavaScript, and preserve its threshold of three H2/H3 headings and its depth configuration in `hugo.toml`.
-- `layouts/_partials/theme.html` owns theme bootstrap and switching. Preserve `auto` → `light` → `dark`, OS tracking in auto, forced `color-scheme`, persistence, storage-failure handling, accessible labels, and the no-JavaScript fallback. Keep the SVG icons and 44px target, not font glyphs or an icon library.
-- Keep this site's alerts and syntax within the warm neutral/ink-blue palette. Diff signs carry addition/deletion meaning. Preserve underlined article/footer links, archive visited-link styling, and visible focus.
-- `assets/css/serif.css` and `data/serif.json` own JinKai declarations; `assets/css/fonts.css` owns the code fonts. Keep JinKai first for mixed Chinese/Latin text, W04 alone on the web declared for 400–500 (no W05 file, no synthesized bold), self-hosted fonts, `font-display: swap`, fingerprinted CSS, content-versioned font URLs, and code fonts loaded only where needed. Do not add font CDNs or preloads.
-- Preserve complete fallback font coverage and core-subset precedence. Follow [font licensing and regeneration](static/fonts/tsanger-jinkai02/NOTICE.md) when changing fonts or regenerating with `scripts/subset-fonts.py`. The fonts are not covered by the repository's code license. The cold-visit font budget is 640 KiB.
-- Markdown media belongs to `layouts/_partials/markdown-image.html`, shared by the page and RSS image hooks. Preserve alt text, dimensions, lazy loading, and absolute RSS image URLs.
-- Keep every heading level at or above the `1.125rem` article body size; a heading that matches body text is not a heading. Space carries the rest of the hierarchy: a wide margin above, a narrow one below.
-- `layouts/_markup/render-table.html` owns tables. Keep the focusable `.table-scroll` wrapper and its column alignment. Do not make the `<table>` itself the scroll box; that costs the table its role in the accessibility tree.
-- `layouts/_markup/render-codeblock.html` owns code blocks. A fence title must use Hugo's brace syntax, ```` ```go {title="db/user.go"} ````; a bare `title="..."` is dropped silently. Keep the caption and keep `title` off the `.highlight` wrapper so the block gains no tooltip.
+- Keep this personal site statically rendered with Astro components, scoped CSS, and native browser scripts. Add a client framework or server adapter only when a concrete requirement needs it.
+- Edit source, not `dist/`, `.astro/`, `.wrangler/`, or `node_modules/`. `public/` contains source assets.
+- Preserve the author's words, emojis, dates, and credits. Keep article URLs stable; the blog's only RSS feed is `/index.xml`. Use Astro's default heading and footnote anchors.
+- Pushing `main` triggers production deployment through Cloudflare's external Git integration. GitHub Actions validates changes but does not establish deployment success. Before shipping or changing deployment configuration, read [CI and deployment](README.md#ci-and-deployment). Manual deployment requires explicit authorization.
+- Manage installed skills with `npx skills`, committing skill changes and `skills-lock.json` together rather than editing either by hand.
 
 ## Verification
 
-- Run `just check` for changes to site output (including content, layouts, CSS, links, and RSS) or build behavior. It includes the production build; do not run `just build` separately.
-- For Cloudflare configuration or dependency changes, run `pnpm exec wrangler deploy --dry-run` without deploying.
-- For layout or CSS changes, use the browser coverage below.
-- For tooling-only changes, run the affected checks. Documentation-only changes outside site content need no site build; check referenced commands and links instead.
+- For site output or build changes, run `pnpm check`; it includes formatting, lint, type checking, the production build, and regression/output checks. Use `pnpm format` to apply the repository's formatting rules; article prose and third-party assets are excluded.
+- For dependencies or Cloudflare configuration, also run `pnpm exec wrangler deploy --dry-run` against the freshly built output.
+- For layout, styles, fonts, or browser interactions, run both `node scripts/check-browser.mjs <preview-url>` and `node scripts/check-appearance.mjs <preview-url> <screenshots-directory>`. Follow [Development](README.md#development) for preview setup. These scripts cover font loading, responsive geometry, text resizing, floating controls, theme persistence, storage failure, and no-script behavior.
+- Inspect the appearance screenshots, including affected light/dark, narrow/wide, and open/closed states; successful capture alone is not visual verification. Add targeted checks for affected states the scripts do not exercise. Browser viewport emulation is not real-device testing.
+- For tooling-only changes, run affected checks. Documentation outside site content needs command/link verification, not a site build.
 
-### Browser coverage
+## Design constraints
 
-- With the preview running, run `node scripts/check-browser.mjs <preview-url>` (requires `agent-browser`, verified with 0.38.1; its commands and `--json` shape are version-specific). It checks actual font loading, then header bounds, column alignment, footer placement, and page overflow on home, archive, a long article, and 404 at 320, 390, 768, and 1280px with 100% and 200% text sizes. On articles it also checks the code copy button, back-to-top, and the contents list as rail and as popover.
-- Inspect light/dark screenshots at 1280px and 390px on home, archive, a long article with code and a contents list, and 404. For affected tables and navigation, also inspect 320px, 768px, and both sides of the 480px and 600px breakpoints.
-- Capture at 2× after `document.fonts.ready`; confirm the actual CJK font, not only its CSS declaration. Check affected contents states (rail collapsed, hovered, focused, dismissed with Escape; popover open and closed), long titles, tables, quotes, code scrolling, focus, theme cycling/persistence, forced theme opposite the OS, and OS changes in auto mode. Ensure no page-level overflow. Chromium resizing is not real phone testing.
-- Do not infer hover capability from `agent-browser set device` or viewport width. The browser check passes `--args '--blink-settings=primaryHoverType=2'` for the rail and `primaryHoverType=0` for the popover, including a wide tablet, and asserts `matchMedia('(hover: hover)')` after navigation. Repeat the same launch flags on every command; changing them relaunches Chromium. The check covers Escape dismissal with both pointer/focus departure orders and back-to-top visibility after resizing without scrolling. For no-script checks, use `agent-browser get cdp-url` and a raw CDP connection to disable scripts; keep that connection open for the check.
+- Preserve the Kami-inspired warm neutral/ink-blue palette, JinKai typography, introductory home, year-grouped archive, and single-column articles. Header, main, and footer share the same `42rem` column; short pages keep the footer at the bottom. Reuse the design tokens in `src/styles/global.css`.
+- Keep headings at least as large as the article body. At equal sizes, distinguish headings through weight, color, and spacing: more space above than below. Preserve underlined article/footer links, archive visited-link styling, visible focus, and meaningful diff signs.
+- Keep the single prerendered contents list: a hover rail beside the column and a native popover elsewhere, available without JavaScript when there are at least three H2/H3 headings. Keep SVG controls and 44px touch targets.
+- Preserve theme cycling `auto` → `light` → `dark`, OS tracking in auto, forced `color-scheme`, persistence, storage-failure handling, accessible labels, and no-script fallback. The pre-paint bootstrap stays inline; component interactions use compiled scripts.
+- Keep JinKai first for mixed Chinese/Latin text, W04 alone at weights 400–500, and synthesized bold disabled. Fonts remain self-hosted with `font-display: swap`, content-versioned URLs, no preloads, complete fallback coverage, and core-subset precedence. Load code fonts only where needed. The cold-visit font budget is 640 KiB.
+- Pages and RSS share Astro-rendered collection content and optimized local images. Preserve alt text, dimensions, lazy loading, and absolute RSS resource URLs; avoid a separate feed Markdown parser.
+- Keep tables inside focusable `.table-scroll` wrappers, with column alignment preserved. Making the table itself the scroll box loses its accessibility role. Preserve code-fence captions without a `title` attribute on the code wrapper, which would add a tooltip.
 
-## Hugo Conventions
+## Read when needed
 
-- Use 2-space indentation in templates and 4-space indentation in CSS.
-- Use `.RelPermalink` or `relURL` for internal links. Reserve absolute URLs for canonical, RSS, and social metadata.
-- Preserve semantic HTML, labels, focus states, responsive images, light/dark behavior, SEO, and RSS behavior.
-- Preserve each content file's YAML or TOML front matter style. Do not rename slugs, move content, or reflow unrelated prose without a concrete reason.
+- Before dependency upgrades, read [Dependency upgrades](README.md#dependency-upgrades) for release-note collection and version synchronization.
+- Before changing fonts or regenerating subsets, read [font licensing and regeneration](public/fonts/tsanger-jinkai02/NOTICE.md). Fonts are not covered by the repository's code license.
+- Before changing content conventions or publication behavior, read [Content and maintenance](README.md#content-and-maintenance). Production excludes drafts and future posts; displayed dates use `Asia/Shanghai`.
+- Before changing browser verification, read both browser scripts. They explicitly set and assert hover capability and keep a CDP connection open for no-script checks; viewport width or device emulation alone does not reproduce these states.
 
 ## Commits
 
-- Use Conventional Commits: `<type>(<scope>): <summary>` (imperative, <= 72 chars, no trailing period).
-- **Always write a commit body** explaining the *why* (bullets welcome), not just the *what*.
+- Use Conventional Commits: `<type>(scope): <imperative summary>` (scope optional, at most 72 characters, no trailing period). Include a body explaining why, actual verification, and material limitations.

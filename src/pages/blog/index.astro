@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { publishedPosts, displayDate, postUrl } from '../../lib/posts'
+const posts = await publishedPosts()
+const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(0, 4))
+---
+
+<BaseLayout title="博客" description="陈劭珑的技术文章：系统性能、Go/Zig/Rust 与 Agent 工程实践">
+  <h1 class="visually-hidden">博客</h1>
+  {[...years].map(([year, entries]) => (
+    <>
+      <h2 class="posts-year">{year}</h2>
+      <ul class="blog-posts">
+        {entries.map((post) => (
+          <li>
+            <a href={postUrl(post)}>
+              <span>{post.data.title}</span>
+              <time datetime={post.data.pubDate.toISOString()}>
+                {displayDate(post.data.pubDate).slice(5)}
+              </time>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </>
+  ))}
+  {posts.length === 0 && <p class="blog-posts-empty">还没有文章</p>}
+</BaseLayout>
+
+<style>
+  .posts-year {
+    margin: 2em 0 0.25em;
+    font-size: 1.125rem;
+    color: var(--muted-color);
+    font-variant-numeric: tabular-nums;
+  }
+  :global(main) > .posts-year:first-of-type {
+    margin-top: 0;
+  }
+  .blog-posts {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .blog-posts a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 16px;
+    align-items: baseline;
+    padding-block: 8px;
+  }
+  .blog-posts time {
+    font-size: 0.875rem;
+    color: var(--muted-color);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .blog-posts a:visited {
+    color: var(--visited-color);
+  }
+</style>

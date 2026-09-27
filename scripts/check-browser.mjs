@@ -10,9 +10,21 @@ const browser = (...args) => {
   let output
   try {
     // Repeat launch flags on every call; changing them deliberately relaunches the browser.
-    output = execFileSync('agent-browser', ['--session', session, '--args', `--blink-settings=primaryHoverType=${hover ? 2 : 0}`, '--json', ...args], {
-      encoding: 'utf8', timeout: 60_000,
-    })
+    output = execFileSync(
+      'agent-browser',
+      [
+        '--session',
+        session,
+        '--args',
+        `--blink-settings=primaryHoverType=${hover ? 2 : 0}`,
+        '--json',
+        ...args,
+      ],
+      {
+        encoding: 'utf8',
+        timeout: 60_000,
+      },
+    )
   } catch (error) {
     // A failed command exits 1 with its JSON verdict on stdout; anything else (a timeout, a missing binary) is rethrown as is.
     if (!error.stdout?.trimStart().startsWith('{')) {
@@ -24,10 +36,14 @@ const browser = (...args) => {
   assert.ok(response.success, `agent-browser ${args.join(' ')}: ${response.error}`)
   return response.data?.result
 }
-const open = pathname => {
+const open = (pathname) => {
   browser('open', new URL(pathname, base).href)
   browser('eval', 'document.fonts.ready.then(() => true)')
-  assert.equal(browser('eval', `matchMedia('(hover: hover)').matches`), hover, 'Hover condition must match the scenario')
+  assert.equal(
+    browser('eval', `matchMedia('(hover: hover)').matches`),
+    hover,
+    'Hover condition must match the scenario',
+  )
 }
 
 // Home, archive, a long article with code, tables, and a TOC, and the shared 404.
@@ -35,15 +51,20 @@ const pages = ['/', '/blog/', '/blog/dockertest/', '/404.html']
 
 try {
   open('/')
-  const fonts = browser('eval', `(() => {
+  const fonts = browser(
+    'eval',
+    `(() => {
     const fonts = performance.getEntriesByType('resource').filter(e => e.name.includes('/fonts/tsanger-jinkai02/'));
     return { requests: fonts.length, bytes: fonts.reduce((sum, e) => sum + e.encodedBodySize, 0),
       loaded: [...document.fonts].some(f => f.family.toLowerCase().includes('tsanger') && f.status === 'loaded') };
-  })()`)
+  })()`,
+  )
   console.log('Cold home fonts:', fonts)
-  // `just check` models this budget statically; this confirms the browser agrees in practice.
+  // `pnpm check` models this budget statically; this confirms the browser agrees in practice.
   if (!fonts.loaded || fonts.bytes === 0 || fonts.bytes > 640 * 1024 || fonts.requests > 4) {
-    failures.push('Home must load actual JinKai fonts in at most 4 requests and 640 KiB on a cold visit')
+    failures.push(
+      'Home must load actual JinKai fonts in at most 4 requests and 640 KiB on a cold visit',
+    )
   }
 
   for (const width of [320, 390, 768, 1280]) {
@@ -51,7 +72,9 @@ try {
     for (const pathname of pages) {
       open(pathname)
       for (const size of ['100%', '200%']) {
-        const layout = browser('eval', `(() => {
+        const layout = browser(
+          'eval',
+          `(() => {
           document.documentElement.style.fontSize = '${size}';
           const box = element => element.getBoundingClientRect();
           const controls = [...document.querySelectorAll('header a, header button')];
@@ -69,18 +92,25 @@ try {
             footerGap: Math.round(innerHeight - footer.bottom),
             footerOffset: Math.round(footer.left - main.left),
             backToTop: document.querySelectorAll('.back-to-top').length,
-            floatingContents: document.querySelectorAll('#TableOfContents, .toc-button').length,
+            floatingContents: document.querySelectorAll('#article-toc, .toc-button').length,
           };
           document.documentElement.style.fontSize = '';
           return result;
-        })()`)
+        })()`,
+        )
         const label = `${pathname} at ${width}px / ${size}`
         if (layout.controls < 5 || !layout.fits || layout.page > layout.width) {
           failures.push(`${label}: header or page overflows (${JSON.stringify(layout)})`)
         }
         // Header, text column, and footer share one left edge and one right edge.
-        if (Math.abs(layout.titleOffset) > 1 || (Math.abs(layout.navOffset) > 1 && !layout.navWrapped) || Math.abs(layout.footerOffset) > 1) {
-          failures.push(`${label}: header or footer leaves the text column (${JSON.stringify(layout)})`)
+        if (
+          Math.abs(layout.titleOffset) > 1 ||
+          (Math.abs(layout.navOffset) > 1 && !layout.navWrapped) ||
+          Math.abs(layout.footerOffset) > 1
+        ) {
+          failures.push(
+            `${label}: header or footer leaves the text column (${JSON.stringify(layout)})`,
+          )
         }
         // A short page keeps its footer at the bottom of the viewport instead of mid-screen.
         if (layout.footerGap > 64) {
@@ -88,11 +118,15 @@ try {
         }
         // Only articles are long enough to need a way back up.
         if (layout.backToTop !== (pathname === '/blog/dockertest/' ? 1 : 0)) {
-          failures.push(`${label}: expected a back-to-top button on articles only (${JSON.stringify(layout)})`)
+          failures.push(
+            `${label}: expected a back-to-top button on articles only (${JSON.stringify(layout)})`,
+          )
         }
         // Only an article with enough headings carries the contents: one list and the button that opens it.
         if (layout.floatingContents !== (pathname === '/blog/dockertest/' ? 2 : 0)) {
-          failures.push(`${label}: expected floating contents on articles with a contents list only (${JSON.stringify(layout)})`)
+          failures.push(
+            `${label}: expected floating contents on articles with a contents list only (${JSON.stringify(layout)})`,
+          )
         }
       }
     }
@@ -103,7 +137,9 @@ try {
     browser('set', 'viewport', String(width), '844', '2')
     open('/blog/dockertest/')
     for (const size of ['100%', '200%']) {
-      const top = browser('eval', `new Promise(resolve => {
+      const top = browser(
+        'eval',
+        `new Promise(resolve => {
         document.documentElement.style.fontSize = '${size}';
         const button = document.querySelector('.back-to-top');
         const settle = () => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
@@ -129,17 +165,30 @@ try {
           scrollTo(0, 0);
           resolve(result);
         })();
-      })`)
+      })`,
+      )
       const label = `/blog/dockertest/ back-to-top at ${width}px / ${size}`
-      if (!top.hiddenAtTop || !top.visible || !top.inViewport || !top.clearOfFooter || !top.clearOfComments) {
-        failures.push(`${label}: button must hide at the top and float clear of the footer and comments at the bottom (${JSON.stringify(top)})`)
+      if (
+        !top.hiddenAtTop ||
+        !top.visible ||
+        !top.inViewport ||
+        !top.clearOfFooter ||
+        !top.clearOfComments
+      ) {
+        failures.push(
+          `${label}: button must hide at the top and float clear of the footer and comments at the bottom (${JSON.stringify(top)})`,
+        )
       }
       // Without room beside the column, the button still hangs from its right edge.
       if (!top.outsideColumn && Math.abs(top.columnOffset) > 1) {
-        failures.push(`${label}: button must line up with the text column's right edge (${JSON.stringify(top)})`)
+        failures.push(
+          `${label}: button must line up with the text column's right edge (${JSON.stringify(top)})`,
+        )
       }
       if (width === 1280 && size === '100%' && !top.outsideColumn) {
-        failures.push(`${label}: button must sit beside the text column when there is room (${JSON.stringify(top)})`)
+        failures.push(
+          `${label}: button must sit beside the text column when there is room (${JSON.stringify(top)})`,
+        )
       }
     }
   }
@@ -148,29 +197,43 @@ try {
   browser('set', 'viewport', '1280', '844', '2')
   open('/blog/dockertest/')
   browser('eval', 'scrollTo(0, 900)')
-  for (const [height, visible] of [[844, true], [1000, false], [844, true]]) {
+  for (const [height, visible] of [
+    [844, true],
+    [1000, false],
+    [844, true],
+  ]) {
     browser('set', 'viewport', '1280', String(height), '2')
-    const state = browser('eval', `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve({
+    const state = browser(
+      'eval',
+      `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve({
       y: scrollY, visible: getComputedStyle(document.querySelector('.back-to-top')).visibility === 'visible'
-    }))))`)
+    }))))`,
+    )
     if (state.y !== 900 || state.visible !== visible) {
-      failures.push(`Back-to-top must update on resize to ${height}px without scrolling (${JSON.stringify(state)})`)
+      failures.push(
+        `Back-to-top must update on resize to ${height}px without scrolling (${JSON.stringify(state)})`,
+      )
     }
   }
 
   // From the very bottom, one press returns to the top within a second, leaves the URL alone, and a keyboard press lands on the site title.
   browser('set', 'viewport', '1280', '844', '2')
   open('/blog/semantic-view-sql-traps/')
-  const bottom = browser('eval', `new Promise(resolve => {
+  const bottom = browser(
+    'eval',
+    `new Promise(resolve => {
     scrollTo(0, document.documentElement.scrollHeight);
     requestAnimationFrame(() => requestAnimationFrame(() => resolve({ scrollY, button: !!document.querySelector('.back-to-top') })));
-  })`)
+  })`,
+  )
   if (!bottom.button) {
     failures.push('Back-to-top button is missing from the longest article')
   } else {
     browser('focus', '.back-to-top')
     browser('press', 'Enter')
-    const back = browser('eval', `new Promise(resolve => {
+    const back = browser(
+      'eval',
+      `new Promise(resolve => {
       const start = performance.now();
       (function poll() {
         const elapsed = Math.round(performance.now() - start);
@@ -178,9 +241,12 @@ try {
           ? resolve({ from: ${bottom.scrollY}, scrollY, elapsed, url: location.href, focused: document.activeElement.matches('.site-title a') })
           : requestAnimationFrame(poll);
       })();
-    })`)
+    })`,
+    )
     if (back.scrollY !== 0 || back.elapsed > 1000 || back.url.includes('#') || !back.focused) {
-      failures.push(`Back-to-top must reach the top within 1s without a URL fragment and hand keyboard focus to the site title (${JSON.stringify(back)})`)
+      failures.push(
+        `Back-to-top must reach the top within 1s without a URL fragment and hand keyboard focus to the site title (${JSON.stringify(back)})`,
+      )
     }
   }
 
@@ -189,7 +255,7 @@ try {
   const contents = `(() => {
     const box = element => element ? element.getBoundingClientRect().toJSON() : null;
     const shown = element => !!element && getComputedStyle(element).display !== 'none' && getComputedStyle(element).visibility === 'visible';
-    const list = document.querySelector('#TableOfContents'), button = document.querySelector('.toc-button');
+    const list = document.querySelector('#article-toc'), button = document.querySelector('.toc-button');
     const open = !!list && list.matches(':popover-open');
     // A fixed control can still be painted over by positioned content later in the page; hit-test it.
     const onTop = element => {
@@ -204,28 +270,49 @@ try {
       listOnTop: onTop(list), buttonOnTop: onTop(button),
       main: box(document.querySelector('main')), footer: box(document.querySelector('body > footer')),
       comments: box(document.querySelector('.comments')),
-      current: [...document.querySelectorAll('#TableOfContents [aria-current]')].map(a => decodeURIComponent(a.hash)),
-      first: decodeURIComponent(document.querySelector('#TableOfContents a')?.hash ?? ''),
-      last: decodeURIComponent([...document.querySelectorAll('#TableOfContents a')].at(-1)?.hash ?? ''),
+      current: [...document.querySelectorAll('#article-toc [aria-current]')].map(a => decodeURIComponent(a.hash)),
+      first: decodeURIComponent(document.querySelector('#article-toc a')?.hash ?? ''),
+      last: decodeURIComponent([...document.querySelectorAll('#article-toc a')].at(-1)?.hash ?? ''),
       hash: decodeURIComponent(location.hash), targetTop: target ? Math.round(target.getBoundingClientRect().top) : null,
       focused: document.activeElement.tagName, width: innerWidth, height: innerHeight, page: document.documentElement.scrollWidth,
     };
   })()`
-  const settle = script => browser('eval', `new Promise(resolve => {
+  const settle = (script) =>
+    browser(
+      'eval',
+      `new Promise(resolve => {
     ${script};
     requestAnimationFrame(() => requestAnimationFrame(() => resolve(${contents})));
-  })`)
-  const apart = (a, b) => !a || !b || a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top
-  const inside = (a, state) => !!a && a.left >= 0 && a.top >= 0 && a.right <= state.width && a.bottom <= state.height
-  const covers = (outer, inner) => !!outer && !!inner && outer.left <= inner.left && outer.top <= inner.top && outer.right >= inner.right && outer.bottom >= inner.bottom
+  })`,
+    )
+  const apart = (a, b) =>
+    !a || !b || a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top
+  const inside = (a, state) =>
+    !!a && a.left >= 0 && a.top >= 0 && a.right <= state.width && a.bottom <= state.height
+  const covers = (outer, inner) =>
+    !!outer &&
+    !!inner &&
+    outer.left <= inner.left &&
+    outer.top <= inner.top &&
+    outer.right >= inner.right &&
+    outer.bottom >= inner.bottom
 
   for (const width of [1024, 1280]) {
     browser('set', 'viewport', String(width), '844', '2')
     open('/blog/dockertest/')
     const label = `/blog/dockertest/ contents rail at ${width}px`
     const rest = settle('scrollTo(0, 0)')
-    if (!inside(rest.rail, rest) || !rest.listOnTop || rest.button || Math.abs(rest.rail.left - rest.backToTop.left) > 1 || rest.rail.left < rest.main.right + 23 || !apart(rest.rail, rest.backToTop)) {
-      failures.push(`${label}: rail must hang beside the column on back-to-top's line from the start, clear of it (${JSON.stringify(rest)})`)
+    if (
+      !inside(rest.rail, rest) ||
+      !rest.listOnTop ||
+      rest.button ||
+      Math.abs(rest.rail.left - rest.backToTop.left) > 1 ||
+      rest.rail.left < rest.main.right + 23 ||
+      !apart(rest.rail, rest.backToTop)
+    ) {
+      failures.push(
+        `${label}: rail must hang beside the column on back-to-top's line from the start, clear of it (${JSON.stringify(rest)})`,
+      )
     }
     if (!rest.rail) {
       continue
@@ -233,37 +320,69 @@ try {
     // The Dockertest H2 is followed at once by an H3; arriving at the H2 must still mark the H2.
     const section = settle(`document.getElementById('dockertest').scrollIntoView()`)
     if (section.current.length !== 1 || section.current[0] !== '#dockertest') {
-      failures.push(`${label}: the heading at the top of the view must be the current entry (${JSON.stringify(section.current)})`)
+      failures.push(
+        `${label}: the heading at the top of the view must be the current entry (${JSON.stringify(section.current)})`,
+      )
     }
     const end = settle('scrollTo(0, document.documentElement.scrollHeight)')
     if (end.current.length !== 1 || end.current[0] !== end.last) {
-      failures.push(`${label}: the last entry must be current at the bottom of the page (${JSON.stringify(end.current)})`)
+      failures.push(
+        `${label}: the last entry must be current at the bottom of the page (${JSON.stringify(end.current)})`,
+      )
     }
     // Keyboard focus opens the rail into a card; Enter jumps to the heading and closes it again.
     settle('scrollTo(0, 0)')
-    browser('focus', '#TableOfContents li:first-child > a')
+    browser('focus', '#article-toc li:first-child > a')
     const focused = settle('')
-    if (!covers(focused.rail, rest.rail) || !inside(focused.rail, focused) || focused.rail.width < 200 || !apart(focused.rail, focused.backToTop)) {
-      failures.push(`${label}: focus must open the rail into a card within the view, clear of back-to-top (${JSON.stringify(focused)})`)
+    if (
+      !covers(focused.rail, rest.rail) ||
+      !inside(focused.rail, focused) ||
+      focused.rail.width < 200 ||
+      !apart(focused.rail, focused.backToTop)
+    ) {
+      failures.push(
+        `${label}: focus must open the rail into a card within the view, clear of back-to-top (${JSON.stringify(focused)})`,
+      )
     }
     browser('press', 'Enter')
     const jumped = settle('')
-    if (jumped.hash !== jumped.first || Math.abs(jumped.targetTop) > 1 || !jumped.rail || jumped.rail.width > rest.rail.width + 1 || jumped.focused !== 'BODY') {
-      failures.push(`${label}: Enter must jump to the heading and fold the card back into the rail (${JSON.stringify(jumped)})`)
+    if (
+      jumped.hash !== jumped.first ||
+      Math.abs(jumped.targetTop) > 1 ||
+      !jumped.rail ||
+      jumped.rail.width > rest.rail.width + 1 ||
+      jumped.focused !== 'BODY'
+    ) {
+      failures.push(
+        `${label}: Enter must jump to the heading and fold the card back into the rail (${JSON.stringify(jumped)})`,
+      )
     }
     // Hover opens the same card, and the card covers the rail so the pointer never falls off its edge.
-    browser('hover', '#TableOfContents')
+    browser('hover', '#article-toc')
     const hovered = settle('')
-    if (!covers(hovered.rail, rest.rail) || !inside(hovered.rail, hovered) || !hovered.listOnTop || hovered.rail.width < 200 || !apart(hovered.rail, hovered.backToTop)) {
-      failures.push(`${label}: hover must open the rail into a card that covers it (${JSON.stringify(hovered)})`)
+    if (
+      !covers(hovered.rail, rest.rail) ||
+      !inside(hovered.rail, hovered) ||
+      !hovered.listOnTop ||
+      hovered.rail.width < 200 ||
+      !apart(hovered.rail, hovered.backToTop)
+    ) {
+      failures.push(
+        `${label}: hover must open the rail into a card that covers it (${JSON.stringify(hovered)})`,
+      )
     }
 
     // Dismissal survives either departure order, and resets once both inputs leave.
     for (const first of ['pointer', 'focus']) {
       browser('mouse', 'move', '0', '0')
       browser('focus', '.site-title a')
-      browser('focus', '#TableOfContents li:first-child > a')
-      browser('mouse', 'move', String(rest.rail.left + 8), String(rest.rail.top + rest.rail.height / 2))
+      browser('focus', '#article-toc li:first-child > a')
+      browser(
+        'mouse',
+        'move',
+        String(rest.rail.left + 8),
+        String(rest.rail.top + rest.rail.height / 2),
+      )
       browser('press', 'Escape')
       const dismissed = settle('')
       if (first === 'pointer') browser('mouse', 'move', '0', '0')
@@ -274,39 +393,65 @@ try {
       }
       if (first === 'pointer') browser('focus', '.site-title a')
       else browser('mouse', 'move', '0', '0')
-      browser('focus', '#TableOfContents li:first-child > a')
-      if (!(settle('').rail?.width >= 200)) failures.push(`${label}: focus must reopen the rail after both inputs leave`)
+      browser('focus', '#article-toc li:first-child > a')
+      if (!(settle('').rail?.width >= 200))
+        failures.push(`${label}: focus must reopen the rail after both inputs leave`)
     }
     browser('focus', '.site-title a')
   }
 
   hover = false
-  for (const [width, size] of [[390, '100%'], [390, '200%'], [768, '100%'], [1024, '100%']]) {
+  for (const [width, size] of [
+    [390, '100%'],
+    [390, '200%'],
+    [768, '100%'],
+    [1024, '100%'],
+  ]) {
     browser('set', 'viewport', String(width), '844', '2')
     open('/blog/dockertest/')
     browser('eval', `document.documentElement.style.fontSize = '${size}'`)
     const label = `/blog/dockertest/ contents button at ${width}px / ${size}`
     // The button holds the corner from the start; back-to-top joins above it later, so neither ever moves.
     const rest = settle('scrollTo(0, 0)')
-    if (rest.rail || !inside(rest.button, rest) || !rest.buttonOnTop || Math.abs(rest.button.right - rest.backToTop.right) > 1 || rest.button.top - rest.backToTop.bottom < 7 || rest.page > rest.width) {
-      failures.push(`${label}: the button must hold the corner below back-to-top's place (${JSON.stringify(rest)})`)
+    if (
+      rest.rail ||
+      !inside(rest.button, rest) ||
+      !rest.buttonOnTop ||
+      Math.abs(rest.button.right - rest.backToTop.right) > 1 ||
+      rest.button.top - rest.backToTop.bottom < 7 ||
+      rest.page > rest.width
+    ) {
+      failures.push(
+        `${label}: the button must hold the corner below back-to-top's place (${JSON.stringify(rest)})`,
+      )
     }
     if (!rest.button) {
       continue
     }
     const end = settle('scrollTo(0, document.documentElement.scrollHeight)')
     if (!apart(end.button, end.footer) || !apart(end.button, end.comments)) {
-      failures.push(`${label}: at the bottom the button must stay clear of the footer and comments (${JSON.stringify(end)})`)
+      failures.push(
+        `${label}: at the bottom the button must stay clear of the footer and comments (${JSON.stringify(end)})`,
+      )
     }
     browser('click', '.toc-button')
     const opened = settle('')
-    if (!inside(opened.panel, opened) || !apart(opened.panel, opened.button) || !apart(opened.panel, opened.backToTop) || !opened.current.includes(opened.last)) {
-      failures.push(`${label}: the button must open the contents above both buttons (${JSON.stringify(opened)})`)
+    if (
+      !inside(opened.panel, opened) ||
+      !apart(opened.panel, opened.button) ||
+      !apart(opened.panel, opened.backToTop) ||
+      !opened.current.includes(opened.last)
+    ) {
+      failures.push(
+        `${label}: the button must open the contents above both buttons (${JSON.stringify(opened)})`,
+      )
     }
-    browser('click', '#TableOfContents li:nth-child(2) > a')
+    browser('click', '#article-toc li:nth-child(2) > a')
     const jumped = settle('')
     if (jumped.panel || Math.abs(jumped.targetTop) > 1 || !jumped.hash) {
-      failures.push(`${label}: choosing an entry must close the contents and jump to the heading (${JSON.stringify(jumped)})`)
+      failures.push(
+        `${label}: choosing an entry must close the contents and jump to the heading (${JSON.stringify(jumped)})`,
+      )
     }
     browser('eval', `document.documentElement.style.fontSize = ''`)
   }
@@ -315,14 +460,18 @@ try {
   open('/blog/lock-free-queue/')
   const short = settle('scrollTo(0, document.documentElement.scrollHeight)')
   if (short.rail || short.button || short.height - short.backToTop.bottom > 24) {
-    failures.push(`/blog/lock-free-queue/ must float no contents and keep back-to-top in the corner (${JSON.stringify(short)})`)
+    failures.push(
+      `/blog/lock-free-queue/ must float no contents and keep back-to-top in the corner (${JSON.stringify(short)})`,
+    )
   }
 
   // Every code block gets one copy button inside its top-right corner that stays put while the
   // code scrolls, and a wide first line can always be scrolled out from under it.
   browser('set', 'viewport', '320', '844', '2')
   open('/blog/dockertest/')
-  const copy = browser('eval', `(() => {
+  const copy = browser(
+    'eval',
+    `(() => {
     const blocks = [...document.querySelectorAll('.highlight')];
     const button = block => block.parentElement.querySelectorAll('.code-copy');
     const placed = blocks.every(block => {
@@ -339,30 +488,43 @@ try {
     });
     return { blocks: blocks.length, placed, wide: wide.length, firstLineClear,
       expected: blocks[0]?.querySelector('code').textContent.replace(/\\n$/, '') };
-  })()`)
+  })()`,
+  )
   if (copy.blocks === 0 || !copy.placed || copy.wide === 0 || !copy.firstLineClear) {
-    failures.push(`Code blocks must each carry one copy button in their top-right corner that a scrolled first line can clear (${JSON.stringify(copy)})`)
+    failures.push(
+      `Code blocks must each carry one copy button in their top-right corner that a scrolled first line can clear (${JSON.stringify(copy)})`,
+    )
   } else {
     // Headless Chrome denies clipboard reads, so record what reaches the real writeText and let it run.
-    browser('eval', `(() => {
+    browser(
+      'eval',
+      `(() => {
       const write = navigator.clipboard.writeText.bind(navigator.clipboard);
       navigator.clipboard.writeText = text => { window.copiedText = text; return write(text); };
-    })()`)
+    })()`,
+    )
     browser('find', 'first', '.code-copy', 'click')
     // "已复制" is announced only after the browser accepts the write.
-    const { copied, status } = browser('eval', `new Promise(resolve => {
+    const { copied, status } = browser(
+      'eval',
+      `new Promise(resolve => {
       const status = document.querySelector('.code-copy-status'), start = Date.now();
       (function poll() {
         status?.textContent || Date.now() - start > 1000
           ? resolve({ copied: window.copiedText, status: status?.textContent }) : setTimeout(poll, 20);
       })();
-    })`)
+    })`,
+    )
     if (copied !== copy.expected || status !== '已复制') {
-      failures.push(`Copy button must copy the code without its trailing newline and announce it (${JSON.stringify({ copied, status })})`)
+      failures.push(
+        `Copy button must copy the code without its trailing newline and announce it (${JSON.stringify({ copied, status })})`,
+      )
     }
   }
 } finally {
   browser('close')
 }
 assert.deepEqual(failures, [], failures.join('\n'))
-console.log('Browser font budget, text-resize, page-shell, code-copy, back-to-top, and floating contents checks passed.')
+console.log(
+  'Browser font budget, text-resize, page-shell, code-copy, back-to-top, and floating contents checks passed.',
+)

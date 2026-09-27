@@ -1,0 +1,103 @@
+---
+import { giscusThemes } from '../lib/assets'
+
+const config = {
+  repo: 'maolonglong/chensl.me',
+  repoId: 'MDEwOlJlcG9zaXRvcnk0MDY3MzAwMDI=',
+  category: 'Announcements',
+  categoryId: 'DIC_kwDOGD41Es4ClVVI',
+}
+---
+
+<section
+  class="comments"
+  aria-labelledby="comments-title"
+  data-light-theme={giscusThemes.light}
+  data-dark-theme={giscusThemes.dark}
+  data-repo={config.repo}
+  data-repo-id={config.repoId}
+  data-category={config.category}
+  data-category-id={config.categoryId}
+>
+  <h2 id="comments-title">评论</h2>
+  <div class="giscus"></div>
+  <noscript>
+    <p class="comments-unavailable">启用 JavaScript 后可以查看和发表评论。</p>
+  </noscript>
+</section>
+<script>
+  ;(() => {
+    'use strict'
+    const section = document.querySelector<HTMLElement>('.comments')
+    if (!section) return
+    const themes = {
+      light: new URL(section.dataset.lightTheme!, window.location.origin).href,
+      dark: new URL(section.dataset.darkTheme!, window.location.origin).href,
+    }
+    const resolvedTheme = (): 'light' | 'dark' =>
+      document.documentElement.dataset.theme === 'dark' ||
+      (!document.documentElement.dataset.theme &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches)
+        ? 'dark'
+        : 'light'
+    const script = document.createElement('script')
+    script.src = 'https://giscus.app/client.js'
+    script.async = true
+    script.crossOrigin = 'anonymous'
+    Object.assign(script.dataset, {
+      repo: section.dataset.repo,
+      repoId: section.dataset.repoId,
+      category: section.dataset.category,
+      categoryId: section.dataset.categoryId,
+      mapping: 'pathname',
+      strict: '1',
+      reactionsEnabled: '1',
+      emitMetadata: '0',
+      inputPosition: 'top',
+      theme: themes[resolvedTheme()],
+      lang: 'zh-CN',
+      loading: 'lazy',
+    })
+    const syncTheme = (themeName: 'light' | 'dark') => {
+      const theme = themes[themeName]
+      script.dataset.theme = theme
+      document.querySelector<HTMLIFrameElement>('iframe.giscus-frame')?.contentWindow?.postMessage(
+        {
+          giscus: { setConfig: { theme } },
+        },
+        'https://giscus.app',
+      )
+    }
+    window.addEventListener('site-theme-change', () => syncTheme(resolvedTheme()))
+    const container = section.querySelector<HTMLElement>('.giscus')!
+    const frameObserver = new MutationObserver(() => {
+      const frame = container.querySelector('iframe.giscus-frame')
+      if (!frame) return
+      frameObserver.disconnect()
+      frame.addEventListener('load', () => syncTheme(resolvedTheme()), { once: true })
+    })
+    frameObserver.observe(container, { childList: true })
+    container.append(script)
+  })()
+</script>
+
+<style>
+  .comments {
+    margin-top: 72px;
+  }
+  .comments h2 {
+    margin-top: 0;
+  }
+  .comments :global(.giscus),
+  .comments :global(.giscus-frame) {
+    width: 100%;
+  }
+  .comments :global(.giscus-frame) {
+    display: block;
+    border: 0;
+  }
+  .comments-unavailable {
+    font-size: 0.875rem;
+    color: var(--muted-color);
+  }
+</style>

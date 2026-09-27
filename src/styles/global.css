@@ -1,0 +1,393 @@
+/* ------------------------------------------------------------------ tokens */
+
+:root {
+    --measure: 42rem;
+    --gutter: 24px;
+    --radius: 6px;
+    --font-serif:
+        'TsangerJinKai02', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', Charter,
+        Georgia, serif;
+    --font-mono:
+        'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas,
+        'Liberation Mono', var(--font-serif);
+    --background-color: light-dark(#f5f4ed, #141413);
+    --heading-color: light-dark(#141413, #faf9f5);
+    --text-color: light-dark(#3d3d3a, #d4d3cd);
+    --muted-color: light-dark(#6b6a64, #b0aea5);
+    --link-color: light-dark(#1b365d, #94b4d4);
+    --link-hover-color: light-dark(#2d5a8a, #bfd2e5);
+    --visited-color: light-dark(#4a5d78, #7e93a8);
+    --code-background-color: light-dark(#f0eee6, #252523);
+    --code-color: light-dark(#3d3d3a, #d4d3cd);
+    --blockquote-color: light-dark(#504e49, #b0aea5);
+    --border-color: light-dark(#e8e6dc, #3d3d3a);
+    --selection-color: light-dark(#dce3eb, #354354);
+    --mark-background-color: light-dark(#e8e6dc, #3d3d3a);
+    color-scheme: light dark;
+}
+
+:root[data-theme='light'] {
+    color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+}
+
+/* -------------------------------------------------------------------- base */
+
+html {
+    font-family: var(--font-serif);
+    font-size: 100%;
+    font-synthesis: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--heading-color);
+    letter-spacing: 0;
+    text-wrap: balance;
+    /* Break titles at spaces and punctuation, not inside a word like 单元; overflow-wrap still rescues a segment wider than the line. */
+    word-break: keep-all;
+}
+
+h1 {
+    margin: 0 0 16px;
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    line-height: 1.25;
+}
+
+h2 {
+    margin: 2em 0 0.75em;
+    font-size: 1.5rem;
+}
+
+/*
+  Every level must outrank the 1.125rem article body. Space carries the rest of
+  the hierarchy: a wide gap above detaches the heading from the previous
+  section, a narrow gap below binds it to its own text.
+*/
+h3 {
+    margin: 2.25em 0 0.5em;
+    font-size: 1.25rem;
+}
+
+/* Below h3 the reading measure has no size left to spend, so these sit on the body floor. */
+h4,
+h5,
+h6 {
+    margin: 2em 0 0.5em;
+    font-size: 1.125rem;
+}
+
+/* A subsection that opens its section belongs to that heading, not after a pause. */
+h2 + :is(h3, h4, h5, h6),
+h3 + :is(h4, h5, h6) {
+    margin-top: 1em;
+}
+
+p,
+li {
+    text-wrap: pretty;
+}
+
+strong,
+b {
+    font-weight: 500;
+    color: var(--heading-color);
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+@media (hover: hover) {
+    a:hover {
+        color: var(--link-hover-color);
+        text-decoration: underline;
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.2em;
+    }
+}
+
+:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+::selection {
+    background-color: var(--selection-color);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+button {
+    margin: 0;
+    font: inherit;
+    cursor: pointer;
+}
+
+hr {
+    margin-block: 2em;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+}
+
+mark {
+    padding: 1px 4px;
+    color: inherit;
+    background-color: var(--mark-background-color);
+    border-radius: 4px;
+}
+
+code,
+kbd,
+pre,
+samp {
+    font-family: var(--font-mono);
+    font-variant-ligatures: none;
+    letter-spacing: 0;
+}
+
+cite {
+    font-style: normal;
+}
+
+.visually-hidden,
+.skip-link:not(:focus) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ------------------------------------------------------------------- prose */
+
+.prose > :first-child {
+    margin-top: 0;
+}
+
+.prose > :last-child {
+    margin-bottom: 0;
+}
+
+.prose :is(ul, ol) {
+    padding-left: 1.5em;
+}
+
+.prose li + li {
+    margin-top: 0.25em;
+}
+
+.prose li::marker {
+    color: var(--muted-color);
+}
+
+.prose img {
+    border-radius: var(--radius);
+}
+
+/* Running-text links are underlined so they never depend on color alone. */
+.prose a:not(.footnote-ref) {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+}
+
+blockquote {
+    margin: 1.75em 0;
+    padding-inline: 1.5em;
+    color: var(--blockquote-color);
+}
+
+blockquote > :first-child {
+    margin-top: 0;
+}
+
+blockquote > :last-child {
+    margin-bottom: 0;
+}
+
+blockquote cite {
+    color: var(--muted-color);
+}
+
+/* Alerts are a quiet filled note; the heading names the kind, color does not. */
+.alert {
+    padding: 1em 1.25em;
+    color: var(--text-color);
+    background-color: var(--code-background-color);
+    border-radius: var(--radius);
+}
+
+.alert-heading {
+    margin-bottom: 0.35em;
+    font-weight: 500;
+    color: var(--heading-color);
+}
+
+.alert-heading + * {
+    margin-top: 0.35em;
+}
+
+/* ------------------------------------------------------------------- code */
+
+:not(pre) > code {
+    padding: 2px 5px;
+    font-size: 0.875em;
+    color: var(--code-color);
+    background-color: var(--code-background-color);
+    border-radius: 4px;
+}
+
+pre {
+    font-size: 0.875rem;
+    line-height: 1.65;
+    tab-size: 4;
+}
+
+pre code {
+    font-size: inherit;
+}
+
+/* The scroller carries the fill too, so iOS rubber-banding past either end never opens a gap. */
+.highlight {
+    margin-block: 1.5em;
+    overflow-x: auto;
+    background-color: var(--code-background-color);
+    border-radius: var(--radius);
+}
+
+.highlight pre {
+    box-sizing: border-box;
+    width: max-content;
+    min-width: 100%;
+    margin: 0;
+    padding: 14px 18px;
+}
+
+/* `title="path/to/file"` on a fence: the filename is data, so it gets a label, not a frame. */
+.code-figure {
+    margin: 1.5em 0;
+}
+
+.code-figure figcaption {
+    padding-bottom: 0.4em;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--muted-color);
+}
+
+.code-figure .highlight {
+    margin-block: 0;
+}
+
+/* The script wraps each block so the copy button stays in the corner while the code scrolls. */
+/* ------------------------------------------------------------------ tables */
+
+/* The wrapper scrolls so the <table> keeps its role in the accessibility tree. */
+.table-scroll {
+    margin-block: 1.5em;
+    overflow-x: auto;
+}
+
+.table-scroll:focus-visible {
+    outline-offset: 4px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    font-weight: 500;
+    color: var(--heading-color);
+}
+
+th:first-child,
+td:first-child {
+    padding-left: 0;
+}
+
+th:last-child,
+td:last-child {
+    padding-right: 0;
+}
+
+/* ------------------------------------------------------------- disclosure */
+
+details > summary {
+    color: var(--link-color);
+    cursor: pointer;
+}
+
+.prose details {
+    margin-block: 1.5em;
+}
+
+/* --------------------------------------------------------------- footnotes */
+
+/* References, not a continuation of the argument, so they recede. */
+.footnotes {
+    font-size: 0.875rem;
+    color: var(--muted-color);
+}
+
+.footnotes hr {
+    margin-block: 3em 1.75em;
+}
+
+.footnotes ol {
+    padding-left: 1.75em;
+}
+
+.footnotes li + li {
+    margin-top: 0.75em;
+}
+
+.footnotes li > :first-child {
+    margin-top: 0;
+}
+
+.footnotes li > :last-child {
+    margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------------ narrow */
+
+@media (max-width: 600px) {
+    :root {
+        --gutter: 20px;
+    }
+
+    pre {
+        font-size: 0.8125rem;
+    }
+}

@@ -1,0 +1,64 @@
+<template id="back-to-top-template">
+  <button class="back-to-top" type="button" aria-label="回到顶部">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M5 4h14M12 20V9m-6 6 6-6 6 6" />
+    </svg>
+  </button>
+</template>
+<script>
+  ;(() => {
+    'use strict'
+    const template = document.querySelector<HTMLTemplateElement>('#back-to-top-template')
+    if (!template) return
+    const button = template.content.firstElementChild!.cloneNode(true) as HTMLButtonElement
+    document.body.append(button)
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => button.toggleAttribute('data-visible', window.scrollY > window.innerHeight)
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    update()
+    button.addEventListener('click', (event) => {
+      if (reduceMotion.matches) window.scrollTo({ top: 0, behavior: 'instant' })
+      else {
+        if (window.scrollY > window.innerHeight)
+          window.scrollTo({ top: window.innerHeight, behavior: 'instant' })
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      if (event.detail === 0)
+        document.querySelector<HTMLAnchorElement>('.site-title a')?.focus({ preventScroll: true })
+    })
+  })()
+</script>
+
+<style>
+  .back-to-top {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 100ms ease-out;
+  }
+  .back-to-top[data-visible] {
+    visibility: visible;
+    opacity: 1;
+  }
+  @media (hover: hover) {
+    .back-to-top:hover {
+      color: var(--heading-color);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .back-to-top {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,52 @@
+---
+import { render, type CollectionEntry } from 'astro:content'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import FloatingToc from '../../components/FloatingToc.astro'
+import Comments from '../../components/Comments.astro'
+import { publishedPosts, displayDate } from '../../lib/posts'
+export async function getStaticPaths() {
+  return (await publishedPosts()).map((post) => ({ params: { id: post.id }, props: { post } }))
+}
+interface Props {
+  post: CollectionEntry<'blog'>
+}
+const { post } = Astro.props
+const { Content, headings } = await render(post)
+const html = post.rendered?.html ?? ''
+const hasCode = /<(?:code|pre|kbd|samp)[\s>]/.test(html)
+const hasCodeBlock = /<pre[\s>]/.test(html)
+---
+
+<BaseLayout
+  {...post.data}
+  updatedDate={post.data.updatedDate ?? post.data.pubDate}
+  article
+  hasCode={hasCode}
+  hasCodeBlock={hasCodeBlock}
+>
+  <article class="post">
+    <header class="post-header">
+      <h1>{post.data.title}</h1>
+      <p class="post-meta">
+        <time datetime={post.data.pubDate.toISOString()}>{displayDate(post.data.pubDate)}</time>
+      </p>
+    </header>
+    <FloatingToc headings={headings} />
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+  {post.data.comments && <Comments />}
+</BaseLayout>
+
+<style>
+  .post-header {
+    margin-bottom: 40px;
+  }
+  .post-meta {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--muted-color);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

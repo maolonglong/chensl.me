@@ -1,0 +1,15 @@
+# Format maintained code, not content, third-party assets, or generated output.
+**/*
+!src/
+!src/**/
+!src/**/*.astro
+!src/**/*.ts
+!src/**/*.mjs
+!src/**/*.css
+!scripts/
+!scripts/*.mjs
+!astro.config.mjs
+!package.json
+!tsconfig.json
+!wrangler.jsonc
+!.prettierrc.json

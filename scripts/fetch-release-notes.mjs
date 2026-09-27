@@ -18,8 +18,8 @@ Options:
 
 Example:
   node scripts/fetch-release-notes.mjs \\
-    --repo gohugoio/hugo --from v0.164.0 --to latest \\
-    --output docs/release-notes/hugo-0.164.0-to-latest.md
+    --repo withastro/astro --from astro@7.3.5 --to latest \\
+    --output docs/release-notes/astro-7.3.5-to-latest.md
 `
 }
 
@@ -55,8 +55,12 @@ async function fetchReleases(repo) {
 
   const releases = []
   for (let page = 1; ; page += 1) {
-    const response = await fetch(`https://api.github.com/repos/${repo}/releases?per_page=100&page=${page}`, { headers })
-    if (!response.ok) throw new Error(`GitHub API request failed: ${response.status} ${response.statusText}`)
+    const response = await fetch(
+      `https://api.github.com/repos/${repo}/releases?per_page=100&page=${page}`,
+      { headers },
+    )
+    if (!response.ok)
+      throw new Error(`GitHub API request failed: ${response.status} ${response.statusText}`)
     const batch = await response.json()
     if (!Array.isArray(batch)) throw new Error('GitHub API returned an unexpected response')
     releases.push(...batch)
@@ -65,13 +69,13 @@ async function fetchReleases(repo) {
 }
 
 function selectReleases(releases, { from, to, includePrereleases }) {
-  const filtered = releases.filter(release => !release.draft && (includePrereleases || !release.prerelease))
-  const fromIndex = filtered.findIndex(release => release.tag_name === from)
+  const filtered = releases.filter(
+    (release) => !release.draft && (includePrereleases || !release.prerelease),
+  )
+  const fromIndex = filtered.findIndex((release) => release.tag_name === from)
   if (fromIndex === -1) throw new Error(`Could not find starting release: ${from}`)
 
-  const upperBound = to === 'latest'
-    ? 0
-    : filtered.findIndex(release => release.tag_name === to)
+  const upperBound = to === 'latest' ? 0 : filtered.findIndex((release) => release.tag_name === to)
   if (upperBound === -1) throw new Error(`Could not find ending release: ${to}`)
   if (upperBound > fromIndex) throw new Error(`--to (${to}) must be newer than --from (${from})`)
 
@@ -120,7 +124,7 @@ async function main() {
   process.stderr.write(`Wrote ${releases.length} release note(s) to ${options.output}\n`)
 }
 
-main().catch(error => {
+main().catch((error) => {
   process.stderr.write(`${error.message}\n`)
   process.exitCode = 1
 })

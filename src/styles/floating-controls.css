@@ -1,0 +1,221 @@
+/*
+  Floating controls share one lane: 20px glyphs on 44px plates of the page's
+  own color, so text scrolling beneath never shows through. The lane lines up
+  with the column's right edge, and moves out beside the column once a gutter,
+  a button, and a gutter fit there. The contents button, there from the start,
+  holds the corner; back-to-top joins above it, so neither ever moves. The
+  contents sit above the article in the source, so z-index keeps positioned
+  content that comes later, such as code blocks, from painting over them.
+*/
+.back-to-top,
+.toc-button,
+.toc {
+    z-index: 1;
+}
+
+.back-to-top,
+.toc-button {
+    position: fixed;
+    right: max(var(--gutter), 50% - var(--measure) / 2);
+    bottom: var(--gutter);
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: var(--muted-color);
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    touch-action: manipulation;
+}
+
+body:has(.toc-button) .back-to-top {
+    bottom: calc(var(--gutter) + 44px + 8px);
+}
+
+.back-to-top:focus-visible,
+.toc-button:focus-visible {
+    border-radius: var(--radius);
+}
+
+@media (hover: hover) {
+    .toc-button:hover {
+        color: var(--heading-color);
+    }
+}
+
+/* The buttons keep their own corner below the footer, so the last line never sits under them. */
+body:has(> .back-to-top) {
+    padding-bottom: calc(44px + 2 * var(--gutter));
+}
+
+body:has(.toc-button) {
+    padding-bottom: calc(2 * 44px + 8px + 2 * var(--gutter));
+}
+
+/*
+  The article's one contents list. By default it is a popover the button
+  opens above both buttons, scrolling within the rest of the view.
+*/
+.toc {
+    position: fixed;
+    inset: auto max(var(--gutter), 50% - var(--measure) / 2) calc(var(--gutter) + 2 * (44px + 8px))
+        auto;
+    box-sizing: border-box;
+    width: min(18rem, 100% - 2 * var(--gutter));
+    max-height: calc(100% - 2 * var(--gutter) - 2 * (44px + 8px));
+    margin: 0;
+    padding: 8px 16px;
+    overflow-y: auto;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+
+.toc ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.toc a {
+    display: block;
+    padding-block: 8px;
+    text-decoration: none;
+}
+
+.toc ul ul a {
+    padding-left: 1em;
+}
+
+/* The current entry is underlined like the current page in the header. */
+.toc a[aria-current] {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.25em;
+}
+
+/*
+  Without popover support nothing hides the closed list, so it would sit open
+  over the text behind a button that does nothing. The rail below needs no
+  popover and still shows.
+*/
+@supports not selector(:popover-open) {
+    .toc-button,
+    .toc {
+        display: none;
+    }
+}
+
+/*
+  Where a pointer can hover and the lane sits beside the column, the same list
+  stays on screen as a Notion-style rail: a long dash per H2, a short one per
+  H3, the current one in ink. Hover or keyboard focus opens the rail into a
+  card that covers it, so the pointer never falls off its edge. Author styles
+  outrank the popover's default `display: none`, so the rail needs no opening.
+*/
+@media (hover: hover) and (min-width: calc(42rem + 184px)) {
+    .toc-button {
+        display: none;
+    }
+
+    .toc {
+        inset: 50% auto auto
+            min(50% + var(--measure) / 2 + var(--gutter), 100% - var(--gutter) - 44px);
+        display: block;
+        width: 44px;
+        max-height: none;
+        padding: 0;
+        overflow: visible;
+        background: none;
+        border: 0;
+        translate: 0 -50%;
+    }
+
+    /* Collapsed, each entry is a 12px row with its label clipped but still naming the link. */
+    .toc a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 12px;
+        padding: 0;
+        overflow: hidden;
+        color: transparent;
+        white-space: nowrap;
+    }
+
+    .toc ul ul a {
+        padding-left: 0;
+    }
+
+    .toc a::before {
+        content: '';
+        flex: none;
+        width: 20px;
+        height: 2px;
+        background-color: color-mix(in srgb, var(--muted-color) 35%, var(--background-color));
+        border-radius: 1px;
+    }
+
+    .toc ul ul a::before {
+        width: 12px;
+        margin-right: 8px;
+    }
+
+    .toc a[aria-current]::before {
+        background-color: var(--heading-color);
+    }
+
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) {
+        /* The dashes stay put: the card's padding and border sit to their left. */
+        left: min(50% + var(--measure) / 2 + var(--gutter) - 17px, 100% - var(--gutter) - 16rem);
+        width: 16rem;
+        max-height: calc(100% - 2 * (var(--gutter) + 44px + 8px));
+        padding: 8px 16px;
+        overflow-y: auto;
+        background-color: var(--background-color);
+        border: 1px solid var(--border-color);
+    }
+
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) a {
+        height: auto;
+        padding-block: 4px;
+        overflow: visible;
+        color: var(--link-color);
+        white-space: normal;
+    }
+
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) ul ul a {
+        gap: calc(12px + 1em);
+    }
+
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) a:hover {
+        color: var(--link-hover-color);
+    }
+}
+
+@media (min-width: calc(42rem + 184px)) {
+    .back-to-top,
+    .toc-button {
+        right: max(var(--gutter), 50% - var(--measure) / 2 - var(--gutter) - 44px);
+    }
+}
+
+@media (hover: none) and (min-width: calc(42rem + 184px)) {
+    .toc {
+        right: max(var(--gutter), 50% - var(--measure) / 2 - var(--gutter) - 44px);
+    }
+}
+
+/* Scrolled at print time, the floating controls would stamp themselves on every page. */
+@media print {
+    .back-to-top,
+    .toc-button,
+    .toc {
+        display: none;
+    }
+}

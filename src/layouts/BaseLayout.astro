@@ -1,0 +1,247 @@
+---
+import '../styles/global.css'
+import '../styles/floating-controls.css'
+import syntaxCss from '../styles/syntax.css?raw'
+import BackToTop from '../components/BackToTop.astro'
+import CodeCopy from '../components/CodeCopy.astro'
+import Theme from '../components/Theme.astro'
+import ThemeToggle from '../components/ThemeToggle.astro'
+import { codeFontCss, serifHref } from '../lib/assets'
+
+export interface Props {
+  title?: string
+  description?: string
+  pubDate?: Date
+  updatedDate?: Date
+  article?: boolean
+  notFound?: boolean
+  hasCode?: boolean
+  hasCodeBlock?: boolean
+}
+
+const {
+  title = '~chensl',
+  description = '陈劭珑的个人网站与技术博客',
+  pubDate,
+  updatedDate,
+  article = false,
+  notFound = false,
+  hasCode = false,
+  hasCodeBlock = false,
+} = Astro.props
+const siteTitle = '~chensl'
+const isHome = Astro.url.pathname === '/'
+const documentTitle = isHome ? siteTitle : `${title} | ${siteTitle}`
+const metadataTitle = isHome ? siteTitle : title
+const canonical = new URL(Astro.url.pathname, Astro.site!)
+const image = new URL('/og-image.png', Astro.site!)
+const schema: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': isHome
+    ? 'WebSite'
+    : article
+      ? 'BlogPosting'
+      : Astro.url.pathname === '/blog/'
+        ? 'CollectionPage'
+        : 'WebPage',
+  name: metadataTitle,
+  url: canonical.href,
+  description,
+  inLanguage: 'zh-CN',
+  author: { '@type': 'Person', name: 'Shaolong Chen' },
+}
+if (article)
+  Object.assign(schema, {
+    headline: title,
+    image: image.href,
+    ...(pubDate && { datePublished: pubDate.toISOString() }),
+    ...(updatedDate && { dateModified: updatedDate.toISOString() }),
+    mainEntityOfPage: canonical.href,
+  })
+const path = Astro.url.pathname
+const homeCurrent = path === '/' ? 'page' : undefined
+const blogCurrent =
+  path === '/blog' || path === '/blog/'
+    ? 'page'
+    : path.startsWith('/blog/')
+      ? 'location'
+      : undefined
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Theme />
+    <title>{documentTitle}</title>
+    {notFound ? (
+      <meta name="robots" content="noindex" />
+    ) : (
+      <>
+        <link rel="canonical" href={canonical} />
+        <meta name="description" content={description} />
+        <meta name="author" content="Shaolong Chen" />
+        <meta property="og:site_name" content={siteTitle} />
+        <meta property="og:locale" content="zh_CN" />
+        <meta property="og:title" content={metadataTitle} />
+        <meta property="og:type" content={article ? 'article' : 'website'} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={image} />
+        {article && pubDate && (
+          <meta property="article:published_time" content={pubDate.toISOString()} />
+        )}
+        {article && updatedDate && (
+          <meta property="article:modified_time" content={updatedDate.toISOString()} />
+        )}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={metadataTitle} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={image} />
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify(schema).replaceAll('<', '\\u003c')}
+        />
+      </>
+    )}
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="stylesheet" href={serifHref} />
+    {(hasCode || hasCodeBlock) && <style is:global set:html={codeFontCss} />}
+    {hasCodeBlock && <style is:global set:html={syntaxCss} />}
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      href={new URL('/index.xml', Astro.site!)}
+      title={siteTitle}
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      跳到正文
+    </a>
+    <header class="site-header">
+      <p class="site-title">
+        <a href="/">{siteTitle}</a>
+      </p>
+      <nav aria-label="主导航">
+        <a href="/" aria-current={homeCurrent}>
+          首页
+        </a>
+        <a href="/blog/" aria-current={blogCurrent}>
+          博客
+        </a>
+        <a href="/index.xml" type="application/rss+xml">
+          RSS
+        </a>
+        <ThemeToggle />
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>
+        基于 <a href="https://astro.build">Astro</a> 构建 / 排版灵感来自{' '}
+        <a href="https://github.com/tw93/Kami">Kami</a>
+      </p>
+    </footer>
+    {hasCodeBlock && <CodeCopy />}
+    {article && <BackToTop />}
+  </body>
+</html>
+
+<style>
+  :global(body) {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: calc(var(--measure) + 2 * var(--gutter));
+    margin: 0 auto;
+    padding: 32px var(--gutter);
+    font-size: 1.125rem;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    overflow-wrap: break-word;
+  }
+  main {
+    flex: 1;
+  }
+  .skip-link {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    padding: 8px 16px;
+    color: var(--background-color);
+    background: var(--link-color);
+  }
+  .site-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 64px;
+  }
+  .site-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .site-title a {
+    color: var(--heading-color);
+    text-decoration: none;
+  }
+  .site-header nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+    font-size: 0.875rem;
+  }
+  .site-header nav a {
+    white-space: nowrap;
+  }
+  .site-header nav a[aria-current] {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.25em;
+  }
+  .site-footer {
+    margin-top: 72px;
+    padding-top: 20px;
+    font-size: 0.875rem;
+    color: var(--muted-color);
+    border-top: 1px solid var(--border-color);
+  }
+  .site-footer p {
+    margin: 0;
+  }
+  .site-footer a {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+  }
+  @media (max-width: 600px) {
+    :global(body) {
+      padding-block: 24px;
+      font-size: 1.0625rem;
+    }
+    .site-header {
+      margin-bottom: 48px;
+    }
+    .site-header nav {
+      gap: 12px;
+    }
+  }
+</style>

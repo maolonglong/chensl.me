@@ -1,0 +1,111 @@
+---
+export interface Props {
+  headings: { depth: number; slug: string; text: string }[]
+}
+
+const headings = Astro.props.headings.filter(({ depth }) => depth === 2 || depth === 3)
+const groups: { heading: (typeof headings)[number]; children: typeof headings }[] = []
+for (const heading of headings) {
+  if (heading.depth === 2 || groups.length === 0) groups.push({ heading, children: [] })
+  else groups.at(-1)!.children.push(heading)
+}
+---
+
+{headings.length >= 3 && (
+  <>
+    <button class="toc-button" type="button" popovertarget="article-toc" aria-label="目录">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M4 6h16M4 12h16M4 18h10" />
+      </svg>
+    </button>
+    <nav id="article-toc" class="toc" popover aria-label="目录">
+      <ul>
+        {groups.map((group) => (
+          <li>
+            <a href={`#${group.heading.slug}`}>{group.heading.text}</a>
+            {group.children.length > 0 && (
+              <ul>
+                {group.children.map((heading) => (
+                  <li>
+                    <a href={`#${heading.slug}`}>{heading.text}</a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <script>
+      ;(() => {
+        'use strict'
+        const list = document.querySelector<HTMLElement>('#article-toc')
+        if (!list) return
+        const readingLine = 40
+        const entries = [...list.querySelectorAll('a')].flatMap((link) => {
+          const heading = document.getElementById(decodeURIComponent(link.hash.slice(1)))
+          return heading ? [{ link, heading }] : []
+        })
+        let current: (typeof entries)[number] | undefined
+        let pending = false
+        const spy = () => {
+          pending = false
+          const root = document.documentElement
+          const entry =
+            window.innerHeight + window.scrollY >= root.scrollHeight - 1
+              ? entries.at(-1)
+              : entries.findLast(
+                  ({ heading }) => heading.getBoundingClientRect().top <= readingLine,
+                )
+          if (entry === current) return
+          current?.link.removeAttribute('aria-current')
+          entry?.link.setAttribute('aria-current', 'location')
+          current = entry
+        }
+        const schedule = () => {
+          if (!pending) {
+            pending = true
+            requestAnimationFrame(spy)
+          }
+        }
+        window.addEventListener('scroll', schedule, { passive: true })
+        window.addEventListener('resize', schedule)
+        spy()
+        list.addEventListener('click', (event) => {
+          if (!(event.target instanceof Element) || !event.target.closest('a')) return
+          if (list.matches(':popover-open')) list.hidePopover()
+          if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+        })
+        document.addEventListener('keydown', (event) => {
+          if (
+            event.key === 'Escape' &&
+            !list.matches(':popover-open') &&
+            list.matches(':hover, :focus-within')
+          )
+            list.dataset.dismissed = ''
+        })
+        list.addEventListener('pointerleave', () => {
+          if (!list.matches(':focus-within')) delete list.dataset.dismissed
+        })
+        list.addEventListener('focusout', (event) => {
+          if (
+            !(event.relatedTarget instanceof Node && list.contains(event.relatedTarget)) &&
+            !list.matches(':hover')
+          )
+            delete list.dataset.dismissed
+        })
+      })()
+    </script>
+  </>
+)}

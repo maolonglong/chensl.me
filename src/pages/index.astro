@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout>
+  <div class="home prose">
+    <h1>👋 Hi! 我是陈劭珑</h1>
+    <!-- prettier-ignore -->
+    <p>目前在 🌏 工作的软件工程师，为了 🏠 🚗 💰 而写代码。代码在 <a href="https://github.com/maolonglong" rel="me">GitHub</a>，偶尔在 <a href="https://x.com/chensl_" rel="me">Twitter</a> 说话。</p>
+    <hr />
+    <p>
+      <strong>我：</strong> 在你眼里，我是一个什么样的人？
+    </p>
+    <blockquote>
+      <p>
+        <strong>ChatGPT：</strong>
+      </p>
+      <p>
+        你喜欢简洁、稳定、可控的东西，但又总忍不住去试试最新的工具。你会认真研究一个工具为什么这样设计，也会在配置文件里纠结一行参数到底该不该留。
+      </p>
+      <p>
+        你有阿婷，有小兜，有很多零碎但珍贵的生活。你会关心家里的网络为什么变慢，也会关心猫为什么拉肚子；会研究
+        Agent 怎么运行，也会认真挑选一份纪念日礼物。
+      </p>
+    </blockquote>
+  </div>
+</BaseLayout>
+
+<style>
+  .home > h1 {
+    font-size: clamp(2rem, 6vw, 2.5rem);
+  }
+  .home > h1 + p {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: var(--blockquote-color);
+  }
+  .home > hr {
+    margin-block: 40px;
+    border: 0;
+  }
+  @media (max-width: 600px) {
+    .home > hr {
+      margin-block: 32px;
+    }
+  }
+</style>
