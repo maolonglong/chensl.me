@@ -16,7 +16,12 @@ export default defineConfig({
       smartypants: false,
       remarkPlugins: [remarkSite],
       rehypePlugins: [rehypeSite],
-      remarkRehype: { footnoteLabel: '脚注', footnoteBackLabel: '返回正文' },
+      remarkRehype: {
+        footnoteLabel: '脚注',
+        footnoteBackLabel: '返回正文',
+        footnoteLabelTagName: 'span',
+        footnoteLabelProperties: { className: ['visually-hidden'] },
+      },
     }),
     shikiConfig: { themes: codeThemes, defaultColor: false, transformers: [codeCaption] },
   },

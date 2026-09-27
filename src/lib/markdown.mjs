@@ -38,17 +38,6 @@ export function remarkSite() {
 export function rehypeSite() {
   return (tree) => {
     visit(tree, 'element', (node, index, parent) => {
-      // Keep Astro's default anchors; only adapt footnote presentation to the site's CSS.
-      if (node.properties.id === 'footnote-label') {
-        node.tagName = 'span'
-        node.properties.className = ['visually-hidden']
-      }
-      if ('dataFootnotes' in node.properties) node.children.unshift(element('hr', {}, []))
-      if ('dataFootnoteRef' in node.properties) node.properties.className = ['footnote-ref']
-      if ('dataFootnoteBackref' in node.properties) {
-        node.properties.className = ['footnote-backref']
-        node.children = [text('↩︎')]
-      }
       if (node.tagName === 'table') {
         parent.children[index] = element(
           'div',

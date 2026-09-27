@@ -206,7 +206,7 @@ cite {
 }
 
 /* Running-text links are underlined so they never depend on color alone. */
-.prose a:not(.footnote-ref) {
+.prose a:not([data-footnote-ref]) {
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.2em;
@@ -360,8 +360,11 @@ details > summary {
     color: var(--muted-color);
 }
 
-.footnotes hr {
+.footnotes::before {
+    content: '';
+    display: block;
     margin-block: 3em 1.75em;
+    border-top: 1px solid var(--border-color);
 }
 
 .footnotes ol {

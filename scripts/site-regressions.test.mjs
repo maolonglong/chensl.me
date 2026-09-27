@@ -113,6 +113,11 @@ async function behaviorFixture() {
 
 麤
 
+First reference[^shared], another note[^other], and the same note again[^shared].
+
+[^shared]: Shared footnote.
+[^other]: Other footnote.
+
 | Driver | Actual development |
 |:--|:--:|
 | Redis | [Miniredis](https://github.com/alicebob/miniredis) |
@@ -351,6 +356,22 @@ test('Markdown preserves code captions and accessible aligned tables', async () 
     /<td style="text-align: center"><a href="https:\/\/github\.com\/alicebob\/miniredis">Miniredis<\/a><\/td>/,
   )
   assert.doesNotMatch(html, /<table[^>]*style=/)
+})
+
+test('native footnotes preserve accessible labels and distinct repeated backreferences', async () => {
+  const { dist } = await behaviorFixture()
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  const notes = html.match(/<section data-footnotes[^>]*>[\s\S]*?<\/section>/)?.[0]
+  assert.ok(notes, 'missing footnotes')
+  assert.match(notes, /<span[^>]*id="footnote-label"[^>]*>脚注<\/span>/)
+  assert.match(notes, /class="visually-hidden"/)
+  assert.doesNotMatch(notes, /<hr\b|<h[1-6]\b/)
+  assert.match(notes, /href="#user-content-fnref-shared"/)
+  assert.match(notes, /href="#user-content-fnref-shared-2"/)
+  assert.match(notes, /↩<sup>2<\/sup>/)
+  assert.match(notes, /aria-label="返回正文"/)
+  assert.match(html, /data-footnote-ref[^>]*aria-describedby="footnote-label"/)
+  assert.doesNotMatch(html, /class="footnote-(?:ref|backref)"/)
 })
 
 test('TOC uses exactly three H2/H3 headings as its threshold', async () => {
