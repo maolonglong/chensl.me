@@ -149,6 +149,7 @@ package db
         'src/content/blog/future.md',
         `${frontmatter('Future post', '2999-01-01')}Hidden.`,
       )
+      await write(fixture, 'src/pages/about.astro', '<h1>Independent page</h1>')
       const dist = await buildAstro(fixture)
       return { fixture, dist }
     })()
@@ -160,6 +161,43 @@ function imageWithAlt(html, alt) {
   assert.ok(tag, `missing image alt=${alt}`)
   return tag
 }
+
+test('sitemap discovers built pages and excludes unpublished content and endpoints', async () => {
+  const { dist } = await behaviorFixture()
+  const result = run(
+    'python3',
+    [
+      '-c',
+      `import json, pathlib, sys, xml.etree.ElementTree as E
+root = pathlib.Path(sys.argv[1])
+ns = {'s': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+index = E.parse(root / 'sitemap-index.xml')
+maps = [e.text for e in index.findall('s:sitemap/s:loc', ns)]
+assert maps == ['https://chensl.me/sitemap-0.xml'], maps
+pages = E.parse(root / 'sitemap-0.xml')
+print(json.dumps(sorted(e.text for e in pages.findall('s:url/s:loc', ns))))`,
+      dist,
+    ],
+    root,
+  )
+  assert.equal(result.status, 0, result.stderr)
+  assert.deepEqual(JSON.parse(result.stdout), [
+    'https://chensl.me/',
+    'https://chensl.me/about/',
+    'https://chensl.me/blog/',
+    'https://chensl.me/blog/below/',
+    'https://chensl.me/blog/older/',
+    'https://chensl.me/blog/render/',
+  ])
+  assert.match(
+    await readFile(path.join(dist, 'robots.txt'), 'utf8'),
+    /Sitemap: https:\/\/chensl\.me\/sitemap-index\.xml/,
+  )
+  assert.match(
+    await readFile(path.join(dist, 'index.html'), 'utf8'),
+    /<link rel="sitemap" href="\/sitemap-index\.xml"/,
+  )
+})
 
 test('Astro rejects collection entries missing required metadata', async () => {
   const fixture = await astroProject('astro-invalid-metadata-')
