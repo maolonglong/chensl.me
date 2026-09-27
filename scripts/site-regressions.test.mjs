@@ -434,6 +434,34 @@ test('articles carry one contents list that opens without JavaScript', async () 
   assert.doesNotMatch(short, /id="TableOfContents"|class="toc-button"/)
 })
 
+test('floating contents owns the three H2/H3 heading threshold', async () => {
+  const fixture = await temporaryDirectory('hugo-contents-threshold-')
+  await mkdir(path.join(fixture, 'layouts/_partials'), { recursive: true })
+  await cp(path.join(root, 'layouts/_partials/floating-toc.html'), path.join(fixture, 'layouts/_partials/floating-toc.html'))
+  await write(fixture, 'hugo.toml', `baseURL = 'https://example.test/'
+[markup.tableOfContents]
+  startLevel = 2
+  endLevel = 3
+`)
+  await write(fixture, 'layouts/page.html', '{{ partial "floating-toc.html" . }}<main>{{ .Content }}</main>')
+  const headings = '## First\n\n### Second\n\n#### Excluded\n'
+  await write(fixture, 'content/below.md', `---\ntitle: Below\n---\n${headings}`)
+  await write(fixture, 'content/threshold.md', `---\ntitle: Threshold\n---\n${headings}\n## Third\n`)
+
+  const result = run(process.env.HUGO_BIN ?? 'hugo', ['--source', fixture, '--destination', path.join(fixture, 'out'), '--quiet'], root)
+  assert.equal(result.status, 0, result.stderr)
+
+  const below = await readFile(path.join(fixture, 'out/below/index.html'), 'utf8')
+  assert.doesNotMatch(below, /id="TableOfContents"|class="toc-button"|<script\b/)
+  const threshold = await readFile(path.join(fixture, 'out/threshold/index.html'), 'utf8')
+  assert.equal([...threshold.matchAll(/id="TableOfContents"/g)].length, 1)
+  assert.equal([...threshold.matchAll(/class="toc-button"/g)].length, 1)
+  for (const id of ['first', 'second', 'third']) {
+    assert.match(threshold, new RegExp(`href="#${id}"`))
+  }
+  assert.doesNotMatch(threshold, /href="#excluded"/)
+})
+
 test('fence titles reach the page as a caption', async () => {
   const destination = await temporaryDirectory('hugo-codeblock-')
   const result = run(process.env.HUGO_BIN ?? 'hugo', ['--destination', destination, '--quiet'], root)

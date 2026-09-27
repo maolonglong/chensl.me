@@ -6,6 +6,8 @@
   marks the current section, closes the list after a choice, and lets Escape
   dismiss the rail's card.
 */ -}}
+{{- /* A contents list earns its place from three H2/H3 headings; hugo.toml sets the depth. */ -}}
+{{- if ge (len (findRE `<h[23][\s>]` .Content)) 3 }}
 <button class="toc-button" type="button" popovertarget="TableOfContents" aria-label="目录">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     <path d="M4 6h16M4 12h16M4 18h10" />
@@ -87,3 +89,4 @@
     });
   });
 </script>
+{{- end }}
