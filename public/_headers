@@ -6,7 +6,7 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
 
-/fonts/*
+/_astro/fonts/*
   Cache-Control: public, max-age=31536000, immutable
 
 /css/*

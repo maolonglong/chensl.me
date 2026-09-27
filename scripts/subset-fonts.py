@@ -2,19 +2,13 @@
 # requires-python = ">=3.11"
 # dependencies = ["fonttools==4.65.0", "brotli==1.2.0"]
 # ///
-"""Build the JinKai W04 web font: a core subset for this site plus complete fallback ranges.
+"""Regenerate the complete JinKai W04 fallback ranges when the source font changes.
 
-The core subset holds every character the built site renders, so a cold visit downloads one
-file per weight instead of dozens of blocks. The 128-codepoint blocks stay as a complete
-fallback for characters newer articles introduce before the next regeneration; `src/lib/assets.ts`
-declares them first so the narrower core wins wherever it applies. W05 stays out of the web
-build: `src/lib/assets.ts` declares W04 for weights 400-500.
+Content-specific subsets are generated automatically by src/lib/fonts.mjs.
+This maintenance command is not part of the normal Node-only site build.
 """
 
-import html
 import io
-import json
-import re
 import sys
 from pathlib import Path
 
@@ -24,22 +18,9 @@ from fontTools.ttLib import TTFont
 FACE, WEIGHT = "W04", 400
 root = Path(__file__).resolve().parents[1]
 source = Path(sys.argv[1])
-fonts = root / "public/fonts/tsanger-jinkai02"
+fonts = root / "src/assets/fonts/tsanger-jinkai02"
 blocks_dir = fonts / "subsets"
 blocks_dir.mkdir(parents=True, exist_ok=True)
-
-
-def site_codepoints() -> set[int]:
-    """Characters the built site renders, taken from Astro's output rather than the sources."""
-    output = root / "dist"
-    pages = sorted(output.rglob("*.html")) + sorted(output.rglob("*.xml"))
-    if not pages:
-        sys.exit("No built site found. Run `pnpm build` before regenerating fonts.")
-    codepoints: set[int] = set()
-    for page in pages:
-        markup = re.sub(r"<(script|style)\b.*?</\1>", "", page.read_text("utf8"), flags=re.S)
-        codepoints |= {ord(character) for character in html.unescape(re.sub(r"<[^>]+>", " ", markup))}
-    return codepoints
 
 
 def subset_font(original: bytes, selected: set[int], destination: Path) -> None:
@@ -59,21 +40,6 @@ def subset_font(original: bytes, selected: set[int], destination: Path) -> None:
     assert actual == selected, f"Coverage mismatch: {destination}"
 
 
-def css_ranges(codepoints: set[int]) -> str:
-    """Collapse codepoints into the shortest equivalent CSS `unicode-range` value."""
-    ranges: list[str] = []
-    ordered = sorted(codepoints)
-    start = previous = ordered[0]
-    for codepoint in ordered[1:] + [-1]:
-        if codepoint == previous + 1:
-            previous = codepoint
-            continue
-        ranges.append(f"U+{start:x}" if start == previous else f"U+{start:x}-{previous:x}")
-        start = previous = codepoint
-    return ", ".join(ranges)
-
-
-corpus = site_codepoints()
 generated: set[Path] = set()
 
 original = TTFont(source / f"TsangerJinKai02-{FACE}.ttf", recalcTimestamp=False)
@@ -82,12 +48,6 @@ original.flavor = None
 buffer = io.BytesIO()
 original.save(buffer)
 raw = buffer.getvalue()
-
-core = corpus & codepoints
-assert core, "Empty core subset"
-core_path = fonts / f"core-{WEIGHT}.woff2"
-subset_font(raw, core, core_path)
-generated.add(core_path)
 
 covered: set[int] = set()
 blocks = sorted({codepoint // 128 for codepoint in codepoints})
@@ -101,22 +61,9 @@ for block in blocks:
     covered.update(selected)
 assert covered == codepoints, f"Incomplete coverage: {FACE}"
 print(
-    f"{FACE}: core {len(core)} glyphs / {core_path.stat().st_size / 1024:.0f} KiB, "
-    f"{len(blocks)} fallback subsets, all {len(covered)} codepoints preserved",
+    f"{FACE}: {len(blocks)} fallback subsets, all {len(covered)} codepoints preserved",
     flush=True,
 )
 
-manifest = root / "data/serif.json"
-manifest.parent.mkdir(exist_ok=True)
-manifest.write_text(
-    json.dumps(
-        {"coreGlyphs": len(core), "coreRanges": css_ranges(core)},
-        indent=2,
-        ensure_ascii=True,
-    )
-    + "\n",
-    "utf8",
-)
-
-for stale in (set(blocks_dir.glob("*.woff2")) | set(fonts.glob("core-*.woff2"))) - generated:
+for stale in set(blocks_dir.glob("*.woff2")) - generated:
     stale.unlink()

@@ -54,16 +54,16 @@ try {
   const fonts = browser(
     'eval',
     `(() => {
-    const fonts = performance.getEntriesByType('resource').filter(e => e.name.includes('/fonts/tsanger-jinkai02/'));
+    const fonts = performance.getEntriesByType('resource').filter(e => e.name.includes('/_astro/fonts/'));
     return { requests: fonts.length, bytes: fonts.reduce((sum, e) => sum + e.encodedBodySize, 0),
       loaded: [...document.fonts].some(f => f.family.toLowerCase().includes('tsanger') && f.status === 'loaded') };
   })()`,
   )
   console.log('Cold home fonts:', fonts)
   // `pnpm check` models this budget statically; this confirms the browser agrees in practice.
-  if (!fonts.loaded || fonts.bytes === 0 || fonts.bytes > 640 * 1024 || fonts.requests > 4) {
+  if (!fonts.loaded || fonts.bytes === 0 || fonts.bytes > 100 * 1024 || fonts.requests !== 1) {
     failures.push(
-      'Home must load actual JinKai fonts in at most 4 requests and 640 KiB on a cold visit',
+      'Home must load actual JinKai fonts in one request and at most 100 KiB on a cold visit',
     )
   }
 

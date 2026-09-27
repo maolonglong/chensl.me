@@ -178,7 +178,7 @@ for (const [directive, source] of [
   }
 }
 // Workers Assets defaults to `max-age=0, must-revalidate`, which would revalidate every font.
-for (const immutable of ['/fonts/*', '/css/*']) {
+for (const immutable of ['/_astro/fonts/*', '/css/*']) {
   const rule =
     headers.match(
       new RegExp(`^${immutable.replace('*', '\\*')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`, 'm'),

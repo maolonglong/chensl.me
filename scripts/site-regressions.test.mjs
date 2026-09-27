@@ -1,20 +1,11 @@
 import assert from 'node:assert/strict'
-import { createHash } from 'node:crypto'
-import {
-  cp,
-  lstat,
-  mkdir,
-  mkdtemp,
-  readFile,
-  readdir,
-  rm,
-  symlink,
-  writeFile,
-} from 'node:fs/promises'
+import { cp, lstat, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { after, test } from 'node:test'
+import fontverter from 'fontverter'
+import { Blob, Face } from 'harfbuzzjs'
 
 /*
  * Migration risk boundaries covered here, before implementation:
@@ -55,7 +46,7 @@ function run(command, args, cwd) {
 
 async function astroProject(prefix) {
   const fixture = await temporaryDirectory(prefix)
-  for (const relative of ['astro.config.mjs', 'src', 'public', 'data']) {
+  for (const relative of ['astro.config.mjs', 'src', 'public', 'vendor/fonts']) {
     try {
       await cp(path.join(root, relative), path.join(fixture, relative), { recursive: true })
     } catch (error) {
@@ -119,6 +110,8 @@ async function behaviorFixture() {
 ### Second
 #### Excluded
 ## Third
+
+麤
 
 | Driver | Actual development |
 |:--|:--:|
@@ -462,14 +455,13 @@ test('site checker rejects relative RSS images and CSP-blocked images', async ()
 test('JinKai declarations preserve precedence, versioning, and cold-visit budget', async () => {
   const { dist } = await behaviorFixture()
   const index = await readFile(path.join(dist, 'index.html'), 'utf8')
-  const href = index.match(/<link\b[^>]*href="(\/css\/serif[^"]+)"/)?.[1]
-  assert.ok(href, 'missing serif stylesheet')
-  const css = await readFile(path.join(dist, href.split('?')[0].slice(1)), 'utf8')
-  const faces = [...css.matchAll(/@font-face\s*\{([^}]+)\}/g)].map(([, body]) => body)
-  assert.equal(faces.length, 256)
-  for (const face of faces) assert.match(face, /font-weight:\s*400 500/)
-  assert.match(faces.at(-1), /core-400\.woff2\?v=[a-f\d]{12}/)
-  assert.ok((faces.at(-1).match(/U\+/g) ?? []).length > 500)
+  const faces = [...index.matchAll(/@font-face\s*\{([^}]+)\}/g)].map(([, body]) => body)
+  assert.equal(faces.length, 257)
+  for (const face of faces) {
+    assert.match(face, /font-weight:\s*400 500/)
+    assert.match(face, /font-display:\s*swap/)
+    assert.match(face, /\/_astro\/fonts\/[^)'"]+\.woff2/)
+  }
   const candidates = faces.reverse().map((face) => ({
     url: face.match(/url\(["']?([^)'"]+)/)?.[1],
     ranges: (face.match(/unicode-range:\s*([^;}]+)/)?.[1] ?? '').split(',').map((token) => {
@@ -489,18 +481,26 @@ test('JinKai declarations preserve precedence, versioning, and cold-visit budget
   let total = 0
   for (const url of needed) {
     const file = await readFile(path.join(dist, url.split('?')[0].replace(/^\//, '')))
-    assert.equal(
-      url.split('?')[1],
-      `v=${createHash('sha256').update(file).digest('hex').slice(0, 12)}`,
-    )
+    assert.ok(!url.includes('?'), 'font cache keys must use fingerprinted paths')
     assert.equal(file.toString('ascii', 0, 4), 'wOF2')
     total += file.length
   }
-  assert.ok(total <= 640 * 1024, `${Math.round(total / 1024)} KiB exceeds 640 KiB`)
-  const served = await readdir(path.join(dist, 'fonts/tsanger-jinkai02'), { recursive: true })
+  assert.equal(needed.size, 1, 'home must use only its small common subset')
+  assert.ok(total <= 100 * 1024, `${Math.round(total / 1024)} KiB exceeds 100 KiB`)
+  const source = new Face(
+    new Blob(
+      await readFile(path.join(root, 'vendor/fonts/tsanger-jinkai02/TsangerJinKai02-W04.ttf')),
+    ),
+  )
+  const coverage = new Set()
+  for (const candidate of candidates) {
+    const buffer = await readFile(path.join(dist, candidate.url))
+    const face = new Face(new Blob(await fontverter.convert(buffer, 'sfnt')))
+    for (const cp of face.collectUnicodes()) coverage.add(cp)
+  }
   assert.deepEqual(
-    served.filter((name) => /(?:^|\/)(?:core-)?500[-.]/.test(name)),
-    [],
+    [...coverage].sort((a, b) => a - b),
+    [...source.collectUnicodes()],
   )
 })
 
@@ -511,9 +511,53 @@ test('code fonts remain conditional and no page preloads fonts', async () => {
     ['blog/render/index.html', true],
   ]) {
     const html = await readFile(path.join(dist, file), 'utf8')
-    assert.equal(/fonts\/jetbrains-mono/.test(html), hasCode, file)
+    assert.equal(/font-family:\s*['"]?JetBrains Mono/.test(html), hasCode, file)
     assert.doesNotMatch(html, /rel=["']preload["']/)
   }
+})
+
+test('font subsets follow edited content and remain deterministic across builds', async () => {
+  const fixture = await astroProject('astro-font-update-')
+  await write(
+    fixture,
+    'src/pages/index.astro',
+    `---\nimport BaseLayout from '../layouts/BaseLayout.astro'\n---\n<BaseLayout><p>龘 &amp; &#20598;</p></BaseLayout>`,
+  )
+  await write(fixture, 'src/content/blog/post.md', `${frontmatter('Article', '2025-01-01')}麤`)
+  const dist = await buildAstro(fixture)
+  async function subsets() {
+    const html = await readFile(path.join(dist, 'index.html'), 'utf8')
+    const faces = [...html.matchAll(/@font-face\s*\{([^}]+)\}/g)].map(([, face]) => face)
+    return Promise.all(
+      faces.slice(-2).map(async (css) => {
+        const url = css.match(/url\(["']?([^)'"]+)/)[1]
+        const bytes = await readFile(path.join(dist, url))
+        const face = new Face(new Blob(await fontverter.convert(bytes, 'sfnt')))
+        return { url, chars: [...face.collectUnicodes()], copyright: face.getName(0, 'en') }
+      }),
+    )
+  }
+  const first = await subsets()
+  assert.ok(first[1].chars.includes('龘'.codePointAt(0)))
+  assert.ok(first[1].chars.includes('偶'.codePointAt(0)), 'decode HTML character references')
+  assert.ok(first[0].chars.includes('麤'.codePointAt(0)))
+  assert.ok(!first[1].chars.includes('麤'.codePointAt(0)))
+  assert.equal(
+    first[0].chars.some((cp) => first[1].chars.includes(cp)),
+    false,
+  )
+  assert.ok(first.every((face) => face.copyright.length > 0))
+  await buildAstro(fixture)
+  assert.deepEqual(await subsets(), first)
+  await write(
+    fixture,
+    'src/pages/index.astro',
+    `---\nimport BaseLayout from '../layouts/BaseLayout.astro'\n---\n<BaseLayout><p>龘麤</p></BaseLayout>`,
+  )
+  await buildAstro(fixture)
+  const updated = await subsets()
+  assert.ok(updated[1].chars.includes('麤'.codePointAt(0)))
+  assert.notEqual(updated[1].url, first[1].url)
 })
 
 // Retain the pre-migration checker and design regressions independently of Astro.
@@ -631,10 +675,10 @@ test('site checker requires third-party CSP sources', async () => {
 test('site checker requires immutable caching for fonts and fingerprinted CSS', async () => {
   const fixture = await checkerFixture()
   const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
-  await write(fixture, 'dist/_headers', headers.replace(/^\/fonts\/\*\n[\s\S]*?\n\n/m, ''))
+  await write(fixture, 'dist/_headers', headers.replace(/^\/_astro\/fonts\/\*\n[\s\S]*?\n\n/m, ''))
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
-  assert.match(result.stderr, /\/fonts\/\* as immutable/)
+  assert.match(result.stderr, /\/_astro\/fonts\/\* as immutable/)
   assert.doesNotMatch(result.stderr, /\/css\/\* as immutable/)
 })
 

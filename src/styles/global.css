@@ -5,11 +5,11 @@
     --gutter: 24px;
     --radius: 6px;
     --font-serif:
-        'TsangerJinKai02', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', Charter,
+        var(--font-jinkai), 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', Charter,
         Georgia, serif;
     --font-mono:
-        'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas,
-        'Liberation Mono', var(--font-serif);
+        var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo,
+        Consolas, 'Liberation Mono', var(--font-serif);
     --background-color: light-dark(#f5f4ed, #141413);
     --heading-color: light-dark(#141413, #faf9f5);
     --text-color: light-dark(#3d3d3a, #d4d3cd);

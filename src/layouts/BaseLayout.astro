@@ -6,7 +6,7 @@ import BackToTop from '../components/BackToTop.astro'
 import CodeCopy from '../components/CodeCopy.astro'
 import Theme from '../components/Theme.astro'
 import ThemeToggle from '../components/ThemeToggle.astro'
-import { codeFontCss, serifHref } from '../lib/assets'
+import { Font } from 'astro:assets'
 
 export interface Props {
   title?: string
@@ -111,8 +111,8 @@ const blogCurrent =
     <link rel="icon" href="/favicon.ico" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="stylesheet" href={serifHref} />
-    {(hasCode || hasCodeBlock) && <style is:global set:html={codeFontCss} />}
+    <Font cssVariable="--font-jinkai" preload={false} />
+    {(hasCode || hasCodeBlock) && <Font cssVariable="--font-jetbrains" preload={false} />}
     {hasCodeBlock && <style is:global set:html={syntaxCss} />}
     <link
       rel="alternate"
