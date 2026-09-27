@@ -74,9 +74,14 @@
         list.dataset.dismissed = "";
       }
     });
-    list.addEventListener("pointerleave", () => delete list.dataset.dismissed);
+    // Keep dismissal until both pointer and keyboard focus have left the list.
+    list.addEventListener("pointerleave", () => {
+      if (!list.matches(":focus-within")) {
+        delete list.dataset.dismissed;
+      }
+    });
     list.addEventListener("focusout", event => {
-      if (!list.contains(event.relatedTarget)) {
+      if (!list.contains(event.relatedTarget) && !list.matches(":hover")) {
         delete list.dataset.dismissed;
       }
     });

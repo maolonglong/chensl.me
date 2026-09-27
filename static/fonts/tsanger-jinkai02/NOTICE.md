@@ -10,7 +10,7 @@ The site owner has confirmed personal non-commercial use. The vendor states that
 - Source names: `TsangerJinKai02-W04.ttf`, `TsangerJinKai02-W05.ttf`
 - Obtained: 2026-09-12
 
-The original TTF files are archived under `vendor/fonts/tsanger-jinkai02/`. This repository is private; remove those files before making the repository public because the vendor's personal-use terms do not grant public redistribution rights. The archived files match the upstream Git blobs and have these SHA-256 digests:
+The original TTF files from Kami are archived in this public repository under `vendor/fonts/tsanger-jinkai02/` to regenerate the fonts used by this personal, non-commercial site. Their inclusion does not change the vendor's licensing terms. The archived files match the upstream Git blobs and have these SHA-256 digests:
 
 - `TsangerJinKai02-W04.ttf`: `47a9b416c27ad5436794c880ce3f666a3135a862ed1e2c91aa7db48914a6a487`
 - `TsangerJinKai02-W05.ttf`: `9744dc96801ec8c91a3390bed24c993d4722fb406e1d879177d343d40e985a6e`

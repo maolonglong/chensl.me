@@ -5,10 +5,12 @@ const base = process.argv[2]
 assert.ok(base, 'Usage: node scripts/check-browser.mjs <preview-url>')
 const session = `site-check-${process.pid}`
 const failures = []
+let hover = true
 const browser = (...args) => {
   let output
   try {
-    output = execFileSync('agent-browser', ['--session', session, '--json', ...args], {
+    // Repeat launch flags on every call; changing them deliberately relaunches the browser.
+    output = execFileSync('agent-browser', ['--session', session, '--args', `--blink-settings=primaryHoverType=${hover ? 2 : 0}`, '--json', ...args], {
       encoding: 'utf8', timeout: 60_000,
     })
   } catch (error) {
@@ -25,6 +27,7 @@ const browser = (...args) => {
 const open = pathname => {
   browser('open', new URL(pathname, base).href)
   browser('eval', 'document.fonts.ready.then(() => true)')
+  assert.equal(browser('eval', `matchMedia('(hover: hover)').matches`), hover, 'Hover condition must match the scenario')
 }
 
 // Home, archive, a long article with code, tables, and a TOC, and the shared 404.
@@ -141,6 +144,20 @@ try {
     }
   }
 
+  // Resizing across the one-screen threshold must update visibility without another scroll.
+  browser('set', 'viewport', '1280', '844', '2')
+  open('/blog/dockertest/')
+  browser('eval', 'scrollTo(0, 900)')
+  for (const [height, visible] of [[844, true], [1000, false], [844, true]]) {
+    browser('set', 'viewport', '1280', String(height), '2')
+    const state = browser('eval', `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve({
+      y: scrollY, visible: getComputedStyle(document.querySelector('.back-to-top')).visibility === 'visible'
+    }))))`)
+    if (state.y !== 900 || state.visible !== visible) {
+      failures.push(`Back-to-top must update on resize to ${height}px without scrolling (${JSON.stringify(state)})`)
+    }
+  }
+
   // From the very bottom, one press returns to the top within a second, leaves the URL alone, and a keyboard press lands on the site title.
   browser('set', 'viewport', '1280', '844', '2')
   open('/blog/semantic-view-sql-traps/')
@@ -240,9 +257,31 @@ try {
     if (!covers(hovered.rail, rest.rail) || !inside(hovered.rail, hovered) || !hovered.listOnTop || hovered.rail.width < 200 || !apart(hovered.rail, hovered.backToTop)) {
       failures.push(`${label}: hover must open the rail into a card that covers it (${JSON.stringify(hovered)})`)
     }
+
+    // Dismissal survives either departure order, and resets once both inputs leave.
+    for (const first of ['pointer', 'focus']) {
+      browser('mouse', 'move', '0', '0')
+      browser('focus', '.site-title a')
+      browser('focus', '#TableOfContents li:first-child > a')
+      browser('mouse', 'move', String(rest.rail.left + 8), String(rest.rail.top + rest.rail.height / 2))
+      browser('press', 'Escape')
+      const dismissed = settle('')
+      if (first === 'pointer') browser('mouse', 'move', '0', '0')
+      else browser('focus', '.site-title a')
+      const departed = settle('')
+      if (dismissed.rail?.width !== 44 || departed.rail?.width !== 44) {
+        failures.push(`${label}: Escape must stay dismissed when ${first} leaves first`)
+      }
+      if (first === 'pointer') browser('focus', '.site-title a')
+      else browser('mouse', 'move', '0', '0')
+      browser('focus', '#TableOfContents li:first-child > a')
+      if (!(settle('').rail?.width >= 200)) failures.push(`${label}: focus must reopen the rail after both inputs leave`)
+    }
+    browser('focus', '.site-title a')
   }
 
-  for (const [width, size] of [[390, '100%'], [390, '200%'], [768, '100%']]) {
+  hover = false
+  for (const [width, size] of [[390, '100%'], [390, '200%'], [768, '100%'], [1024, '100%']]) {
     browser('set', 'viewport', String(width), '844', '2')
     open('/blog/dockertest/')
     browser('eval', `document.documentElement.style.fontSize = '${size}'`)

@@ -25,6 +25,7 @@
     // The button waits a screen down, where the header has long left the view.
     const update = () => button.toggleAttribute("data-visible", window.scrollY > window.innerHeight);
     window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
     update();
 
     button.addEventListener("click", event => {
