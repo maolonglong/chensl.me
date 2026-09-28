@@ -18,7 +18,9 @@ export default defineConfig({
       rehypePlugins: [rehypeSite],
       remarkRehype: {
         footnoteLabel: '脚注',
-        footnoteBackLabel: '返回正文',
+        footnoteBackLabel(referenceIndex, rereferenceIndex) {
+          return `返回正文中脚注 ${referenceIndex + 1} 的${rereferenceIndex > 1 ? `第 ${rereferenceIndex} 次` : ''}引用`
+        },
         footnoteLabelTagName: 'span',
         footnoteLabelProperties: { className: ['visually-hidden'] },
       },

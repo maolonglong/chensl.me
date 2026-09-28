@@ -369,7 +369,18 @@ test('native footnotes preserve accessible labels and distinct repeated backrefe
   assert.match(notes, /href="#user-content-fnref-shared"/)
   assert.match(notes, /href="#user-content-fnref-shared-2"/)
   assert.match(notes, /↩<sup>2<\/sup>/)
-  assert.match(notes, /aria-label="返回正文"/)
+  const backreferences = [...notes.matchAll(/<a\b[^>]*data-footnote-backref[^>]*>/g)]
+  assert.deepEqual(
+    backreferences.map(([tag]) => [
+      tag.match(/href="([^"]+)"/)[1],
+      tag.match(/aria-label="([^"]+)"/)[1],
+    ]),
+    [
+      ['#user-content-fnref-shared', '返回正文中脚注 1 的引用'],
+      ['#user-content-fnref-shared-2', '返回正文中脚注 1 的第 2 次引用'],
+      ['#user-content-fnref-other', '返回正文中脚注 2 的引用'],
+    ],
+  )
   assert.match(html, /data-footnote-ref[^>]*aria-describedby="footnote-label"/)
   assert.doesNotMatch(html, /class="footnote-(?:ref|backref)"/)
 })
