@@ -124,6 +124,23 @@ try {
   capture('code-caption-light')
   command('set', 'media', 'dark')
   capture('code-caption-dark')
+  for (const width of [1280, 390]) {
+    command('set', 'viewport', String(width), '844', '2')
+    for (const mode of ['light', 'dark']) {
+      command('set', 'media', mode)
+      open('/blog/dockertest/')
+      evaluate(
+        "navigator.clipboard.writeText = () => Promise.reject(new DOMException('Denied', 'NotAllowedError'))",
+      )
+      command('click', '.code-figure .code-copy')
+      evaluate(
+        "document.querySelector('.code-figure .code-copy-error').scrollIntoView({block: 'center'})",
+      )
+      capture(`copy-failed-${width}-${mode}`)
+    }
+  }
+  command('set', 'viewport', '1280', '844', '2')
+  open('/blog/dockertest/')
   command('focus', '#article-toc a')
   capture('toc-focused')
   command('press', 'Escape')

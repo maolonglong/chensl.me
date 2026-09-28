@@ -589,6 +589,41 @@ try {
         `Copy button must copy the code without its trailing newline and announce it (${JSON.stringify({ copied, status })})`,
       )
     }
+    const failure = browser(
+      'eval',
+      `async function checkFailure() {
+        const write = navigator.clipboard.writeText;
+        navigator.clipboard.writeText = () => Promise.reject(new DOMException('Denied', 'NotAllowedError'));
+        const button = document.querySelector('.code-copy');
+        button.click();
+        await new Promise(resolve => setTimeout(resolve, 50));
+        const error = button.parentElement.querySelector('.code-copy-error');
+        const result = {
+          visible: !!error && !error.hidden && error.getBoundingClientRect().height > 0,
+          text: error?.textContent.trim(),
+          announcement: document.querySelector('.code-copy-status').textContent.trim(),
+          otherBlocksClear: [...document.querySelectorAll('.code-copy-error')].every(el => el === error || el.hidden),
+        };
+        await new Promise(resolve => setTimeout(resolve, 2100));
+        result.persistent = !!error && !error.hidden;
+        navigator.clipboard.writeText = write;
+        return result;
+      }; checkFailure()`,
+    )
+    assert.deepEqual(failure, {
+      visible: true,
+      text: '复制失败，请手动选择代码。',
+      announcement: '复制失败，请手动选择代码。',
+      otherBlocksClear: true,
+      persistent: true,
+    })
+    browser('find', 'first', '.code-copy', 'click')
+    browser('wait', '100')
+    assert.equal(
+      browser('eval', "document.querySelector('.code-copy-error').hidden"),
+      true,
+      'Successful retry must clear the visible error',
+    )
   }
 } finally {
   browser('close')
