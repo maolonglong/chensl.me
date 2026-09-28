@@ -27,6 +27,7 @@ from shared import (
     TOKENS_FILE,
     iter_template_files,
     rel_to_root,
+    resolve_input,
 )
 from tokens import ROOT_BLOCK, parse_root_vars
 from diagram_geometry import scan_geometry
@@ -453,7 +454,8 @@ def _emphasis_container_findings(path: Path) -> list[Finding]:
     """Flag a document that fills its emphasis blocks in more than one color.
 
     A template reuses one fill across every raised block (long-doc runs three
-    components off `--ivory`; resume runs two off `--brand-tint`), so the page
+    components off `--ivory`; resume runs `.team-culture` and `.os-highlight`
+    off the same `--ivory`), so the page
     reads as one system used repeatedly. Drift looks different: a generated
     document invents a white rounded card for the question, then a tinted
     rounded block for the caveat, and the page now carries two unrelated
@@ -511,9 +513,7 @@ def check_style(paths: list[str]) -> int:
     failures = 0
     scanned = 0
     for raw in files:
-        path = Path(raw)
-        if not path.is_absolute():
-            path = ROOT / path
+        path = resolve_input(raw)
         if not path.exists():
             print(f"ERROR: {raw}: file not found")
             failures += 1
@@ -621,9 +621,7 @@ def check_docs(paths: list[str]) -> int:
     failures = 0
     scanned = 0
     for raw_path in targets:
-        path = Path(raw_path)
-        if not path.is_absolute():
-            path = ROOT / path
+        path = resolve_input(raw_path)
         if not path.exists():
             print(f"ERROR: {raw_path}: file not found")
             failures += 1

@@ -66,8 +66,8 @@ font-family: "YuMincho", "Yu Mincho", "Hiragino Mincho ProN",
 
 /* Korean */
 font-family: "Source Han Serif K", "Source Han Serif KR",
-             "Noto Serif KR", "Apple SD Gothic Neo", AppleMyungjo,
-             Charter, Georgia, serif;
+             "Noto Serif KR", "Nanum Myeongjo", AppleMyungjo,
+             "Apple SD Gothic Neo", Charter, Georgia, serif;
 ```
 
 **Font fallback affects page count**. Any font swap requires re-running the page-count check. If output overflows, first confirm the intended font actually loaded. If it did, edit content using pitfall "Hard-limit overflow"; spacing comes later and font size is the last resort.

@@ -1124,7 +1124,16 @@ The landing-page template is the only kami template designed for browser deliver
 ### Product site system
 
 - Use `landing-page*.html` for a single ready-to-serve product page. Keep CSS and JS inline so the file can be copied without a build step.
-- If the deliverable needs docs, help, releases, changelog, roadmap, legal pages, or more than two locales, treat it as a production product site.
+- If the deliverable needs docs, help, releases, changelog, roadmap, legal pages, or more than two locales, treat it as a production product site. Lock these five from the source material before filling any template, asking only where a missing item would change the deliverable:
+
+| # | Lock |
+|---|---|
+| 1 | **Product category**: the first-viewport category (app, CLI, terminal, utility, skill, template system, or another user-provided label). |
+| 2 | **Real assets**: product screenshots, logo, icon, or UI captures mapped to hero, gallery, feature, and social slots. A missing asset stays marked, never replaced with stock imagery. |
+| 3 | **Site shape**: a single page, or home plus docs, help, releases, changelog, roadmap, or legal pages. |
+| 4 | **Locales**: the exact locale list, canonical paths, and whether a generator with a check mode is needed. |
+| 5 | **Truth surfaces**: install path, price, version, support route, FAQ, `llms.txt`, and `llms-full.txt` that must stay synchronized. |
+
 - For a production product site, prefer one structural template, locale string files, and long-content files. The generator must have a check mode that fails on missing keys and generated-output drift.
 - Product positioning must be checked against current product surfaces before rewriting. Stale category language is worse than a missing feature detail.
 - Locale pages, FAQ, JSON-LD, `llms.txt`, `llms-full.txt`, screenshots, install copy, pricing, version, and support links are one public fact set. Keep the factual claims aligned across them.
@@ -1457,8 +1466,8 @@ Canonical values (verified during the `one-pager-ko` pilot, 2026-05-28):
 Fallback chain (consistent across all KO templates):
 
 ```css
---serif: "Source Han Serif K", "Source Han Serif KR", "Noto Serif KR", "Apple SD Gothic Neo",
-         "AppleMyungjo", Charter, Georgia, serif;
+--serif: "Source Han Serif K", "Source Han Serif KR", "Noto Serif KR", "Nanum Myeongjo",
+         "AppleMyungjo", "Apple SD Gothic Neo", Charter, Georgia, serif;
 --sans:  var(--serif);
 --mono:  "JetBrains Mono", "D2Coding", "SF Mono", "Fira Code",
          Consolas, Monaco, monospace;

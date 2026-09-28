@@ -24,7 +24,6 @@ from render import build_slides, render_pdf
 from shared import (
     DIAGRAMS,
     EXAMPLES,
-    ROOT,
     TEMPLATES,
     build_targets,
     default_example_pdfs,
@@ -32,6 +31,7 @@ from shared import (
     load_checks_thresholds,
     pptx_targets,
     rel_to_root,
+    resolve_input,
     screen_targets,
 )
 
@@ -62,6 +62,9 @@ CJK_SERIF_MARKERS = (
     "HiraginoMincho",
     "HiraMinPro",
     "YuMincho",
+    "Myeongjo",
+    "Myungjo",
+    "Batang",
 )
 # A CJK run needs at least this many ideographs before its dominant font is
 # worth judging: a stray glyph in an otherwise Latin document proves nothing.
@@ -244,9 +247,7 @@ def check_fonts(paths: list[str]) -> int:
 
     failures = 0
     for raw in files:
-        pdf = Path(raw)
-        if not pdf.is_absolute():
-            pdf = ROOT / pdf
+        pdf = resolve_input(raw)
         rel = rel_to_root(pdf)
         if not pdf.exists():
             print(f"ERROR: {raw}: file not found")
@@ -590,6 +591,6 @@ def verify_all(target: str | None) -> int:
                         print(f"  {sparse} SPARSE page(s) (>{sparse_pct_disp}% trailing whitespace) across {scanned} PDF(s)")
                     if warn:
                         print(f"  {warn} WARN page(s) (>{warn_pct_disp}%) across {scanned} PDF(s)")
-                    print("  (advisory: re-author with SKILL.md Step 4.1 merge rule. Does not fail --verify.)")
+                    print("  (advisory: re-author with the writing.md «Page density» merge rule. Does not fail --verify.)")
 
     return 0 if failures == 0 else 1

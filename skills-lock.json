@@ -63,9 +63,10 @@
     },
     "kami": {
       "source": "tw93/kami",
+      "ref": "main",
       "sourceType": "github",
       "skillPath": "skills/kami/SKILL.md",
-      "computedHash": "6843314e4922e8dfb05aad400e6ac95acf5fdfb9f9b299248b44ed6969bad571"
+      "computedHash": "2cc9301fe9b19552dab71666493651571b3a36a4d4963dc0dec7409ef1b5dece"
     },
     "learn": {
       "source": "tw93/Waza",
