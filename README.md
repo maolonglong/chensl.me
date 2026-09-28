@@ -24,8 +24,6 @@ Tests use disposable Astro fixture builds. TypeScript stays on 6.x because the c
 
 Use `pnpm format` to format maintained code with Prettier and its Astro plugin, and `pnpm lint` for Oxlint. Formatting excludes article content, fonts, third-party code, and generated output. Components own scoped styles and compiled TypeScript interactions; global CSS owns design tokens, Markdown typography, and shared floating-control geometry. Only the pre-paint theme bootstrap stays inline. Oxlint checks scripts, not Astro template semantics; `astro check` and browser coverage remain required.
 
-Astro generates a hash-based script CSP in each page. The `head-inline` integration in `astro.config.mjs` lets Astro hash and emit the trusted theme bootstrap after the CSP declaration and before the body. Restart the dev server after editing `src/scripts/theme-bootstrap.js`, which the config reads at startup. Cloudflare's `_headers` retains the other security restrictions, including `frame-ancestors`, which cannot be enforced through a meta policy. Both policies apply independently; third-party frame and connection sources must be allowed by both. Inline styles remain allowed for Shiki and the no-script fallback. Verify CSP with a production build served by Wrangler, not `astro dev`; the browser check deliberately attempts and asserts rejection of untrusted inline scripts and event handlers.
-
 `public/` contains unprocessed public assets; `dist/` is disposable output. Do not put source files in `dist/`. Run `node scripts/check-browser.mjs <preview-url>` against the preview for browser regression coverage.
 
 Run `node scripts/check-appearance.mjs <preview-url> .amp/in/artifacts/astro` for theme, storage-failure, and no-script checks plus 2× screenshots of pages, breakpoints, and contents states. Inspect the screenshots separately; capture alone is not visual verification. Both browser scripts require `agent-browser`.
@@ -42,12 +40,20 @@ Manual deployment, only when explicitly requested:
 pnpm deploy
 ```
 
+### CSP and theme bootstrap
+
+Astro generates a hash-based script CSP in each page. The `head-inline` integration in `astro.config.mjs` lets Astro hash and emit the trusted theme bootstrap after the CSP declaration and before the body. Restart the dev server after editing `src/scripts/theme-bootstrap.js`, which the config reads at startup.
+
+Cloudflare's `_headers` retains the other security restrictions, including `frame-ancestors`, which cannot be enforced through a meta policy. Both policies apply independently; third-party frame and connection sources must be allowed by both. Inline styles remain allowed for Shiki and the no-script fallback.
+
+Verify CSP with a production build served by Wrangler, not `astro dev`; the browser check deliberately attempts and asserts rejection of untrusted inline scripts and event handlers.
+
 ## CI and deployment
 
 - GitHub Actions runs on pushes and pull requests. [The CI workflow](.github/workflows/ci.yml) installs Node.js dependencies, runs `pnpm check`, then `wrangler deploy --dry-run`. It does not publish the site.
 - Cloudflare's Git integration automatically builds and deploys the production site when `main` is pushed. This integration is configured in the Cloudflare dashboard, outside the GitHub workflow. The dashboard is the source of truth for deployment settings and build/deployment records.
 
-Following [Astro's Cloudflare deployment guide](https://docs.astro.build/en/guides/deploy/cloudflare/), configure Workers Builds with build command `pnpm build` and deploy command `pnpm exec wrangler deploy`. Replace any old `build.sh` command in the dashboard before deploying this migration. The repository does not change dashboard settings. This prerendered site uses Workers Static Assets directly; `@astrojs/cloudflare` is only needed if adding on-demand rendering. For a local Workers preview, run `pnpm build` followed by `pnpm exec wrangler dev`.
+Following [Astro's Cloudflare deployment guide](https://docs.astro.build/en/guides/deploy/cloudflare/), configure Workers Builds with build command `pnpm build` and deploy command `pnpm exec wrangler deploy`. The repository does not change dashboard settings. This prerendered site uses Workers Static Assets directly; `@astrojs/cloudflare` is only needed if adding on-demand rendering. For a local Workers preview, run `pnpm build` followed by `pnpm exec wrangler dev`.
 
 Check validation and deployment separately. A successful GitHub CI run does not prove deployment succeeded, and the absence of a GitHub deployment job does not mean no deployment was triggered. Do not assume Cloudflare waits for GitHub CI to pass.
 
