@@ -205,6 +205,18 @@ test('Astro rejects collection entries missing required metadata', async () => {
   assert.match(result.stderr + result.stdout, /title|schema|frontmatter/i)
 })
 
+test('Astro rejects misspelled publication fields instead of publishing a draft', async () => {
+  const fixture = await astroProject('astro-unknown-metadata-')
+  await write(
+    fixture,
+    'src/content/blog/unfinished.md',
+    `${frontmatter('Unfinished article', '2025-01-01', 'darft: true\n')}Private draft.`,
+  )
+  const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
+  assert.notEqual(result.status, 0, 'unknown frontmatter must fail the build')
+  assert.match(result.stderr + result.stdout, /darft/)
+})
+
 test('home, archive, and RSS build without page Markdown entries', async () => {
   const fixture = await astroProject('astro-standalone-pages-')
   await rm(path.join(fixture, 'src/content/home.md'), { force: true })
