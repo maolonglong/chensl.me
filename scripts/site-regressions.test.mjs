@@ -47,7 +47,7 @@ function run(command, args, cwd) {
 
 async function astroProject(prefix) {
   const fixture = await temporaryDirectory(prefix)
-  for (const relative of ['astro.config.mjs', 'src', 'public', 'vendor/fonts']) {
+  for (const relative of ['astro.config.mjs', 'wrangler.jsonc', 'src', 'public', 'vendor/fonts']) {
     try {
       await cp(path.join(root, relative), path.join(fixture, relative), { recursive: true })
     } catch (error) {
@@ -65,7 +65,7 @@ async function astroProject(prefix) {
 async function buildAstro(fixture) {
   const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
   assert.equal(result.status, 0, result.stderr || result.stdout)
-  return path.join(fixture, 'dist')
+  return path.join(fixture, 'dist/client')
 }
 
 const frontmatter = (title, date, extra = '') =>

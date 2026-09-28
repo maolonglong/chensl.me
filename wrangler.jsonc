@@ -1,17 +1,45 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "blog",
+  "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-03-17",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "preview_urls": true,
   "workers_dev": true,
-  "previews": {},
+  "previews": {
+    "d1_databases": [
+      {
+        "binding": "VOTES",
+        "database_name": "blog-votes-preview",
+        "database_id": "9d595256-8798-415b-afe9-36d2c5ef18fb",
+        "migrations_dir": "migrations",
+      },
+    ],
+  },
   "observability": {
     "enabled": true,
   },
   "assets": {
-    "directory": "dist",
+    "directory": "dist/client",
+    "binding": "ASSETS",
     "not_found_handling": "404-page",
   },
+  "d1_databases": [
+    {
+      "binding": "VOTES",
+      "database_name": "blog-votes",
+      "database_id": "9bb848f2-e206-40b1-b209-28cba4bffc1f",
+      "preview_database_id": "9d595256-8798-415b-afe9-36d2c5ef18fb",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "ratelimits": [
+    {
+      "name": "VOTE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 30, "period": 60 },
+    },
+  ],
   "routes": [
     {
       "pattern": "chensl.me",

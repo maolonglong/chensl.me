@@ -1,6 +1,6 @@
 # chensl.me
 
-Source for [chensl.me](https://chensl.me), a personal site and technical blog built with Astro and deployed as Cloudflare Workers static assets. Pages are prerendered; there is no server adapter or client UI framework.
+Source for [chensl.me](https://chensl.me), a personal site and technical blog built with Astro and deployed to Cloudflare Workers. Pages are prerendered static assets; the official Cloudflare adapter runs the upvote Actions. There is no client UI framework.
 
 ## Setup
 
@@ -8,6 +8,8 @@ Use Node.js 26 and the pnpm version pinned in `package.json` (Astro requires Nod
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm cf:types
+pnpm exec wrangler d1 migrations apply VOTES --local
 ```
 
 Python 3 is used by the site checks for XML validation; these checks use only the Python standard library.
@@ -22,11 +24,15 @@ pnpm check  # formatting, lint, type check, build, regression tests, output vali
 
 Tests use disposable Astro fixture builds. TypeScript stays on 6.x because the current `astro check` does not support TypeScript 7.
 
+`pnpm cf:types` regenerates binding types from Wrangler configuration. Runtime types are imported selectively in `src/env.d.ts` to avoid collisions between Workers' HTMLRewriter `Element` and the browser DOM. Pre-rendering uses Node and build-time image optimization, preserving the existing filesystem-based CSS assets and RSS pipeline. Sessions are disabled; no KV or Cloudflare Images resource is required.
+
 Use `pnpm format` to format maintained code with Prettier and its Astro plugin, and `pnpm lint` for Oxlint. Formatting excludes article content, fonts, third-party code, and generated output. Components own scoped styles and compiled TypeScript interactions; global CSS owns design tokens, Markdown typography, and shared floating-control geometry. Only the pre-paint theme bootstrap stays inline. Oxlint checks scripts, not Astro template semantics; `astro check` and browser coverage remain required.
 
 `public/` contains unprocessed public assets; `dist/` is disposable output. Do not put source files in `dist/`. Run `node scripts/check-browser.mjs <preview-url>` against the preview for browser regression coverage.
 
 Run `node scripts/check-appearance.mjs <preview-url> .amp/in/artifacts/astro` for theme, storage-failure, and no-script checks plus 2× screenshots of pages, breakpoints, and contents states. Inspect the screenshots separately; capture alone is not visual verification. Both browser scripts require `agent-browser`.
+
+Run `node scripts/check-upvotes.mjs http://localhost:8787` against a production build served by `pnpm exec wrangler dev --port 8787`. It uses real Actions and local D1, adds three votes to the `dockertest` article per successful run, and prints assertions for concurrency, visitor isolation, cookie persistence, and browser error recovery. Use only disposable local data; the script rejects non-loopback URLs. Capture its output with `tee` when retaining a verification report. Static output is in `dist/client`; the generated Worker configuration is in `dist/server` and Wrangler follows `.wrangler/deploy/config.json`.
 
 After running `pnpm check`, validate Cloudflare configuration with a deployment dry run. Wrangler consumes the existing `dist/`; it does not rebuild or run tests:
 
@@ -53,7 +59,11 @@ Verify CSP with a production build served by Wrangler, not `astro dev`; the brow
 - GitHub Actions runs on pushes and pull requests. [The CI workflow](.github/workflows/ci.yml) installs Node.js dependencies, runs `pnpm check`, then `wrangler deploy --dry-run`. It does not publish the site.
 - Cloudflare's Git integration automatically builds and deploys the production site when `main` is pushed. This integration is configured in the Cloudflare dashboard, outside the GitHub workflow. The dashboard is the source of truth for deployment settings and build/deployment records.
 
-Following [Astro's Cloudflare deployment guide](https://docs.astro.build/en/guides/deploy/cloudflare/), configure Workers Builds with build command `pnpm build` and deploy command `pnpm exec wrangler deploy`. The repository does not change dashboard settings. This prerendered site uses Workers Static Assets directly; `@astrojs/cloudflare` is only needed if adding on-demand rendering. For a local Workers preview, run `pnpm build` followed by `pnpm exec wrangler dev`.
+Following [Astro's Cloudflare deployment guide](https://docs.astro.build/en/guides/deploy/cloudflare/), configure Workers Builds with build command `pnpm build` and deploy command `pnpm exec wrangler deploy`. The repository does not change dashboard settings. The Cloudflare adapter builds the Actions Worker alongside the static pages. For a local Workers preview, run `pnpm build` followed by `pnpm exec wrangler dev`.
+
+`wrangler.jsonc` binds production to `blog-votes` and Workers Previews to the separate `blog-votes-preview` D1 database. Apply new migrations before deploying code that needs them: `pnpm exec wrangler d1 migrations apply VOTES --remote --config wrangler.jsonc` for production, and the same command with `--preview` for the preview database. These commands require a token with D1 edit permission. Cloudflare resource creation, remote migrations, and deployment require authorization; a local migration or deployment dry run does not perform them. Version preview URLs share production bindings; use Workers Previews, not version URLs, for isolated test writes.
+
+Upvotes use a first-party `Secure`, `HttpOnly`, `SameSite=Strict` cookie renewed for one year. D1 stores article and anonymous visitor IDs, not IP addresses. Clearing cookies or switching browsers loses the visitor's vote identity; this is not a one-person-one-vote system. Duplicate submissions are idempotent and votes cannot be undone. Action responses are private and non-cacheable. A per-IP limiter uses namespace `1001` and allows 30 submissions per minute per Cloudflare location, so shared networks may share a limit; it is basic abuse mitigation, not a globally strict quota or bot challenge.
 
 Check validation and deployment separately. A successful GitHub CI run does not prove deployment succeeded, and the absence of a GitHub deployment job does not mean no deployment was triggered. Do not assume Cloudflare waits for GitHub CI to pass.
 

@@ -1,12 +1,15 @@
 import { defineConfig } from 'astro/config'
 import { readFileSync } from 'node:fs'
 import sitemap from '@astrojs/sitemap'
+import cloudflare from '@astrojs/cloudflare'
 import { unified } from '@astrojs/markdown-remark'
 import { remarkSite, rehypeSite, codeThemes, codeCaption } from './src/lib/markdown.mjs'
 import { siteFonts } from './src/lib/fonts.mjs'
 
 export default defineConfig({
   site: 'https://chensl.me',
+  adapter: cloudflare({ imageService: 'compile', prerenderEnvironment: 'node' }),
+  session: false,
   fonts: await siteFonts(),
   integrations: [
     sitemap(),

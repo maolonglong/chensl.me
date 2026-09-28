@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 
 const root = process.cwd()
-const outputDir = path.join(root, 'dist')
+const outputDir = path.resolve(root, process.argv[2] ?? 'dist')
 const errors = []
 
 async function walk(directory) {

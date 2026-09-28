@@ -1,0 +1,127 @@
+---
+interface Props {
+  postId: string
+}
+const { postId } = Astro.props
+---
+
+<div class="upvote" data-upvote data-post-id={postId}>
+  <button type="button" disabled aria-label="点赞" aria-describedby="vote-status">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+      <polyline points="17 11 12 6 7 11" />
+      <polyline points="17 18 12 13 7 18" />
+    </svg>
+    <span data-count aria-hidden="true">
+      ·
+    </span>
+  </button>
+  <span id="vote-status" role="status"></span>
+  <noscript>启用 JavaScript 后可以点赞。</noscript>
+</div>
+
+<script>
+  import { actions } from 'astro:actions'
+
+  const root = document.querySelector<HTMLElement>('[data-upvote]')
+  if (root) {
+    const button = root.querySelector('button')!
+    const count = root.querySelector<HTMLElement>('[data-count]')!
+    const status = root.querySelector<HTMLElement>('[role=status]')!
+    const postId = root.dataset.postId!
+    let loaded = false
+    let voted = false
+    let pending = false
+
+    async function update(submit: boolean) {
+      if (pending || voted) return
+      pending = true
+      button.disabled = true
+      button.setAttribute('aria-busy', 'true')
+      status.textContent = ''
+      try {
+        const { data, error } = await (submit
+          ? actions.upvote({ postId })
+          : actions.getVotes({ postId }))
+        if (error) {
+          status.textContent =
+            error.code === 'FORBIDDEN'
+              ? '请允许本站 Cookie，再刷新重试。'
+              : error.code === 'TOO_MANY_REQUESTS'
+                ? '操作频繁，请稍后重试。'
+                : '暂时无法连接，点击重试。'
+          return
+        }
+        loaded = true
+        voted = data.voted
+        count.textContent = String(data.count)
+        button.dataset.voted = String(voted)
+        button.setAttribute('aria-disabled', String(voted))
+        button.setAttribute('aria-label', `${voted ? '已点赞' : '点赞'}，${data.count} 票`)
+      } catch {
+        status.textContent = '暂时无法连接，点击重试。'
+      } finally {
+        pending = false
+        button.disabled = false
+        button.removeAttribute('aria-busy')
+      }
+    }
+    button.addEventListener('click', () => update(loaded))
+    void update(false)
+  }
+</script>
+
+<style>
+  .upvote {
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    color: var(--muted-color);
+    font-size: 0.875rem;
+  }
+  button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 48px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-variant-numeric: tabular-nums;
+    touch-action: manipulation;
+    flex-shrink: 0;
+  }
+  [data-count] {
+    margin-top: -3px;
+    line-height: 1.4;
+  }
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  button[data-voted='true'] {
+    color: var(--link-color);
+    cursor: default;
+  }
+  button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+  @media (hover: hover) {
+    button:not(:disabled, [aria-disabled='true']):hover {
+      color: var(--link-color);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    button:not(:disabled, [aria-disabled='true'], :focus-visible):active {
+      transform: scale(0.96);
+    }
+  }
+</style>

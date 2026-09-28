@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import FloatingToc from '../../components/FloatingToc.astro'
 import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
+import Upvote from '../../components/Upvote.astro'
 import { publishedPosts, displayDate } from '../../lib/posts'
 export async function getStaticPaths() {
   return (await publishedPosts()).map((post) => ({ params: { id: post.id }, props: { post } }))
@@ -29,6 +30,7 @@ const { Content, headings } = await render(post)
     </div>
     <CodeCopy />
   </article>
+  <Upvote postId={post.id} />
   {post.data.comments && <Comments />}
 </BaseLayout>
 

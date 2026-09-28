@@ -9,16 +9,19 @@
     "build": "astro build",
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
+    "cf:types": "wrangler types worker-configuration.d.ts --include-runtime=false",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "oxlint --deny-warnings src scripts astro.config.mjs",
-    "check": "pnpm format:check && pnpm lint && astro check && astro build && node --test scripts/*.test.mjs && node scripts/check-site.mjs"
+    "check": "pnpm format:check && pnpm lint && pnpm cf:types && astro check && astro build && node --test scripts/*.test.mjs && node scripts/check-site.mjs dist/client"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@astrojs/cloudflare": "14.3.3",
     "@astrojs/markdown-remark": "7.3.1",
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "3.7.4",
+    "@cloudflare/workers-types": "^5.20260927.1",
     "@types/node": "^26.6.3",
     "astro": "7.3.5",
     "fontverter": "2.0.0",
@@ -33,6 +36,6 @@
     "typescript": "^6.0.3",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
-    "wrangler": "^4.135.0"
+    "wrangler": "^4.142.0"
   }
 }
