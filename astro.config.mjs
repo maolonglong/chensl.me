@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config'
+import { readFileSync } from 'node:fs'
 import sitemap from '@astrojs/sitemap'
 import { unified } from '@astrojs/markdown-remark'
 import { remarkSite, rehypeSite, codeThemes, codeCaption } from './src/lib/markdown.mjs'
@@ -7,10 +8,37 @@ import { siteFonts } from './src/lib/fonts.mjs'
 export default defineConfig({
   site: 'https://chensl.me',
   fonts: await siteFonts(),
-  integrations: [sitemap()],
+  integrations: [
+    sitemap(),
+    {
+      name: 'theme-bootstrap',
+      hooks: {
+        'astro:config:setup'({ injectScript }) {
+          injectScript(
+            'head-inline',
+            readFileSync(new URL('./src/scripts/theme-bootstrap.js', import.meta.url), 'utf8'),
+          )
+        },
+      },
+    },
+  ],
   output: 'static',
   trailingSlash: 'always',
   compressHTML: true,
+  security: {
+    csp: {
+      directives: [
+        "default-src 'self'",
+        'frame-src https://giscus.app',
+        "connect-src 'self' https://cloudflareinsights.com",
+      ],
+      scriptDirective: {
+        resources: ["'self'", 'https://giscus.app', 'https://static.cloudflareinsights.com'],
+      },
+      // Shiki, table alignment and the no-script fallback retain inline styles.
+      styleDirective: { resources: ["'self'", "'unsafe-inline'"] },
+    },
+  },
   markdown: {
     processor: unified({
       smartypants: false,

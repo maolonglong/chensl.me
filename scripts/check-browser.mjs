@@ -51,6 +51,37 @@ const pages = ['/', '/blog/', '/blog/dockertest/', '/404.html']
 
 try {
   open('/')
+  const injection = browser(
+    'eval',
+    `async function probeCsp() {
+      const violations = [];
+      const onViolation = event => violations.push(event.effectiveDirective);
+      document.addEventListener('securitypolicyviolation', onViolation);
+      const script = document.createElement('script');
+      script.textContent = 'window.cspInjectedScript = true';
+      document.body.append(script);
+      const button = document.createElement('button');
+      button.setAttribute('onclick', 'window.cspInjectedHandler = true');
+      document.body.append(button);
+      button.click();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      script.remove(); button.remove();
+      document.removeEventListener('securitypolicyviolation', onViolation);
+      return {
+        scriptBlocked: window.cspInjectedScript !== true,
+        handlerBlocked: window.cspInjectedHandler !== true,
+        scriptViolation: violations.includes('script-src-elem'),
+        handlerViolation: violations.includes('script-src-attr'),
+      };
+    }; probeCsp()`,
+  )
+  assert.deepEqual(injection, {
+    scriptBlocked: true,
+    handlerBlocked: true,
+    scriptViolation: true,
+    handlerViolation: true,
+  })
+  console.log('CSP blocked untrusted inline scripts and event handlers.')
   const fonts = browser(
     'eval',
     `(() => {

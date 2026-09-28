@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { cp, lstat, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -195,6 +196,25 @@ print(json.dumps(sorted(e.text for e in pages.findall('s:url/s:loc', ns))))`,
     await readFile(path.join(dist, 'index.html'), 'utf8'),
     /<link rel="sitemap" href="\/sitemap-index\.xml"/,
   )
+})
+
+test('CSP precedes executable scripts and hashes their emitted bytes', async () => {
+  const { dist } = await behaviorFixture()
+  for (const page of ['index.html', 'blog/render/index.html', '404.html']) {
+    const html = await readFile(path.join(dist, page), 'utf8')
+    const policy = html.match(/<meta http-equiv="content-security-policy" content="([^"]+)"/)
+    assert.ok(policy, `${page}: missing CSP`)
+    const scripts = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter(
+      ([, attributes]) => !attributes.includes('application/ld+json'),
+    )
+    assert.ok(scripts.length, `${page}: missing scripts`)
+    for (const script of scripts) {
+      assert.ok(policy.index < script.index, `${page}: executable script precedes CSP`)
+      if (script[1].includes('src=')) continue
+      const hash = createHash('sha256').update(script[2]).digest('base64')
+      assert.ok(policy[1].includes(`'sha256-${hash}'`), `${page}: untrusted inline script`)
+    }
+  }
 })
 
 test('Astro rejects collection entries missing required metadata', async () => {
@@ -448,7 +468,15 @@ async function checkerFixture() {
   const feed =
     '<rss version="2.0"><channel><title>x</title><link>https://chensl.me/</link><description>x</description></channel></rss>'
   await write(fixture, 'dist/index.xml', feed)
-  await cp(path.join(root, 'public/_headers'), path.join(fixture, 'dist/_headers'))
+  const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
+  await write(
+    fixture,
+    'dist/_headers',
+    headers.replace(
+      'Content-Security-Policy:',
+      "Content-Security-Policy: script-src 'self' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' https://giscus.app https://static.cloudflareinsights.com;",
+    ),
+  )
   return fixture
 }
 
@@ -681,7 +709,7 @@ test('site checker enforces CSP image sources', async () => {
 
 test('site checker accepts an explicitly allowed HTTPS image origin', async () => {
   const fixture = await checkerFixture()
-  const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
+  const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
   await write(
     fixture,
     'dist/_headers',
@@ -705,7 +733,7 @@ test('site checker requires third-party CSP sources', async () => {
     ['https://cloudflareinsights.com', 'connect-src'],
   ]) {
     const fixture = await checkerFixture()
-    const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
+    const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
     const expression = new RegExp(`(${directive}[^;]*)${source.replaceAll('.', '\\.')}`)
     await write(fixture, 'dist/_headers', headers.replace(expression, '$1'))
     const result = run(process.execPath, [checker], fixture)
@@ -717,9 +745,20 @@ test('site checker requires third-party CSP sources', async () => {
   }
 })
 
+test('site checker rejects permissive or missing script CSP', async () => {
+  for (const replacement of ["script-src 'self' 'unsafe-inline'", "script-src 'self'", '']) {
+    const fixture = await checkerFixture()
+    const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
+    await write(fixture, 'dist/_headers', headers.replace(/script-src[^;]+/, replacement))
+    const result = run(process.execPath, [checker], fixture)
+    assert.equal(result.status, 1, 'a script policy without trusted hashes must fail')
+    assert.match(result.stderr, /hash-based script CSP/)
+  }
+})
+
 test('site checker requires immutable caching for fonts and fingerprinted CSS', async () => {
   const fixture = await checkerFixture()
-  const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
+  const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
   await write(fixture, 'dist/_headers', headers.replace(/^\/_astro\/fonts\/\*\n[\s\S]*?\n\n/m, ''))
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
@@ -729,7 +768,7 @@ test('site checker requires immutable caching for fonts and fingerprinted CSS', 
 
 test('site checker requires cross-origin access for giscus themes', async () => {
   const fixture = await checkerFixture()
-  const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
+  const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
   await write(
     fixture,
     'dist/_headers',

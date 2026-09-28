@@ -163,9 +163,7 @@ if (!csp || imgSourceTokens.length === 0) {
   errors.push('dist/_headers must define img-src in the global Content-Security-Policy')
 }
 for (const [directive, source] of [
-  ['script-src', 'https://giscus.app'],
   ['frame-src', 'https://giscus.app'],
-  ['script-src', 'https://static.cloudflareinsights.com'],
   ['connect-src', 'https://cloudflareinsights.com'],
 ]) {
   const tokens =
@@ -175,6 +173,39 @@ for (const [directive, source] of [
       .split(/\s+/) ?? []
   if (!tokens.includes(source)) {
     errors.push(`dist/_headers CSP ${directive} must allow ${source}`)
+  }
+}
+// Header and meta policies are enforced independently, not merged as allowlists.
+for (const [file, html] of htmlByFile) {
+  const policies = [csp]
+  for (const [tag] of html.matchAll(/<meta\b[^>]*>/gi)) {
+    const attributes = getAttributes(tag)
+    if (attributes.get('http-equiv')?.toLowerCase() === 'content-security-policy') {
+      policies.push(decodeXmlEntities(attributes.get('content') ?? ''))
+    }
+  }
+  const scriptPolicies = policies.filter((policy) =>
+    /(?:^|;)\s*(?:script-src|default-src)\s/.test(policy ?? ''),
+  )
+  if (!scriptPolicies.length) errors.push(`${file} needs a hash-based script CSP`)
+  for (const policy of scriptPolicies) {
+    const tokens = (
+      policy.match(/(?:^|;)\s*script-src\s+([^;]+)/)?.[1] ??
+      policy.match(/(?:^|;)\s*default-src\s+([^;]+)/)?.[1] ??
+      ''
+    )
+      .trim()
+      .split(/\s+/)
+    if (
+      tokens.includes("'unsafe-inline'") ||
+      tokens.includes("'unsafe-eval'") ||
+      !tokens.some((token) => /^'sha(?:256|384|512)-[^']+'$/.test(token))
+    ) {
+      errors.push(`${file} needs a hash-based script CSP without unsafe-inline or unsafe-eval`)
+    }
+    for (const source of ['https://giscus.app', 'https://static.cloudflareinsights.com']) {
+      if (!tokens.includes(source)) errors.push(`${file} CSP script-src must allow ${source}`)
+    }
   }
 }
 // Workers Assets defaults to `max-age=0, must-revalidate`, which would revalidate every font.
