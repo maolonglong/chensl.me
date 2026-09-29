@@ -16,6 +16,7 @@
 - For site output or build changes, run `pnpm check`; it includes formatting, lint, type checking, the production build, and regression/output checks. Use `pnpm format` to apply the repository's formatting rules; article prose and third-party assets are excluded.
 - For dependencies or Cloudflare configuration, also run `pnpm exec wrangler deploy --dry-run` against the freshly built output.
 - For layout, styles, fonts, or browser interactions, run `pnpm test:e2e`. Follow [Preview and browser verification](docs/maintenance.md#preview-and-browser-verification) for the preview it uses.
+- Keep regression coverage in Playwright specs under `e2e/`. Use `agent-browser` to explore by hand, and turn any finding worth keeping into a spec.
 - Inspect the screenshots in `test-results/screenshots`, including affected light/dark, narrow/wide, and open/closed states; successful capture alone is not visual verification. Add targeted checks for affected states the specs do not exercise. Browser viewport emulation is not real-device testing.
 - For tooling-only changes, run affected checks. Documentation outside site content needs command/link verification, not a site build.
 
