@@ -14,7 +14,7 @@ test('CSP precedes executable scripts and hashes their emitted bytes', async () 
     const html = await readFile(path.join(dist, page), 'utf8')
     const policy = html.match(/<meta http-equiv="content-security-policy" content="([^"]+)"/)
     assert.ok(policy, `${page}: missing CSP`)
-    const scripts = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter(
+    const scripts = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)].filter(
       ([, attributes]) => !attributes.includes('application/ld+json'),
     )
     assert.ok(scripts.length, `${page}: missing scripts`)

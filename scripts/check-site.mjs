@@ -212,7 +212,7 @@ for (const [file, html] of htmlByFile) {
 for (const immutable of ['/_astro/fonts/*', '/css/*']) {
   const rule =
     headers.match(
-      new RegExp(`^${immutable.replace('*', '\\*')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`, 'm'),
+      new RegExp(`^${immutable.replaceAll('*', '\\*')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`, 'm'),
     )?.[1] ?? ''
   if (!/^\s*Cache-Control:.*\bimmutable\b/im.test(rule)) {
     errors.push(
