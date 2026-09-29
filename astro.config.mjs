@@ -38,8 +38,9 @@ export default defineConfig({
       scriptDirective: {
         resources: ["'self'", 'https://giscus.app', 'https://static.cloudflareinsights.com'],
       },
-      // Shiki, table alignment and the no-script fallback retain inline styles.
-      styleDirective: { resources: ["'self'", "'unsafe-inline'"] },
+      // Shiki, table alignment and the no-script fallback retain inline styles;
+      // giscus' client script injects its default stylesheet.
+      styleDirective: { resources: ["'self'", 'https://giscus.app', "'unsafe-inline'"] },
     },
   },
   markdown: {

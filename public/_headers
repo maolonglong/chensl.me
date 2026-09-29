@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: img-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cloudflareinsights.com; frame-src https://giscus.app; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests
+  Content-Security-Policy: img-src 'self'; style-src 'self' https://giscus.app 'unsafe-inline'; connect-src 'self' https://cloudflareinsights.com; frame-src https://giscus.app; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'; upgrade-insecure-requests
   Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=31536000
