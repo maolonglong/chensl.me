@@ -146,6 +146,15 @@ try {
     "document.querySelector('[data-upvote] button').getAttribute('aria-disabled') === 'true'",
   )
   assert.deepEqual(state(), { voted: true, count: baseline + 3 })
+  // A keyboard user keeps focus on the control, and assistive technology hears the result.
+  assert.equal(
+    browser('eval', "document.activeElement === document.querySelector('[data-upvote] button')"),
+    true,
+  )
+  assert.equal(
+    browser('eval', "document.querySelector('[data-upvote] [aria-live]').textContent"),
+    '已点赞',
+  )
   assert.equal(
     browser('eval', `getComputedStyle(document.querySelector('[data-upvote] svg')).fill`),
     'none',

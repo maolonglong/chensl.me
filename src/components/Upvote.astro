@@ -16,6 +16,7 @@ const { postId } = Astro.props
     </span>
   </button>
   <span id="vote-status" role="status"></span>
+  <span class="visually-hidden" aria-live="polite" data-announce></span>
   <noscript>启用 JavaScript 后可以点赞。</noscript>
 </div>
 
@@ -27,6 +28,7 @@ const { postId } = Astro.props
     const button = root.querySelector('button')!
     const count = root.querySelector<HTMLElement>('[data-count]')!
     const status = root.querySelector<HTMLElement>('[role=status]')!
+    const announce = root.querySelector<HTMLElement>('[data-announce]')!
     const postId = root.dataset.postId!
     let loaded = false
     let voted = false
@@ -35,7 +37,7 @@ const { postId } = Astro.props
     async function update(submit: boolean) {
       if (pending || voted) return
       pending = true
-      button.disabled = true
+      // Not `disabled`: that would drop keyboard focus from the control mid-request.
       button.setAttribute('aria-busy', 'true')
       status.textContent = ''
       try {
@@ -57,6 +59,7 @@ const { postId } = Astro.props
         button.dataset.voted = String(voted)
         button.setAttribute('aria-disabled', String(voted))
         button.setAttribute('aria-label', `${voted ? '已点赞' : '点赞'}，${data.count} 票`)
+        if (submit) announce.textContent = '已点赞'
       } catch {
         status.textContent = '暂时无法连接，点击重试。'
       } finally {
@@ -110,17 +113,18 @@ const { postId } = Astro.props
     color: var(--link-color);
     cursor: default;
   }
-  button:disabled {
+  button:disabled,
+  button[aria-busy='true'] {
     cursor: wait;
     opacity: 0.6;
   }
   @media (hover: hover) {
-    button:not(:disabled, [aria-disabled='true']):hover {
+    button:not(:disabled, [aria-busy='true'], [aria-disabled='true']):hover {
       color: var(--link-color);
     }
   }
   @media (prefers-reduced-motion: no-preference) {
-    button:not(:disabled, [aria-disabled='true'], :focus-visible):active {
+    button:not(:disabled, [aria-busy='true'], [aria-disabled='true'], :focus-visible):active {
       transform: scale(0.96);
     }
   }
