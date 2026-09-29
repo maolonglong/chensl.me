@@ -55,8 +55,13 @@ export function rehypeSite() {
       if (node.tagName === 'pre') {
         const title = node.properties['data-title']
         delete node.properties['data-title']
-        delete node.properties.tabIndex
-        const wrapper = element('div', { className: ['highlight'] }, [node])
+        // Shiki emits a lowercase `tabindex`; the wrapper is the scroller, so it takes the focus stop.
+        delete node.properties.tabindex
+        const wrapper = element(
+          'div',
+          { className: ['highlight'], tabIndex: 0, role: 'region', ariaLabel: '代码' },
+          [node],
+        )
         parent.children[index] = title
           ? element('figure', { className: ['code-figure'] }, [
               element('figcaption', {}, [text(title)]),

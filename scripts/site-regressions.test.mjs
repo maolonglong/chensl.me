@@ -126,6 +126,10 @@ First reference[^shared], another note[^other], and the same note again[^shared]
 \`\`\`go title="db/user.go"
 package db
 \`\`\`
+
+\`\`\`sh
+echo plain
+\`\`\`
 `,
       )
       await write(
@@ -377,6 +381,16 @@ test('Markdown preserves code captions and accessible aligned tables', async () 
   const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
   assert.match(html, /<figure class="code-figure">\s*<figcaption>db\/user\.go<\/figcaption>/)
   assert.doesNotMatch(html, /class="highlight"[^>]*\btitle=/)
+  // The wrapper is the horizontal scroller, so it (not the <pre>) is the keyboard stop.
+  const blocks = html.match(/<div class="highlight"[^>]*>\s*<pre\b[^>]*>/g) ?? []
+  assert.equal(blocks.length, 2, 'expected a titled and an untitled code block')
+  for (const block of blocks) {
+    const [wrapper, pre] = block.split(/(?=<pre\b)/)
+    assert.match(wrapper, /tabindex="0"/)
+    assert.match(wrapper, /role="region"/)
+    assert.match(wrapper, /aria-label="[^"]+"/)
+    assert.doesNotMatch(pre, /tabindex=/)
+  }
   const table = html.match(/<div class="table-scroll"[^>]*>[\s\S]*?<\/div>/)?.[0]
   assert.ok(table, 'missing table-scroll wrapper')
   assert.match(table, /tabindex="0"/)

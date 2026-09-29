@@ -65,6 +65,34 @@ test('syntax colors match Shiki in light and dark', async ({ page, open }) => {
   }
 })
 
+// The wrapper is the horizontal scroller, so the keyboard stop must be the wrapper itself:
+// a focus ring drawn on the <pre> inside it is clipped by the scroller and never shows.
+test.describe('keyboard access to scrolling code', () => {
+  test.use({ viewport: { width: 320, height: 844 } })
+
+  test('Tab stops on the scroll container of a code block', async ({ page, open }) => {
+    await open('/blog/dockertest/')
+    let stop = null
+    for (let presses = 0; presses < 300 && !stop; presses++) {
+      await page.keyboard.press('Tab')
+      stop = await page.evaluate(() => {
+        const el = document.activeElement
+        if (!el.matches('pre, .highlight')) return null
+        return {
+          tag: el.tagName,
+          scrolls: el.scrollWidth > el.clientWidth,
+          role: el.getAttribute('role'),
+        }
+      })
+    }
+    expect(stop, 'Tab must reach a code block').toEqual({
+      tag: 'DIV',
+      scrolls: true,
+      role: 'region',
+    })
+  })
+})
+
 // Every code block gets one copy button inside its top-right corner that stays put while the code
 // scrolls, and a wide first line can always be scrolled out from under it. Hover-capable pointers
 // reveal the button on hover; touch screens always show it.
