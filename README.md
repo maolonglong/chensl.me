@@ -52,7 +52,7 @@ Astro emits a hash-based script CSP in each page and Cloudflare's `_headers` add
 
 ## CI and deployment
 
-- GitHub Actions runs on pushes and pull requests. [The CI workflow](.github/workflows/ci.yml) installs Node.js dependencies, runs `pnpm check`, then `wrangler deploy --dry-run`. It does not publish the site.
+- GitHub Actions runs on pushes and pull requests. [The CI workflow](.github/workflows/ci.yml) installs Node.js dependencies, runs `pnpm check`, `wrangler deploy --dry-run`, then the Playwright specs against the build (a failure uploads the report and traces). It does not publish the site.
 - Cloudflare's Git integration automatically builds and deploys the production site when `main` is pushed. This integration is configured in the Cloudflare dashboard, outside the GitHub workflow. The dashboard is the source of truth for deployment settings and build/deployment records.
 
 Following [Astro's Cloudflare deployment guide](https://docs.astro.build/en/guides/deploy/cloudflare/), configure Workers Builds with build command `pnpm build` and deploy command `pnpm exec wrangler deploy`. The repository does not change dashboard settings. The Cloudflare adapter builds the Actions Worker alongside the static pages. For a local Workers preview, run `pnpm build` followed by `pnpm exec wrangler dev`.
