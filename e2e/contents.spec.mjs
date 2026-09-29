@@ -223,6 +223,17 @@ test.describe('with a touch screen', () => {
         .toBe(false)
     })
   }
+
+  test('every contents entry is a 44px touch target', async ({ page, open }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await open('/blog/dockertest/')
+    await page.locator('.toc-button').click()
+    const heights = await page
+      .locator('#article-toc a')
+      .evaluateAll((links) => links.map((link) => link.getBoundingClientRect().height))
+    expect(heights.length).toBeGreaterThanOrEqual(3)
+    expect(Math.min(...heights)).toBeGreaterThanOrEqual(44)
+  })
 })
 
 // Fewer than three headings means no contents list, and back-to-top keeps the corner.

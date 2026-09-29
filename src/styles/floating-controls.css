@@ -82,9 +82,10 @@ body:has(.toc-button) {
     list-style: none;
 }
 
+/* 12px above and below a 21px line make each entry a 45px touch target. */
 .toc a {
     display: block;
-    padding-block: 8px;
+    padding-block: 12px;
     text-decoration: none;
 }
 
