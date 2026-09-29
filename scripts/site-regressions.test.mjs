@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process'
 import { after, test } from 'node:test'
 import fontverter from 'fontverter'
 import { Blob, Face } from 'harfbuzzjs'
+import { remarkSite } from '../src/lib/markdown.mjs'
 
 /*
  * Migration risk boundaries covered here, before implementation:
@@ -130,6 +131,12 @@ package db
 \`\`\`sh
 echo plain
 \`\`\`
+
+> [!TIP]
+> **Bold** lead
+
+> [!NOTE]
+> Plain text
 `,
       )
       await write(
@@ -402,6 +409,49 @@ test('Markdown preserves code captions and accessible aligned tables', async () 
     /<td style="text-align: center"><a href="https:\/\/github\.com\/alicebob\/miniredis">Miniredis<\/a><\/td>/,
   )
   assert.doesNotMatch(html, /<table[^>]*style=/)
+})
+
+test('Markdown alerts drop the marker and lead with a labelled heading', async () => {
+  const { dist } = await behaviorFixture()
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  assert.match(
+    html,
+    /<blockquote class="alert alert-tip">\s*<p class="alert-heading">建议<\/p>\s*<p><strong>Bold<\/strong> lead<\/p>\s*<\/blockquote>/,
+  )
+  assert.match(
+    html,
+    /<blockquote class="alert alert-note">\s*<p class="alert-heading">提示<\/p>\s*<p>Plain text<\/p>\s*<\/blockquote>/,
+  )
+  assert.doesNotMatch(html, /\[!(TIP|NOTE)\]/)
+})
+
+test('an alert marker followed by inline markup leaves no empty text node', () => {
+  const text = (value) => ({ type: 'text', value })
+  const tree = {
+    type: 'root',
+    children: [
+      {
+        type: 'blockquote',
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              text('[!TIP]\n'),
+              { type: 'strong', children: [text('Bold')] },
+              text(' lead'),
+            ],
+          },
+        ],
+      },
+    ],
+  }
+  remarkSite()(tree)
+  const [heading, body] = tree.children[0].children
+  assert.equal(heading.data.hProperties.className[0], 'alert-heading')
+  assert.deepEqual(
+    body.children.map((child) => child.type),
+    ['strong', 'text'],
+  )
 })
 
 test('native footnotes preserve accessible labels and distinct repeated backreferences', async () => {

@@ -18,7 +18,11 @@ export function remarkSite() {
       if (!match) return
       const kind = match[1].toLowerCase()
       first.value = first.value.slice(match[0].length)
-      if (!first.value && node.children[0].children.length === 1) node.children.shift()
+      if (!first.value) {
+        const paragraph = node.children[0]
+        paragraph.children.shift()
+        if (!paragraph.children.length) node.children.shift()
+      }
       node.data = { hProperties: { className: ['alert', `alert-${kind}`] } }
       node.children.unshift({
         type: 'paragraph',
