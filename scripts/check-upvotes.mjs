@@ -16,7 +16,13 @@ const { parse } = await import(requireAstro.resolve('devalue'))
 const article = 'dockertest'
 const otherArticle = 'semantic-view-sql-traps'
 // Connection: close avoids reusing a socket that Wrangler closed while the browser checks ran.
-async function call(name, postId = article, cookie = '', origin = new URL(base).origin) {
+async function call(
+  name,
+  postId = article,
+  cookie = '',
+  origin = new URL(base).origin,
+  extra = {},
+) {
   const response = await fetch(new URL(`/_actions/${name}/`, base), {
     method: 'POST',
     headers: {
@@ -24,6 +30,7 @@ async function call(name, postId = article, cookie = '', origin = new URL(base).
       Origin: origin,
       Cookie: cookie,
       Connection: 'close',
+      ...extra,
     },
     body: JSON.stringify({ postId }),
   })
@@ -176,3 +183,17 @@ assert.deepEqual((await call('getVotes', article, cookie)).data, {
   voted: true,
 })
 console.log('PASS: rate limiting rejects bursts without changing the vote count.')
+
+// Reads hit D1 and mint cookies, so they are limited too. A synthetic client address keeps this
+// burst from consuming the limiter budget of the address used by the checks above.
+const readAddress = `203.0.113.${1 + Math.floor(Math.random() * 254)}`
+const reads = []
+for (let i = 0; i < 150; i++) {
+  const { response } = await call('getVotes', article, '', undefined, {
+    'CF-Connecting-IP': readAddress,
+  })
+  reads.push(response.status)
+}
+assert.equal(reads[0], 200)
+assert.ok(reads.includes(429), 'Read bursts should eventually be rate limited')
+console.log('PASS: read bursts are rate limited per client address.')

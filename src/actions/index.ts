@@ -19,23 +19,32 @@ async function requirePost(postId: string, origin: URL) {
   if (!page.ok) throw new ActionError({ code: 'NOT_FOUND', message: 'Article not found.' })
 }
 
-async function readVotes(postId: string, visitor: string) {
-  const row = await env.VOTES.prepare(
-    'SELECT COUNT(*) AS count, COALESCE(MAX(visitor_id = ?), 0) AS voted FROM votes WHERE post_id = ?',
-  )
-    .bind(visitor, postId)
-    .first<{ count: number; voted: number }>()
-  return { count: row!.count, voted: Boolean(row!.voted) }
+async function requireQuota(limiter: RateLimit, key: string) {
+  const { success } = await limiter.limit({ key })
+  if (!success) {
+    throw new ActionError({ code: 'TOO_MANY_REQUESTS', message: 'Please try again later.' })
+  }
 }
+
+const countVotes = (postId: string, visitor: string) =>
+  env.VOTES.prepare(
+    'SELECT COUNT(*) AS count, COALESCE(MAX(visitor_id = ?), 0) AS voted FROM votes WHERE post_id = ?',
+  ).bind(visitor, postId)
+
+const toState = (row: { count: number; voted: number } | null) => ({
+  count: row!.count,
+  voted: Boolean(row!.voted),
+})
 
 export const server = {
   getVotes: defineAction({
     input,
-    async handler({ postId }, { cookies, url }) {
+    async handler({ postId }, { cookies, clientAddress, url }) {
+      await requireQuota(env.READ_LIMITER, clientAddress)
       await requirePost(postId, url)
       const existing = visitorId.safeParse(cookies.get(visitorCookie)?.value)
       const visitor = existing.success ? existing.data : crypto.randomUUID()
-      const state = await readVotes(postId, visitor)
+      const state = toState(await countVotes(postId, visitor).first())
       cookies.set(visitorCookie, visitor, {
         httpOnly: true,
         secure: true,
@@ -54,16 +63,15 @@ export const server = {
       if (!visitor.success) {
         throw new ActionError({ code: 'FORBIDDEN', message: 'Cookies are required to vote.' })
       }
-      const { success } = await env.VOTE_LIMITER.limit({ key: clientAddress })
-      if (!success) {
-        throw new ActionError({ code: 'TOO_MANY_REQUESTS', message: 'Please try again later.' })
-      }
-      await env.VOTES.prepare(
-        'INSERT INTO votes (post_id, visitor_id) VALUES (?, ?) ON CONFLICT DO NOTHING',
-      )
-        .bind(postId, visitor.data)
-        .run()
-      return readVotes(postId, visitor.data)
+      await requireQuota(env.VOTE_LIMITER, clientAddress)
+      // One transactional round trip: the count includes this visitor's vote.
+      const [, count] = await env.VOTES.batch<{ count: number; voted: number }>([
+        env.VOTES.prepare(
+          'INSERT INTO votes (post_id, visitor_id) VALUES (?, ?) ON CONFLICT DO NOTHING',
+        ).bind(postId, visitor.data),
+        countVotes(postId, visitor.data),
+      ])
+      return toState(count.results[0])
     },
   }),
 }
