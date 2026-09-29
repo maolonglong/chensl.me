@@ -2,8 +2,8 @@
 
 ## Project boundaries
 
-- Keep this personal site statically rendered with Astro components, scoped CSS, and native browser scripts. Add a client framework or server adapter only when a concrete requirement needs it.
-- Prefer Astro's native capabilities and official integrations, checking documentation for the installed version before choosing an approach. Limit custom code to concrete site requirements those capabilities do not cover.
+- Keep pages prerendered with Astro components, scoped CSS, and native browser scripts. The existing Cloudflare adapter runs upvote Actions backed by D1; add client frameworks or further server-rendered behavior only for concrete requirements.
+- Prefer Astro's native capabilities and official integrations. For Astro API or configuration changes, consult Astro Docs MCP when available, otherwise the official docs; verify compatibility with the installed version. Latest documentation is not a version guarantee.
 - Edit source, not `dist/`, `.astro/`, `.wrangler/`, or `node_modules/`. `public/` contains source assets.
 - Preserve the author's words, emojis, dates, and credits. Keep article URLs stable; the blog's only RSS feed is `/index.xml`. Use Astro's default heading and footnote anchors.
 - Pushing `main` triggers production deployment through Cloudflare's external Git integration. GitHub Actions validates changes but does not establish deployment success. Before shipping or changing deployment configuration, read [CI and deployment](README.md#ci-and-deployment). Manual deployment requires explicit authorization.
@@ -19,13 +19,9 @@
 
 ## Design constraints
 
-- Preserve the Kami-inspired warm neutral/ink-blue palette, JinKai typography, introductory home, year-grouped archive, and single-column articles. Header, main, and footer share the same `42rem` column; short pages keep the footer at the bottom. Reuse the design tokens in `src/styles/global.css`.
-- Keep headings at least as large as the article body. At equal sizes, distinguish headings through weight, color, and spacing: more space above than below. Preserve underlined article/footer links, archive visited-link styling, visible focus, and meaningful diff signs.
-- Keep the single prerendered contents list: a hover rail beside the column and a native popover elsewhere, available without JavaScript when there are at least three H2/H3 headings. Keep SVG controls and 44px touch targets.
-- Preserve theme cycling `auto` → `light` → `dark`, OS tracking in auto, forced `color-scheme`, persistence, storage-failure handling, accessible labels, and no-script fallback. The pre-paint bootstrap stays inline; component interactions use compiled scripts.
-- Keep JinKai first for mixed Chinese/Latin text, W04 alone at weights 400–500, and synthesized bold disabled. Fonts remain self-hosted with `font-display: swap`, content-versioned URLs, no preloads, complete fallback coverage, and core-subset precedence. Declare code fonts for all pages; let the browser load them only when used. The cold-visit font budget is 640 KiB.
-- Pages and RSS share Astro-rendered collection content and optimized local images. Preserve alt text, dimensions, lazy loading, and absolute RSS resource URLs; avoid a separate feed Markdown parser.
-- Keep tables inside focusable `.table-scroll` wrappers, with column alignment preserved. Making the table itself the scroll box loses its accessibility role. Preserve code-fence captions without a `title` attribute on the code wrapper, which would add a tooltip.
+- Preserve the warm neutral/ink-blue palette, JinKai typography, introductory home, year-grouped archive, and single-column articles. Reuse `src/styles/global.css` tokens.
+- Before changing layout, styles, fonts, or browser interactions, read [Site design contracts](README.md#site-design-contracts) for the site's accessibility, typography, and interaction requirements.
+- For palette, typography, spacing, or surface treatment, consult [Kami's design reference](.agents/skills/kami/references/design.md), only Principles and the relevant sections 1–3 and 5. Site contracts take precedence; Kami's document-production workflow and template-specific rules do not apply.
 
 ## Read when needed
 
@@ -33,6 +29,7 @@
 - Before dependency upgrades, read [Dependency upgrades](README.md#dependency-upgrades) for release-note collection and version synchronization.
 - Before changing fonts or regenerating subsets, read [font licensing and regeneration](public/fonts/tsanger-jinkai02/NOTICE.md). Fonts are not covered by the repository's code license.
 - Before changing content conventions or publication behavior, read [Content and maintenance](README.md#content-and-maintenance). Production excludes drafts and future posts; displayed dates use `Asia/Shanghai`.
+- Before changing upvote Actions, cookies, or D1 behavior, read [Development](README.md#development) for the disposable-local-data E2E command and [CI and deployment](README.md#ci-and-deployment) for vote semantics and remote migration boundaries.
 - Before changing browser verification, read both browser scripts. They explicitly set and assert hover capability and keep a CDP connection open for no-script checks; viewport width or device emulation alone does not reproduce these states.
 
 ## Commits

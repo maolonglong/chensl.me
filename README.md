@@ -24,6 +24,8 @@ pnpm check  # formatting, lint, type check, build, regression tests, output vali
 
 Tests use disposable Astro fixture builds. TypeScript stays on 6.x because the current `astro check` does not support TypeScript 7.
 
+In Amp orbs, run `amp orb services ensure` to start the managed preview and obtain its portal URL. The service sets `ASTRO_DEV_BACKGROUND=0` so Amp owns the foreground process rather than Astro detaching it. The dev-only `/_astro/status` endpoint reports readiness; use a Wrangler production preview for CSP and upvote verification.
+
 `pnpm cf:types` regenerates binding types from Wrangler configuration. Runtime types are imported selectively in `src/env.d.ts` to avoid collisions between Workers' HTMLRewriter `Element` and the browser DOM. Pre-rendering uses Node and build-time image optimization, preserving the existing filesystem-based CSS assets and RSS pipeline. Sessions are disabled; no KV or Cloudflare Images resource is required.
 
 Use `pnpm format` to format maintained code with Prettier and its Astro plugin, and `pnpm lint` for Oxlint. Formatting excludes article content, fonts, third-party code, and generated output. Components own scoped styles and compiled TypeScript interactions; global CSS owns design tokens, Markdown typography, and shared floating-control geometry. Only the pre-paint theme bootstrap stays inline. Oxlint checks scripts, not Astro template semantics; `astro check` and browser coverage remain required.
@@ -54,6 +56,17 @@ Cloudflare's `_headers` retains the other security restrictions, including `fram
 
 Verify CSP with a production build served by Wrangler, not `astro dev`; the browser check deliberately attempts and asserts rejection of untrusted inline scripts and event handlers.
 
+### Site design contracts
+
+Kami supplies visual reference, not this site's implementation rules. These contracts override its template defaults, particularly unadorned links, Latin-first font stacks, and tables that scroll themselves.
+
+- Header, main, and footer share the same `42rem` column; short pages keep the footer at the bottom.
+- Keep headings at least as large as the article body. At equal sizes, distinguish headings through weight, color, and spacing: more space above than below. Preserve underlined article/footer links, archive visited-link styling, visible focus, and meaningful diff signs.
+- Keep the single prerendered contents list: a hover rail beside the column and a native popover elsewhere, available without JavaScript when there are at least three H2/H3 headings. Keep SVG controls and 44px touch targets.
+- Preserve theme cycling `auto` → `light` → `dark`, OS tracking in auto, forced `color-scheme`, persistence, storage-failure handling, accessible labels, and no-script fallback. Script ownership and CSP verification are described in [CSP and theme bootstrap](#csp-and-theme-bootstrap).
+- Keep JinKai first for mixed Chinese/Latin text, W04 alone at weights 400–500, and synthesized bold disabled. Fonts remain self-hosted with `font-display: swap`, content-versioned URLs, no preloads, complete fallback coverage, and core-subset precedence. Declare code fonts for all pages; let the browser load them only when used. The cold-visit font budget is 640 KiB.
+- Keep tables inside focusable `.table-scroll` wrappers, with column alignment preserved. Making the table itself the scroll box loses its accessibility role. Preserve code-fence captions without a `title` attribute on the code wrapper, which would add a tooltip.
+
 ## CI and deployment
 
 - GitHub Actions runs on pushes and pull requests. [The CI workflow](.github/workflows/ci.yml) installs Node.js dependencies, runs `pnpm check`, then `wrangler deploy --dry-run`. It does not publish the site.
@@ -76,6 +89,8 @@ Articles live under `src/content/blog`, with YAML front matter (`title`, `pubDat
 `src/content.config.ts` uses Astro's built-in glob loader for the blog collection. Production excludes drafts and future posts; the dev server includes them. Dates display in `Asia/Shanghai`. Keep existing article IDs so `/blog/<name>/` URLs remain stable. Home and archive are independent `.astro` pages under `src/pages/`, not content collections. RSS metadata is defined directly in its endpoint.
 
 `src/lib/markdown.mjs` customizes the official Unified Markdown processor for this site's alerts, tables, and code captions. Footnote presentation uses native processor options and CSS; heading and footnote anchors follow Astro defaults. Fence captions use `title="db/user.go"` without braces. The blog's single RSS feed at `/index.xml` renders collection content through Astro's experimental Container API so optimized images work in feed readers, without a second Markdown parser. `src/lib/assets.ts` generates content-versioned Giscus theme CSS.
+
+Pages and RSS share Astro-rendered collection content and optimized local images. Preserve alt text, dimensions, lazy loading, and absolute RSS resource URLs.
 
 Astro's Fonts API serves local fonts with content-hashed URLs. `src/lib/fonts.mjs` generates common and article JinKai subsets from source at build time and dev-server startup; publishing new text needs no manual font command. During development, restart the server to refresh the optimized subsets; complete fallback ranges cover new characters meanwhile. The shared layout declares code fonts without preloading; the browser downloads them only when used, on any page. Font licenses and fallback regeneration instructions are in `public/fonts/tsanger-jinkai02/NOTICE.md`.
 

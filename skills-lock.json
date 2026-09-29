@@ -7,12 +7,6 @@
       "skillPath": "skills/agent-browser/SKILL.md",
       "computedHash": "80161e6836b3b40f4e83730a290deb40ac14d877d38c97ad5f6d71be37ce74c3"
     },
-    "agents-sdk": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/agents-sdk/SKILL.md",
-      "computedHash": "a9f1d15143627d772d318e8675f8a26999d372592d21a2134d25c2ed15ebc8e5"
-    },
     "check": {
       "source": "tw93/Waza",
       "sourceType": "github",
@@ -24,30 +18,6 @@
       "sourceType": "github",
       "skillPath": "skills/cloudflare/SKILL.md",
       "computedHash": "163d684e39202f0073a15b84181d6bc1c825092d66947193daefd153102e2839"
-    },
-    "cloudflare-email-service": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/cloudflare-email-service/SKILL.md",
-      "computedHash": "d2905141e0883fd3dfd4318e582de04f5a49d6e1b8971b2c7dcf708baf79cb0e"
-    },
-    "cloudflare-one": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/cloudflare-one/SKILL.md",
-      "computedHash": "b59b87e0f533dce3bf32d7e46f6f14f1d01bab5158b59679c8f4644522df3447"
-    },
-    "cloudflare-one-migrations": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/cloudflare-one-migrations/SKILL.md",
-      "computedHash": "24b397f739cc639f8bff90255a8c237c14ab84753a04ccc934e9a7030dce9549"
-    },
-    "durable-objects": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/durable-objects/SKILL.md",
-      "computedHash": "f4ce39a555f70e78c394cad5451a7d26c81874afb2fc2d16e20c909c5c3794ec"
     },
     "gh": {
       "source": "cli/cli",
@@ -74,47 +44,17 @@
       "skillPath": "skills/learn/SKILL.md",
       "computedHash": "ec2107a004186b6d338583a49f7389e4778c5aa6a1751aab456cbe29d1e4f9aa"
     },
-    "nextjs-on-cloudflare": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/nextjs-on-cloudflare/SKILL.md",
-      "computedHash": "bd6ffed7a3d8ed0fcddedb370f64808750b1f5a7d9f4c70fd1ba6cb4c7933b12"
-    },
     "read": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/read/SKILL.md",
       "computedHash": "0003d428807dd49d3e6f2b05ffc3397af1940f24dc4c8ea20ebe22cc4e318349"
     },
-    "sandbox-migrate-to-next": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/sandbox-migrate-to-next/SKILL.md",
-      "computedHash": "8efafcedb1d674900751d683c416452a2320dea8a57d4257c3c61d1a3a127e12"
-    },
-    "sandbox-next": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/sandbox-next/SKILL.md",
-      "computedHash": "e399a6cadee9ce2a48731c796f1d89e7b7a84cbe45f1ecf9da5c235b41133b95"
-    },
-    "sandbox-stable": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/sandbox-stable/SKILL.md",
-      "computedHash": "1b77b09631eb6c01d4b2d5c97afd7e24fd588d6fa8c8dc421abeb7acdf26d2bb"
-    },
     "think": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/think/SKILL.md",
       "computedHash": "7212fd695d81d2b4dc0423eacd9f1a9803a3307d2e99f3445d1445fa9cd2e792"
-    },
-    "turnstile-spin": {
-      "source": "cloudflare/skills",
-      "sourceType": "github",
-      "skillPath": "skills/turnstile-spin/SKILL.md",
-      "computedHash": "62a5165f9a3a8c92561351529c3c4fd0d0777ad2f2c873494aed6113e024dba1"
     },
     "ui": {
       "source": "tw93/Waza",
