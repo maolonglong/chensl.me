@@ -11,13 +11,19 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/check/SKILL.md",
-      "computedHash": "2074860729e11f4f186dee857eee0f384195ac19adbaf3c30cbc32c4bffe5f85"
+      "computedHash": "67f42c7ec8d6d1fac20fe6024a86b083a81785318b46e68ea5bb7ecc2439dfdd"
     },
     "cloudflare": {
       "source": "cloudflare/skills",
       "sourceType": "github",
       "skillPath": "skills/cloudflare/SKILL.md",
       "computedHash": "163d684e39202f0073a15b84181d6bc1c825092d66947193daefd153102e2839"
+    },
+    "codebase-design": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/codebase-design/SKILL.md",
+      "computedHash": "5a17552cc1482f1a40124bf4e6c9dbd90ac0dbb47e71c07d47369f9e5f2ae3b5"
     },
     "gh": {
       "source": "cli/cli",
@@ -29,7 +35,7 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/hunt/SKILL.md",
-      "computedHash": "e9a18726d94e37b8112408543b964a58a8065c3e7f8e7e42b01e004482531104"
+      "computedHash": "0d1d422a22ed4a2495baf5b1f410b95d1fbf5e24ae51f60dfe28eb0de33d5ef6"
     },
     "kami": {
       "source": "tw93/kami",
@@ -42,25 +48,31 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/learn/SKILL.md",
-      "computedHash": "ec2107a004186b6d338583a49f7389e4778c5aa6a1751aab456cbe29d1e4f9aa"
+      "computedHash": "918c6cd89f2ba1a3106c1e8cd3ad1aef700c67c796740c5e9adf1d7890d20a88"
     },
     "read": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/read/SKILL.md",
-      "computedHash": "0003d428807dd49d3e6f2b05ffc3397af1940f24dc4c8ea20ebe22cc4e318349"
+      "computedHash": "4d6c9d8a96e4e96e5160436b43fec33580471282f39dd66f52188f6a19255944"
+    },
+    "resolving-merge-conflicts": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/resolving-merge-conflicts/SKILL.md",
+      "computedHash": "63b2dcadbe9124caeb3448f1378286fe18dcefb2494f60e136831b8b4986ca27"
     },
     "think": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/think/SKILL.md",
-      "computedHash": "7212fd695d81d2b4dc0423eacd9f1a9803a3307d2e99f3445d1445fa9cd2e792"
+      "computedHash": "29d5d2f27673243fd9c69a95315d4c0c48f32749b605ad36d5166ceb3f58ab38"
     },
     "ui": {
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/ui/SKILL.md",
-      "computedHash": "6f0148766dcdbfe67634829bb7bc3494b208c165f7ad2036ddfe91ceaf7b715e"
+      "computedHash": "88d1c1a0d109ca3e5b0812f98149fb3c4a9100aa941712e9f064bcf7994b5d7c"
     },
     "web-perf": {
       "source": "cloudflare/skills",
@@ -84,7 +96,7 @@
       "source": "tw93/Waza",
       "sourceType": "github",
       "skillPath": "skills/write/SKILL.md",
-      "computedHash": "5d54f0167cb47b2ae697ebaf63572e2b6b7b0679d3e40a5442e1a8d8cfcc6101"
+      "computedHash": "233d9f0464b58413cfc07468a1e58d077d5162084ad9e0dbb0989ded2bb62a6e"
     },
     "writing-for-agents": {
       "source": "mattpocock/skills",
