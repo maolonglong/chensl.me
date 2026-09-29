@@ -50,11 +50,7 @@ pnpm deploy
 
 ### CSP and theme bootstrap
 
-Astro generates a hash-based script CSP in each page. The `head-inline` integration in `astro.config.mjs` lets Astro hash and emit the trusted theme bootstrap after the CSP declaration and before the body. Restart the dev server after editing `src/scripts/theme-bootstrap.js`, which the config reads at startup.
-
-Cloudflare's `_headers` retains the other security restrictions, including `frame-ancestors`, which cannot be enforced through a meta policy. Both policies apply independently; third-party frame and connection sources must be allowed by both. Inline styles remain allowed for Shiki and the no-script fallback.
-
-Verify CSP with a production build served by Wrangler, not `astro dev`; the browser check deliberately attempts and asserts rejection of untrusted inline scripts and event handlers.
+Astro emits a hash-based script CSP in each page and Cloudflare's `_headers` adds the remaining restrictions; both policies apply. Verify against a production build served by Wrangler, not `astro dev`. Ordering rules and script hashing are in [CSP and theme bootstrap](docs/maintenance.md#csp-and-theme-bootstrap).
 
 ## CI and deployment
 
@@ -63,15 +59,15 @@ Verify CSP with a production build served by Wrangler, not `astro dev`; the brow
 
 Following [Astro's Cloudflare deployment guide](https://docs.astro.build/en/guides/deploy/cloudflare/), configure Workers Builds with build command `pnpm build` and deploy command `pnpm exec wrangler deploy`. The repository does not change dashboard settings. The Cloudflare adapter builds the Actions Worker alongside the static pages. For a local Workers preview, run `pnpm build` followed by `pnpm exec wrangler dev`.
 
-`wrangler.jsonc` binds production to `blog-votes` and Workers Previews to the separate `blog-votes-preview` D1 database. Apply new migrations before deploying code that needs them: `pnpm exec wrangler d1 migrations apply VOTES --remote --config wrangler.jsonc` for production, and the same command with `--preview` for the preview database. These commands modify remote data and require a token with D1 edit permission. Local migrations and deployment dry runs do not change remote resources. Version preview URLs share production bindings; use Workers Previews, not version URLs, for isolated test writes.
+`wrangler.jsonc` binds production and Workers Previews to separate D1 databases. Apply new migrations before deploying code that needs them, using the commands in [Shipping and deployment](docs/maintenance.md#shipping-and-deployment); they modify remote data and need a token with D1 edit permission.
 
-Upvotes use a first-party `Secure`, `HttpOnly`, `SameSite=Strict` cookie renewed for one year. D1 stores article and anonymous visitor IDs, not IP addresses. Clearing cookies or switching browsers loses the visitor's vote identity; this is not a one-person-one-vote system. Duplicate submissions are idempotent and votes cannot be undone. Action responses are private and non-cacheable. A per-IP limiter uses namespace `1001` and allows 30 submissions per minute per Cloudflare location, so shared networks may share a limit; it is basic abuse mitigation, not a globally strict quota or bot challenge.
+Upvotes are anonymous and cookie-based, with per-address rate limits; this is not a one-person-one-vote system. Vote semantics, limits and verification are in [Upvotes and D1](docs/maintenance.md#upvotes-and-d1).
 
 Validation and deployment are independent. A successful GitHub CI run does not prove deployment succeeded; Cloudflare's build/deployment record for the pushed commit is the deployment evidence.
 
 ## Content and maintenance
 
-Articles live under `src/content/blog`, with YAML front matter (`title`, `pubDate`, and optional `description` and `updatedDate`). Keep local images alongside Markdown and use relative paths with descriptive alt text: Astro infers dimensions and optimizes them with Sharp. Put unprocessed downloads in `public/downloads/` and link to `/downloads/...`. Remote image sources must be explicitly allowed by `public/_headers`; prefer local images and ordinary repository links.
+Articles live under `src/content/blog`, with YAML front matter (`title`, `pubDate`, and optional `description`, `updatedDate`, `draft` and `comments`; unknown fields are rejected). Keep local images alongside Markdown and use relative paths with descriptive alt text: Astro infers dimensions and optimizes them with Sharp. Put unprocessed downloads in `public/downloads/` and link to `/downloads/...`. Remote image sources must be allowed by both the Astro `security.csp` directives and `public/_headers`; prefer local images and ordinary repository links.
 
 `src/content.config.ts` uses Astro's built-in glob loader for the blog collection. Production excludes drafts and future posts; the dev server includes them. Dates display in `Asia/Shanghai`. Keep existing article IDs so `/blog/<name>/` URLs remain stable. Home and archive are independent `.astro` pages under `src/pages/`, not content collections. RSS metadata is defined directly in its endpoint.
 

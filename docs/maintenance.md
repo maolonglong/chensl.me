@@ -20,15 +20,17 @@ Verify with the production-preview browser check, which deliberately attempts an
 
 ## Content and RSS
 
-Preserve article IDs and the author's text when editing collection or publication behavior. `src/content.config.ts` owns draft and future-post filtering; production excludes both, while development includes them. Display dates in `Asia/Shanghai`.
+Preserve article IDs and the author's text when editing collection or publication behavior. `src/content.config.ts` defines the front matter schema; `src/lib/posts.ts` owns draft and future-post filtering for pages, RSS and the sitemap. Production excludes both, while development includes them. Scheduled posts appear only after a rebuild. Display dates in `Asia/Shanghai`.
 
 Pages and RSS must share Astro-rendered collection content and optimized local images. Preserve alt text, dimensions, lazy loading, and absolute RSS resource URLs. Keep the single feed at `/index.xml` and avoid a second Markdown parser. Use Astro's default heading and footnote anchors.
 
 ## Upvotes and D1
 
-Read `src/actions/index.ts`, `wrangler.jsonc`, and the relevant migrations before changing vote behavior. Preserve anonymous cookie-based identity, idempotent duplicate submissions, private non-cacheable Action responses, and the absence of an undo operation. Clearing cookies or switching browsers loses the visitor's vote identity; this is not a one-person-one-vote system.
+Read `src/actions/index.ts`, `wrangler.jsonc`, and the relevant migrations before changing vote behavior. Preserve anonymous cookie-based identity, idempotent duplicate submissions, private non-cacheable Action responses, and the absence of an undo operation. Clearing cookies or switching browsers loses the visitor's vote identity; this is not a one-person-one-vote system. The `__Host-blog-voter` cookie is `Secure`, `HttpOnly` and `SameSite=Strict`, lasts one year, and is set by `getVotes`; `upvote` requires it. D1 stores article and visitor IDs, not IP addresses, and accepts any well-formed UUID, so a client can forge identities within the rate limits.
 
-Run `node scripts/check-upvotes.mjs http://localhost:8787` against the freshly built Wrangler preview with disposable local D1 data. Apply local migrations first with `pnpm exec wrangler d1 migrations apply VOTES --local`. The E2E script adds three votes to `dockertest` per successful run and checks concurrency, visitor isolation, cookie persistence, and browser error recovery. It rejects non-loopback URLs. Retain its output with `tee` when a verification report is needed.
+Actions accept only slug-shaped article IDs and confirm the article by requesting its built page through the `ASSETS` binding. Drafts and future posts are not prerendered, so they are rejected, and the content store stays out of the Worker bundle; `pnpm check` fails if a content-store chunk reaches `dist/server`. Two limiters key on the client address: `VOTE_LIMITER` allows 30 submissions per minute and `READ_LIMITER` 120 reads. Cloudflare limiters are per location and approximate, and networks sharing an address share the budget. They are basic abuse mitigation, not a global quota or bot challenge.
+
+Run `node scripts/check-upvotes.mjs http://localhost:8787` against the freshly built Wrangler preview with disposable local D1 data. Apply local migrations first with `pnpm exec wrangler d1 migrations apply VOTES --local`. The E2E script adds three votes to `dockertest` per successful run and checks slug validation, concurrency, visitor isolation, cookie persistence, focus and announcement after voting, browser error recovery, and both rate limits. Its read burst uses a synthetic `CF-Connecting-IP`, so runs need no waiting between them. It rejects non-loopback URLs. Retain its output with `tee` when a verification report is needed.
 
 Cloudflare resource creation, remote migrations, and manual deployment require authorization. Local migrations and deployment dry runs do not perform them. Version preview URLs share production bindings; use Workers Previews for isolated remote test writes, with authorization.
 
