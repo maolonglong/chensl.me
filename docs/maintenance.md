@@ -26,13 +26,26 @@ Pages and RSS must share Astro-rendered collection content and optimized local i
 
 ## Upvotes and D1
 
-Read `src/actions/index.ts`, `wrangler.jsonc`, and the relevant migrations before changing vote behavior. Preserve anonymous cookie-based identity, idempotent duplicate submissions, private non-cacheable Action responses, and the absence of an undo operation. Clearing cookies or switching browsers loses the visitor's vote identity; this is not a one-person-one-vote system. The `__Host-blog-voter` cookie is `Secure`, `HttpOnly` and `SameSite=Strict`, lasts one year, and is set by `getVotes`; `upvote` requires it. D1 stores article and visitor IDs, not IP addresses, and accepts any well-formed UUID, so a client can forge identities within the rate limits.
+Read `src/actions/index.ts`, `wrangler.jsonc`, and the relevant migrations before changing vote behavior.
 
-Actions accept only slug-shaped article IDs and confirm the article by requesting its built page through the `ASSETS` binding. Drafts and future posts are not prerendered, so they are rejected, and the content store stays out of the Worker bundle; `pnpm check` fails if a content-store chunk reaches `dist/server`. Two limiters key on the client address: `VOTE_LIMITER` allows 30 submissions per minute and `READ_LIMITER` 120 reads. Cloudflare limiters are per location and approximate, and networks sharing an address share the budget. They are basic abuse mitigation, not a global quota or bot challenge.
+### Contracts to preserve
 
-Run `node scripts/check-upvotes.mjs http://localhost:8787` against the freshly built Wrangler preview with disposable local D1 data. Apply local migrations first with `pnpm exec wrangler d1 migrations apply VOTES --local`. The E2E script adds three votes to `dockertest` per successful run and checks slug validation, concurrency, visitor isolation, cookie persistence, focus and announcement after voting, browser error recovery, and both rate limits. Its read burst uses a synthetic `CF-Connecting-IP`, so runs need no waiting between them. It rejects non-loopback URLs. Retain its output with `tee` when a verification report is needed.
+- Anonymous cookie-based identity: the `__Host-blog-voter` cookie is set by `getVotes` and required by `upvote`; its attributes and lifetime live in `src/actions/index.ts`. Clearing cookies or switching browsers loses the visitor's vote identity, so this is not a one-person-one-vote system.
+- Idempotent duplicate submissions, private non-cacheable Action responses, and no undo operation.
+- D1 stores article and visitor IDs, not IP addresses, and accepts any well-formed UUID, so a client can forge identities within the rate limits.
+- Actions accept only slug-shaped article IDs and confirm the article by requesting its built page through the `ASSETS` binding. Drafts and future posts are not prerendered, so they are rejected, and the content store stays out of the Worker bundle; `pnpm check` fails if a content-store chunk reaches `dist/server`.
+- `VOTE_LIMITER` (submissions) and `READ_LIMITER` (reads) key on the client address, with budgets in `wrangler.jsonc`. Cloudflare limiters are per location and approximate, and networks sharing an address share the budget. They are basic abuse mitigation, not a global quota or bot challenge.
 
-Cloudflare resource creation, remote migrations, and manual deployment require authorization. Local migrations and deployment dry runs do not perform them. Version preview URLs share production bindings; use Workers Previews for isolated remote test writes, with authorization.
+### Verification
+
+1. Build, then serve the output with the Wrangler preview from [Preview and browser verification](#preview-and-browser-verification), using disposable local D1 data. Apply local migrations first: `pnpm exec wrangler d1 migrations apply VOTES --local`.
+2. Run `node scripts/check-upvotes.mjs http://localhost:8787`, adding `| tee <report>` when a verification report is needed. Each successful run adds three votes to `dockertest`. The script rejects non-loopback URLs, and its read burst uses a synthetic `CF-Connecting-IP`, so runs need no waiting between them.
+
+The check is done when the script exits 0: it asserts slug validation, concurrency, visitor isolation, cookie persistence, focus and announcement after voting, browser error recovery, and both rate limits.
+
+### Authorization
+
+Cloudflare resource creation, remote migrations, and manual deployment require authorization; local migrations and deployment dry runs perform none of them. Version preview URLs share production bindings; use Workers Previews for isolated remote test writes, with authorization.
 
 ## Dependency upgrades
 

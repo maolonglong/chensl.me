@@ -7,7 +7,8 @@
 - Prefer Astro's native capabilities and official integrations. For Astro API or configuration changes, consult Astro Docs MCP when available, otherwise the official docs; verify compatibility with the installed version. Latest documentation is not a version guarantee.
 - Edit source, not `dist/`, `.astro/`, `.wrangler/`, or `node_modules/`. `public/` contains source assets.
 - Preserve the author's words, emojis, dates, and credits. Keep article URLs stable; the blog's only RSS feed is `/index.xml`. Use Astro's default heading and footnote anchors.
-- Pushing `main` triggers production deployment through Cloudflare's external Git integration. Before shipping or changing deployment configuration, read [Shipping and deployment](docs/maintenance.md#shipping-and-deployment). Manual deployment requires explicit authorization.
+- Pushing `main` triggers production deployment through Cloudflare's external Git integration. Before shipping or changing deployment configuration, read [Shipping and deployment](docs/maintenance.md#shipping-and-deployment).
+- Local builds, previews, local D1 migrations, `wrangler deploy --dry-run`, and E2E checks against disposable local data need no approval. Remote D1 migrations, Cloudflare resource or dashboard changes, manual deployment, and pushing `main` need explicit authorization.
 - Manage installed skills with `npx skills`, committing skill changes and `skills-lock.json` together rather than editing either by hand.
 
 ## Verification

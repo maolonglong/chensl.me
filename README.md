@@ -32,9 +32,9 @@ Use `pnpm format` to format maintained code with Prettier and its Astro plugin, 
 
 `public/` contains unprocessed public assets; `dist/` is disposable output. Do not put source files in `dist/`. Run `node scripts/check-browser.mjs <preview-url>` against the preview for browser regression coverage.
 
-Run `node scripts/check-appearance.mjs <preview-url> .amp/in/artifacts/astro` for theme, storage-failure, and no-script checks plus 2× screenshots of pages, breakpoints, and contents states. Inspect the screenshots separately; capture alone is not visual verification. Both browser scripts require `agent-browser`.
+Run `node scripts/check-appearance.mjs <preview-url> <screenshots-directory>` for theme, storage-failure, and no-script checks plus 2× screenshots of pages, breakpoints, and contents states. Inspect the screenshots separately; capture alone is not visual verification. Both browser scripts require `agent-browser`.
 
-Run `node scripts/check-upvotes.mjs http://localhost:8787` against a production build served by `pnpm exec wrangler dev --port 8787`. It uses real Actions and local D1, adds three votes to the `dockertest` article per successful run, and prints assertions for concurrency, visitor isolation, cookie persistence, and browser error recovery. Use only disposable local data; the script rejects non-loopback URLs. Capture its output with `tee` when retaining a verification report. Static output is in `dist/client`; the generated Worker configuration is in `dist/server` and Wrangler follows `.wrangler/deploy/config.json`.
+Run `node scripts/check-upvotes.mjs http://localhost:8787` against a production build served by `pnpm exec wrangler dev --port 8787`. It uses real Actions and disposable local D1 data; setup and coverage are in [Upvotes and D1](docs/maintenance.md#upvotes-and-d1). Static output is in `dist/client`; the generated Worker configuration is in `dist/server` and Wrangler follows `.wrangler/deploy/config.json`.
 
 After running `pnpm check`, validate Cloudflare configuration with a deployment dry run. Wrangler consumes the existing `dist/`; it does not rebuild or run tests:
 
@@ -63,8 +63,6 @@ Following [Astro's Cloudflare deployment guide](https://docs.astro.build/en/guid
 
 Upvotes are anonymous and cookie-based, with per-address rate limits; this is not a one-person-one-vote system. Vote semantics, limits and verification are in [Upvotes and D1](docs/maintenance.md#upvotes-and-d1).
 
-Validation and deployment are independent. A successful GitHub CI run does not prove deployment succeeded; Cloudflare's build/deployment record for the pushed commit is the deployment evidence.
-
 ## Content and maintenance
 
 Articles live under `src/content/blog`, with YAML front matter (`title`, `pubDate`, and optional `description`, `updatedDate`, `draft` and `comments`; unknown fields are rejected). Keep local images alongside Markdown and use relative paths with descriptive alt text: Astro infers dimensions and optimizes them with Sharp. Put unprocessed downloads in `public/downloads/` and link to `/downloads/...`. Remote image sources must be allowed by both the Astro `security.csp` directives and `public/_headers`; prefer local images and ordinary repository links.
@@ -73,8 +71,8 @@ Articles live under `src/content/blog`, with YAML front matter (`title`, `pubDat
 
 `src/lib/markdown.mjs` customizes the official Unified Markdown processor for this site's alerts, tables, and code captions. Footnote presentation uses native processor options and CSS; heading and footnote anchors follow Astro defaults. Fence captions use `title="db/user.go"` without braces. The blog's single RSS feed at `/index.xml` renders collection content through Astro's experimental Container API so optimized images work in feed readers, without a second Markdown parser. `src/lib/assets.ts` generates content-versioned Giscus theme CSS.
 
-Pages and RSS share Astro-rendered collection content and optimized local images. Preserve alt text, dimensions, lazy loading, and absolute RSS resource URLs.
+Publication and RSS rules are in [Content and RSS](docs/maintenance.md#content-and-rss).
 
 Astro's Fonts API serves local fonts with content-hashed URLs. `src/lib/fonts.mjs` generates common and article JinKai subsets from source at build time and dev-server startup; publishing new text needs no manual font command. During development, restart the server to refresh the optimized subsets; complete fallback ranges cover new characters meanwhile. The shared layout declares code fonts without preloading; the browser downloads them only when used, on any page. Font licenses and fallback regeneration instructions are in `public/fonts/tsanger-jinkai02/NOTICE.md`.
 
-Agent instructions start at [AGENTS.md](AGENTS.md), with task-specific guidance under `.agents/`.
+Agent instructions start at [AGENTS.md](AGENTS.md), with shared design contracts and maintenance workflows under `docs/`.
