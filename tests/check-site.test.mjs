@@ -163,8 +163,6 @@ test('site checker accepts an explicitly allowed HTTPS image origin', async () =
   assert.equal(result.status, 0, result.stderr)
 })
 
-const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
 test('site checker requires third-party CSP sources', async () => {
   for (const [source, directive] of [
     ['https://giscus.app', 'script-src'],
@@ -174,11 +172,20 @@ test('site checker requires third-party CSP sources', async () => {
   ]) {
     const fixture = await checkerFixture()
     const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
-    const expression = new RegExp(`(${directive}[^;]*)${escapeRegExp(source)}`)
-    await write(fixture, 'dist/_headers', headers.replace(expression, '$1'))
+    // Remove the source from its directive with string operations, so no hostname is used as a regexp.
+    const start = headers.indexOf(directive)
+    const at = headers.indexOf(source, start)
+    assert.ok(
+      start >= 0 && at > start && at < headers.indexOf(';', start),
+      `${directive} lists ${source}`,
+    )
+    await write(fixture, 'dist/_headers', headers.slice(0, at) + headers.slice(at + source.length))
     const result = run(process.execPath, [checker], fixture)
     assert.equal(result.status, 1, result.stdout)
-    assert.match(result.stderr, new RegExp(`CSP ${directive} must allow ${escapeRegExp(source)}`))
+    assert.ok(
+      result.stderr.includes(`CSP ${directive} must allow ${source}`),
+      `missing "CSP ${directive} must allow ${source}" in: ${result.stderr}`,
+    )
   }
 })
 
