@@ -71,7 +71,7 @@ h2 {
 }
 
 /*
-  Every level must outrank the 1.125rem article body. Space carries the rest of
+  Every level must outrank the 1rem article body. Space carries the rest of
   the hierarchy: a wide gap above detaches the heading from the previous
   section, a narrow gap below binds it to its own text.
 */
@@ -85,7 +85,7 @@ h4,
 h5,
 h6 {
     margin: 2em 0 0.5em;
-    font-size: 1.125rem;
+    font-size: 1rem;
 }
 
 /* A subsection that opens its section belongs to that heading, not after a pause. */
