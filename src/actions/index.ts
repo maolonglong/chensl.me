@@ -14,9 +14,14 @@ const visitorId = z.uuid()
 
 // Drafts and future posts are not prerendered, so a built page means a published post.
 // Asking the assets binding keeps the content store out of the Worker bundle.
+// Redirects are not followed: assets redirects /blog/index/ toward the archive, which is not a post.
 async function requirePost(postId: string, origin: URL) {
-  const page = await env.ASSETS.fetch(new URL(`/blog/${postId}/`, origin), { method: 'HEAD' })
-  if (!page.ok) throw new ActionError({ code: 'NOT_FOUND', message: 'Article not found.' })
+  const page = await env.ASSETS.fetch(new URL(`/blog/${postId}/`, origin), {
+    method: 'HEAD',
+    redirect: 'manual',
+  })
+  if (page.status !== 200)
+    throw new ActionError({ code: 'NOT_FOUND', message: 'Article not found.' })
 }
 
 async function requireQuota(limiter: RateLimit, key: string) {

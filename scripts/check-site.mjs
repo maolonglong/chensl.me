@@ -432,6 +432,14 @@ if (existsSync(manifestPath)) {
   }
 }
 
+// Upvote Actions only accept slug-shaped article IDs, so every article URL must match.
+for (const file of outputFiles) {
+  const id = file.match(/^blog\/([^/]+)\/index\.html$/)?.[1]
+  if (id && !/^[a-z0-9_-]+$/.test(id)) {
+    errors.push(`Article URL /blog/${id}/ is outside the upvote ID contract [a-z0-9_-]+`)
+  }
+}
+
 // Actions validate articles through the built pages. Bundling the content store would grow the
 // Worker, and its cold-start cost, with every post.
 const serverDir = path.resolve(outputDir, '../server')

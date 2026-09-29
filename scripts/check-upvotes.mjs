@@ -49,7 +49,12 @@ assert.match(setCookie, /SameSite=Strict/i)
 const cookie = setCookie.split(';')[0]
 assert.equal((await call('upvote')).response.status, 403)
 assert.equal((await call('upvote', article, cookie, 'https://other.example')).response.status, 403)
-assert.equal((await call('upvote', 'not-a-published-post', cookie)).response.status, 404)
+// Pages that exist but are not articles, and IDs that assets would redirect, are not votable.
+for (const postId of ['not-a-published-post', 'index', '404']) {
+  for (const name of ['getVotes', 'upvote']) {
+    assert.equal((await call(name, postId, cookie)).response.status, 404, `${name} ${postId}`)
+  }
+}
 // Only slug-shaped IDs reach the article lookup, so path syntax cannot select another page.
 for (const postId of ['../dockertest', 'a/b', 'Dockertest', 'dockertest/', '', '%2e%2e']) {
   for (const name of ['getVotes', 'upvote']) {
