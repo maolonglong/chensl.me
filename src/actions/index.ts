@@ -1,17 +1,22 @@
 import { ActionError, defineAction } from 'astro:actions'
-import { getEntry } from 'astro:content'
 import { z } from 'astro/zod'
 import { env } from 'cloudflare:workers'
 
-const input = z.object({ postId: z.string().min(1).max(200) })
+// Collection IDs are slugs; rejecting other characters keeps path syntax out of the lookup.
+const input = z.object({
+  postId: z
+    .string()
+    .regex(/^[a-z0-9_-]+$/)
+    .max(200),
+})
 const visitorCookie = '__Host-blog-voter'
 const visitorId = z.uuid()
 
-async function requirePost(postId: string) {
-  const post = await getEntry('blog', postId)
-  if (!post || post.data.draft || post.data.pubDate.valueOf() > Date.now()) {
-    throw new ActionError({ code: 'NOT_FOUND', message: 'Article not found.' })
-  }
+// Drafts and future posts are not prerendered, so a built page means a published post.
+// Asking the assets binding keeps the content store out of the Worker bundle.
+async function requirePost(postId: string, origin: URL) {
+  const page = await env.ASSETS.fetch(new URL(`/blog/${postId}/`, origin), { method: 'HEAD' })
+  if (!page.ok) throw new ActionError({ code: 'NOT_FOUND', message: 'Article not found.' })
 }
 
 async function readVotes(postId: string, visitor: string) {
@@ -26,8 +31,8 @@ async function readVotes(postId: string, visitor: string) {
 export const server = {
   getVotes: defineAction({
     input,
-    async handler({ postId }, { cookies }) {
-      await requirePost(postId)
+    async handler({ postId }, { cookies, url }) {
+      await requirePost(postId, url)
       const existing = visitorId.safeParse(cookies.get(visitorCookie)?.value)
       const visitor = existing.success ? existing.data : crypto.randomUUID()
       const state = await readVotes(postId, visitor)
@@ -43,8 +48,8 @@ export const server = {
   }),
   upvote: defineAction({
     input,
-    async handler({ postId }, { cookies, clientAddress }) {
-      await requirePost(postId)
+    async handler({ postId }, { cookies, clientAddress, url }) {
+      await requirePost(postId, url)
       const visitor = visitorId.safeParse(cookies.get(visitorCookie)?.value)
       if (!visitor.success) {
         throw new ActionError({ code: 'FORBIDDEN', message: 'Cookies are required to vote.' })

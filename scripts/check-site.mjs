@@ -432,6 +432,17 @@ if (existsSync(manifestPath)) {
   }
 }
 
+// Actions validate articles through the built pages. Bundling the content store would grow the
+// Worker, and its cold-start cost, with every post.
+const serverDir = path.resolve(outputDir, '../server')
+if (existsSync(serverDir)) {
+  for (const file of await walk(serverDir)) {
+    if (path.basename(file).includes('data-layer-content')) {
+      errors.push(`Worker bundle must not include the content store: ${path.relative(root, file)}`)
+    }
+  }
+}
+
 if (errors.length) {
   console.error(`Site checks failed (${errors.length}):`)
   for (const error of errors) {

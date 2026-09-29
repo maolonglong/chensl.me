@@ -15,10 +15,16 @@ const requireAstro = createRequire(import.meta.resolve('astro/package.json'))
 const { parse } = await import(requireAstro.resolve('devalue'))
 const article = 'dockertest'
 const otherArticle = 'semantic-view-sql-traps'
+// Connection: close avoids reusing a socket that Wrangler closed while the browser checks ran.
 async function call(name, postId = article, cookie = '', origin = new URL(base).origin) {
   const response = await fetch(new URL(`/_actions/${name}/`, base), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Origin: origin, Cookie: cookie },
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: origin,
+      Cookie: cookie,
+      Connection: 'close',
+    },
     body: JSON.stringify({ postId }),
   })
   const body = await response.text()
@@ -37,6 +43,12 @@ const cookie = setCookie.split(';')[0]
 assert.equal((await call('upvote')).response.status, 403)
 assert.equal((await call('upvote', article, cookie, 'https://other.example')).response.status, 403)
 assert.equal((await call('upvote', 'not-a-published-post', cookie)).response.status, 404)
+// Only slug-shaped IDs reach the article lookup, so path syntax cannot select another page.
+for (const postId of ['../dockertest', 'a/b', 'Dockertest', 'dockertest/', '', '%2e%2e']) {
+  for (const name of ['getVotes', 'upvote']) {
+    assert.equal((await call(name, postId, cookie)).response.status, 400, `${name} ${postId}`)
+  }
+}
 const votes = await Promise.all(Array.from({ length: 8 }, () => call('upvote', article, cookie)))
 for (const vote of votes) {
   assert.equal(vote.response.status, 200, vote.data)
