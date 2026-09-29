@@ -1,6 +1,0 @@
-services:
-  astro:
-    command: ASTRO_DEV_BACKGROUND=0 pnpm dev --host 0.0.0.0 --port "$PORT"
-    portal:
-      title: Astro preview
-      description: Preview the site with draft content and live reload.

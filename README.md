@@ -24,8 +24,6 @@ pnpm check  # formatting, lint, type check, build, regression tests, output vali
 
 Tests use disposable Astro fixture builds. TypeScript stays on 6.x because the current `astro check` does not support TypeScript 7.
 
-In Amp orbs, `amp orb services ensure` starts the managed dev preview and prints its portal URL.
-
 `pnpm cf:types` regenerates binding types from Wrangler configuration. Runtime types are imported selectively in `src/env.d.ts` to avoid collisions between Workers' HTMLRewriter `Element` and the browser DOM. Pre-rendering uses Node and build-time image optimization, preserving the existing filesystem-based CSS assets and RSS pipeline. Sessions are disabled; no KV or Cloudflare Images resource is required.
 
 Use `pnpm format` to format maintained code with Prettier and its Astro plugin, and `pnpm lint` for Oxlint. Formatting excludes article content, fonts, third-party code, and generated output. Components own scoped styles and compiled TypeScript interactions; global CSS owns design tokens, Markdown typography, and shared floating-control geometry. Only the pre-paint theme bootstrap stays inline. Oxlint checks scripts, not Astro template semantics; `astro check` and browser coverage remain required.

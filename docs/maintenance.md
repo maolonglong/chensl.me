@@ -4,9 +4,9 @@ Read only the section matching the task. Paths and commands are relative to the 
 
 ## Preview and browser verification
 
-In Amp orbs, run `amp orb services ensure` for the managed dev preview and its portal URL. `.amp/services.yaml` disables Astro's automatic backgrounding so Amp owns the foreground process. The dev-only `/_astro/status` endpoint reports readiness.
+Run `pnpm dev` for a local development preview. When using a process supervisor, set `ASTRO_DEV_BACKGROUND=0` so it owns the foreground process. The dev-only `/_astro/status` endpoint reports readiness.
 
-For production behavior, run `pnpm build`, then serve the output with `pnpm exec wrangler dev --port 8787`. In an orb, run long-lived servers through `amp orb service start`. Wrangler follows `.wrangler/deploy/config.json`; it does not rebuild the output.
+For production behavior, run `pnpm build`, then serve the output with `pnpm exec wrangler dev --port 8787`. Wrangler follows `.wrangler/deploy/config.json`; it does not rebuild the output.
 
 Use the Wrangler preview, not `astro dev`, for CSP and upvote checks. `pnpm test:e2e` builds the site and runs the Playwright specs in `e2e/` against its own preview on port 8790 with local D1, driving the installed Google Chrome. The HTML report is in `playwright-report/`, and a failing test keeps its trace in `test-results/`. Set `SITE_URL` to reuse a preview you started; only loopback URLs are accepted because the upvote checks write votes. `pnpm test:e2e` owns port 8790, `dist/`, `test-results/` and `playwright-report/`; two runs at once, or a build during a run, fail with misleading errors, so run one at a time.
 
