@@ -105,6 +105,13 @@ b {
     color: var(--heading-color);
 }
 
+/* No italic face exists and synthesis is off, so emphasis is the CJK dot below the glyph, not a slant or brand color that would read as a link. */
+em {
+    font-style: normal;
+    text-emphasis: filled dot;
+    text-emphasis-position: under right;
+}
+
 a {
     color: var(--link-color);
     text-decoration: none;
