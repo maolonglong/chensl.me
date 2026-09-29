@@ -24,7 +24,7 @@ pnpm check  # formatting, lint, type check, build, regression tests, output vali
 
 Tests use disposable Astro fixture builds. TypeScript stays on 6.x because the current `astro check` does not support TypeScript 7.
 
-In Amp orbs, run `amp orb services ensure` to start the managed preview and obtain its portal URL. The service sets `ASTRO_DEV_BACKGROUND=0` so Amp owns the foreground process rather than Astro detaching it. The dev-only `/_astro/status` endpoint reports readiness; use a Wrangler production preview for CSP and upvote verification.
+In Amp orbs, `amp orb services ensure` starts the managed dev preview and prints its portal URL.
 
 `pnpm cf:types` regenerates binding types from Wrangler configuration. Runtime types are imported selectively in `src/env.d.ts` to avoid collisions between Workers' HTMLRewriter `Element` and the browser DOM. Pre-rendering uses Node and build-time image optimization, preserving the existing filesystem-based CSS assets and RSS pipeline. Sessions are disabled; no KV or Cloudflare Images resource is required.
 
@@ -42,7 +42,7 @@ After running `pnpm check`, validate Cloudflare configuration with a deployment 
 pnpm exec wrangler deploy --dry-run
 ```
 
-Manual deployment, only when explicitly requested:
+Manual deployment to production:
 
 ```sh
 pnpm deploy
@@ -56,17 +56,6 @@ Cloudflare's `_headers` retains the other security restrictions, including `fram
 
 Verify CSP with a production build served by Wrangler, not `astro dev`; the browser check deliberately attempts and asserts rejection of untrusted inline scripts and event handlers.
 
-### Site design contracts
-
-Kami supplies visual reference, not this site's implementation rules. These contracts override its template defaults, particularly unadorned links, Latin-first font stacks, and tables that scroll themselves.
-
-- Header, main, and footer share the same `42rem` column; short pages keep the footer at the bottom.
-- Keep headings at least as large as the article body. At equal sizes, distinguish headings through weight, color, and spacing: more space above than below. Preserve underlined article/footer links, archive visited-link styling, visible focus, and meaningful diff signs.
-- Keep the single prerendered contents list: a hover rail beside the column and a native popover elsewhere, available without JavaScript when there are at least three H2/H3 headings. Keep SVG controls and 44px touch targets.
-- Preserve theme cycling `auto` → `light` → `dark`, OS tracking in auto, forced `color-scheme`, persistence, storage-failure handling, accessible labels, and no-script fallback. Script ownership and CSP verification are described in [CSP and theme bootstrap](#csp-and-theme-bootstrap).
-- Keep JinKai first for mixed Chinese/Latin text, W04 alone at weights 400–500, and synthesized bold disabled. Fonts remain self-hosted with `font-display: swap`, content-versioned URLs, no preloads, complete fallback coverage, and core-subset precedence. Declare code fonts for all pages; let the browser load them only when used. The cold-visit font budget is 640 KiB.
-- Keep tables inside focusable `.table-scroll` wrappers, with column alignment preserved. Making the table itself the scroll box loses its accessibility role. Preserve code-fence captions without a `title` attribute on the code wrapper, which would add a tooltip.
-
 ## CI and deployment
 
 - GitHub Actions runs on pushes and pull requests. [The CI workflow](.github/workflows/ci.yml) installs Node.js dependencies, runs `pnpm check`, then `wrangler deploy --dry-run`. It does not publish the site.
@@ -74,13 +63,11 @@ Kami supplies visual reference, not this site's implementation rules. These cont
 
 Following [Astro's Cloudflare deployment guide](https://docs.astro.build/en/guides/deploy/cloudflare/), configure Workers Builds with build command `pnpm build` and deploy command `pnpm exec wrangler deploy`. The repository does not change dashboard settings. The Cloudflare adapter builds the Actions Worker alongside the static pages. For a local Workers preview, run `pnpm build` followed by `pnpm exec wrangler dev`.
 
-`wrangler.jsonc` binds production to `blog-votes` and Workers Previews to the separate `blog-votes-preview` D1 database. Apply new migrations before deploying code that needs them: `pnpm exec wrangler d1 migrations apply VOTES --remote --config wrangler.jsonc` for production, and the same command with `--preview` for the preview database. These commands require a token with D1 edit permission. Cloudflare resource creation, remote migrations, and deployment require authorization; a local migration or deployment dry run does not perform them. Version preview URLs share production bindings; use Workers Previews, not version URLs, for isolated test writes.
+`wrangler.jsonc` binds production to `blog-votes` and Workers Previews to the separate `blog-votes-preview` D1 database. Apply new migrations before deploying code that needs them: `pnpm exec wrangler d1 migrations apply VOTES --remote --config wrangler.jsonc` for production, and the same command with `--preview` for the preview database. These commands modify remote data and require a token with D1 edit permission. Local migrations and deployment dry runs do not change remote resources. Version preview URLs share production bindings; use Workers Previews, not version URLs, for isolated test writes.
 
 Upvotes use a first-party `Secure`, `HttpOnly`, `SameSite=Strict` cookie renewed for one year. D1 stores article and anonymous visitor IDs, not IP addresses. Clearing cookies or switching browsers loses the visitor's vote identity; this is not a one-person-one-vote system. Duplicate submissions are idempotent and votes cannot be undone. Action responses are private and non-cacheable. A per-IP limiter uses namespace `1001` and allows 30 submissions per minute per Cloudflare location, so shared networks may share a limit; it is basic abuse mitigation, not a globally strict quota or bot challenge.
 
-Check validation and deployment separately. A successful GitHub CI run does not prove deployment succeeded, and the absence of a GitHub deployment job does not mean no deployment was triggered. Do not assume Cloudflare waits for GitHub CI to pass.
-
-When reporting a shipped change, distinguish pushed, CI passed, and deployment confirmed. Confirm deployment against the pushed commit using Cloudflare's records; if those records are unavailable, report deployment as unverified rather than claiming the site did not update. Do not run an extra manual deployment merely because GitHub Actions only validates.
+Validation and deployment are independent. A successful GitHub CI run does not prove deployment succeeded; Cloudflare's build/deployment record for the pushed commit is the deployment evidence.
 
 ## Content and maintenance
 
@@ -94,19 +81,4 @@ Pages and RSS share Astro-rendered collection content and optimized local images
 
 Astro's Fonts API serves local fonts with content-hashed URLs. `src/lib/fonts.mjs` generates common and article JinKai subsets from source at build time and dev-server startup; publishing new text needs no manual font command. During development, restart the server to refresh the optimized subsets; complete fallback ranges cover new characters meanwhile. The shared layout declares code fonts without preloading; the browser downloads them only when used, on any page. Font licenses and fallback regeneration instructions are in `public/fonts/tsanger-jinkai02/NOTICE.md`.
 
-Agent instructions are documented in [AGENTS.md](AGENTS.md).
-
-### Dependency upgrades
-
-Before evaluating or performing an upgrade from a GitHub-released dependency, collect the stable release notes between the current and target versions:
-
-```sh
-node scripts/fetch-release-notes.mjs --repo OWNER/REPO --from CURRENT_TAG --to TARGET_TAG --output PATH
-```
-
-Use `--to latest` only when targeting the latest stable release. Add `--include-prereleases` only when prerelease compatibility is in scope.
-
-- Astro: review its release notes and the official Markdown processor/integration compatibility, then update `package.json` and `pnpm-lock.yaml` together. Keep the type checker compatible with the selected TypeScript version.
-- Node.js: update `node-version` in `.github/workflows/ci.yml`; Amp orbs provide Node.js for development.
-
-Run the deployment dry run described above after dependency changes.
+Agent instructions start at [AGENTS.md](AGENTS.md), with task-specific guidance under `.agents/`.
