@@ -11,3 +11,7 @@ worker-configuration.d.ts
 !.env.example
 
 node_modules/
+
+# Playwright output
+/playwright-report/
+/test-results/

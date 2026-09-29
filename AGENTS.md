@@ -15,7 +15,7 @@
 
 - For site output or build changes, run `pnpm check`; it includes formatting, lint, type checking, the production build, and regression/output checks. Use `pnpm format` to apply the repository's formatting rules; article prose and third-party assets are excluded.
 - For dependencies or Cloudflare configuration, also run `pnpm exec wrangler deploy --dry-run` against the freshly built output.
-- For layout, styles, fonts, or browser interactions, run both `node scripts/check-browser.mjs <preview-url>` and `node scripts/check-appearance.mjs <preview-url> <screenshots-directory>`. Follow [Preview and browser verification](docs/maintenance.md#preview-and-browser-verification) for preview setup.
+- For layout, styles, fonts, or browser interactions, run both `pnpm test:e2e` and `node scripts/check-appearance.mjs <preview-url> <screenshots-directory>`. Follow [Preview and browser verification](docs/maintenance.md#preview-and-browser-verification) for preview setup.
 - Inspect the appearance screenshots, including affected light/dark, narrow/wide, and open/closed states; successful capture alone is not visual verification. Add targeted checks for affected states the scripts do not exercise. Browser viewport emulation is not real-device testing.
 - For tooling-only changes, run affected checks. Documentation outside site content needs command/link verification, not a site build.
 

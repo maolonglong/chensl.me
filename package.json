@@ -12,7 +12,8 @@
     "cf:types": "wrangler types worker-configuration.d.ts --include-runtime=false",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "oxlint --deny-warnings src scripts astro.config.mjs",
+    "test:e2e": "astro build && playwright test",
+    "lint": "oxlint --deny-warnings src scripts e2e astro.config.mjs playwright.config.mjs",
     "check": "pnpm format:check && pnpm lint && pnpm cf:types && astro check && astro build && node --test scripts/*.test.mjs && node scripts/check-site.mjs dist/client"
   },
   "devDependencies": {
@@ -22,6 +23,7 @@
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "3.7.4",
     "@cloudflare/workers-types": "^5.20260927.1",
+    "@playwright/test": "1.63.0",
     "@types/node": "^26.6.3",
     "astro": "7.3.5",
     "fontverter": "2.0.0",

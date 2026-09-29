@@ -8,6 +8,9 @@
 !src/**/*.css
 !scripts/
 !scripts/*.mjs
+!e2e/
+!e2e/*.mjs
+!playwright.config.mjs
 !astro.config.mjs
 !package.json
 !tsconfig.json

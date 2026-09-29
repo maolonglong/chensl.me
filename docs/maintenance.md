@@ -8,7 +8,9 @@ In Amp orbs, run `amp orb services ensure` for the managed dev preview and its p
 
 For production behavior, run `pnpm build`, then serve the output with `pnpm exec wrangler dev --port 8787`. In an orb, run long-lived servers through `amp orb service start`. Wrangler follows `.wrangler/deploy/config.json`; it does not rebuild the output.
 
-Use the Wrangler preview, not `astro dev`, for CSP and upvote checks. Before modifying browser verification, read `scripts/check-browser.mjs` and `scripts/check-appearance.mjs`: they set and assert hover capability and keep a CDP connection open for no-script checks. Viewport width or device emulation alone does not reproduce those states.
+Use the Wrangler preview, not `astro dev`, for CSP and upvote checks. `pnpm test:e2e` builds the site and runs the Playwright specs in `e2e/` against its own preview on port 8790 with local D1, driving the installed Google Chrome. The HTML report is in `playwright-report/`, and a failing test keeps its trace in `test-results/`. Set `SITE_URL` to reuse a preview you started; only loopback URLs are accepted because the upvote checks write votes.
+
+Before modifying browser verification, read `playwright.config.mjs` and `e2e/site.mjs`: `test.use({ hasTouch: true })` selects a touch screen, and `open()` asserts the hover capability the test asked for. `scripts/check-appearance.mjs` still drives `agent-browser` and keeps a CDP connection open for its no-script checks. Viewport width alone does not reproduce these states.
 
 ## CSP and theme bootstrap
 
