@@ -40,10 +40,10 @@ Read `src/actions/index.ts`, `wrangler.jsonc`, and the relevant migrations befor
 
 ### Verification
 
-1. Build, then serve the output with the Wrangler preview from [Preview and browser verification](#preview-and-browser-verification), using disposable local D1 data. Apply local migrations first: `pnpm exec wrangler d1 migrations apply VOTES --local`.
-2. Run `node scripts/check-upvotes.mjs http://localhost:8787`, adding `| tee <report>` when a verification report is needed. Each successful run adds three votes to `dockertest`. The script rejects non-loopback URLs, and its read burst uses a synthetic `CF-Connecting-IP`, so runs need no waiting between them.
+1. Run `pnpm test:e2e`, or `pnpm exec playwright test e2e/upvotes.spec.mjs` after a build. Playwright starts its own preview, applying local migrations to disposable D1 data first. With `SITE_URL`, apply them yourself: `pnpm exec wrangler d1 migrations apply VOTES --local`.
+2. `e2e/upvotes.spec.mjs` accepts only loopback URLs, and every test sends its own synthetic `CF-Connecting-IP`, so runs need no waiting between them. Each run adds a few votes to `dockertest`, and the specs assert counts relative to a baseline read at the start of each test.
 
-The check is done when the script exits 0: it asserts slug validation, concurrency, visitor isolation, cookie persistence, focus and announcement after voting, browser error recovery, and both rate limits.
+The check is done when the spec passes: it asserts slug validation, concurrency, visitor isolation, cookie persistence, focus and announcement after voting, browser error recovery, and both rate limits.
 
 ### Authorization
 

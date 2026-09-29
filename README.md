@@ -32,7 +32,7 @@ Use `pnpm format` to format maintained code with Prettier and its Astro plugin, 
 
 `public/` contains unprocessed public assets; `dist/` is disposable output. Do not put source files in `dist/`. Run `pnpm test:e2e` for browser regression coverage: it builds the site and runs the Playwright specs in `e2e/` against a local Wrangler preview with disposable D1 data. It drives the installed Google Chrome, leaves an HTML report in `playwright-report/`, and saves 2× screenshots of pages, breakpoints, and contents states in `test-results/screenshots`. Inspect the screenshots separately; capture alone is not visual verification.
 
-Run `node scripts/check-upvotes.mjs http://localhost:8787` against a production build served by `pnpm exec wrangler dev --port 8787`. It uses real Actions and disposable local D1 data; setup and coverage are in [Upvotes and D1](docs/maintenance.md#upvotes-and-d1). Static output is in `dist/client`; the generated Worker configuration is in `dist/server` and Wrangler follows `.wrangler/deploy/config.json`.
+`pnpm test:e2e` also exercises the real upvote Actions against disposable local D1 data; setup and coverage are in [Upvotes and D1](docs/maintenance.md#upvotes-and-d1). Static output is in `dist/client`; the generated Worker configuration is in `dist/server` and Wrangler follows `.wrangler/deploy/config.json`.
 
 After running `pnpm check`, validate Cloudflare configuration with a deployment dry run. Wrangler consumes the existing `dist/`; it does not rebuild or run tests:
 

@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import path from 'node:path'
 import { test as base, expect } from '@playwright/test'
 
@@ -17,13 +17,18 @@ export const covers = (outer, inner) =>
   outer.right >= inner.right &&
   outer.bottom >= inner.bottom
 
+const salt = randomUUID()
+
 export const test = base.extend({
   // The Actions rate-limit by client address. A distinct address per test keeps each test's
-  // budget independent of how fast or in what order the suite runs.
+  // budget independent of how fast or in what order the suite runs, and the per-worker salt keeps
+  // it independent of earlier runs against a preview that stays up.
   // Playwright requires a destructured first argument even when a fixture depends on nothing.
   // oxlint-disable-next-line no-empty-pattern
   clientAddress: async ({}, use, testInfo) => {
-    const hash = createHash('sha256').update(testInfo.testId).digest()
+    const hash = createHash('sha256')
+      .update(salt + testInfo.testId)
+      .digest()
     await use(`10.${hash[0]}.${hash[1]}.${hash[2]}`)
   },
   context: async ({ context, clientAddress }, use) => {
