@@ -13,8 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:e2e": "astro build && playwright test",
-    "lint": "oxlint --deny-warnings src scripts e2e astro.config.mjs playwright.config.mjs",
-    "check": "pnpm format:check && pnpm lint && pnpm cf:types && astro check && astro build && node --test scripts/*.test.mjs && node scripts/check-site.mjs dist/client"
+    "lint": "oxlint --deny-warnings src scripts tests e2e astro.config.mjs playwright.config.mjs",
+    "check": "pnpm format:check && pnpm lint && pnpm cf:types && astro check && astro build && node --test tests/*.test.mjs && node scripts/check-site.mjs dist/client"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

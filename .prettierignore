@@ -8,6 +8,8 @@
 !src/**/*.css
 !scripts/
 !scripts/*.mjs
+!tests/
+!tests/*.mjs
 !e2e/
 !e2e/*.mjs
 !playwright.config.mjs
