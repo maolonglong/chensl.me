@@ -10,7 +10,7 @@ For production behavior, run `pnpm build`, then serve the output with `pnpm exec
 
 Use the Wrangler preview, not `astro dev`, for CSP and upvote checks. `pnpm test:e2e` builds the site and runs the Playwright specs in `e2e/` against its own preview on port 8790 with local D1, driving the installed Google Chrome. The HTML report is in `playwright-report/`, and a failing test keeps its trace in `test-results/`. Set `SITE_URL` to reuse a preview you started; only loopback URLs are accepted because the upvote checks write votes.
 
-Before modifying browser verification, read `playwright.config.mjs` and `e2e/site.mjs`: `test.use({ hasTouch: true })` selects a touch screen, and `open()` asserts the hover capability the test asked for. `scripts/check-appearance.mjs` still drives `agent-browser` and keeps a CDP connection open for its no-script checks. Viewport width alone does not reproduce these states.
+Before modifying browser verification, read `playwright.config.mjs` and `e2e/site.mjs`: `test.use({ hasTouch: true })` selects a touch screen, and `open()` asserts the hover capability the test asked for. `capture()` writes 2× screenshots to `test-results/screenshots` for review. Viewport width alone does not reproduce these states.
 
 ## CSP and theme bootstrap
 

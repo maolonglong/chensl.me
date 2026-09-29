@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import path from 'node:path'
 import { test as base, expect } from '@playwright/test'
 
 export { expect }
@@ -56,6 +57,21 @@ export const test = base.extend({
       await settle(page)
       const hover = await page.evaluate(() => matchMedia('(hover: hover)').matches)
       expect(hover, 'Hover capability must match the test configuration').toBe(!hasTouch)
+    })
+  },
+  // Screenshots are for human review, not pixel comparison: rendering differs across platforms.
+  // They land in test-results/screenshots and in the HTML report.
+  capture: async ({ settle }, use, testInfo) => {
+    await use(async (page, name) => {
+      await settle(page)
+      expect(await page.evaluate(() => devicePixelRatio), `${name}: pixel ratio`).toBe(2)
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+        `${name}: page overflow`,
+      ).toBe(true)
+      const file = path.resolve('test-results/screenshots', `${name}.png`)
+      await page.screenshot({ path: file })
+      await testInfo.attach(name, { path: file, contentType: 'image/png' })
     })
   },
 })
