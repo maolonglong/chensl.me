@@ -84,7 +84,7 @@ function theme(name, dark) {
     type: dark ? 'dark' : 'light',
     colors: {
       'editor.foreground': dark ? '#d4d3cd' : '#3d3d3a',
-      'editor.background': dark ? '#252523' : '#f0eee6',
+      'editor.background': dark ? '#30302e' : '#f0eee6',
     },
     tokenColors: [
       {
@@ -103,7 +103,7 @@ function theme(name, dark) {
       },
       {
         scope: ['comment', 'punctuation.definition.comment'],
-        settings: { foreground: dark ? '#b0aea5' : '#5b5953' },
+        settings: { foreground: dark ? '#b0aea5' : '#6b6a64' },
       },
     ],
   }
