@@ -141,8 +141,11 @@ test.describe('vote Actions', () => {
   })
 
   test('read bursts are rate limited per client address', async ({ action }) => {
-    const statuses = []
-    for (let i = 0; i < 150; i++) statuses.push((await action('getVotes', article)).status)
+    // A sequential burst can cross the limiter's fixed one-minute window. Keep this burst in one
+    // scheduling interval so the assertion verifies the configured per-window budget.
+    const statuses = await Promise.all(
+      Array.from({ length: 150 }, async () => (await action('getVotes', article)).status),
+    )
     expect(statuses[0]).toBe(200)
     expect(statuses).toContain(429)
   })
