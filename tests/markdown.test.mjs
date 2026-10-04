@@ -4,7 +4,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { test } from 'node:test'
 import { remarkSite } from '../src/lib/markdown.mjs'
-import { behaviorFixture, root } from './support.mjs'
+import { astroProject, behaviorFixture, frontmatter, root, run, write } from './support.mjs'
 
 // Markdown output contracts: images, RSS URLs, captions, tables, alerts, footnotes, math, and the TOC.
 
@@ -102,6 +102,20 @@ print(json.dumps(reader.urls))
       urls.includes(expected),
       `Missing reader URL ${expected}; got ${JSON.stringify(urls)}`,
     )
+})
+
+test('invalid TeX fails the build and names the article', async () => {
+  const fixture = await astroProject('astro-invalid-math-')
+  await write(
+    fixture,
+    'src/content/blog/broken-math.md',
+    `${frontmatter('Broken math', '2025-01-01')}Inline $\\notacommand{x}$ math.\n`,
+  )
+  const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
+  const output = result.stderr + result.stdout
+  assert.notEqual(result.status, 0, 'invalid TeX must fail the build, not render error text')
+  assert.match(output, /broken-math\.md/)
+  assert.match(output, /notacommand/)
 })
 
 test('Markdown preserves code captions and accessible aligned tables', async () => {
