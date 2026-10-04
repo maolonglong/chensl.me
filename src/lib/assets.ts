@@ -6,12 +6,13 @@ const root = process.cwd()
 const hash = (content: string | Buffer) =>
   createHash('sha256').update(content).digest('hex').slice(0, 12)
 
-export const stylesheets = ['light', 'dark']
-  .map((theme) => ({
-    name: `giscus-${theme}`,
-    css: readFileSync(path.join(root, `src/styles/giscus-${theme}.css`), 'utf8'),
-  }))
-  .map(({ name, css }) => ({ name: `${name}.${hash(css)}`, css }))
+const read = (file: string) => readFileSync(path.join(root, 'src/styles', file), 'utf8')
+
+// giscus takes one stylesheet URL per theme: shared light-dark() colors plus the theme's own values.
+export const stylesheets = ['light', 'dark'].map((theme) => {
+  const css = `${read('giscus.css')}\n${read(`giscus-${theme}.css`)}`
+  return { name: `giscus-${theme}.${hash(css)}`, css }
+})
 
 export const giscusThemes = {
   light: `/css/${stylesheets[0].name}.css`,

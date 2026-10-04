@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
-import path from 'node:path'
 import { test } from 'node:test'
+import { stylesheets } from '../src/lib/assets.ts'
 import { codeThemes } from '../src/lib/markdown.mjs'
-import { root } from './support.mjs'
 
 const luminance = (hex) =>
   hex
@@ -19,12 +17,18 @@ const contrast = (foreground, background) => {
 
 // Style sources meet the contrast contracts for giscus and code.
 
-test('giscus themes meet AA contrast for reading and controls', async () => {
-  for (const mode of ['light', 'dark']) {
-    const css = await readFile(path.join(root, `src/styles/giscus-${mode}.css`), 'utf8')
+test('giscus themes meet AA contrast for reading and controls', () => {
+  for (const [index, mode] of ['light', 'dark'].entries()) {
+    const { css } = stylesheets[index]
+    // A light-dark() pair resolves to its light or dark value in the theme's color scheme.
     const tokens = Object.fromEntries(
-      [...css.matchAll(/--([\w-]+):\s*(#[a-f\d]{6});/g)].map(([, name, value]) => [name, value]),
+      [
+        ...css.matchAll(
+          /--([\w-]+):\s*(?:light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)|(#[a-f\d]{6}));/g,
+        ),
+      ].map(([, name, light, dark, plain]) => [name, plain ?? [light, dark][index]]),
     )
+    assert.match(css, new RegExp(`color-scheme:\\s*${mode};`))
     for (const [foreground, background] of [
       ['color-fg-default', 'color-canvas-default'],
       ['color-fg-muted', 'color-canvas-default'],
