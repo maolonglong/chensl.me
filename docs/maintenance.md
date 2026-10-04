@@ -59,13 +59,15 @@ Cloudflare resource creation, remote migrations, and manual deployment require a
 
 ## Dependency upgrades
 
-Before evaluating or performing an upgrade from a GitHub-released dependency, collect stable release notes between the current and target versions:
+Before evaluating or performing an upgrade from a GitHub-released dependency, collect stable release notes between the current and target versions. The list is newest first; the command keeps the releases after CURRENT_TAG through TARGET_TAG:
 
 ```sh
-node scripts/fetch-release-notes.mjs --repo OWNER/REPO --from CURRENT_TAG --to TARGET_TAG --output PATH
+gh release list -R OWNER/REPO --exclude-drafts --exclude-pre-releases -L 1000 --json tagName --jq '.[].tagName' \
+  | awk -v from=CURRENT_TAG -v to=TARGET_TAG '$0 == to { keep = 1 } $0 == from { exit } keep' \
+  | while read -r tag; do gh release view "$tag" -R OWNER/REPO; done > PATH
 ```
 
-Use `--to latest` only when targeting the latest stable release, and `--include-prereleases` only when prerelease compatibility is in scope.
+Make sure the output starts at TARGET_TAG and that CURRENT_TAG is in the list. A wrong tag gives an empty file or runs past the range. Remove `--exclude-pre-releases` only when prerelease compatibility is in scope.
 
 - Astro: review release notes and official Markdown processor/integration compatibility. Update `package.json` and `pnpm-lock.yaml` together, keeping the type checker compatible with the selected TypeScript version.
 - Node.js: synchronize the CI `node-version` with the documented development requirement.
