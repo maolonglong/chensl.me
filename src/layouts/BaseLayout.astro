@@ -24,10 +24,11 @@ const {
   notFound = false,
 } = Astro.props
 const siteTitle = '~chensl'
-const isHome = Astro.url.pathname === '/'
+const path = Astro.url.pathname
+const isHome = path === '/'
 const documentTitle = isHome ? siteTitle : `${title} | ${siteTitle}`
 const metadataTitle = isHome ? siteTitle : title
-const canonical = new URL(Astro.url.pathname, Astro.site!)
+const canonical = new URL(path, Astro.site!)
 const image = new URL('/og-image.png', Astro.site!)
 const schema: Record<string, unknown> = {
   '@context': 'https://schema.org',
@@ -35,7 +36,7 @@ const schema: Record<string, unknown> = {
     ? 'WebSite'
     : article
       ? 'BlogPosting'
-      : Astro.url.pathname === '/blog/'
+      : path === '/blog/'
         ? 'CollectionPage'
         : 'WebPage',
   name: metadataTitle,
@@ -52,14 +53,7 @@ if (article)
     ...(updatedDate && { dateModified: updatedDate.toISOString() }),
     mainEntityOfPage: canonical.href,
   })
-const path = Astro.url.pathname
-const homeCurrent = path === '/' ? 'page' : undefined
-const blogCurrent =
-  path === '/blog' || path === '/blog/'
-    ? 'page'
-    : path.startsWith('/blog/')
-      ? 'location'
-      : undefined
+const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'location' : undefined
 ---
 
 <!doctype html>
@@ -124,7 +118,7 @@ const blogCurrent =
         <a href="/">{siteTitle}</a>
       </p>
       <nav aria-label="主导航">
-        <a href="/" aria-current={homeCurrent}>
+        <a href="/" aria-current={isHome ? 'page' : undefined}>
           首页
         </a>
         <a href="/blog/" aria-current={blogCurrent}>

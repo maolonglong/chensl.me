@@ -51,10 +51,7 @@ const lastModified = post.data.updatedDate ?? post.data.pubDate
   for (const notice of document.querySelectorAll<HTMLElement>(
     '.post-notice[data-stale-since][hidden]',
   )) {
-    const lastModified = new Date(notice.dataset.staleSince!)
-    if (!Number.isNaN(lastModified.valueOf()) && isStaleSince(lastModified)) {
-      notice.removeAttribute('hidden')
-    }
+    if (isStaleSince(new Date(notice.dataset.staleSince!))) notice.removeAttribute('hidden')
   }
 </script>
 
