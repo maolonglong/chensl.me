@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFile, rm } from 'node:fs/promises'
+import { readFile, readdir, rm } from 'node:fs/promises'
 import path from 'node:path'
 import { test } from 'node:test'
 import {
@@ -114,4 +114,68 @@ test('drafts and future posts are filtered and dates sort by instants', async ()
   assert.ok(archive.indexOf('Below') < archive.indexOf('Older'))
   await assert.rejects(readFile(path.join(dist, 'blog/draft/index.html'), 'utf8'))
   await assert.rejects(readFile(path.join(dist, 'blog/future/index.html'), 'utf8'))
+})
+
+test('Markdown exports preserve the raw body and publish only visible articles', async () => {
+  const { fixture, dist } = await behaviorFixture()
+  const exports = (await readdir(path.join(dist, 'blog'), { recursive: true }))
+    .filter((file) => file.endsWith('/index.md'))
+    .sort()
+  assert.deepEqual(exports, ['below/index.md', 'older/index.md', 'render/index.md'])
+  for (const id of ['render', 'below', 'older']) {
+    const source = await readFile(
+      path.join(fixture, 'src/content/blog', id === 'render' ? 'render/index.md' : `${id}.md`),
+      'utf8',
+    )
+    // Astro's collection body excludes frontmatter and trims only the outer whitespace.
+    const body = source.replace(/^---\n[\s\S]*?\n---\n/, '').trim()
+    const markdown = await readFile(path.join(dist, `blog/${id}/index.md`), 'utf8')
+    assert.equal(
+      markdown.slice(-body.length),
+      body,
+      `${id}: original Markdown body must be verbatim`,
+    )
+    assert.ok(markdown.includes(`Canonical: https://chensl.me/blog/${id}/\n`))
+    const html = await readFile(path.join(dist, `blog/${id}/index.html`), 'utf8')
+    assert.match(
+      html,
+      new RegExp(
+        `<link rel="alternate" type="text/markdown" href="https://chensl.me/blog/${id}/index.md"`,
+      ),
+    )
+  }
+  const markdown = await readFile(path.join(dist, 'blog/render/index.md'), 'utf8')
+  assert.match(
+    markdown,
+    /^# Escaped <title> & "quote"\n\nPublished: 2025-01-02\nUpdated: 2025-01-03\n/,
+  )
+  assert.doesNotMatch(await readFile(path.join(dist, 'blog/older/index.md'), 'utf8'), /^Updated:/m)
+  for (const name of ['pixel.png', 'café.png', 'shape.svg']) {
+    assert.deepEqual(
+      await readFile(path.join(dist, 'blog/render', name)),
+      await readFile(path.join(fixture, 'src/content/blog/render', name)),
+      `relative image ${name} must remain available without rewriting the body`,
+    )
+  }
+})
+
+test('llms.txt lists absolute Markdown exports newest first with optional descriptions', async () => {
+  const { dist } = await behaviorFixture()
+  const llms = await readFile(path.join(dist, 'llms.txt'), 'utf8')
+  assert.equal(
+    llms,
+    `# ~chensl
+
+> 陈劭珑的个人网站与技术博客
+
+## Articles
+
+- [Escaped \\<title\\> & "quote"](https://chensl.me/blog/render/index.md): A concise description.
+- [Below](https://chensl.me/blog/below/index.md)
+- [Older](https://chensl.me/blog/older/index.md)
+`,
+  )
+  for (const [, url] of llms.matchAll(/\]\(([^)]+)\)/g)) {
+    await readFile(path.join(dist, new URL(url).pathname))
+  }
 })

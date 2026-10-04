@@ -113,6 +113,7 @@ const blogCurrent =
       href={new URL('/index.xml', Astro.site!)}
       title={siteTitle}
     />
+    {article && <link rel="alternate" type="text/markdown" href={new URL('index.md', canonical)} />}
   </head>
   <body>
     <a class="skip-link" href="#main">

@@ -43,6 +43,8 @@ Keep local images alongside the Markdown and use relative paths with descriptive
 
 Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, and code captions written as `title="db/user.go"` on the fence. The RSS feed at `/index.xml` renders the same content.
 
+Published articles have a raw Markdown version at `/blog/<name>/index.md`, including their local images. `/llms.txt` indexes these exports for readers and agents.
+
 JinKai font subsets are generated from source text at build time and dev-server startup, so new text needs no font command; restart the dev server to refresh them. Font licensing is in [NOTICE.md](public/fonts/tsanger-jinkai02/NOTICE.md).
 
 ## Further reading

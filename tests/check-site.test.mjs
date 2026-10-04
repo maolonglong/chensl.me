@@ -16,6 +16,7 @@ async function checkerFixture() {
   const feed =
     '<rss version="2.0"><channel><title>x</title><link>https://chensl.me/</link><description>x</description></channel></rss>'
   await write(fixture, 'dist/index.xml', feed)
+  await write(fixture, 'dist/llms.txt', '# ~chensl\n\n> Summary\n\n## Articles\n')
   const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
   await write(
     fixture,
@@ -27,6 +28,72 @@ async function checkerFixture() {
   )
   return fixture
 }
+
+test('site checker rejects unpaired article pages and Markdown exports', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'dist/blog/page-only/index.html', '<article>Missing export</article>')
+  await write(fixture, 'dist/blog/export-only/index.md', '# Missing page\n')
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1)
+  assert.match(result.stderr, /page-only.*missing Markdown export/i)
+  assert.match(result.stderr, /export-only.*missing article page/i)
+})
+
+test('site checker rejects broken Markdown images and llms.txt targets', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'dist/blog/article/index.html', '<article>Article</article>')
+  await write(
+    fixture,
+    'dist/blog/article/index.md',
+    `# Article
+
+![inline](./missing.png)
+![reference][diagram]
+
+[diagram]: <./missing%20diagram.svg> "Diagram"
+<img src="./missing-html.png" alt="HTML">
+`,
+  )
+  await write(
+    fixture,
+    'dist/llms.txt',
+    '# ~chensl\n\n## Articles\n\n- [Missing](https://chensl.me/blog/missing/index.md)\n',
+  )
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1)
+  for (const image of ['missing.png', 'missing%20diagram.svg', 'missing-html.png']) {
+    assert.ok(result.stderr.includes(image), result.stderr)
+  }
+  assert.match(result.stderr, /llms.txt.*missing.*missing\/index.md/)
+})
+
+test('site checker accepts real Markdown images and ignores image syntax in code', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'dist/blog/article/index.html', '<article>Article</article>')
+  await write(
+    fixture,
+    'dist/blog/article/index.md',
+    `# Article
+
+![local](./diagram.png?v=1#image)
+![remote](https://cdn.example.test/image.png)
+
+\`![example](missing.png)\`
+
+\`\`\`md
+![example](missing.png)
+\`\`\`
+`,
+  )
+  await write(fixture, 'dist/blog/article/diagram.png', 'image')
+  await write(
+    fixture,
+    'dist/llms.txt',
+    '# ~chensl\n\n## Articles\n\n- [Article](https://chensl.me/blog/article/index.md)\n',
+  )
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 0, result.stderr)
+})
 
 test('site checker rejects missing links and anchors', async () => {
   const fixture = await checkerFixture()

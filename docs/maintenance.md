@@ -26,6 +26,8 @@ Preserve article IDs and the author's text when editing collection or publicatio
 
 Pages and RSS must share Astro-rendered collection content and optimized local images. Preserve alt text, dimensions, lazy loading, and absolute RSS resource URLs. Keep the single feed at `/index.xml` and avoid a second Markdown parser. Use Astro's default heading and footnote anchors.
 
+Published articles also provide `/blog/<id>/index.md`, discovered through the article's alternate link and `/llms.txt`. The export preserves the original Markdown body; relative collection images are published at their original paths so readers can resolve them without changing the text. These originals add static assets alongside the optimized images used by pages and RSS. Exports follow the same publication rules and rebuild schedule as article pages.
+
 ## Upvotes and D1
 
 Read `src/actions/index.ts`, `wrangler.jsonc`, and the relevant migrations before changing vote behavior.

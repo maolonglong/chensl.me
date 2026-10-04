@@ -24,6 +24,31 @@ export default defineConfig({
         },
       },
     },
+    {
+      name: 'markdown-images',
+      hooks: {
+        'astro:config:setup'({ injectRoute }) {
+          // Literal extensions keep image URLs slash-free even with trailingSlash: 'always' in dev.
+          for (const extension of [
+            'avif',
+            'gif',
+            'jpeg',
+            'jpg',
+            'png',
+            'apng',
+            'svg',
+            'tiff',
+            'webp',
+          ]) {
+            injectRoute({
+              pattern: `/blog/[...image].${extension}`,
+              entrypoint: './src/lib/markdown-images.ts',
+              prerender: true,
+            })
+          }
+        },
+      },
+    },
   ],
   output: 'static',
   trailingSlash: 'always',

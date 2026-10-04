@@ -84,7 +84,7 @@ export async function behaviorFixture() {
       await write(
         fixture,
         'src/content/blog/render/index.md',
-        `${frontmatter('Escaped <title> & "quote"', '2025-01-02T00:30:00+08:00')}
+        `${frontmatter('Escaped <title> & "quote"', '2025-01-02T00:30:00+08:00', 'updatedDate: 2025-01-02T17:00:00Z\ndescription: A concise description.\n')}
 ![bundle](pixel.png)
 ![encoded](café.png)
 ![svg](shape.svg)

@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
+import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 
 const root = process.cwd()
 const outputDir = path.resolve(root, process.argv[2] ?? 'dist')
@@ -110,7 +111,14 @@ const files = await walk(outputDir)
 const outputFiles = new Set(
   files.map((file) => path.relative(outputDir, file).split(path.sep).join('/')),
 )
-for (const required of ['index.html', 'blog/index.html', '404.html', 'index.xml', '_headers']) {
+for (const required of [
+  'index.html',
+  'blog/index.html',
+  '404.html',
+  'index.xml',
+  'llms.txt',
+  '_headers',
+]) {
   if (!outputFiles.has(required)) {
     errors.push(`Missing required output dist/${required}`)
   }
@@ -282,6 +290,67 @@ for (const [file, html] of htmlByFile) {
       const error = internalReferenceError(value, file)
       if (error) errors.push(`${relative} ${error}`)
     }
+  }
+}
+
+const articlePages = new Set(
+  [...outputFiles].filter((file) => /^blog\/.+\/index\.html$/.test(file)),
+)
+const markdownFiles = new Set([...outputFiles].filter((file) => /^blog\/.+\/index\.md$/.test(file)))
+for (const page of articlePages) {
+  if (!markdownFiles.has(page.replace(/\.html$/, '.md'))) {
+    errors.push(`${page} is missing Markdown export`)
+  }
+}
+for (const markdown of markdownFiles) {
+  if (!articlePages.has(markdown.replace(/\.md$/, '.html'))) {
+    errors.push(`${markdown} is missing article page`)
+  }
+}
+// Validate with the same Astro Markdown engine used by the site, so reference images and HTML
+// are checked while examples inside code stay literal. This never rewrites the exported body.
+const markdownProcessor = await createMarkdownProcessor({
+  syntaxHighlight: false,
+  smartypants: false,
+})
+for (const markdown of markdownFiles) {
+  const file = path.join(outputDir, markdown)
+  const { code } = await markdownProcessor.render(await readFile(file, 'utf8'))
+  for (const [tag] of code.matchAll(/<img\b[^>]*>/gi)) {
+    const src = decodeXmlEntities(getAttributes(tag).get('src') ?? '')
+    if (isInternalUrl(src, file)) {
+      const error = internalReferenceError(src, file)
+      if (error) errors.push(`${markdown} ${error}`)
+    }
+  }
+}
+if (outputFiles.has('llms.txt')) {
+  const file = path.join(outputDir, 'llms.txt')
+  const { code } = await markdownProcessor.render(await readFile(file, 'utf8'))
+  const listed = new Set()
+  for (const [tag] of code.matchAll(/<a\b[^>]*>/gi)) {
+    const href = decodeXmlEntities(getAttributes(tag).get('href') ?? '')
+    const url = resolveUrl(href, file)
+    if (
+      !/^https?:\/\//.test(href) ||
+      url?.origin !== siteOrigin ||
+      !url.pathname.endsWith('/index.md')
+    ) {
+      errors.push(`llms.txt must list absolute local Markdown export URLs: ${JSON.stringify(href)}`)
+      continue
+    }
+    const error = internalReferenceError(href, file)
+    if (error) {
+      errors.push(`llms.txt ${error}`)
+      continue
+    }
+    const target = decodeURIComponent(url.pathname.slice(1))
+    if (!markdownFiles.has(target)) errors.push(`llms.txt lists a non-article export: ${href}`)
+    if (listed.has(target)) errors.push(`llms.txt lists a duplicate export: ${href}`)
+    listed.add(target)
+  }
+  for (const markdown of markdownFiles) {
+    if (!listed.has(markdown)) errors.push(`llms.txt is missing Markdown export ${markdown}`)
   }
 }
 
