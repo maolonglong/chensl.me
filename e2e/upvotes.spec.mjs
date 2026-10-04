@@ -245,8 +245,10 @@ test('a keyboard vote changes the button and persists after reload', async ({
   })
 
   await test.step('a reload restores the vote', async () => {
+    const votedColor = await color()
     await page.reload()
     await expect.poll(state).toEqual({ voted: true, count: baseline + 1 })
+    await expect(button).toHaveCSS('color', votedColor)
   })
 })
 
@@ -335,6 +337,7 @@ for (const failure of ['network', 'forbidden']) {
     const count = page.locator('[data-upvote] [data-count]')
     await open(`/blog/${article}/`)
     await expect(count).toHaveText(String(baseline))
+    const unvotedColor = await button.evaluate((element) => getComputedStyle(element).color)
 
     let release
     const pending = new Promise((resolve) => (release = resolve))
@@ -365,7 +368,7 @@ for (const failure of ['network', 'forbidden']) {
     await button.click()
     await expect(button).toBeDisabled()
     await expect(count).toHaveText(String(baseline + 1))
-    await expect(button).toHaveAttribute('data-voted', 'true')
+    await expect(button).not.toHaveCSS('color', unvotedColor)
     await expect(page.locator('[data-upvote] [aria-live]')).toHaveText('已点赞')
     await button.dispatchEvent('click')
     if (failure === 'network') await captureStates(page, capture, 'pending')
@@ -384,5 +387,8 @@ for (const failure of ['network', 'forbidden']) {
     await page.reload()
     await expect(count).toHaveText(String(baseline))
     await expect(button).toBeEnabled()
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.mouse.move(0, 0)
+    await expect(button).toHaveCSS('color', unvotedColor)
   })
 }

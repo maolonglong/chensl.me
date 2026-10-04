@@ -31,7 +31,6 @@ const { postId } = Astro.props
 
     function showCount(votes: number) {
       count.textContent = String(votes)
-      button.dataset.voted = String(button.disabled)
       button.setAttribute('aria-label', `${button.disabled ? '已点赞' : '点赞'}，${votes} 票`)
     }
 
@@ -91,7 +90,7 @@ const { postId } = Astro.props
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-  button[data-voted='true'] {
+  button:disabled {
     color: var(--link-color);
     cursor: default;
   }

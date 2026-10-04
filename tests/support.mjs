@@ -5,7 +5,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { after } from 'node:test'
 
-// Fixtures shared by the scripts/*.test.mjs suites. They copy the Astro project surface into a
+// Fixtures shared by the tests/*.test.mjs suites. They copy the Astro project surface into a
 // temporary directory and exercise behavior through the real Astro CLI; source structure is
 // deliberately not asserted. Each test file runs in its own process, so it builds and cleans up
 // its own directories.
@@ -37,16 +37,16 @@ export function run(command, args, cwd) {
 
 export async function astroProject(prefix) {
   const fixture = await temporaryDirectory(prefix)
-  for (const relative of ['astro.config.mjs', 'wrangler.jsonc', 'src', 'public', 'vendor/fonts']) {
-    try {
-      await cp(path.join(root, relative), path.join(fixture, relative), { recursive: true })
-    } catch (error) {
-      if (error.code === 'ENOENT')
-        throw new Error(`Astro migration must provide ${relative} before fixture verification`)
-      throw error
-    }
+  for (const relative of [
+    'astro.config.mjs',
+    'wrangler.jsonc',
+    'src',
+    'public',
+    'vendor/fonts',
+    'package.json',
+  ]) {
+    await cp(path.join(root, relative), path.join(fixture, relative), { recursive: true })
   }
-  await cp(path.join(root, 'package.json'), path.join(fixture, 'package.json'))
   await rm(path.join(fixture, 'src/content/blog'), { recursive: true, force: true })
   // Link the installed packages but not the build caches, which Vite and Astro write during a
   // build: a shared cache makes builds from parallel test files race on it.

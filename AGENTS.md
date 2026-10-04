@@ -2,7 +2,7 @@
 
 ## Project boundaries
 
-- Keep agent instructions in `AGENTS.md`. README is the human entry point; `docs/` holds public documentation, including shared design contracts and maintenance workflows. Link to source or shared technical references for facts rather than duplicating them as agent rules.
+- Keep agent instructions in `AGENTS.md`. README is the repository homepage for human readers; `docs/` holds internal references for maintainers and agents, including shared design contracts and maintenance workflows. Link to source or shared technical references for facts rather than duplicating them as agent rules.
 - Keep pages prerendered with Astro components, scoped CSS, and native browser scripts. The existing Cloudflare adapter runs upvote Actions backed by D1; add client frameworks or further server-rendered behavior only for concrete requirements.
 - Prefer Astro's native capabilities and official integrations. For Astro API or configuration changes, consult Astro Docs MCP when available, otherwise the official docs; verify compatibility with the installed version. Latest documentation is not a version guarantee.
 - Edit source, not `dist/`, `.astro/`, `.wrangler/`, or `node_modules/`. `public/` contains source assets.
