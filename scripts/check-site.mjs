@@ -1,6 +1,5 @@
 import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
-import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 
@@ -103,7 +102,7 @@ function internalReferenceError(value, file) {
 }
 
 if (!existsSync(outputDir)) {
-  console.error('dist/ does not exist; build the site before running checks.')
+  console.error(`${outputDir} does not exist; build the site before running checks.`)
   process.exit(1)
 }
 
@@ -128,6 +127,21 @@ const htmlFiles = files.filter((file) => file.endsWith('.html'))
 const htmlByFile = new Map(
   await Promise.all(htmlFiles.map(async (file) => [file, await readFile(file, 'utf8')])),
 )
+const homeHtml = htmlByFile.get(path.join(outputDir, 'index.html')) ?? ''
+const canonicalTag = [...homeHtml.matchAll(/<link\b[^>]*>/gi)].find((match) =>
+  getAttributes(match[0])
+    .get('rel')
+    ?.split(/\s+/)
+    .some((value) => value.toLowerCase() === 'canonical'),
+)?.[0]
+const canonicalUrl = canonicalTag ? getAttributes(canonicalTag).get('href') : null
+let siteOrigin = 'https://site.invalid'
+try {
+  siteOrigin = new URL(canonicalUrl).origin
+} catch {
+  errors.push('Unable to determine the site origin from the dist/index.html canonical URL')
+}
+
 const headers = outputFiles.has('_headers')
   ? await readFile(path.join(outputDir, '_headers'), 'utf8')
   : ''
@@ -202,21 +216,6 @@ for (const immutable of ['/_astro/fonts/*', '/css/*']) {
     errors.push('dist/_headers must allow cross-origin CSS so giscus can load its custom themes')
   }
 }
-const homeHtml = htmlByFile.get(path.join(outputDir, 'index.html')) ?? ''
-const canonicalTag = [...homeHtml.matchAll(/<link\b[^>]*>/gi)].find((match) =>
-  getAttributes(match[0])
-    .get('rel')
-    ?.split(/\s+/)
-    .some((value) => value.toLowerCase() === 'canonical'),
-)?.[0]
-const canonicalUrl = canonicalTag ? getAttributes(canonicalTag).get('href') : null
-let siteOrigin = 'https://site.invalid'
-try {
-  siteOrigin = new URL(canonicalUrl).origin
-} catch {
-  errors.push('Unable to determine the site origin from the dist/index.html canonical URL')
-}
-
 const anchorsByFile = new Map()
 for (const [file, html] of htmlByFile) {
   const anchors = new Set()
@@ -293,9 +292,6 @@ for (const [file, html] of htmlByFile) {
   }
 }
 
-const articlePages = new Set(
-  [...outputFiles].filter((file) => /^blog\/.+\/index\.html$/.test(file)),
-)
 const markdownFiles = new Set([...outputFiles].filter((file) => /^blog\/.+\/index\.md$/.test(file)))
 // Local Wrangler adds UTF-8 to text/* automatically, masking missing production headers.
 for (const [present, route, type] of [
@@ -311,16 +307,6 @@ for (const [present, route, type] of [
   )?.[1]
   if (!new RegExp(`^\\s*Content-Type:\\s*${type};\\s*charset=utf-8\\s*$`, 'im').test(rule ?? '')) {
     errors.push(`dist/_headers must set ${type}; charset=utf-8 for ${route}`)
-  }
-}
-for (const page of articlePages) {
-  if (!markdownFiles.has(page.replace(/\.html$/, '.md'))) {
-    errors.push(`${page} is missing Markdown export`)
-  }
-}
-for (const markdown of markdownFiles) {
-  if (!articlePages.has(markdown.replace(/\.md$/, '.html'))) {
-    errors.push(`${markdown} is missing article page`)
   }
 }
 // Validate with the same Astro Markdown engine used by the site, so reference images and HTML
@@ -340,116 +326,14 @@ for (const markdown of markdownFiles) {
     }
   }
 }
-if (outputFiles.has('llms.txt')) {
-  const file = path.join(outputDir, 'llms.txt')
-  const { code } = await markdownProcessor.render(await readFile(file, 'utf8'))
-  const listed = new Set()
-  for (const [tag] of code.matchAll(/<a\b[^>]*>/gi)) {
-    const href = decodeXmlEntities(getAttributes(tag).get('href') ?? '')
-    const url = resolveUrl(href, file)
-    if (
-      !/^https?:\/\//.test(href) ||
-      url?.origin !== siteOrigin ||
-      !url.pathname.endsWith('/index.md')
-    ) {
-      errors.push(`llms.txt must list absolute local Markdown export URLs: ${JSON.stringify(href)}`)
-      continue
-    }
-    const error = internalReferenceError(href, file)
-    if (error) {
-      errors.push(`llms.txt ${error}`)
-      continue
-    }
-    const target = decodeURIComponent(url.pathname.slice(1))
-    if (!markdownFiles.has(target)) errors.push(`llms.txt lists a non-article export: ${href}`)
-    if (listed.has(target)) errors.push(`llms.txt lists a duplicate export: ${href}`)
-    listed.add(target)
-  }
-  for (const markdown of markdownFiles) {
-    if (!listed.has(markdown)) errors.push(`llms.txt is missing Markdown export ${markdown}`)
-  }
-}
-
-const xmlFiles = files.filter((file) => file.endsWith('.xml'))
-const xmlDocuments = await Promise.all(
-  xmlFiles.map(async (file) => ({
-    file: path.relative(root, file),
-    requiredFeed: path.relative(outputDir, file) === 'index.xml',
-    xml: await readFile(file, 'utf8'),
-  })),
-)
-const python = spawnSync(
-  'python3',
-  [
-    '-c',
-    String.raw`
-import json, re, sys, xml.etree.ElementTree as ET
-documents = json.load(sys.stdin)
-errors = []
-for document in documents:
-    name, xml = document['file'], document['xml']
-    if re.search(r'<!\s*(?:DOCTYPE|ENTITY)\b', xml, re.I):
-        errors.append(f'{name} contains a forbidden DTD or entity declaration')
-        continue
-    try:
-        root = ET.fromstring(xml)
-    except ET.ParseError as error:
-        errors.append(f'{name} contains malformed XML: {error}')
-        continue
-    if not document['requiredFeed']:
-        continue
-    if root.tag != 'rss':
-        errors.append(f'{name} must have an rss root element')
-        continue
-    channel = root.find('channel')
-    if channel is None:
-        errors.append(f'{name} is missing rss/channel')
-        continue
-    for field in ('title', 'link', 'description'):
-        if not (channel.findtext(field) or '').strip():
-            errors.append(f'{name} is missing rss/channel/{field}')
-    for index, item in enumerate(channel.findall('item'), 1):
-        for field in ('title', 'link', 'guid', 'pubDate'):
-            if not (item.findtext(field) or '').strip():
-                errors.append(f'{name} item {index} is missing {field}')
-print(json.dumps(errors))
-`,
-  ],
-  { input: JSON.stringify(xmlDocuments), encoding: 'utf8' },
-)
-if (python.error?.code === 'ENOENT') {
-  errors.push('Python 3 is required to validate generated XML')
-} else if (python.status !== 0) {
-  errors.push(`Python XML validation failed: ${(python.stderr || `exit ${python.status}`).trim()}`)
-} else {
-  try {
-    errors.push(...JSON.parse(python.stdout))
-  } catch {
-    errors.push('Python XML validation returned invalid JSON')
-  }
-}
-
-for (const { file, xml } of xmlDocuments) {
-  const decodedXml = decodeXmlEntities(xml)
-  for (const match of decodedXml.matchAll(/<img\b[^>]*>/gi)) {
+for (const file of files.filter((file) => file.endsWith('.xml'))) {
+  const xml = decodeXmlEntities(await readFile(file, 'utf8'))
+  for (const match of xml.matchAll(/<img\b[^>]*>/gi)) {
     const src = getAttributes(match[0]).get('src') ?? ''
     if (!/^(?:https?:|data:)/i.test(src)) {
-      errors.push(`${file} contains non-absolute RSS image URL ${JSON.stringify(src)}`)
-    }
-  }
-}
-
-const manifestPath = path.join(outputDir, 'site.webmanifest')
-if (existsSync(manifestPath)) {
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
-  const manifestUrl = `${siteOrigin}/site.webmanifest`
-  for (const icon of manifest.icons ?? []) {
-    const url = new URL(icon.src, manifestUrl)
-    if (url.origin !== siteOrigin) {
-      continue
-    }
-    if (!outputFiles.has(url.pathname.replace(/^\/+/, ''))) {
-      errors.push(`site.webmanifest references missing icon ${JSON.stringify(icon.src)}`)
+      errors.push(
+        `${path.relative(root, file)} contains non-absolute RSS image URL ${JSON.stringify(src)}`,
+      )
     }
   }
 }

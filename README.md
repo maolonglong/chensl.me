@@ -4,7 +4,7 @@ Source for [chensl.me](https://chensl.me), a personal site and technical blog bu
 
 ## Setup
 
-Use Node.js 26 and the pnpm version pinned in `package.json` (Astro requires Node.js 22.12 or later). Python 3 is also required: the site checks use its standard library to validate XML.
+Use Node.js 26 and the pnpm version pinned in `package.json` (Astro requires Node.js 22.12 or later). Python 3 is also required: the tests use its standard library as an independent HTML and XML reader.
 
 ```sh
 pnpm install --frozen-lockfile

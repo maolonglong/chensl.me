@@ -6,7 +6,7 @@ import { root, run, temporaryDirectory, write } from './support.mjs'
 
 const checker = path.join(root, 'scripts/check-site.mjs')
 
-// scripts/check-site.mjs rejects broken links, feeds, and policies, and accepts valid output.
+// scripts/check-site.mjs rejects broken links, images, and policies, and accepts valid output.
 
 async function checkerFixture() {
   const fixture = await temporaryDirectory('site-checker-')
@@ -34,11 +34,6 @@ for (const type of ['text/plain', 'text/markdown']) {
     const fixture = await checkerFixture()
     await write(fixture, 'dist/blog/nested/article/index.html', '<article>Article</article>')
     await write(fixture, 'dist/blog/nested/article/index.md', '# Article\n')
-    await write(
-      fixture,
-      'dist/llms.txt',
-      '- [Article](https://chensl.me/blog/nested/article/index.md)\n',
-    )
     const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
     // Supply valid rules independently of the source configuration, then remove one charset.
     const otherHeaders = headers.replace(
@@ -57,17 +52,7 @@ for (const type of ['text/plain', 'text/markdown']) {
   })
 }
 
-test('site checker rejects unpaired article pages and Markdown exports', async () => {
-  const fixture = await checkerFixture()
-  await write(fixture, 'dist/blog/page-only/index.html', '<article>Missing export</article>')
-  await write(fixture, 'dist/blog/export-only/index.md', '# Missing page\n')
-  const result = run(process.execPath, [checker], fixture)
-  assert.equal(result.status, 1)
-  assert.match(result.stderr, /page-only.*missing Markdown export/i)
-  assert.match(result.stderr, /export-only.*missing article page/i)
-})
-
-test('site checker rejects broken Markdown images and llms.txt targets', async () => {
+test('site checker rejects broken Markdown images', async () => {
   const fixture = await checkerFixture()
   await write(fixture, 'dist/blog/article/index.html', '<article>Article</article>')
   await write(
@@ -82,17 +67,11 @@ test('site checker rejects broken Markdown images and llms.txt targets', async (
 <img src="./missing-html.png" alt="HTML">
 `,
   )
-  await write(
-    fixture,
-    'dist/llms.txt',
-    '# ~chensl\n\n## Articles\n\n- [Missing](https://chensl.me/blog/missing/index.md)\n',
-  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1)
   for (const image of ['missing.png', 'missing%20diagram.svg', 'missing-html.png']) {
     assert.ok(result.stderr.includes(image), result.stderr)
   }
-  assert.match(result.stderr, /llms.txt.*missing.*missing\/index.md/)
 })
 
 test('site checker accepts real Markdown images and ignores image syntax in code', async () => {
@@ -114,11 +93,6 @@ test('site checker accepts real Markdown images and ignores image syntax in code
 `,
   )
   await write(fixture, 'dist/blog/article/diagram.png', 'image')
-  await write(
-    fixture,
-    'dist/llms.txt',
-    '# ~chensl\n\n## Articles\n\n- [Article](https://chensl.me/blog/article/index.md)\n',
-  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 0, result.stderr)
 })
@@ -169,23 +143,6 @@ test('site checker rejects a content store nested in the sibling Worker bundle',
   )
 })
 
-test('site checker rejects malformed XML, entities, and incomplete RSS items', async () => {
-  for (const [xml, expected] of [
-    ['<rss><channel></rss>', /malformed XML/],
-    ['<!DOCTYPE rss [<!ENTITY x "x">]><rss/>', /forbidden DTD or entity declaration/],
-    [
-      '<rss version="2.0"><channel><title>x</title><link>x</link><description>x</description><item><title>x</title></item></channel></rss>',
-      /item 1 is missing link/,
-    ],
-  ]) {
-    const fixture = await checkerFixture()
-    await write(fixture, 'dist/index.xml', xml)
-    const result = run(process.execPath, [checker], fixture)
-    assert.equal(result.status, 1)
-    assert.match(result.stderr, expected)
-  }
-})
-
 test('site checker rejects relative RSS images and CSP-blocked images', async () => {
   const fixture = await checkerFixture()
   await write(fixture, 'dist/index.xml', '<rss version="2.0"><img src="/missing.png"></rss>')
@@ -215,7 +172,7 @@ test('site checker validates absolute same-origin links', async () => {
   assert.match(result.stderr, /missing internal URL "\/\/chensl\.me\/also-missing\/"/)
 })
 
-test('site checker accepts valid feeds without images', async () => {
+test('site checker accepts a minimal valid site', async () => {
   const fixture = await checkerFixture()
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 0, result.stderr)
@@ -238,18 +195,13 @@ test('site checker accepts local SVG images without raster dimensions', async ()
   assert.equal(result.status, 0, result.stderr)
 })
 
-test('site checker handles canonical tokens and external manifest icons', async () => {
+test('site checker handles canonical tokens and external links', async () => {
   const fixture = await checkerFixture()
   await write(
     fixture,
     'dist/index.html',
     `<link rel="alternate Canonical" href="https://chensl.me/">
 <a href="https://example.test/missing/">external</a>`,
-  )
-  await write(
-    fixture,
-    'dist/site.webmanifest',
-    JSON.stringify({ icons: [{ src: 'https://cdn.example.test/icon.png' }] }),
   )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 0, result.stderr)
