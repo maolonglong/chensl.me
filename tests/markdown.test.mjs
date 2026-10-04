@@ -212,6 +212,7 @@ test('TeX math renders to native MathML in pages and RSS', async () => {
     assert.ok(block, 'missing display math in its scroll wrapper')
     assert.match(block, /^<div[^>]*tabindex="0"[^>]*role="region"[^>]*aria-label="公式"/)
     assert.match(block, /<mfrac>\s*<mn>1<\/mn>\s*<mn>2<\/mn>\s*<\/mfrac>/)
+    assert.match(output, /<td[^>]*><math\b[^>]*>[\s\S]*?<msub>/, 'math inside a table cell')
     assert.doesNotMatch(output, /\$\$|\$a\^2|language-math/)
   }
 })

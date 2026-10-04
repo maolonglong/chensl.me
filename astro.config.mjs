@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap'
 import cloudflare from '@astrojs/cloudflare'
 import { unified } from '@astrojs/markdown-remark'
 import remarkMath from 'remark-math'
-import { remarkSite, rehypeMath, rehypeSite, codeThemes, codeCaption } from './src/lib/markdown.mjs'
+import { remarkSite, rehypeSite, codeThemes, codeCaption } from './src/lib/markdown.mjs'
 import { siteFonts } from './src/lib/fonts.mjs'
 
 export default defineConfig({
@@ -73,7 +73,7 @@ export default defineConfig({
     processor: unified({
       smartypants: false,
       remarkPlugins: [remarkSite, remarkMath],
-      rehypePlugins: [rehypeMath, rehypeSite],
+      rehypePlugins: [rehypeSite],
       remarkRehype: {
         footnoteLabel: '脚注',
         footnoteBackLabel(referenceIndex, rereferenceIndex) {

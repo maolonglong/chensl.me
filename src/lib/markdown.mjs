@@ -40,62 +40,46 @@ export function remarkSite() {
   }
 }
 
-// remark-math emits `code.math-inline` and `pre > code.math-display`. Replace them with MathML
-// before rehypeSite wraps the `pre` as a code block. Astro parses the raw nodes later.
-export function rehypeMath() {
-  return (tree) => {
-    visit(tree, 'element', (node, index, parent) => {
-      const code = node.tagName === 'pre' ? node.children[0] : node
-      const classes = code?.properties?.className ?? []
-      if (code?.tagName !== 'code' || !classes.includes('language-math')) return
-      const displayMode = node !== code
-      const math = {
-        type: 'raw',
-        value: temml.renderToString(code.children[0]?.value ?? '', {
-          displayMode,
-          throwOnError: true,
-        }),
-      }
-      // Like tables, a wide display formula scrolls inside a focusable wrapper, not the page.
-      parent.children[index] = displayMode
-        ? element(
-            'div',
-            { className: ['math-scroll'], tabIndex: 0, role: 'region', ariaLabel: '公式' },
-            [math],
-          )
-        : math
-      return SKIP
-    })
-  }
-}
+// A focusable wrapper that scrolls wide content sideways, so the page itself never does.
+const scrollRegion = (className, label, child) =>
+  element('div', { className: [className], tabIndex: 0, role: 'region', ariaLabel: label }, [child])
 
 export function rehypeSite() {
   return (tree) => {
     visit(tree, 'element', (node, index, parent) => {
+      // remark-math emits `code.language-math` inline and `pre > code.language-math` on display.
+      // Render it before the `pre` branch below takes it for a code block. Astro parses the raw
+      // MathML later.
+      const code = node.tagName === 'pre' ? node.children[0] : node
+      if (code?.tagName === 'code' && code.properties.className?.includes('language-math')) {
+        const displayMode = node !== code
+        const math = {
+          type: 'raw',
+          value: temml.renderToString(code.children[0]?.value ?? '', {
+            displayMode,
+            throwOnError: true,
+          }),
+        }
+        parent.children[index] = displayMode ? scrollRegion('math-scroll', '公式', math) : math
+        return SKIP
+      }
       if (node.tagName === 'table') {
-        parent.children[index] = element(
-          'div',
-          { className: ['table-scroll'], tabIndex: 0, role: 'region', ariaLabel: '表格' },
-          [node],
-        )
+        parent.children[index] = scrollRegion('table-scroll', '表格', node)
         visit(node, 'element', (cell) => {
           if (cell.properties.align) {
             cell.properties.style = `text-align: ${cell.properties.align}`
             delete cell.properties.align
           }
         })
-        return SKIP
+        // No SKIP: the visit goes on into the cells, which can hold inline math.
+        return
       }
       if (node.tagName === 'pre') {
         const title = node.properties['data-title']
         delete node.properties['data-title']
         // Shiki emits a lowercase `tabindex`; the wrapper is the scroller, so it takes the focus stop.
         delete node.properties.tabindex
-        const wrapper = element(
-          'div',
-          { className: ['highlight'], tabIndex: 0, role: 'region', ariaLabel: '代码' },
-          [node],
-        )
+        const wrapper = scrollRegion('highlight', '代码', node)
         parent.children[index] = title
           ? element('figure', { className: ['code-figure'] }, [
               element('figcaption', {}, [text(title)]),

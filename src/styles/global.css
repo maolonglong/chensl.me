@@ -274,10 +274,21 @@ pre code {
     font-size: inherit;
 }
 
-/* The scroller carries the fill too, so iOS rubber-banding past either end never opens a gap. */
-.highlight {
+/* Code, math and tables scroll sideways inside a focusable wrapper, not the page. */
+.highlight,
+.math-scroll,
+.table-scroll {
     margin-block: 1.5em;
     overflow-x: auto;
+}
+
+.math-scroll:focus-visible,
+.table-scroll:focus-visible {
+    outline-offset: 4px;
+}
+
+/* The scroller carries the fill too, so iOS rubber-banding past either end never opens a gap. */
+.highlight {
     background-color: var(--code-background-color);
     border-radius: var(--radius);
 }
@@ -313,15 +324,6 @@ math[display='block'] {
     display: block;
 }
 
-.math-scroll {
-    margin-block: 1.5em;
-    overflow-x: auto;
-}
-
-.math-scroll:focus-visible {
-    outline-offset: 4px;
-}
-
 /* Center a short formula, but let a wide one start at the left edge so it can scroll. */
 .math-scroll math {
     width: max-content;
@@ -331,15 +333,6 @@ math[display='block'] {
 /* ------------------------------------------------------------------ tables */
 
 /* The wrapper scrolls so the <table> keeps its role in the accessibility tree. */
-.table-scroll {
-    margin-block: 1.5em;
-    overflow-x: auto;
-}
-
-.table-scroll:focus-visible {
-    outline-offset: 4px;
-}
-
 table {
     width: 100%;
     border-collapse: collapse;

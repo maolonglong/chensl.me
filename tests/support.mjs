@@ -118,6 +118,7 @@ First reference[^shared], another note[^other], and the same note again[^shared]
 | Driver | Actual development |
 |:--|:--:|
 | Redis | [Miniredis](https://github.com/alicebob/miniredis) |
+| Math | $x_1$ |
 
 \`\`\`go title="db/user.go"
 package db
