@@ -1,4 +1,4 @@
-import { apart, covers, expect, inside, test } from './site.mjs'
+import { apart, covers, expect, expectAll, inside, test } from './site.mjs'
 
 // The article's one contents list floats in back-to-top's lane from the start: a Notion-style rail
 // beside the column where a pointer can hover, and a popover behind a button in the corner
@@ -65,17 +65,15 @@ test.describe('with a hovering pointer', () => {
       await open('/blog/dockertest/')
       const label = `/blog/dockertest/ contents rail at ${width}px`
       const rest = await measure(page, () => scrollTo(0, 0))
-      expect
-        .soft(
-          !inside(rest.rail, rest) ||
-            !rest.listOnTop ||
-            !!rest.button ||
-            Math.abs(rest.rail?.left - rest.backToTop.left) > 1 ||
-            rest.rail?.left < rest.main.right + 23 ||
-            !apart(rest.rail, rest.backToTop),
-          `${label}: rail must hang beside the column on back-to-top's line from the start, clear of it (${JSON.stringify(rest)})`,
-        )
-        .toBe(false)
+      // The rail hangs beside the column on back-to-top's line from the start, clear of it.
+      expectAll(label, rest, {
+        'rail sits inside the view': inside(rest.rail, rest),
+        'rail paints on top': rest.listOnTop,
+        'no contents button beside a rail': !rest.button,
+        "rail shares back-to-top's line": Math.abs(rest.rail?.left - rest.backToTop.left) <= 1,
+        'rail clears the column': rest.rail?.left >= rest.main.right + 23,
+        'rail clears back-to-top': apart(rest.rail, rest.backToTop),
+      })
       if (!rest.rail) return
 
       // The Dockertest H2 is followed at once by an H3; arriving at the H2 must still mark the H2.
@@ -83,58 +81,42 @@ test.describe('with a hovering pointer', () => {
         document.getElementById('dockertest').scrollIntoView(),
       )
       expect
-        .soft(
-          section.current.length !== 1 || section.current[0] !== '#dockertest',
-          `${label}: the heading at the top of the view must be the current entry (${JSON.stringify(section.current)})`,
-        )
-        .toBe(false)
+        .soft(section.current, `${label}: the heading at the top of the view is current`)
+        .toEqual(['#dockertest'])
       const end = await measure(page, () => scrollTo(0, document.documentElement.scrollHeight))
       expect
-        .soft(
-          end.current.length !== 1 || end.current[0] !== end.last,
-          `${label}: the last entry must be current at the bottom of the page (${JSON.stringify(end.current)})`,
-        )
-        .toBe(false)
+        .soft(end.current, `${label}: the last entry is current at the bottom of the page`)
+        .toEqual([end.last])
 
       // Keyboard focus opens the rail into a card; Enter jumps to the heading and closes it again.
       await measure(page, () => scrollTo(0, 0))
       await page.locator(firstEntry).focus()
       const focused = await measure(page)
-      expect
-        .soft(
-          !covers(focused.rail, rest.rail) ||
-            !inside(focused.rail, focused) ||
-            focused.rail.width < 200 ||
-            !apart(focused.rail, focused.backToTop),
-          `${label}: focus must open the rail into a card within the view, clear of back-to-top (${JSON.stringify(focused)})`,
-        )
-        .toBe(false)
+      expectAll(`${label} focused`, focused, {
+        'card covers the rail': covers(focused.rail, rest.rail),
+        'card sits inside the view': inside(focused.rail, focused),
+        'card is at least 200px wide': focused.rail?.width >= 200,
+        'card clears back-to-top': apart(focused.rail, focused.backToTop),
+      })
       await page.keyboard.press('Enter')
       const jumped = await measure(page)
-      expect
-        .soft(
-          jumped.hash !== jumped.first ||
-            Math.abs(jumped.targetTop) > 1 ||
-            !jumped.rail ||
-            jumped.rail.width > rest.rail.width + 1 ||
-            jumped.focused !== 'BODY',
-          `${label}: Enter must jump to the heading and fold the card back into the rail (${JSON.stringify(jumped)})`,
-        )
-        .toBe(false)
+      expectAll(`${label} after Enter`, jumped, {
+        'URL points at the first heading': jumped.hash === jumped.first,
+        'heading sits at the top': Math.abs(jumped.targetTop) <= 1,
+        'card folds back into the rail': jumped.rail?.width <= rest.rail.width + 1,
+        'focus leaves the list': jumped.focused === 'BODY',
+      })
 
       // Hover opens the same card, and the card covers the rail so the pointer never falls off its edge.
       await page.locator('#article-toc').hover()
       const hovered = await measure(page)
-      expect
-        .soft(
-          !covers(hovered.rail, rest.rail) ||
-            !inside(hovered.rail, hovered) ||
-            !hovered.listOnTop ||
-            hovered.rail.width < 200 ||
-            !apart(hovered.rail, hovered.backToTop),
-          `${label}: hover must open the rail into a card that covers it (${JSON.stringify(hovered)})`,
-        )
-        .toBe(false)
+      expectAll(`${label} hovered`, hovered, {
+        'card covers the rail': covers(hovered.rail, rest.rail),
+        'card sits inside the view': inside(hovered.rail, hovered),
+        'card paints on top': hovered.listOnTop,
+        'card is at least 200px wide': hovered.rail?.width >= 200,
+        'card clears back-to-top': apart(hovered.rail, hovered.backToTop),
+      })
 
       // Dismissal survives either departure order, and resets once both inputs leave.
       for (const first of ['pointer', 'focus']) {
@@ -147,21 +129,19 @@ test.describe('with a hovering pointer', () => {
         if (first === 'pointer') await page.mouse.move(0, 0)
         else await page.locator('.site-title a').focus()
         const departed = await measure(page)
+        expect.soft(dismissed.rail?.width, `${label}: Escape dismisses the card`).toBe(44)
         expect
           .soft(
-            dismissed.rail?.width !== 44 || departed.rail?.width !== 44,
-            `${label}: Escape must stay dismissed when ${first} leaves first`,
+            departed.rail?.width,
+            `${label}: the card stays dismissed when ${first} leaves first`,
           )
-          .toBe(false)
+          .toBe(44)
         if (first === 'pointer') await page.locator('.site-title a').focus()
         else await page.mouse.move(0, 0)
         await page.locator(firstEntry).focus()
         expect
-          .soft(
-            !((await measure(page)).rail?.width >= 200),
-            `${label}: focus must reopen the rail after both inputs leave`,
-          )
-          .toBe(false)
+          .soft((await measure(page)).rail?.width, `${label}: focus reopens the card`)
+          .toBeGreaterThanOrEqual(200)
       }
     })
   }
@@ -183,44 +163,36 @@ test.describe('with a touch screen', () => {
       const label = `/blog/dockertest/ contents button at ${width}px / ${size}`
       // The button holds the corner from the start; back-to-top joins above it later, so neither ever moves.
       const rest = await measure(page, () => scrollTo(0, 0))
-      expect
-        .soft(
-          !!rest.rail ||
-            !inside(rest.button, rest) ||
-            !rest.buttonOnTop ||
-            Math.abs(rest.button?.right - rest.backToTop.right) > 1 ||
-            rest.button?.top - rest.backToTop.bottom < 7 ||
-            rest.page > rest.width,
-          `${label}: the button must hold the corner below back-to-top's place (${JSON.stringify(rest)})`,
-        )
-        .toBe(false)
+      expectAll(label, rest, {
+        'no rail on a touch screen': !rest.rail,
+        'button sits inside the view': inside(rest.button, rest),
+        'button paints on top': rest.buttonOnTop,
+        'button lines up with back-to-top':
+          Math.abs(rest.button?.right - rest.backToTop.right) <= 1,
+        "button sits below back-to-top's place": rest.button?.top - rest.backToTop.bottom >= 7,
+        'page does not scroll sideways': rest.page <= rest.width,
+      })
       if (!rest.button) return
       const end = await measure(page, () => scrollTo(0, document.documentElement.scrollHeight))
-      expect
-        .soft(
-          !apart(end.button, end.footer) || !apart(end.button, end.comments),
-          `${label}: at the bottom the button must stay clear of the footer and comments (${JSON.stringify(end)})`,
-        )
-        .toBe(false)
+      expectAll(`${label} at the bottom`, end, {
+        'button clears the footer': apart(end.button, end.footer),
+        'button clears the comments': apart(end.button, end.comments),
+      })
       await page.locator('.toc-button').click()
       const opened = await measure(page)
-      expect
-        .soft(
-          !inside(opened.panel, opened) ||
-            !apart(opened.panel, opened.button) ||
-            !apart(opened.panel, opened.backToTop) ||
-            !opened.current.includes(opened.last),
-          `${label}: the button must open the contents above both buttons (${JSON.stringify(opened)})`,
-        )
-        .toBe(false)
+      expectAll(`${label} opened`, opened, {
+        'contents sit inside the view': inside(opened.panel, opened),
+        'contents clear the button': apart(opened.panel, opened.button),
+        'contents clear back-to-top': apart(opened.panel, opened.backToTop),
+        'the current entry is marked': opened.current.includes(opened.last),
+      })
       await page.locator(secondEntry).click()
       const jumped = await measure(page)
-      expect
-        .soft(
-          !!jumped.panel || Math.abs(jumped.targetTop) > 1 || !jumped.hash,
-          `${label}: choosing an entry must close the contents and jump to the heading (${JSON.stringify(jumped)})`,
-        )
-        .toBe(false)
+      expectAll(`${label} after choosing an entry`, jumped, {
+        'contents close': !jumped.panel,
+        'heading sits at the top': Math.abs(jumped.targetTop) <= 1,
+        'URL points at the heading': !!jumped.hash,
+      })
     })
   }
 
@@ -243,10 +215,9 @@ test('a short article floats no contents and keeps back-to-top in the corner', a
 }) => {
   await open('/blog/lock-free-queue/')
   const short = await measure(page, () => scrollTo(0, document.documentElement.scrollHeight))
-  expect
-    .soft(
-      !!short.rail || !!short.button || short.height - short.backToTop.bottom > 24,
-      `/blog/lock-free-queue/ must float no contents and keep back-to-top in the corner (${JSON.stringify(short)})`,
-    )
-    .toBe(false)
+  expectAll('/blog/lock-free-queue/', short, {
+    'no contents rail': !short.rail,
+    'no contents button': !short.button,
+    'back-to-top keeps the corner': short.height - short.backToTop.bottom <= 24,
+  })
 })

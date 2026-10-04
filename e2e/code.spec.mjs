@@ -1,4 +1,4 @@
-import { expect, test } from './site.mjs'
+import { expect, expectAll, test } from './site.mjs'
 
 // Cold visits must load code fonts only for actual code, without adding copy UI for inline code.
 // Every test starts with a fresh browser context, so each visit is cold.
@@ -133,10 +133,12 @@ for (const hasTouch of [false, true]) {
           expected: blocks[0]?.querySelector('code').textContent.replace(/\n$/, ''),
         }
       })
-      expect(
-        copy.blocks === 0 || !copy.placed || copy.wide === 0 || !copy.firstLineClear,
-        `Code blocks must each carry one copy button in their top-right corner that a scrolled first line can clear (${JSON.stringify(copy)})`,
-      ).toBe(false)
+      expectAll('Code blocks', copy, {
+        'exist on the page': copy.blocks > 0,
+        'each carry one copy button in the top-right corner': copy.placed,
+        'include a block wide enough to scroll': copy.wide > 0,
+        'let a scrolled first line clear the button': copy.firstLineClear,
+      })
 
       // "已复制" is announced only after the browser accepts the write to the real clipboard.
       await page.locator('.code-copy').first().click()

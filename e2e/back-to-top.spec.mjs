@@ -1,4 +1,4 @@
-import { expect, test } from './site.mjs'
+import { expect, expectAll, test } from './site.mjs'
 
 // The button waits a screen down, then floats clear of the footer, the comments, and, when there
 // is room, the text column.
@@ -41,33 +41,18 @@ for (const width of [320, 390, 768, 1280]) {
         scrollTo(0, 0)
         return result
       }, size)
-      const label = `/blog/dockertest/ back-to-top at ${width}px / ${size}`
-      const state = JSON.stringify(top)
-      expect
-        .soft(
-          !top.hiddenAtTop ||
-            !top.visible ||
-            !top.inViewport ||
-            !top.clearOfFooter ||
-            !top.clearOfComments,
-          `${label}: button must hide at the top and float clear of the footer and comments at the bottom (${state})`,
-        )
-        .toBe(false)
-      // Without room beside the column, the button still hangs from its right edge.
-      expect
-        .soft(
-          !top.outsideColumn && Math.abs(top.columnOffset) > 1,
-          `${label}: button must line up with the text column's right edge (${state})`,
-        )
-        .toBe(false)
-      if (width === 1280 && size === '100%') {
-        expect
-          .soft(
-            !top.outsideColumn,
-            `${label}: button must sit beside the text column when there is room (${state})`,
-          )
-          .toBe(false)
-      }
+      expectAll(`/blog/dockertest/ back-to-top at ${width}px / ${size}`, top, {
+        'hidden at the top': top.hiddenAtTop,
+        'visible at the bottom': top.visible,
+        'a 44px target inside the view': top.inViewport,
+        'clear of the footer': top.clearOfFooter,
+        'clear of the comments': top.clearOfComments,
+        // Without room beside the column, the button still hangs from its right edge.
+        "on the column's right edge or beside it":
+          top.outsideColumn || Math.abs(top.columnOffset) <= 1,
+        ...(width === 1280 &&
+          size === '100%' && { 'beside the column when there is room': top.outsideColumn }),
+      })
     }
   })
 }
@@ -93,11 +78,8 @@ test('back-to-top follows resizes across the one-screen threshold without scroll
       }
     })
     expect
-      .soft(
-        state.y !== 900 || state.visible !== visible,
-        `Back-to-top must update on resize to ${height}px without scrolling (${JSON.stringify(state)})`,
-      )
-      .toBe(false)
+      .soft(state, `Back-to-top must update on resize to ${height}px without scrolling`)
+      .toEqual({ y: 900, visible })
   }
 })
 
@@ -137,10 +119,10 @@ test('back-to-top returns to the top within a second and focuses the site title'
       }),
     bottom.scrollY,
   )
-  expect
-    .soft(
-      back.scrollY !== 0 || back.elapsed > 1000 || back.url.includes('#') || !back.focused,
-      `Back-to-top must reach the top within 1s without a URL fragment and hand keyboard focus to the site title (${JSON.stringify(back)})`,
-    )
-    .toBe(false)
+  expectAll('Back-to-top', back, {
+    'reaches the top': back.scrollY === 0,
+    'within a second': back.elapsed <= 1000,
+    'leaves the URL alone': !back.url.includes('#'),
+    'hands keyboard focus to the site title': back.focused,
+  })
 })

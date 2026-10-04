@@ -1,4 +1,4 @@
-import { expect, test } from './site.mjs'
+import { expect, expectAll, test } from './site.mjs'
 
 // Home, archive, a long article with code, tables, and a TOC, and the shared 404.
 const pages = ['/', '/blog/', '/blog/dockertest/', '/404.html']
@@ -185,45 +185,22 @@ for (const width of [320, 390, 768, 1280]) {
           document.documentElement.style.fontSize = ''
           return result
         }, size)
-        const label = `${pathname} at ${width}px / ${size}`
-        const state = JSON.stringify(layout)
-        expect
-          .soft(
-            layout.controls < 5 || !layout.fits || layout.page > layout.width,
-            `${label}: header or page overflows (${state})`,
-          )
-          .toBe(false)
-        // Header, text column, and footer share one left edge and one right edge.
-        expect
-          .soft(
-            Math.abs(layout.titleOffset) > 1 ||
-              (Math.abs(layout.navOffset) > 1 && !layout.navWrapped) ||
-              Math.abs(layout.footerOffset) > 1,
-            `${label}: header or footer leaves the text column (${state})`,
-          )
-          .toBe(false)
-        // A short page keeps its footer at the bottom of the viewport instead of mid-screen.
-        expect
-          .soft(
-            layout.footerGap > 64,
-            `${label}: footer floats ${layout.footerGap}px above the viewport bottom`,
-          )
-          .toBe(false)
-        // Only articles are long enough to need a way back up.
         const article = pathname === '/blog/dockertest/'
-        expect
-          .soft(
-            layout.backToTop !== (article ? 1 : 0),
-            `${label}: expected a back-to-top button on articles only (${state})`,
-          )
-          .toBe(false)
-        // Only an article with enough headings carries the contents: one list and the button that opens it.
-        expect
-          .soft(
-            layout.floatingContents !== (article ? 2 : 0),
-            `${label}: expected floating contents on articles with a contents list only (${state})`,
-          )
-          .toBe(false)
+        expectAll(`${pathname} at ${width}px / ${size}`, layout, {
+          'header shows every control': layout.controls >= 5,
+          'header controls fit the view': layout.fits,
+          'page does not scroll sideways': layout.page <= layout.width,
+          // Header, text column, and footer share one left edge and one right edge.
+          'title on the column edge': Math.abs(layout.titleOffset) <= 1,
+          'nav on the column edge or wrapped': Math.abs(layout.navOffset) <= 1 || layout.navWrapped,
+          'footer on the column edge': Math.abs(layout.footerOffset) <= 1,
+          // A short page keeps its footer at the bottom of the viewport instead of mid-screen.
+          'footer at the viewport bottom': layout.footerGap <= 64,
+          // Only articles are long enough to need a way back up.
+          'back-to-top on articles only': layout.backToTop === (article ? 1 : 0),
+          // Only an article with enough headings carries the contents: one list and its button.
+          'contents on articles with headings only': layout.floatingContents === (article ? 2 : 0),
+        })
       }
     }
   })

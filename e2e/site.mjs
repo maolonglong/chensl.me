@@ -17,6 +17,13 @@ export const covers = (outer, inner) =>
   outer.right >= inner.right &&
   outer.bottom >= inner.bottom
 
+// One soft assertion per named rule, so a failure names the rule that broke, with the measured state.
+export function expectAll(label, state, rules) {
+  for (const [rule, held] of Object.entries(rules)) {
+    expect.soft(held, `${label}: ${rule} (${JSON.stringify(state)})`).toBe(true)
+  }
+}
+
 const salt = randomUUID()
 
 export const test = base.extend({
