@@ -8,16 +8,9 @@ const outputDir = path.resolve(root, process.argv[2] ?? 'dist')
 const errors = []
 
 async function walk(directory) {
-  const files = []
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const entryPath = path.join(directory, entry.name)
-    if (entry.isDirectory()) {
-      files.push(...(await walk(entryPath)))
-    } else {
-      files.push(entryPath)
-    }
-  }
-  return files
+  return (await readdir(directory, { recursive: true, withFileTypes: true }))
+    .filter((entry) => !entry.isDirectory())
+    .map((entry) => path.join(entry.parentPath, entry.name))
 }
 
 function getAttributes(tag) {
@@ -404,14 +397,12 @@ if (python.error?.code === 'ENOENT') {
   }
 }
 
-for (const file of xmlFiles) {
-  const xml = await readFile(file, 'utf8')
-  const relative = path.relative(root, file)
+for (const { file, xml } of xmlDocuments) {
   const decodedXml = decodeXmlEntities(xml)
   for (const match of decodedXml.matchAll(/<img\b[^>]*>/gi)) {
     const src = getAttributes(match[0]).get('src') ?? ''
     if (!/^(?:https?:|data:)/i.test(src)) {
-      errors.push(`${relative} contains non-absolute RSS image URL ${JSON.stringify(src)}`)
+      errors.push(`${file} contains non-absolute RSS image URL ${JSON.stringify(src)}`)
     }
   }
 }

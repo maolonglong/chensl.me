@@ -41,6 +41,39 @@ test('site checker rejects missing links and anchors', async () => {
   assert.match(result.stderr, /missing internal anchor "\/blog\/#missing"/)
 })
 
+test('site checker rejects directory links without an index page', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'dist/assets/nested/file.txt', 'asset')
+  await write(
+    fixture,
+    'dist/index.html',
+    `<link rel="canonical" href="https://chensl.me/">
+<a href="/assets/nested">directory</a>
+<a href="/assets/nested/">directory with slash</a>`,
+  )
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /missing internal URL "\/assets\/nested"/)
+  assert.match(result.stderr, /missing internal URL "\/assets\/nested\/"/)
+})
+
+test('site checker rejects a content store nested in the sibling Worker bundle', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'server/chunks/nested/worker.mjs', 'export {}')
+  const valid = run(process.execPath, [checker], fixture)
+  assert.equal(valid.status, 0, valid.stderr)
+
+  await write(fixture, 'server/chunks/nested/data-layer-content.fixture.mjs', 'export {}')
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /Worker bundle must not include the content store:/)
+  assert.ok(
+    result.stderr.includes(
+      path.join('server', 'chunks', 'nested', 'data-layer-content.fixture.mjs'),
+    ),
+  )
+})
+
 test('site checker rejects malformed XML, entities, and incomplete RSS items', async () => {
   for (const [xml, expected] of [
     ['<rss><channel></rss>', /malformed XML/],
