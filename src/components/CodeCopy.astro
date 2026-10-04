@@ -21,9 +21,6 @@
       </g>
     </svg>
   </button>
-  <p class="code-copy-error" hidden>
-    复制失败，请手动选择代码。
-  </p>
 </template>
 <script>
   ;(() => {
@@ -43,10 +40,7 @@
       block.className = 'code-block'
       highlight.before(block)
       const button = template.content.firstElementChild!.cloneNode(true) as HTMLButtonElement
-      const error = template.content
-        .querySelector('.code-copy-error')!
-        .cloneNode(true) as HTMLElement
-      block.append(highlight, button, error)
+      block.append(highlight, button)
       let reset: ReturnType<typeof setTimeout>
       button.addEventListener('click', async () => {
         let copied = true
@@ -56,13 +50,13 @@
           copied = false
         }
         clearTimeout(reset)
-        button.dataset.state = copied ? 'done' : 'failed'
-        error.hidden = copied
-        status.textContent = copied ? '已复制' : error.textContent
+        if (copied) button.dataset.state = 'done'
+        else delete button.dataset.state
+        status.textContent = copied ? '已复制' : '复制失败，请手动选择代码。'
         reset = setTimeout(() => {
           delete button.dataset.state
           status.textContent = ''
-        }, 2000)
+        }, 1500)
       })
     })
   })()
@@ -71,11 +65,6 @@
 <style>
   :global(.code-block) {
     position: relative;
-  }
-  .code-copy-error {
-    margin: 0.5em 0 0;
-    font-size: 0.875rem;
-    color: var(--text-color);
   }
   .code-copy {
     position: absolute;

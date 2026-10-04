@@ -100,7 +100,7 @@ for (const hasTouch of [false, true]) {
   test.describe(hasTouch ? 'on a touch screen' : 'with a hovering pointer', () => {
     test.use({ hasTouch, viewport: { width: 320, height: 844 } })
 
-    test('code blocks carry one copy button that copies and reports failure', async ({
+    test('code blocks copy with brief success feedback and no visible failure message', async ({
       page,
       context,
       open,
@@ -146,39 +146,44 @@ for (const hasTouch of [false, true]) {
         'Copy button must copy the code without its trailing newline',
       ).toBe(copy.expected)
 
+      const button = page.locator('.code-copy').first()
+      await expect(button).toHaveAttribute('data-state', 'done')
+      await expect(button.locator('[data-copy-icon=done]')).toBeVisible()
+      await expect(button.locator('[data-copy-icon=idle]')).toBeHidden()
+      // A second success restarts the 1.5s feedback window.
+      await page.waitForTimeout(1000)
+      await button.click()
+      await page.waitForTimeout(800)
+      await expect(button).toHaveAttribute('data-state', 'done')
+      await expect(button).not.toHaveAttribute('data-state', { timeout: 1200 })
+      await expect(page.locator('.code-copy-status')).toBeEmpty()
+
       const failure = await page.evaluate(async () => {
         const write = navigator.clipboard.writeText
         navigator.clipboard.writeText = () =>
           Promise.reject(new DOMException('Denied', 'NotAllowedError'))
         const button = document.querySelector('.code-copy')
+        const block = button.parentElement
+        const before = block.getBoundingClientRect().height
         button.click()
         await new Promise((resolve) => setTimeout(resolve, 50))
-        const error = button.parentElement.querySelector('.code-copy-error')
         const result = {
-          visible: !!error && !error.hidden && error.getBoundingClientRect().height > 0,
-          text: error?.textContent.trim(),
+          state: button.dataset.state ?? null,
+          height: block.getBoundingClientRect().height,
+          before,
+          visibleText: block.innerText,
           announcement: document.querySelector('.code-copy-status').textContent.trim(),
-          otherBlocksClear: [...document.querySelectorAll('.code-copy-error')].every(
-            (el) => el === error || el.hidden,
-          ),
         }
-        await new Promise((resolve) => setTimeout(resolve, 2100))
-        result.persistent = !!error && !error.hidden
         navigator.clipboard.writeText = write
         return result
       })
-      expect(failure).toEqual({
-        visible: true,
-        text: '复制失败，请手动选择代码。',
-        announcement: '复制失败，请手动选择代码。',
-        otherBlocksClear: true,
-        persistent: true,
-      })
-      await page.locator('.code-copy').first().click()
-      await expect(
-        page.locator('.code-copy-error').first(),
-        'Successful retry must clear the visible error',
-      ).toBeHidden({ timeout: 1000 })
+      expect(failure.state).toBeNull()
+      expect(failure.height).toBe(failure.before)
+      expect(failure.visibleText.trim()).toBe(copy.expected)
+      expect(failure.announcement).toBe('复制失败，请手动选择代码。')
+      await button.click()
+      await expect(button).toHaveAttribute('data-state', 'done')
+      await expect(page.locator('.code-copy-status')).toHaveText('已复制')
     })
   })
 }

@@ -90,19 +90,27 @@ test('code caption in both color schemes', async ({ page, open, capture }) => {
 
 for (const width of [1280, 390]) {
   for (const mode of ['light', 'dark']) {
-    test(`failed copy at ${width}px in ${mode}`, async ({ page, open, capture }) => {
+    test(`copy feedback at ${width}px in ${mode}`, async ({ page, context, open, capture }) => {
+      await context.grantPermissions(['clipboard-read', 'clipboard-write'])
       await page.setViewportSize({ width, height: 844 })
       await page.emulateMedia({ colorScheme: mode })
       await open('/blog/dockertest/')
+      // The first captioned block stands in for all of them.
+      const button = page.locator('.code-figure .code-copy').first()
+      await page.evaluate(() =>
+        document.querySelector('.code-figure').scrollIntoView({ block: 'center' }),
+      )
+      await button.click()
+      await expect(button).toHaveAttribute('data-state', 'done')
+      await capture(page, `copy-success-${width}-${mode}`)
+      await expect(button).toHaveAttribute('data-state', 'done')
       await page.evaluate(() => {
         navigator.clipboard.writeText = () =>
           Promise.reject(new DOMException('Denied', 'NotAllowedError'))
       })
-      // The first captioned block stands in for all of them.
-      await page.locator('.code-figure .code-copy').first().click()
-      await page.evaluate(() =>
-        document.querySelector('.code-figure .code-copy-error').scrollIntoView({ block: 'center' }),
-      )
+      await button.click()
+      await expect(button).not.toHaveAttribute('data-state')
+      await expect(page.locator('.code-copy-error')).toHaveCount(0)
       await capture(page, `copy-failed-${width}-${mode}`)
     })
   }

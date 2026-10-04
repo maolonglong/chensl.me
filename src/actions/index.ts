@@ -31,7 +31,7 @@ async function requireQuota(limiter: RateLimit, key: string) {
   }
 }
 
-const countVotes = (postId: string, visitor: string) =>
+const countVotes = (postId: string, visitor: string | null) =>
   env.VOTES.prepare(
     'SELECT COUNT(*) AS count, COALESCE(MAX(visitor_id = ?), 0) AS voted FROM votes WHERE post_id = ?',
   ).bind(visitor, postId)
@@ -48,34 +48,33 @@ export const server = {
       await requireQuota(env.READ_LIMITER, clientAddress)
       await requirePost(postId, url)
       const existing = visitorId.safeParse(cookies.get(visitorCookie)?.value)
-      const visitor = existing.success ? existing.data : crypto.randomUUID()
-      const state = toState(await countVotes(postId, visitor).first())
-      cookies.set(visitorCookie, visitor, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365,
-      })
-      return state
+      // Reads never mint an identity or overwrite one created by a concurrent first vote.
+      return toState(await countVotes(postId, existing.success ? existing.data : null).first())
     },
   }),
   upvote: defineAction({
     input,
     async handler({ postId }, { cookies, clientAddress, url }) {
       await requirePost(postId, url)
-      const visitor = visitorId.safeParse(cookies.get(visitorCookie)?.value)
-      if (!visitor.success) {
-        throw new ActionError({ code: 'FORBIDDEN', message: 'Cookies are required to vote.' })
-      }
       await requireQuota(env.VOTE_LIMITER, clientAddress)
+      const existing = visitorId.safeParse(cookies.get(visitorCookie)?.value)
+      const visitor = existing.success ? existing.data : crypto.randomUUID()
       // One transactional round trip: the count includes this visitor's vote.
       const [, count] = await env.VOTES.batch<{ count: number; voted: number }>([
         env.VOTES.prepare(
           'INSERT INTO votes (post_id, visitor_id) VALUES (?, ?) ON CONFLICT DO NOTHING',
-        ).bind(postId, visitor.data),
-        countVotes(postId, visitor.data),
+        ).bind(postId, visitor),
+        countVotes(postId, visitor),
       ])
+      if (!existing.success) {
+        cookies.set(visitorCookie, visitor, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'strict',
+          path: '/',
+          maxAge: 60 * 60 * 24 * 365,
+        })
+      }
       return toState(count.results[0])
     },
   }),

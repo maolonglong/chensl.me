@@ -32,8 +32,10 @@ Read `src/actions/index.ts`, `wrangler.jsonc`, and the relevant migrations befor
 
 ### Contracts to preserve
 
-- Anonymous cookie-based identity: the `__Host-blog-voter` cookie is set by `getVotes` and required by `upvote`; its attributes and lifetime live in `src/actions/index.ts`. Clearing cookies or switching browsers loses the visitor's vote identity, so this is not a one-person-one-vote system.
+- Anonymous cookie-based identity: `getVotes` only reads `__Host-blog-voter` and never sets it. Without a valid cookie it returns the count with `voted: false`. `upvote` reuses a valid UUID or creates one, setting the cookie only after the first vote is saved; its attributes and lifetime live in `src/actions/index.ts`. Existing cookies are not renewed by reads or votes.
+- Clearing or blocking cookies, switching browsers, or concurrent first submissions without a cookie can create separate identities, so this is not a one-person-one-vote system. Rate limits still apply to submissions without a cookie. A delayed read cannot overwrite the cookie from a first vote.
 - Idempotent duplicate submissions, private non-cacheable Action responses, and no undo operation.
+- The reader-facing button follows Bear Blog: load the count silently, then increment, color and disable immediately on click without waiting for the submission. Failed submissions do not roll back or show errors; reloading reads the persisted state again. The optimistic display is not confirmation that D1 saved a vote.
 - D1 stores article and visitor IDs, not IP addresses, and accepts any well-formed UUID, so a client can forge identities within the rate limits.
 - Actions accept only slug-shaped article IDs and confirm the article by requesting its built page through the `ASSETS` binding. Drafts and future posts are not prerendered, so they are rejected, and the content store stays out of the Worker bundle; `pnpm check` fails if a content-store chunk reaches `dist/server`.
 - `VOTE_LIMITER` (submissions) and `READ_LIMITER` (reads) key on the client address, with budgets in `wrangler.jsonc`. Cloudflare limiters are per location and approximate, and networks sharing an address share the budget. They are basic abuse mitigation, not a global quota or bot challenge.
@@ -43,7 +45,7 @@ Read `src/actions/index.ts`, `wrangler.jsonc`, and the relevant migrations befor
 1. Run `pnpm test:e2e`, or `pnpm exec playwright test e2e/upvotes.spec.mjs` after a build. Playwright starts its own preview, applying local migrations to disposable D1 data first. With `SITE_URL`, apply them yourself: `pnpm exec wrangler d1 migrations apply VOTES --local`.
 2. `e2e/upvotes.spec.mjs` accepts only loopback URLs, and every test sends its own synthetic `CF-Connecting-IP`, so runs need no waiting between them. Each run adds a few votes to `dockertest`, and the specs assert counts relative to a baseline read at the start of each test.
 
-The check is done when the spec passes: it asserts slug validation, concurrency, visitor isolation, cookie persistence, focus and announcement after voting, browser error recovery, and both rate limits.
+The check is done when the spec passes: it asserts slug validation, concurrent duplicate submissions, visitor isolation, cookie-free reads, first votes without initialization, cookie persistence across delayed reads, keyboard voting and announcements, optimistic feedback across failed submissions, reload reconciliation, and both rate limits.
 
 ### Authorization
 

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { expect, test as base } from './site.mjs'
 
@@ -40,49 +41,87 @@ const test = base.extend({
   },
 })
 
-// A visitor is whoever holds the cookie that `getVotes` mints.
+// Existing identities are opaque UUIDs. Seed an unvoted identity for isolation/concurrency tests;
+// first-vote tests below separately exercise server-issued cookies through the real Actions.
 async function visit(action, postId = article) {
-  const read = await action('getVotes', postId)
+  const cookie = `__Host-blog-voter=${randomUUID()}`
+  const read = await action('getVotes', postId, { cookie })
   expect(read.status, read.data).toBe(200)
-  return { read, count: read.data.count, cookie: read.headers['set-cookie'].split(';')[0] }
+  return { read, count: read.data.count, cookie }
 }
 
 test.describe('vote Actions', () => {
-  test('a read is private, reports no vote and mints a hardened visitor cookie', async ({
-    action,
-  }) => {
-    const { read } = await visit(action)
-    expect(read.headers['cache-control']).toBe('private, no-store')
-    expect(read.data.voted).toBe(false)
-    expect(read.headers['set-cookie']).toMatch(/HttpOnly/i)
-    expect(read.headers['set-cookie']).toMatch(/Secure/i)
-    expect(read.headers['set-cookie']).toMatch(/SameSite=Strict/i)
+  test('reads are private and never create or replace visitor cookies', async ({ action }) => {
+    for (const cookie of [
+      undefined,
+      '__Host-blog-voter=invalid',
+      `__Host-blog-voter=${randomUUID()}`,
+    ]) {
+      const read = await action('getVotes', article, { cookie })
+      expect(read.status, read.data).toBe(200)
+      expect(read.headers['cache-control']).toBe('private, no-store')
+      expect(read.headers['set-cookie']).toBeUndefined()
+      expect(read.data.voted).toBe(false)
+    }
   })
 
-  test('a vote needs the visitor cookie and a same-origin request', async ({ action }) => {
-    const { cookie } = await visit(action)
-    expect((await action('upvote', article)).status).toBe(403)
-    expect(
-      (await action('upvote', article, { cookie, origin: 'https://other.example' })).status,
-    ).toBe(403)
+  for (const initialCookie of [undefined, '__Host-blog-voter=invalid']) {
+    test(`a first vote with ${initialCookie ? 'an invalid' : 'no'} cookie creates a persistent identity`, async ({
+      action,
+    }) => {
+      const baseline = (await action('getVotes', article)).data.count
+      // The submission has no identity established by a prior read.
+      const vote = await action('upvote', article, { cookie: initialCookie })
+      expect(vote.status, vote.data).toBe(200)
+      expect(vote.data).toEqual({ count: baseline + 1, voted: true })
+      expect(vote.headers['cache-control']).toBe('private, no-store')
+      const setCookie = vote.headers['set-cookie']
+      expect(setCookie).toMatch(
+        /^__Host-blog-voter=[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12};/,
+      )
+      expect(setCookie).toMatch(/HttpOnly/i)
+      expect(setCookie).toMatch(/Secure/i)
+      expect(setCookie).toMatch(/SameSite=Strict/i)
+      expect(setCookie).toMatch(/Path=\/(?:;|$)/i)
+      expect(setCookie).toMatch(/Max-Age=31536000/i)
+      expect(setCookie).not.toMatch(/Domain=/i)
+
+      const cookie = setCookie.split(';')[0]
+      const read = await action('getVotes', article, { cookie })
+      expect(read.data).toEqual({ count: baseline + 1, voted: true })
+      expect(read.headers['set-cookie']).toBeUndefined()
+      const duplicate = await action('upvote', article, { cookie })
+      expect(duplicate.data).toEqual({ count: baseline + 1, voted: true })
+      expect(duplicate.headers['set-cookie']).toBeUndefined()
+    })
+  }
+
+  test('a first vote still requires a same-origin request', async ({ action }) => {
+    const baseline = (await action('getVotes', article)).data.count
+    const vote = await action('upvote', article, { origin: 'https://other.example' })
+    expect(vote.status).toBe(403)
+    expect(vote.headers['set-cookie']).toBeUndefined()
+    expect((await action('getVotes', article)).data.count).toBe(baseline)
   })
 
   test('pages that are not published articles cannot be voted on', async ({ action }) => {
-    const { cookie } = await visit(action)
     // Pages that exist but are not articles, and IDs that assets would redirect, are not votable.
     for (const postId of ['not-a-published-post', 'index', '404']) {
       for (const name of ['getVotes', 'upvote']) {
-        expect((await action(name, postId, { cookie })).status, `${name} ${postId}`).toBe(404)
+        const response = await action(name, postId)
+        expect(response.status, `${name} ${postId}`).toBe(404)
+        expect(response.headers['set-cookie']).toBeUndefined()
       }
     }
   })
 
   test('only slug-shaped article IDs reach the article lookup', async ({ action }) => {
-    const { cookie } = await visit(action)
     // Path syntax must not be able to select another page.
     for (const postId of ['../dockertest', 'a/b', 'Dockertest', 'dockertest/', '', '%2e%2e']) {
       for (const name of ['getVotes', 'upvote']) {
-        expect((await action(name, postId, { cookie })).status, `${name} ${postId}`).toBe(400)
+        const response = await action(name, postId)
+        expect(response.status, `${name} ${postId}`).toBe(400)
+        expect(response.headers['set-cookie']).toBeUndefined()
       }
     }
   })
@@ -114,8 +153,7 @@ test.describe('vote Actions', () => {
 
     const other = await action('getVotes', article)
     expect(other.data).toEqual({ count: voter.count + 1, voted: false })
-    const otherCookie = other.headers['set-cookie'].split(';')[0]
-    expect((await action('upvote', article, { cookie: otherCookie })).data).toEqual({
+    expect((await action('upvote', article)).data).toEqual({
       count: voter.count + 2,
       voted: true,
     })
@@ -138,6 +176,10 @@ test.describe('vote Actions', () => {
       count: count + 1,
       voted: true,
     })
+    const limited = await action('upvote', article)
+    expect(limited.status).toBe(429)
+    expect(limited.headers['set-cookie']).toBeUndefined()
+    expect((await action('getVotes', article)).data.count).toBe(count + 1)
   })
 
   test('read bursts are rate limited per client address', async ({ action }) => {
@@ -164,7 +206,7 @@ async function captureStates(page, capture, state) {
   }
 }
 
-test('a failed vote can be retried from the keyboard and survives a reload', async ({
+test('a keyboard vote changes the button and persists after reload', async ({
   page,
   open,
   action,
@@ -175,7 +217,7 @@ test('a failed vote can be retried from the keyboard and survives a reload', asy
   const icon = page.locator('[data-upvote] svg')
   const state = () =>
     button.evaluate((element) => ({
-      voted: element.getAttribute('aria-disabled') === 'true',
+      voted: element.disabled,
       count: Number(element.querySelector('[data-count]').textContent),
     }))
   const color = () => button.evaluate((element) => getComputedStyle(element).color)
@@ -187,20 +229,13 @@ test('a failed vote can be retried from the keyboard and survives a reload', asy
   const unvotedColor = await color()
   await captureStates(page, capture, 'unvoted')
 
-  await test.step('a failed request reports the problem and changes nothing', async () => {
-    await page.route('**/_actions/upvote/**', (route) => route.abort())
-    await button.click()
-    await expect(page.locator('[data-upvote] [role=status]')).toContainText('重试')
-    expect(await state()).toEqual({ voted: false, count: baseline })
-    await captureStates(page, capture, 'error')
-    await page.unroute('**/_actions/upvote/**')
-  })
-
-  await test.step('a keyboard vote keeps focus and is announced', async () => {
+  await test.step('a keyboard vote disables the button and is announced', async () => {
+    const response = page.waitForResponse('**/_actions/upvote/**')
     await button.focus()
     await page.keyboard.press('Enter')
     await expect.poll(state).toEqual({ voted: true, count: baseline + 1 })
-    await expect(button).toBeFocused()
+    expect((await response).status()).toBe(200)
+    await expect(button).toHaveAccessibleName(`已点赞，${baseline + 1} 票`)
     await expect(page.locator('[data-upvote] [aria-live]')).toHaveText('已点赞')
     await expect(icon).toHaveCSS('fill', 'none')
     expect(await icon.innerHTML()).toBe(unvotedIcon)
@@ -214,3 +249,140 @@ test('a failed vote can be retried from the keyboard and survives a reload', asy
     await expect.poll(state).toEqual({ voted: true, count: baseline + 1 })
   })
 })
+
+test('an unavailable initial count stays blank and does not prevent a first vote', async ({
+  page,
+  open,
+  capture,
+  action,
+}) => {
+  const baseline = (await action('getVotes', article)).data.count
+  const button = page.locator('[data-upvote] button')
+  const count = page.locator('[data-upvote] [data-count]')
+  const failure = page.waitForEvent('requestfailed', (request) =>
+    request.url().includes('/_actions/getVotes/'),
+  )
+  await page.route('**/_actions/getVotes/**', (route) => route.abort())
+  await open(`/blog/${article}/`)
+  await failure
+  await expect(button).toBeEnabled()
+  await expect(count).toHaveText('')
+  await expect(page.locator('[data-upvote] [aria-live]')).toBeEmpty()
+  await expect(page.locator('#vote-status')).toHaveCount(0)
+  await captureStates(page, capture, 'unavailable')
+
+  const response = page.waitForResponse('**/_actions/upvote/**')
+  await button.click()
+  expect((await response).status()).toBe(200)
+  await page.unroute('**/_actions/getVotes/**')
+  await page.reload()
+  await expect(count).toHaveText(String(baseline + 1))
+  await expect(button).toBeDisabled()
+})
+
+test('a first vote succeeds while the initial read is pending and keeps its cookie', async ({
+  page,
+  context,
+  open,
+  action,
+}) => {
+  const baseline = (await action('getVotes', article)).data.count
+  let release
+  const pending = new Promise((resolve) => (release = resolve))
+  let received
+  const reading = new Promise((resolve) => (received = resolve))
+  await page.route('**/_actions/getVotes/**', async (route) => {
+    received()
+    await pending
+    await route.fallback()
+  })
+  await open(`/blog/${article}/`)
+  await reading
+  const voterCookies = async () =>
+    (await context.cookies()).filter((cookie) => cookie.name === '__Host-blog-voter')
+  expect(await voterCookies()).toEqual([])
+
+  try {
+    const response = page.waitForResponse('**/_actions/upvote/**')
+    await page.locator('[data-upvote] button').click()
+    expect((await response).status()).toBe(200)
+    const cookies = await voterCookies()
+    expect(cookies).toHaveLength(1)
+    const value = cookies[0].value
+    const read = page.waitForResponse('**/_actions/getVotes/**')
+    release()
+    expect((await read).headers()['set-cookie']).toBeUndefined()
+    expect((await voterCookies()).map((cookie) => cookie.value)).toEqual([value])
+    await page.unroute('**/_actions/getVotes/**')
+    await page.reload()
+    await expect(page.locator('[data-upvote] [data-count]')).toHaveText(String(baseline + 1))
+    await expect(page.locator('[data-upvote] button')).toBeDisabled()
+  } finally {
+    release()
+  }
+})
+
+for (const failure of ['network', 'forbidden']) {
+  test(`a ${failure} failure leaves the immediate vote feedback unchanged`, async ({
+    page,
+    open,
+    action,
+    capture,
+    clientAddress,
+  }) => {
+    const baseline = (await action('getVotes', article)).data.count
+    const button = page.locator('[data-upvote] button')
+    const count = page.locator('[data-upvote] [data-count]')
+    await open(`/blog/${article}/`)
+    await expect(count).toHaveText(String(baseline))
+
+    let release
+    const pending = new Promise((resolve) => (release = resolve))
+    let submissions = 0
+    await page.route('**/_actions/upvote/**', async (route) => {
+      submissions++
+      await pending
+      if (failure === 'network') await route.abort()
+      else {
+        // Chromium keeps its own Origin on continued browser requests. Fetch the real rejection
+        // through the request API, then deliver that response to exercise the client failure path.
+        const response = await route.fetch({
+          headers: {
+            ...route.request().headers(),
+            'cf-connecting-ip': clientAddress,
+            origin: 'https://other.example',
+          },
+        })
+        await route.fulfill({ response })
+      }
+    })
+    const finished =
+      failure === 'network'
+        ? page.waitForEvent('requestfailed', (request) =>
+            request.url().includes('/_actions/upvote/'),
+          )
+        : page.waitForResponse('**/_actions/upvote/**')
+    await button.click()
+    await expect(button).toBeDisabled()
+    await expect(count).toHaveText(String(baseline + 1))
+    await expect(button).toHaveAttribute('data-voted', 'true')
+    await expect(page.locator('[data-upvote] [aria-live]')).toHaveText('已点赞')
+    await button.dispatchEvent('click')
+    if (failure === 'network') await captureStates(page, capture, 'pending')
+    release()
+    const result = await finished
+    if (failure === 'forbidden') expect(result.status()).toBe(403)
+    // Give the client time to process rejection; no rollback or retry UI should appear.
+    await page.waitForTimeout(300)
+    expect(submissions).toBe(1)
+    await expect(button).toBeDisabled()
+    await expect(count).toHaveText(String(baseline + 1))
+    await expect(page.locator('#vote-status')).toHaveCount(0)
+    if (failure === 'network') await captureStates(page, capture, 'failed-vote')
+    expect((await action('getVotes', article)).data.count).toBe(baseline)
+
+    await page.reload()
+    await expect(count).toHaveText(String(baseline))
+    await expect(button).toBeEnabled()
+  })
+}

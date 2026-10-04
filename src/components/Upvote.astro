@@ -6,16 +6,15 @@ const { postId } = Astro.props
 ---
 
 <div class="upvote" data-upvote data-post-id={postId}>
-  <button type="button" disabled aria-label="点赞" aria-describedby="vote-status">
+  <button type="button" aria-label="点赞">
     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
       <polyline points="17 11 12 6 7 11" />
       <polyline points="17 18 12 13 7 18" />
     </svg>
     <span data-count aria-hidden="true">
-      ·
+      &nbsp;
     </span>
   </button>
-  <span id="vote-status" role="status"></span>
   <span class="visually-hidden" aria-live="polite" data-announce></span>
   <noscript>启用 JavaScript 后可以点赞。</noscript>
 </div>
@@ -27,49 +26,32 @@ const { postId } = Astro.props
   if (root) {
     const button = root.querySelector('button')!
     const count = root.querySelector<HTMLElement>('[data-count]')!
-    const status = root.querySelector<HTMLElement>('[role=status]')!
     const announce = root.querySelector<HTMLElement>('[data-announce]')!
     const postId = root.dataset.postId!
-    let loaded = false
-    let voted = false
-    let pending = false
 
-    async function update(submit: boolean) {
-      if (pending || voted) return
-      pending = true
-      // Not `disabled`: that would drop keyboard focus from the control mid-request.
-      button.setAttribute('aria-busy', 'true')
-      status.textContent = ''
-      try {
-        const { data, error } = await (submit
-          ? actions.upvote({ postId })
-          : actions.getVotes({ postId }))
-        if (error) {
-          status.textContent =
-            error.code === 'FORBIDDEN'
-              ? '请允许本站 Cookie，再刷新重试。'
-              : error.code === 'TOO_MANY_REQUESTS'
-                ? '操作频繁，请稍后重试。'
-                : '暂时无法连接，点击重试。'
-          return
-        }
-        loaded = true
-        voted = data.voted
-        count.textContent = String(data.count)
-        button.dataset.voted = String(voted)
-        button.setAttribute('aria-disabled', String(voted))
-        button.setAttribute('aria-label', `${voted ? '已点赞' : '点赞'}，${data.count} 票`)
-        if (submit) announce.textContent = '已点赞'
-      } catch {
-        status.textContent = '暂时无法连接，点击重试。'
-      } finally {
-        pending = false
-        button.disabled = false
-        button.removeAttribute('aria-busy')
-      }
+    function showCount(votes: number) {
+      count.textContent = String(votes)
+      button.dataset.voted = String(button.disabled)
+      button.setAttribute('aria-label', `${button.disabled ? '已点赞' : '点赞'}，${votes} 票`)
     }
-    button.addEventListener('click', () => update(loaded))
-    void update(false)
+
+    void actions
+      .getVotes({ postId })
+      .then(({ data, error }) => {
+        if (error) return
+        if (data.voted) button.disabled = true
+        showCount(data.count)
+      })
+      .catch(() => {})
+
+    button.addEventListener('click', () => {
+      if (button.disabled) return
+      // Like Bear Blog, feedback is immediate and independent of the submission result.
+      void actions.upvote({ postId }).catch(() => {})
+      button.disabled = true
+      showCount(Number(count.textContent) + 1)
+      announce.textContent = '已点赞'
+    })
   }
 </script>
 
@@ -113,18 +95,13 @@ const { postId } = Astro.props
     color: var(--link-color);
     cursor: default;
   }
-  button:disabled,
-  button[aria-busy='true'] {
-    cursor: wait;
-    opacity: 0.6;
-  }
   @media (hover: hover) {
-    button:not(:disabled, [aria-busy='true'], [aria-disabled='true']):hover {
+    button:not(:disabled):hover {
       color: var(--link-color);
     }
   }
   @media (prefers-reduced-motion: no-preference) {
-    button:not(:disabled, [aria-busy='true'], [aria-disabled='true'], :focus-visible):active {
+    button:not(:disabled, :focus-visible):active {
       transform: scale(0.96);
     }
   }
