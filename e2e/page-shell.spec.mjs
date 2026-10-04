@@ -10,22 +10,14 @@ test('old articles show a stale notice after the date', async ({ page, open }) =
   await expect(notice).toBeVisible()
 })
 
-test('recent article notice visibility follows the two-year rule', async ({ page, open }) => {
+test('articles become stale in the browser without a rebuild', async ({ page, open }) => {
+  // semantic-view-sql-traps was published on 2026-09-23.
+  await page.clock.setFixedTime(new Date('2028-09-01T00:00:00Z'))
   await open('/blog/semantic-view-sql-traps/')
   const notice = page.locator('.post-notice')
-  await expect(notice).toHaveCount(1)
-  const staleSince = await notice.getAttribute('data-stale-since')
-  const cutoff = new Date()
-  cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 2)
-  const expectedStale = Date.parse(staleSince) < cutoff.valueOf()
-  if (expectedStale) await expect(notice).toBeVisible()
-  else await expect(notice).toBeHidden()
-})
-
-test('articles become stale in the browser without a rebuild', async ({ page, open }) => {
+  await expect(notice).toBeHidden()
   await page.clock.setFixedTime(new Date('2029-01-01T00:00:00Z'))
   await open('/blog/semantic-view-sql-traps/')
-  const notice = page.locator('.post-notice')
   await expect(notice).toHaveText('这篇文章写于两年多以前，部分内容可能已经过时。')
   await expect(notice).toBeVisible()
 })
@@ -44,22 +36,6 @@ test.describe('stale notices without page scripts', () => {
     const notice = page.locator('.post-notice')
     await expect(notice).toHaveText('这篇文章写于两年多以前，部分内容可能已经过时。')
     await expect(notice).toBeVisible()
-  })
-
-  test('article notice visibility follows the two-year rule without page scripts', async ({
-    page,
-    open,
-  }) => {
-    await open('/blog/semantic-view-sql-traps/')
-    const notice = page.locator('.post-notice')
-    await expect(notice).toHaveCount(1)
-    const staleSince = await notice.getAttribute('data-stale-since')
-    // The build runs only minutes before this suite, so the current time represents build time.
-    const cutoff = new Date()
-    cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 2)
-    const expectedStale = Date.parse(staleSince) < cutoff.valueOf()
-    if (expectedStale) await expect(notice).toBeVisible()
-    else await expect(notice).toBeHidden()
   })
 })
 
@@ -252,3 +228,19 @@ for (const width of [320, 390, 768, 1280]) {
     }
   })
 }
+
+test('every heading level outranks the article body size', async ({ page, open }) => {
+  await open('/blog/dockertest/')
+  const [body, h2, h3, ...deep] = await page.evaluate(() =>
+    ['p', 'h2', 'h3', 'h4', 'h5', 'h6'].map((tag) => {
+      const element = document.querySelector('.prose').appendChild(document.createElement(tag))
+      element.textContent = '标题'
+      return Number.parseFloat(getComputedStyle(element).fontSize)
+    }),
+  )
+  expect(h2).toBeGreaterThan(h3)
+  for (const size of deep) {
+    expect(h3).toBeGreaterThan(size)
+    expect(size).toBeGreaterThanOrEqual(body)
+  }
+})

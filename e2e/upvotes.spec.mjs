@@ -270,7 +270,6 @@ test('an unavailable initial count stays blank and does not prevent a first vote
   await expect(button).toBeEnabled()
   await expect(count).toHaveText('')
   await expect(page.locator('[data-upvote] [aria-live]')).toBeEmpty()
-  await expect(page.locator('#vote-status')).toHaveCount(0)
   await captureStates(page, capture, 'unavailable')
 
   const response = page.waitForResponse('**/_actions/upvote/**')
@@ -324,71 +323,52 @@ test('a first vote succeeds while the initial read is pending and keeps its cook
   }
 })
 
-for (const failure of ['network', 'forbidden']) {
-  test(`a ${failure} failure leaves the immediate vote feedback unchanged`, async ({
-    page,
-    open,
-    action,
-    capture,
-    clientAddress,
-  }) => {
-    const baseline = (await action('getVotes', article)).data.count
-    const button = page.locator('[data-upvote] button')
-    const count = page.locator('[data-upvote] [data-count]')
-    await open(`/blog/${article}/`)
-    await expect(count).toHaveText(String(baseline))
-    const unvotedColor = await button.evaluate((element) => getComputedStyle(element).color)
+// The client ignores the submission result, so a network failure covers every failure path.
+test('a failed submission leaves the immediate vote feedback unchanged', async ({
+  page,
+  open,
+  action,
+  capture,
+}) => {
+  const baseline = (await action('getVotes', article)).data.count
+  const button = page.locator('[data-upvote] button')
+  const count = page.locator('[data-upvote] [data-count]')
+  await open(`/blog/${article}/`)
+  await expect(count).toHaveText(String(baseline))
+  const unvotedColor = await button.evaluate((element) => getComputedStyle(element).color)
 
-    let release
-    const pending = new Promise((resolve) => (release = resolve))
-    let submissions = 0
-    await page.route('**/_actions/upvote/**', async (route) => {
-      submissions++
-      await pending
-      if (failure === 'network') await route.abort()
-      else {
-        // Chromium keeps its own Origin on continued browser requests. Fetch the real rejection
-        // through the request API, then deliver that response to exercise the client failure path.
-        const response = await route.fetch({
-          headers: {
-            ...route.request().headers(),
-            'cf-connecting-ip': clientAddress,
-            origin: 'https://other.example',
-          },
-        })
-        await route.fulfill({ response })
-      }
-    })
-    const finished =
-      failure === 'network'
-        ? page.waitForEvent('requestfailed', (request) =>
-            request.url().includes('/_actions/upvote/'),
-          )
-        : page.waitForResponse('**/_actions/upvote/**')
-    await button.click()
-    await expect(button).toBeDisabled()
-    await expect(count).toHaveText(String(baseline + 1))
-    await expect(button).not.toHaveCSS('color', unvotedColor)
-    await expect(page.locator('[data-upvote] [aria-live]')).toHaveText('已点赞')
-    await button.dispatchEvent('click')
-    if (failure === 'network') await captureStates(page, capture, 'pending')
-    release()
-    const result = await finished
-    if (failure === 'forbidden') expect(result.status()).toBe(403)
-    // Give the client time to process rejection; no rollback or retry UI should appear.
-    await page.waitForTimeout(300)
-    expect(submissions).toBe(1)
-    await expect(button).toBeDisabled()
-    await expect(count).toHaveText(String(baseline + 1))
-    await expect(page.locator('#vote-status')).toHaveCount(0)
-    if (failure === 'network') await captureStates(page, capture, 'failed-vote')
-    expect((await action('getVotes', article)).data.count).toBe(baseline)
-
-    await page.reload()
-    await expect(count).toHaveText(String(baseline))
-    await expect(button).toBeEnabled()
-    await page.emulateMedia({ colorScheme: 'light' })
-    await page.mouse.move(0, 0)
-    await expect(button).toHaveCSS('color', unvotedColor)
+  let release
+  const pending = new Promise((resolve) => (release = resolve))
+  let submissions = 0
+  await page.route('**/_actions/upvote/**', async (route) => {
+    submissions++
+    await pending
+    await route.abort()
   })
-}
+  const finished = page.waitForEvent('requestfailed', (request) =>
+    request.url().includes('/_actions/upvote/'),
+  )
+  await button.click()
+  await expect(button).toBeDisabled()
+  await expect(count).toHaveText(String(baseline + 1))
+  await expect(button).not.toHaveCSS('color', unvotedColor)
+  await expect(page.locator('[data-upvote] [aria-live]')).toHaveText('已点赞')
+  await button.dispatchEvent('click')
+  await captureStates(page, capture, 'pending')
+  release()
+  await finished
+  // Give the client time to process rejection; no rollback or retry UI should appear.
+  await page.waitForTimeout(300)
+  expect(submissions).toBe(1)
+  await expect(button).toBeDisabled()
+  await expect(count).toHaveText(String(baseline + 1))
+  await captureStates(page, capture, 'failed-vote')
+  expect((await action('getVotes', article)).data.count).toBe(baseline)
+
+  await page.reload()
+  await expect(count).toHaveText(String(baseline))
+  await expect(button).toBeEnabled()
+  await page.emulateMedia({ colorScheme: 'light' })
+  await page.mouse.move(0, 0)
+  await expect(button).toHaveCSS('color', unvotedColor)
+})

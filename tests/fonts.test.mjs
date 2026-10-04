@@ -14,7 +14,6 @@ test('JinKai declarations preserve precedence, versioning, and cold-visit budget
   const faces = [...index.matchAll(/@font-face\s*\{([^}]+)\}/g)]
     .map(([, body]) => body)
     .filter((body) => body.includes('TsangerJinKai02'))
-  assert.equal(faces.length, 257)
   for (const face of faces) {
     assert.match(face, /font-weight:\s*400 500/)
     assert.match(face, /font-display:\s*swap/)

@@ -17,7 +17,7 @@ const contrast = (foreground, background) => {
   return (values[1] + 0.05) / (values[0] + 0.05)
 }
 
-// Style sources meet the design contracts: giscus and code contrast, toolbar state, and heading scale.
+// Style sources meet the contrast contracts for giscus and code.
 
 test('giscus themes meet AA contrast for reading and controls', async () => {
   for (const mode of ['light', 'dark']) {
@@ -36,39 +36,6 @@ test('giscus themes meet AA contrast for reading and controls', async () => {
       assert.ok(ratio >= 4.5, `${mode}: ${foreground} on ${background}: ${ratio.toFixed(2)}:1`)
     }
   }
-})
-
-test('giscus themes distinguish the fixed-width toolbar state', async () => {
-  for (const mode of ['light', 'dark']) {
-    const css = await readFile(path.join(root, `src/styles/giscus-${mode}.css`), 'utf8')
-    const selected = css.match(
-      /\.gsc-comment-box:has\(\.gsc-is-fixed-width\) \.gsc-toolbar-item\s*\{([^}]+)\}/,
-    )?.[1]
-    assert.ok(selected, `${mode}: missing fixed-width toolbar state`)
-    assert.match(selected, /color:\s*var\(--color-accent-fg\)/)
-    assert.match(selected, /background-color:\s*var\(--color-accent-subtle\)/)
-    assert.match(selected, /box-shadow:\s*inset 0 0 0 1px var\(--color-accent-muted\)/)
-  }
-})
-
-test('every heading level outranks the article body size', async () => {
-  const style =
-    (await readFile(path.join(root, 'src/styles/global.css'), 'utf8')) +
-    (await readFile(path.join(root, 'src/layouts/BaseLayout.astro'), 'utf8'))
-  const rem = (declaration) => {
-    const value = style.match(
-      new RegExp(`(?:^|\\n)\\s*${declaration}\\s*\\{[^}]*?font-size:\\s*([\\d.]+)rem`, 's'),
-    )?.[1]
-    assert.ok(value, `missing font-size for ${declaration}`)
-    return Number(value)
-  }
-  const body = rem(':global\\(body\\)')
-  const deep = 'h4,\\nh5,\\nh6'
-  for (const selector of ['h2', 'h3', deep]) {
-    assert.ok(rem(selector) >= body, `${selector} does not outrank the ${body}rem article body`)
-  }
-  assert.ok(rem('h2') > rem('h3'), 'h2 must outrank h3')
-  assert.ok(rem('h3') > rem(deep), 'h3 must outrank h4/h5/h6')
 })
 
 test('code comments meet AA contrast on the code fill', () => {

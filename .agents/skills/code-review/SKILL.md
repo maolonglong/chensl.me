@@ -69,5 +69,5 @@ A rubric of traps, not a second copy of the contracts: `AGENTS.md`, `docs/design
 ### Checks & ship — [maintenance.md](../../../docs/maintenance.md#shipping-and-deployment)
 
 - Regexes over HTML or paths: `replace('*', …)` escapes one match, so use `replaceAll`; tag matchers ignore case and allow attributes on end tags (`8bb9190`, `25cc570`).
-- Expected values derive from the contract, not from the code under test. A weakened assertion that turns a check green is a hit.
+- Expected values derive from the contract, not from the code under test. A weakened assertion that turns a check green is a hit, and so is a test that recomputes its expectation with the code's own formula, or one that matches source text instead of rendered or computed output.
 - Dependency bumps: exact-pinned packages (`astro`, `@astrojs/*`, `@playwright/test`, `oxlint`, `fontverter`, `harfbuzzjs`, `subset-font`) move together with `pnpm-lock.yaml`; follow [Dependency upgrades](../../../docs/maintenance.md#dependency-upgrades). A new `minimumReleaseAgeExclude` entry bypasses the release-age quarantine and needs a stated reason.
