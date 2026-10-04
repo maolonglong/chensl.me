@@ -145,26 +145,27 @@ try {
 const headers = outputFiles.has('_headers')
   ? await readFile(path.join(outputDir, '_headers'), 'utf8')
   : ''
-const globalHeaders = headers.match(/^\/\*\s*\n((?:[ \t].*(?:\n|$))*)/m)?.[1] ?? ''
-const csp = globalHeaders.match(/^\s*Content-Security-Policy:\s*(.+)$/im)?.[1]
-const imgSourceTokens =
-  csp
-    ?.match(/(?:^|;)\s*img-src\s+([^;]+)/i)?.[1]
+// The indented header lines under one `_headers` route.
+const headerRule = (route) =>
+  headers.match(
+    new RegExp(`^${route.replace(/[.*]/g, '\\$&')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`, 'm'),
+  )?.[1] ?? ''
+// The source list of one CSP directive; empty when the policy does not set it.
+const sources = (policy, directive) =>
+  policy
+    ?.match(new RegExp(`(?:^|;)\\s*${directive}\\s+([^;]+)`, 'i'))?.[1]
     .trim()
     .split(/\s+/) ?? []
-if (!csp || imgSourceTokens.length === 0) {
+const csp = headerRule('/*').match(/^\s*Content-Security-Policy:\s*(.+)$/im)?.[1]
+const imgSourceTokens = sources(csp, 'img-src')
+if (!imgSourceTokens.length) {
   errors.push('dist/_headers must define img-src in the global Content-Security-Policy')
 }
 for (const [directive, source] of [
   ['frame-src', 'https://giscus.app'],
   ['connect-src', 'https://cloudflareinsights.com'],
 ]) {
-  const tokens =
-    csp
-      ?.match(new RegExp(`(?:^|;)\\s*${directive}\\s+([^;]+)`, 'i'))?.[1]
-      .trim()
-      .split(/\s+/) ?? []
-  if (!tokens.includes(source)) {
+  if (!sources(csp, directive).includes(source)) {
     errors.push(`dist/_headers CSP ${directive} must allow ${source}`)
   }
 }
@@ -182,13 +183,8 @@ for (const [file, html] of htmlByFile) {
   )
   if (!scriptPolicies.length) errors.push(`${file} needs a hash-based script CSP`)
   for (const policy of scriptPolicies) {
-    const tokens = (
-      policy.match(/(?:^|;)\s*script-src\s+([^;]+)/)?.[1] ??
-      policy.match(/(?:^|;)\s*default-src\s+([^;]+)/)?.[1] ??
-      ''
-    )
-      .trim()
-      .split(/\s+/)
+    const scriptSources = sources(policy, 'script-src')
+    const tokens = scriptSources.length ? scriptSources : sources(policy, 'default-src')
     if (
       tokens.includes("'unsafe-inline'") ||
       tokens.includes("'unsafe-eval'") ||
@@ -203,10 +199,7 @@ for (const [file, html] of htmlByFile) {
 }
 // Workers Assets defaults to `max-age=0, must-revalidate`, which would revalidate every font.
 for (const immutable of ['/_astro/fonts/*', '/css/*']) {
-  const rule =
-    headers.match(
-      new RegExp(`^${immutable.replaceAll('*', '\\*')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`, 'm'),
-    )?.[1] ?? ''
+  const rule = headerRule(immutable)
   if (!/^\s*Cache-Control:.*\bimmutable\b/im.test(rule)) {
     errors.push(
       `dist/_headers must mark ${immutable} as immutable so fingerprinted assets are not revalidated`,
@@ -294,18 +287,12 @@ for (const [file, html] of htmlByFile) {
 
 const markdownFiles = new Set([...outputFiles].filter((file) => /^blog\/.+\/index\.md$/.test(file)))
 // Local Wrangler adds UTF-8 to text/* automatically, masking missing production headers.
-for (const [present, route, type] of [
-  [outputFiles.has('llms.txt'), '/llms.txt', 'text/plain'],
-  [markdownFiles.size > 0, '/blog/*/index.md', 'text/markdown'],
+for (const [route, type] of [
+  ['/llms.txt', 'text/plain'],
+  ['/blog/*/index.md', 'text/markdown'],
 ]) {
-  if (!present) continue
-  const rule = headers.match(
-    new RegExp(
-      `^${route.replaceAll('.', '\\.').replaceAll('*', '\\*')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`,
-      'm',
-    ),
-  )?.[1]
-  if (!new RegExp(`^\\s*Content-Type:\\s*${type};\\s*charset=utf-8\\s*$`, 'im').test(rule ?? '')) {
+  const rule = headerRule(route)
+  if (!new RegExp(`^\\s*Content-Type:\\s*${type};\\s*charset=utf-8\\s*$`, 'im').test(rule)) {
     errors.push(`dist/_headers must set ${type}; charset=utf-8 for ${route}`)
   }
 }
