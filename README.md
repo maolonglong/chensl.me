@@ -25,7 +25,7 @@ pnpm exec wrangler deploy --dry-run   # validate Cloudflare configuration after 
 
 Regression tests build disposable Astro fixtures. TypeScript stays on 6.x because the current `astro check` does not support TypeScript 7.
 
-Components own their scoped styles and compiled scripts; `src/styles/global.css` holds design tokens and Markdown typography. Prerendering runs in Node with build-time image optimization, so the Giscus theme CSS route and the RSS endpoint can use Node APIs. Sessions are disabled; no KV or Cloudflare Images resource is required.
+Components own their scoped styles and compiled scripts; `src/styles/global.css` holds design tokens and Markdown typography. Prerendering runs in Node with build-time image optimization; the Giscus theme CSS route reads its stylesheets with `node:fs`. Sessions are disabled; no KV or Cloudflare Images resource is required.
 
 ## Deployment
 

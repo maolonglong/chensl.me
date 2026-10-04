@@ -43,7 +43,7 @@ A rubric of traps, not a second copy of the contracts: `AGENTS.md`, `docs/design
 - Each Action calls `requireQuota` with its own limiter; sharing a budget or omitting one is a hit (`287be50`). A new limiter is a new account resource on deploy.
 - A write followed by a read is one `env.VOTES.batch`; two round trips let the count miss the caller's vote.
 - Middleware keeps the same-origin check and `Cache-Control: private, no-store` on every Action response, errors included. The `__Host-blog-voter` cookie needs `Secure`, `Path=/` and no `Domain`; adding `domain` makes browsers drop it.
-- In flight, `Upvote.astro` sets `aria-busy`; `disabled` drops keyboard focus (`9da965d`). Success is announced through the polite live region.
+- Feedback is optimistic: a click disables, colors and increments the button before the Action resolves, and native `disabled` is deliberate (`bfa3a4d`). Awaiting the response, rolling back, or showing an error is a hit. Success is announced through the polite live region.
 - New migrations need remote application before the code deploys, with authorization. Pushing `main` deploys without waiting for CI, and a version preview URL shares production bindings, so a vote test there writes to production D1.
 
 ### Content — [maintenance.md](../../../docs/maintenance.md#content-and-rss)
@@ -62,7 +62,7 @@ A rubric of traps, not a second copy of the contracts: `AGENTS.md`, `docs/design
 - Hover and touch are separate branches: pointer-only affordances sit behind `@media (hover: hover)`, and specs select capability with `test.use({ hasTouch })`; `open()` asserts it. Viewport width alone reproduces neither.
 - Dismissal state survives until every input has left. Escape-dismissed contents stayed dismissed only until the pointer left, then focus reopened it (`379176f`). Walk hover, focus, resize and scroll.
 - Scroll boxes (`.highlight`, `.table-scroll`) are focusable `role=region` wrappers with a label and an unclipped focus ring; the `<table>` itself never becomes `display:block` (`b32e2dd`, `82d1217`). No `title` attribute on the code wrapper.
-- The scroll box carries the code fill, since iOS rubber-band exposes whatever sits behind it (`da19164`). At 320px the copy button leaves the first line readable (`f48a91b`); copy failure text persists (`ff1476d`).
+- The scroll box carries the code fill, since iOS rubber-band exposes whatever sits behind it (`da19164`). At 320px the copy button leaves the first line readable (`f48a91b`); copy feedback is the icon plus a status announcement, with no visible failure text or layout shift (`bfa3a4d`).
 - Decorative glyphs are `aria-hidden`, never headings (`2d9e213`). Contents, theme and upvote work without JavaScript.
 - Colors come from `global.css` tokens; a new chromatic value is registered in `docs/design.md` first, and ink-blue means link only. Fonts: JinKai W04 alone, synthesized bold off, 640 KiB cold-visit budget (`tests/fonts.test.mjs`).
 
