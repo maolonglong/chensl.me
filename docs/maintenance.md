@@ -18,7 +18,7 @@ Preserve the ordering in `astro.config.mjs`: Astro hashes and emits the trusted 
 
 Both Astro's meta CSP and Cloudflare's `public/_headers` policy apply independently. Allow any required third-party frame or connection source in both. Keep `frame-ancestors` in the HTTP policy because a meta policy cannot enforce it. Inline styles remain allowed for Shiki and the no-script fallback.
 
-Verify with the production-preview browser check, which deliberately attempts and asserts rejection of untrusted inline scripts and event handlers.
+Verify with `e2e/page-shell.spec.mjs`, which runs against the production preview and asserts that untrusted inline scripts and event handlers are rejected.
 
 ## Content and RSS
 

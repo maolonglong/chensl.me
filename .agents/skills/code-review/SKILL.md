@@ -68,9 +68,6 @@ A rubric of traps, not a second copy of the contracts: `AGENTS.md`, `docs/design
 
 ### Checks & ship — [maintenance.md](../../../docs/maintenance.md#shipping-and-deployment)
 
-- Regexes over HTML or paths: `replace('*', …)` escapes one match, so use `replaceAll`; tag matchers ignore case and allow attributes on end tags; share one `escapeRegExp` (`8bb9190`, `25cc570`).
+- Regexes over HTML or paths: `replace('*', …)` escapes one match, so use `replaceAll`; tag matchers ignore case and allow attributes on end tags (`8bb9190`, `25cc570`).
 - Expected values derive from the contract, not from the code under test. A weakened assertion that turns a check green is a hit.
-- `pnpm test:e2e` owns port 8790, `dist/`, `test-results/` and `playwright-report/`; overlapping runs fail with misleading errors. Upvote specs write votes, so `SITE_URL` stays loopback.
 - Dependency bumps: exact-pinned packages (`astro`, `@astrojs/*`, `@playwright/test`, `oxlint`, `fontverter`, `harfbuzzjs`, `subset-font`) move together with `pnpm-lock.yaml`; follow [Dependency upgrades](../../../docs/maintenance.md#dependency-upgrades). A new `minimumReleaseAgeExclude` entry bypasses the release-age quarantine and needs a stated reason.
-- Deployment is Cloudflare's Git integration, independent of CI. The commit body reports pushed, CI passed and deployed separately.
-- `dist/`, `.astro/`, `.wrangler/` and `worker-configuration.d.ts` stay out of the diff. Installed skills and `skills-lock.json` change through `npx skills` only.
