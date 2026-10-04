@@ -1,57 +1,55 @@
-import { expect, expectAll, test } from './site.mjs'
+import { apart, expect, expectAll, inside, test } from './site.mjs'
+
+// Runs in the page. Self-contained: Playwright serializes it.
+function probe() {
+  const box = (selector) =>
+    document.querySelector(selector)?.getBoundingClientRect().toJSON() ?? null
+  const button = document.querySelector('.back-to-top')
+  return {
+    visible: !!button && getComputedStyle(button).visibility === 'visible',
+    button: box('.back-to-top'),
+    main: box('main'),
+    footer: box('body > footer'),
+    comments: box('.comments'),
+    width: innerWidth,
+    height: innerHeight,
+  }
+}
 
 // The button waits a screen down, then floats clear of the footer, the comments, and, when there
 // is room, the text column.
 for (const width of [320, 390, 768, 1280]) {
-  test(`back-to-top hides at the top and floats clear at ${width}px`, async ({ page, open }) => {
+  test(`back-to-top hides at the top and floats clear at ${width}px`, async ({
+    page,
+    open,
+    settle,
+  }) => {
     await page.setViewportSize({ width, height: 844 })
     await open('/blog/dockertest/')
     for (const size of ['100%', '200%']) {
-      const top = await page.evaluate(async (size) => {
+      await page.evaluate((size) => {
         document.documentElement.style.fontSize = size
-        const button = document.querySelector('.back-to-top')
-        const settle = () =>
-          new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
-        const box = (element) => element.getBoundingClientRect()
-        const apart = (a, b) =>
-          a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top
         scrollTo(0, 0)
-        await settle()
-        const hiddenAtTop = !button || getComputedStyle(button).visibility === 'hidden'
-        scrollTo(0, document.documentElement.scrollHeight)
-        await settle()
-        const b = button ? box(button) : null
-        const result = {
-          hiddenAtTop,
-          visible: !!button && getComputedStyle(button).visibility === 'visible',
-          inViewport:
-            !!b &&
-            b.width >= 44 &&
-            b.height >= 44 &&
-            b.left >= 0 &&
-            b.right <= innerWidth &&
-            b.top >= 0 &&
-            b.bottom <= innerHeight,
-          clearOfFooter: !!b && apart(b, box(document.querySelector('body > footer'))),
-          clearOfComments: !!b && apart(b, box(document.querySelector('.comments'))),
-          outsideColumn: !!b && b.left >= box(document.querySelector('main')).right,
-          columnOffset: b ? Math.round(box(document.querySelector('main')).right - b.right) : null,
-        }
-        document.documentElement.style.fontSize = ''
-        scrollTo(0, 0)
-        return result
       }, size)
-      expectAll(`/blog/dockertest/ back-to-top at ${width}px / ${size}`, top, {
-        'hidden at the top': top.hiddenAtTop,
-        'visible at the bottom': top.visible,
-        'a 44px target inside the view': top.inViewport,
-        'clear of the footer': top.clearOfFooter,
-        'clear of the comments': top.clearOfComments,
+      await settle(page)
+      const top = await page.evaluate(probe)
+      await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))
+      await settle(page)
+      const end = await page.evaluate(probe)
+      const button = end.button
+      const besideColumn = button?.left >= end.main.right
+      expectAll(`/blog/dockertest/ back-to-top at ${width}px / ${size}`, end, {
+        'hidden at the top': !top.visible,
+        'visible at the bottom': end.visible,
+        'a 44px target inside the view':
+          inside(button, end) && button.width >= 44 && button.height >= 44,
+        'clear of the footer': !!button && apart(button, end.footer),
+        'clear of the comments': !!button && apart(button, end.comments),
         // Without room beside the column, the button still hangs from its right edge.
         "on the column's right edge or beside it":
-          top.outsideColumn || Math.abs(top.columnOffset) <= 1,
+          besideColumn || Math.abs(end.main.right - button?.right) <= 1,
         ...(width === 1280 &&
-          size === '100%' && { 'beside the column when there is room': top.outsideColumn }),
+          size === '100%' && { 'beside the column when there is room': besideColumn }),
       })
     }
   })
@@ -61,6 +59,7 @@ for (const width of [320, 390, 768, 1280]) {
 test('back-to-top follows resizes across the one-screen threshold without scrolling', async ({
   page,
   open,
+  settle,
 }) => {
   await open('/blog/dockertest/')
   await page.evaluate(() => scrollTo(0, 900))
@@ -70,13 +69,11 @@ test('back-to-top follows resizes across the one-screen threshold without scroll
     [844, true],
   ]) {
     await page.setViewportSize({ width: 1280, height })
-    const state = await page.evaluate(async () => {
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-      return {
-        y: scrollY,
-        visible: getComputedStyle(document.querySelector('.back-to-top')).visibility === 'visible',
-      }
-    })
+    await settle(page)
+    const state = await page.evaluate(() => ({
+      y: scrollY,
+      visible: getComputedStyle(document.querySelector('.back-to-top')).visibility === 'visible',
+    }))
     expect
       .soft(state, `Back-to-top must update on resize to ${height}px without scrolling`)
       .toEqual({ y: 900, visible })
@@ -88,13 +85,15 @@ test('back-to-top follows resizes across the one-screen threshold without scroll
 test('back-to-top returns to the top within a second and focuses the site title', async ({
   page,
   open,
+  settle,
 }) => {
   await open('/blog/semantic-view-sql-traps/')
-  const bottom = await page.evaluate(async () => {
-    scrollTo(0, document.documentElement.scrollHeight)
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-    return { scrollY, button: !!document.querySelector('.back-to-top') }
-  })
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))
+  await settle(page)
+  const bottom = await page.evaluate(() => ({
+    scrollY,
+    button: !!document.querySelector('.back-to-top'),
+  }))
   expect(bottom.button, 'Back-to-top button is missing from the longest article').toBe(true)
   await page.locator('.back-to-top').focus()
   await page.keyboard.press('Enter')
