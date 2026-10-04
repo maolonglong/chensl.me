@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs'
 import sitemap from '@astrojs/sitemap'
 import cloudflare from '@astrojs/cloudflare'
 import { unified } from '@astrojs/markdown-remark'
-import { remarkSite, rehypeSite, codeThemes, codeCaption } from './src/lib/markdown.mjs'
+import remarkMath from 'remark-math'
+import { remarkSite, rehypeMath, rehypeSite, codeThemes, codeCaption } from './src/lib/markdown.mjs'
 import { siteFonts } from './src/lib/fonts.mjs'
 
 export default defineConfig({
@@ -71,8 +72,8 @@ export default defineConfig({
   markdown: {
     processor: unified({
       smartypants: false,
-      remarkPlugins: [remarkSite],
-      rehypePlugins: [rehypeSite],
+      remarkPlugins: [remarkSite, remarkMath],
+      rehypePlugins: [rehypeMath, rehypeSite],
       remarkRehype: {
         footnoteLabel: '脚注',
         footnoteBackLabel(referenceIndex, rereferenceIndex) {

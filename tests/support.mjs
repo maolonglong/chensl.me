@@ -132,6 +132,12 @@ echo plain
 
 > [!NOTE]
 > Plain text
+
+Inline $a^2 + b_1$ math.
+
+$$
+f(x) = \\frac{1}{2}
+$$
 `,
       )
       await write(

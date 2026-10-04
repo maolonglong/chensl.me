@@ -79,6 +79,34 @@ for (const width of [320, 479, 481, 599, 601, 768]) {
   })
 }
 
+for (const width of [1280, 390]) {
+  for (const mode of ['light', 'dark']) {
+    test(`display math at ${width}px in ${mode}`, async ({ page, open, capture }) => {
+      await page.setViewportSize({ width, height: 844 })
+      await page.emulateMedia({ colorScheme: mode })
+      await open('/blog/functional-programming/')
+      const wrapper = page.locator('.math-scroll').first()
+      await wrapper.evaluate((element) => element.scrollIntoView({ block: 'center' }))
+      await capture(page, `math-${width}-${mode}`)
+      // Widen the formula past the column: the wrapper scrolls, the page does not.
+      const layout = await wrapper.evaluate((element) => {
+        const row = element.querySelector('math > mrow')
+        for (let step = 0; step < 4; step++)
+          row.append(...[...row.children].map((child) => child.cloneNode(true)))
+        return {
+          scrolls: element.scrollWidth > element.clientWidth,
+          leftAligned:
+            element.querySelector('math').getBoundingClientRect().left ===
+            element.getBoundingClientRect().left,
+        }
+      })
+      expect(layout.scrolls, 'A wide formula scrolls inside its wrapper').toBe(true)
+      expect(layout.leftAligned, 'A wide formula starts at the left edge').toBe(true)
+      await capture(page, `math-wide-${width}-${mode}`)
+    })
+  }
+}
+
 test('code caption in both color schemes', async ({ page, open, capture }) => {
   await page.emulateMedia({ colorScheme: 'light' })
   await open('/blog/dockertest/')

@@ -306,6 +306,28 @@ pre code {
     margin-block: 0;
 }
 
+/* -------------------------------------------------------------------- math */
+
+/* Firefox and Safari ignore Temml's inline `display: block math`. */
+math[display='block'] {
+    display: block;
+}
+
+.math-scroll {
+    margin-block: 1.5em;
+    overflow-x: auto;
+}
+
+.math-scroll:focus-visible {
+    outline-offset: 4px;
+}
+
+/* Center a short formula, but let a wide one start at the left edge so it can scroll. */
+.math-scroll math {
+    width: max-content;
+    min-width: 100%;
+}
+
 /* ------------------------------------------------------------------ tables */
 
 /* The wrapper scrolls so the <table> keeps its role in the accessibility tree. */

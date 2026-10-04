@@ -6,7 +6,7 @@ import { test } from 'node:test'
 import { remarkSite } from '../src/lib/markdown.mjs'
 import { behaviorFixture, root } from './support.mjs'
 
-// Markdown output contracts: images, RSS URLs, captions, tables, alerts, footnotes, and the TOC.
+// Markdown output contracts: images, RSS URLs, captions, tables, alerts, footnotes, math, and the TOC.
 
 function imageWithAlt(html, alt) {
   const tag = html.match(new RegExp(`<img\\b[^>]*alt="${alt}"[^>]*>`))?.[0]
@@ -173,6 +173,33 @@ test('an alert marker followed by inline markup leaves no empty text node', () =
     body.children.map((child) => child.type),
     ['strong', 'text'],
   )
+})
+
+test('TeX math renders to native MathML in pages and RSS', async () => {
+  const { dist } = await behaviorFixture()
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  const feed = spawnSync(
+    'python3',
+    [
+      '-c',
+      'import sys, xml.etree.ElementTree as E; print(E.fromstring(sys.stdin.read()).find("channel/item/{http://purl.org/rss/1.0/modules/content/}encoded").text)',
+    ],
+    { input: await readFile(path.join(dist, 'index.xml'), 'utf8'), encoding: 'utf8' },
+  )
+  assert.equal(feed.status, 0, feed.stderr)
+  for (const output of [html, feed.stdout]) {
+    const inline = output.match(/Inline (<math\b[^>]*>[\s\S]*?<\/math>) math/)?.[1]
+    assert.ok(inline, 'missing inline math')
+    assert.doesNotMatch(inline, /display="block"/)
+    assert.match(inline, /<msup>\s*<mi>a<\/mi>\s*<mn>2<\/mn>\s*<\/msup>/)
+    const block = output.match(
+      /<div class="math-scroll"[^>]*>\s*<math\b[^>]*display="block"[^>]*>[\s\S]*?<\/math>/,
+    )?.[0]
+    assert.ok(block, 'missing display math in its scroll wrapper')
+    assert.match(block, /^<div[^>]*tabindex="0"[^>]*role="region"[^>]*aria-label="公式"/)
+    assert.match(block, /<mfrac>\s*<mn>1<\/mn>\s*<mn>2<\/mn>\s*<\/mfrac>/)
+    assert.doesNotMatch(output, /\$\$|\$a\^2|language-math/)
+  }
 })
 
 test('native footnotes preserve accessible labels and distinct repeated backreferences', async () => {

@@ -1,4 +1,5 @@
 import { visit, SKIP } from 'unist-util-visit'
+import temml from 'temml'
 
 const element = (tagName, properties, children) => ({
   type: 'element',
@@ -35,6 +36,35 @@ export function remarkSite() {
           ),
         ],
       })
+    })
+  }
+}
+
+// remark-math emits `code.math-inline` and `pre > code.math-display`. Replace them with MathML
+// before rehypeSite wraps the `pre` as a code block. Astro parses the raw nodes later.
+export function rehypeMath() {
+  return (tree) => {
+    visit(tree, 'element', (node, index, parent) => {
+      const code = node.tagName === 'pre' ? node.children[0] : node
+      const classes = code?.properties?.className ?? []
+      if (code?.tagName !== 'code' || !classes.includes('language-math')) return
+      const displayMode = node !== code
+      const math = {
+        type: 'raw',
+        value: temml.renderToString(code.children[0]?.value ?? '', {
+          displayMode,
+          throwOnError: true,
+        }),
+      }
+      // Like tables, a wide display formula scrolls inside a focusable wrapper, not the page.
+      parent.children[index] = displayMode
+        ? element(
+            'div',
+            { className: ['math-scroll'], tabIndex: 0, role: 'region', ariaLabel: '公式' },
+            [math],
+          )
+        : math
+      return SKIP
     })
   }
 }
