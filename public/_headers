@@ -6,6 +6,15 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
 
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+
+/blog/*/index.md
+  Content-Type: text/markdown; charset=utf-8
+
+/downloads/semantic-view-sql-traps.sql
+  Content-Type: application/sql; charset=utf-8
+
 /_astro/fonts/*
   Cache-Control: public, max-age=31536000, immutable
 

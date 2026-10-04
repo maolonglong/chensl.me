@@ -297,6 +297,22 @@ const articlePages = new Set(
   [...outputFiles].filter((file) => /^blog\/.+\/index\.html$/.test(file)),
 )
 const markdownFiles = new Set([...outputFiles].filter((file) => /^blog\/.+\/index\.md$/.test(file)))
+// Local Wrangler adds UTF-8 to text/* automatically, masking missing production headers.
+for (const [present, route, type] of [
+  [outputFiles.has('llms.txt'), '/llms.txt', 'text/plain'],
+  [markdownFiles.size > 0, '/blog/*/index.md', 'text/markdown'],
+]) {
+  if (!present) continue
+  const rule = headers.match(
+    new RegExp(
+      `^${route.replaceAll('.', '\\.').replaceAll('*', '\\*')}\\s*\\n((?:[ \\t].*(?:\\n|$))*)`,
+      'm',
+    ),
+  )?.[1]
+  if (!new RegExp(`^\\s*Content-Type:\\s*${type};\\s*charset=utf-8\\s*$`, 'im').test(rule ?? '')) {
+    errors.push(`dist/_headers must set ${type}; charset=utf-8 for ${route}`)
+  }
+}
 for (const page of articlePages) {
   if (!markdownFiles.has(page.replace(/\.html$/, '.md'))) {
     errors.push(`${page} is missing Markdown export`)

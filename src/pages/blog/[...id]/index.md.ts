@@ -17,6 +17,7 @@ export function GET({ props, site }: APIContext) {
     ...(post.data.updatedDate ? [`Updated: ${displayDate(post.data.updatedDate)}`] : []),
     `Canonical: ${new URL(postUrl(post), site)}`,
   ].join('\n')
+  // Keep dev responses UTF-8; production static assets rely on public/_headers.
   return new Response(`${header}\n\n${post.body ?? ''}`, {
     headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
   })

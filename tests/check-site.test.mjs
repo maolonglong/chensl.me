@@ -29,6 +29,34 @@ async function checkerFixture() {
   return fixture
 }
 
+for (const type of ['text/plain', 'text/markdown']) {
+  test(`site checker requires a UTF-8 charset rule for ${type} exports`, async () => {
+    const fixture = await checkerFixture()
+    await write(fixture, 'dist/blog/nested/article/index.html', '<article>Article</article>')
+    await write(fixture, 'dist/blog/nested/article/index.md', '# Article\n')
+    await write(
+      fixture,
+      'dist/llms.txt',
+      '- [Article](https://chensl.me/blog/nested/article/index.md)\n',
+    )
+    const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
+    // Supply valid rules independently of the source configuration, then remove one charset.
+    const otherHeaders = headers.replace(
+      /^\/(?:llms\.txt|blog\/\*\/index\.md)\s*\n(?:[ \t].*(?:\n|$))*/gm,
+      '',
+    )
+    const validHeaders = `${otherHeaders}\n/llms.txt\n  Content-Type: text/plain; charset=utf-8\n\n/blog/*/index.md\n  Content-Type: text/markdown; charset=utf-8\n`
+    await write(fixture, 'dist/_headers', validHeaders)
+    const valid = run(process.execPath, [checker], fixture)
+    assert.equal(valid.status, 0, valid.stderr)
+
+    await write(fixture, 'dist/_headers', validHeaders.replace(`${type}; charset=utf-8`, type))
+    const result = run(process.execPath, [checker], fixture)
+    assert.equal(result.status, 1, result.stdout)
+    assert.ok(result.stderr.includes(`${type}; charset=utf-8`), result.stderr)
+  })
+}
+
 test('site checker rejects unpaired article pages and Markdown exports', async () => {
   const fixture = await checkerFixture()
   await write(fixture, 'dist/blog/page-only/index.html', '<article>Missing export</article>')

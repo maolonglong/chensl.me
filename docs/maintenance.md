@@ -28,6 +28,8 @@ Pages and RSS must share Astro-rendered collection content and optimized local i
 
 Published articles also provide `/blog/<id>/index.md`, discovered through the article's alternate link and `/llms.txt`. The export preserves the original Markdown body; relative collection images are published at their original paths so readers can resolve them without changing the text. These originals add static assets alongside the optimized images used by pages and RSS. Exports follow the same publication rules and rebuild schedule as article pages.
 
+Export charsets come from `public/_headers` and are enforced by the build checks: local Wrangler previews automatically add UTF-8 to `text/*`, masking the missing production charset, so verify production response headers with `curl -sI` after deployment.
+
 ## Upvotes and D1
 
 Read `src/actions/index.ts`, `wrangler.jsonc`, and the relevant migrations before changing vote behavior.
