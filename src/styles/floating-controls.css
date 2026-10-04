@@ -86,7 +86,7 @@ body:has(.toc-button) {
 .toc a {
     display: block;
     padding-block: 12px;
-    text-decoration: none;
+    text-decoration-line: none;
 }
 
 .toc ul ul a {
@@ -95,8 +95,7 @@ body:has(.toc-button) {
 
 /* The current entry is underlined like the current page in the header. */
 .toc a[aria-current] {
-    text-decoration: underline;
-    text-decoration-thickness: 0.08em;
+    text-decoration-line: underline;
     text-underline-offset: 0.25em;
 }
 

@@ -112,17 +112,18 @@ em {
     text-emphasis-position: under right;
 }
 
+/* Underline geometry for every link; each context decides whether to draw the line. */
 a {
     color: var(--link-color);
-    text-decoration: none;
+    text-decoration-line: none;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
 }
 
 @media (hover: hover) {
     a:hover {
         color: var(--link-hover-color);
-        text-decoration: underline;
-        text-decoration-thickness: 0.08em;
-        text-underline-offset: 0.2em;
+        text-decoration-line: underline;
     }
 }
 
@@ -214,9 +215,7 @@ cite {
 
 /* Running-text links are underlined so they never depend on color alone. */
 .prose a:not([data-footnote-ref]) {
-    text-decoration: underline;
-    text-decoration-thickness: 0.08em;
-    text-underline-offset: 0.2em;
+    text-decoration-line: underline;
 }
 
 blockquote {
