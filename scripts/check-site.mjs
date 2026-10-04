@@ -37,62 +37,40 @@ function decodeXmlEntities(value) {
   )
 }
 
-function pageUrlFor(file, basePath, siteOrigin) {
+function pageUrlFor(file) {
   const relative = path.relative(outputDir, file).split(path.sep).join('/')
-  if (relative.endsWith('index.html')) {
-    return `${siteOrigin}${basePath}${relative.slice(0, -'index.html'.length)}`
-  }
-  return `${siteOrigin}${basePath}${relative}`
+  const page = relative.endsWith('index.html') ? relative.slice(0, -'index.html'.length) : relative
+  return `${siteOrigin}/${page}`
 }
 
-function isInternalUrl(value, file, basePath, siteOrigin) {
+// Resolves an attribute value against its page; null when the value is not a valid URL.
+function resolveUrl(value, file) {
   try {
-    const url = new URL(value.replaceAll('&amp;', '&'), pageUrlFor(file, basePath, siteOrigin))
-    return (url.protocol === 'http:' || url.protocol === 'https:') && url.origin === siteOrigin
+    return new URL(value.replaceAll('&amp;', '&'), pageUrlFor(file))
   } catch {
-    return true
-  }
-}
-
-function isSvgUrl(value, file, basePath, siteOrigin) {
-  try {
-    return new URL(value.replaceAll('&amp;', '&'), pageUrlFor(file, basePath, siteOrigin)).pathname
-      .toLowerCase()
-      .endsWith('.svg')
-  } catch {
-    return false
-  }
-}
-
-function relativePathWithinBase(pathname, basePath) {
-  if (basePath === '/') {
-    return pathname.replace(/^\/+/, '')
-  }
-  if (pathname === basePath.slice(0, -1)) {
-    return ''
-  }
-  if (!pathname.startsWith(basePath)) {
     return null
   }
-  return pathname.slice(basePath.length)
 }
 
-function internalReferenceError(value, file, outputFiles, anchorsByFile, basePath, siteOrigin) {
-  let url
-  try {
-    url = new URL(value.replaceAll('&amp;', '&'), pageUrlFor(file, basePath, siteOrigin))
-  } catch {
+function isInternalUrl(value, file) {
+  const url = resolveUrl(value, file)
+  // A malformed URL counts as internal so internalReferenceError reports it.
+  return (
+    !url || ((url.protocol === 'http:' || url.protocol === 'https:') && url.origin === siteOrigin)
+  )
+}
+
+function internalReferenceError(value, file) {
+  const url = resolveUrl(value, file)
+  if (!url) {
     return `contains malformed URL ${JSON.stringify(value)}`
   }
 
   let relative
   try {
-    relative = relativePathWithinBase(decodeURIComponent(url.pathname), basePath)
+    relative = decodeURIComponent(url.pathname).replace(/^\/+/, '')
   } catch {
     return `contains malformed URL encoding ${JSON.stringify(value)}`
-  }
-  if (relative === null) {
-    return `references URL outside the site base path ${JSON.stringify(value)}`
   }
 
   const candidates = new Set([relative])
@@ -224,19 +202,11 @@ const canonicalTag = [...homeHtml.matchAll(/<link\b[^>]*>/gi)].find((match) =>
     .some((value) => value.toLowerCase() === 'canonical'),
 )?.[0]
 const canonicalUrl = canonicalTag ? getAttributes(canonicalTag).get('href') : null
-let basePath = '/'
 let siteOrigin = 'https://site.invalid'
 try {
-  if (!canonicalUrl) {
-    throw new Error('missing canonical URL')
-  }
-  const parsedCanonical = new URL(canonicalUrl)
-  siteOrigin = parsedCanonical.origin
-  basePath = parsedCanonical.pathname
-  basePath = `/${basePath.replace(/^\/+|\/+$/g, '')}`
-  basePath = basePath === '/' ? basePath : `${basePath}/`
+  siteOrigin = new URL(canonicalUrl).origin
 } catch {
-  errors.push('Unable to determine the site base path from dist/index.html')
+  errors.push('Unable to determine the site origin from the dist/index.html canonical URL')
 }
 
 const anchorsByFile = new Map()
@@ -265,15 +235,8 @@ for (const [file, html] of htmlByFile) {
     const url = attributes.get(
       lowerTag.startsWith('<a') || lowerTag.startsWith('<link') ? 'href' : 'src',
     )
-    if (url && isInternalUrl(url, file, basePath, siteOrigin)) {
-      const error = internalReferenceError(
-        url,
-        file,
-        outputFiles,
-        anchorsByFile,
-        basePath,
-        siteOrigin,
-      )
+    if (url && isInternalUrl(url, file)) {
+      const error = internalReferenceError(url, file)
       if (error) {
         errors.push(`${relative} ${error}`)
       }
@@ -290,12 +253,7 @@ for (const [file, html] of htmlByFile) {
       errors.push(`${relative} contains an image without lazy loading and async decoding`)
     }
     const src = attributes.get('src') ?? ''
-    let imageUrl
-    try {
-      imageUrl = new URL(src.replaceAll('&amp;', '&'), pageUrlFor(file, basePath, siteOrigin))
-    } catch {
-      imageUrl = null
-    }
+    const imageUrl = resolveUrl(src, file)
     // ponytail: supports our CSP's self/data/exact HTTPS origins; extend with tests before adopting wildcards or path sources.
     const imageAllowed =
       imageUrl &&
@@ -306,8 +264,8 @@ for (const [file, html] of htmlByFile) {
       errors.push(`${relative} contains an image blocked by CSP img-src: ${JSON.stringify(src)}`)
     }
     if (
-      isInternalUrl(src, file, basePath, siteOrigin) &&
-      !isSvgUrl(src, file, basePath, siteOrigin) &&
+      isInternalUrl(src, file) &&
+      !imageUrl?.pathname.toLowerCase().endsWith('.svg') &&
       (!attributes.has('width') || !attributes.has('height'))
     ) {
       errors.push(
@@ -320,19 +278,8 @@ for (const [file, html] of htmlByFile) {
     const attributes = getAttributes(match[0])
     const key = (attributes.get('property') ?? attributes.get('name') ?? '').toLowerCase()
     const value = attributes.get('content')
-    if (
-      (key === 'og:image' || key === 'twitter:image') &&
-      value &&
-      isInternalUrl(value, file, basePath, siteOrigin)
-    ) {
-      const error = internalReferenceError(
-        value,
-        file,
-        outputFiles,
-        anchorsByFile,
-        basePath,
-        siteOrigin,
-      )
+    if ((key === 'og:image' || key === 'twitter:image') && value && isInternalUrl(value, file)) {
+      const error = internalReferenceError(value, file)
       if (error) errors.push(`${relative} ${error}`)
     }
   }
@@ -410,14 +357,13 @@ for (const { file, xml } of xmlDocuments) {
 const manifestPath = path.join(outputDir, 'site.webmanifest')
 if (existsSync(manifestPath)) {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
-  const manifestUrl = `${siteOrigin}${basePath}site.webmanifest`
+  const manifestUrl = `${siteOrigin}/site.webmanifest`
   for (const icon of manifest.icons ?? []) {
     const url = new URL(icon.src, manifestUrl)
     if (url.origin !== siteOrigin) {
       continue
     }
-    const target = relativePathWithinBase(url.pathname, basePath)
-    if (target === null || !outputFiles.has(target)) {
+    if (!outputFiles.has(url.pathname.replace(/^\/+/, ''))) {
       errors.push(`site.webmanifest references missing icon ${JSON.stringify(icon.src)}`)
     }
   }
