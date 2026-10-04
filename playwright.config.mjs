@@ -5,17 +5,27 @@ import { defineConfig } from '@playwright/test'
 
 // A dedicated port keeps a preview left running on 8787 from serving stale output to the suite.
 const baseURL = process.env.SITE_URL ?? 'http://localhost:8790'
-const agentBrowserDirectory = join(homedir(), '.agent-browser', 'browsers')
-const orbChrome =
-  process.env.AMP_ORB === '1' && existsSync(agentBrowserDirectory)
-    ? readdirSync(agentBrowserDirectory)
+// Use CHROME_PATH when set, else the system Chrome. Without a system Chrome, as in cloud agent
+// images, use the newest Chrome for Testing that agent-browser installed.
+function chromeLaunchOptions() {
+  if (process.env.CHROME_PATH) return { executablePath: process.env.CHROME_PATH }
+  const system = {
+    darwin: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    linux: '/opt/google/chrome/chrome',
+  }[process.platform]
+  if (!system || existsSync(system)) return { channel: 'chrome' }
+  const directory = join(homedir(), '.agent-browser', 'browsers')
+  const newest = existsSync(directory)
+    ? readdirSync(directory)
         .filter((entry) => entry.startsWith('chrome-'))
-        .sort()
+        .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
         .at(-1)
     : undefined
-const executablePath = orbChrome && join(agentBrowserDirectory, orbChrome, 'chrome')
-if (executablePath && !existsSync(executablePath)) {
-  throw new Error(`Amp orb Chrome for Testing is missing: ${executablePath}`)
+  const executablePath = newest && join(directory, newest, 'chrome')
+  if (executablePath && existsSync(executablePath)) return { executablePath }
+  throw new Error(
+    `No Chrome found: set CHROME_PATH, or install Chrome at ${system} or with agent-browser`,
+  )
 }
 // The upvote specs write to D1, so only a disposable local preview is acceptable.
 if (!['localhost', '127.0.0.1'].includes(new URL(baseURL).hostname)) {
@@ -34,7 +44,7 @@ export default defineConfig({
   outputDir: 'test-results',
   use: {
     baseURL,
-    launchOptions: executablePath ? { executablePath } : { channel: 'chrome' },
+    launchOptions: chromeLaunchOptions(),
     deviceScaleFactor: 2,
     viewport: { width: 1280, height: 844 },
     trace: 'retain-on-failure',
