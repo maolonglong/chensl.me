@@ -179,3 +179,74 @@ test('llms.txt lists absolute Markdown exports newest first with optional descri
     await readFile(path.join(dist, new URL(url).pathname))
   }
 })
+
+let staleBuild
+async function staleFixture() {
+  if (!staleBuild)
+    staleBuild = (async () => {
+      const fixture = await astroProject('astro-stale-notice-')
+      const recent = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+      const writtenNotice = '这篇文章写于两年多以前，部分内容可能已经过时。'
+      const updatedNotice = '这篇文章最后更新于两年多以前，部分内容可能已经过时。'
+      const cases = [
+        { id: 'old', pubDate: '2000-01-01', notice: writtenNotice, hidden: false },
+        {
+          id: 'recently-updated',
+          pubDate: '2000-01-01',
+          updatedDate: recent,
+          notice: updatedNotice,
+          hidden: true,
+        },
+        {
+          id: 'old-update',
+          pubDate: '2000-01-01',
+          updatedDate: '2001-01-01',
+          notice: updatedNotice,
+          hidden: false,
+        },
+        { id: 'fresh', pubDate: recent, notice: writtenNotice, hidden: true },
+      ]
+      for (const { id, pubDate, updatedDate } of cases) {
+        await write(
+          fixture,
+          `src/content/blog/${id}.md`,
+          `${frontmatter(id, pubDate, updatedDate ? `updatedDate: ${updatedDate}\n` : '')}Original body.`,
+        )
+      }
+      return { dist: await buildAstro(fixture), cases }
+    })()
+  return staleBuild
+}
+
+test('stale article notices use the last modification date and stay out of content exports', async () => {
+  const { dist, cases } = await staleFixture()
+  for (const { id, pubDate, updatedDate, notice, hidden } of cases) {
+    const html = await readFile(path.join(dist, `blog/${id}/index.html`), 'utf8')
+    const header = html.match(/<header class="post-header"[^>]*>([\s\S]*?)<\/header>/)?.[1]
+    assert.ok(header, `${id}: missing article header`)
+    const notices = [...header.matchAll(/<p class="post-notice"([^>]*)>([^<]*)<\/p>/g)]
+    assert.deepEqual(
+      notices.map(([, , text]) => text.trim()),
+      [notice],
+      id,
+    )
+    const attributes = notices[0][1]
+    assert.equal(
+      attributes.match(/\bdata-stale-since="([^"]+)"/)?.[1],
+      new Date(updatedDate ?? pubDate).toISOString(),
+      `${id}: last modification date`,
+    )
+    assert.equal(/\shidden(?=\s|$)/.test(attributes), hidden, `${id}: build-time visibility`)
+    assert.match(header, /class="post-meta"[^>]*>[\s\S]*?<\/p>\s*<p class="post-notice"/)
+    const markdown = await readFile(path.join(dist, `blog/${id}/index.md`), 'utf8')
+    assert.doesNotMatch(markdown, /两年多以前|post-notice/)
+    assert.ok(markdown.endsWith('Original body.'))
+  }
+  for (const file of ['index.xml', 'index.html', 'blog/index.html']) {
+    assert.doesNotMatch(
+      await readFile(path.join(dist, file), 'utf8'),
+      /两年多以前|post-notice/,
+      file,
+    )
+  }
+})

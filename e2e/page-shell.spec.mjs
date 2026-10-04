@@ -3,6 +3,102 @@ import { expect, test } from './site.mjs'
 // Home, archive, a long article with code, tables, and a TOC, and the shared 404.
 const pages = ['/', '/blog/', '/blog/dockertest/', '/404.html']
 
+test('old articles show a stale notice after the date', async ({ page, open }) => {
+  await open('/blog/overlayfs/')
+  const notice = page.locator('.post-header > .post-meta + .post-notice')
+  await expect(notice).toHaveText('这篇文章写于两年多以前，部分内容可能已经过时。')
+  await expect(notice).toBeVisible()
+})
+
+test('recent article notice visibility follows the two-year rule', async ({ page, open }) => {
+  await open('/blog/semantic-view-sql-traps/')
+  const notice = page.locator('.post-notice')
+  await expect(notice).toHaveCount(1)
+  const staleSince = await notice.getAttribute('data-stale-since')
+  const cutoff = new Date()
+  cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 2)
+  const expectedStale = Date.parse(staleSince) < cutoff.valueOf()
+  if (expectedStale) await expect(notice).toBeVisible()
+  else await expect(notice).toBeHidden()
+})
+
+test('articles become stale in the browser without a rebuild', async ({ page, open }) => {
+  await page.clock.setFixedTime(new Date('2029-01-01T00:00:00Z'))
+  await open('/blog/semantic-view-sql-traps/')
+  const notice = page.locator('.post-notice')
+  await expect(notice).toHaveText('这篇文章写于两年多以前，部分内容可能已经过时。')
+  await expect(notice).toBeVisible()
+})
+
+test('a clock behind build time does not hide an existing stale notice', async ({ page, open }) => {
+  await page.clock.setFixedTime(new Date('2020-01-01T00:00:00Z'))
+  await open('/blog/overlayfs/')
+  await expect(page.locator('.post-notice')).toBeVisible()
+})
+
+test.describe('stale notices without page scripts', () => {
+  test.use({ javaScriptEnabled: false })
+
+  test('old articles retain their build-time notice', async ({ page, open }) => {
+    await open('/blog/overlayfs/')
+    const notice = page.locator('.post-notice')
+    await expect(notice).toHaveText('这篇文章写于两年多以前，部分内容可能已经过时。')
+    await expect(notice).toBeVisible()
+  })
+
+  test('article notice visibility follows the two-year rule without page scripts', async ({
+    page,
+    open,
+  }) => {
+    await open('/blog/semantic-view-sql-traps/')
+    const notice = page.locator('.post-notice')
+    await expect(notice).toHaveCount(1)
+    const staleSince = await notice.getAttribute('data-stale-since')
+    // The build runs only minutes before this suite, so the current time represents build time.
+    const cutoff = new Date()
+    cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 2)
+    const expectedStale = Date.parse(staleSince) < cutoff.valueOf()
+    if (expectedStale) await expect(notice).toBeVisible()
+    else await expect(notice).toBeHidden()
+  })
+})
+
+for (const width of [375, 1280]) {
+  for (const mode of ['light', 'dark']) {
+    test(`stale article header at ${width}px in ${mode}`, async ({ page, open, capture }) => {
+      await page.setViewportSize({ width, height: 844 })
+      await page.emulateMedia({ colorScheme: mode })
+      await open('/blog/overlayfs/')
+      const notice = page.locator('.post-notice')
+      await expect(notice).toBeVisible()
+      const style = await notice.evaluate((element) => {
+        const notice = getComputedStyle(element)
+        const meta = getComputedStyle(element.previousElementSibling)
+        return {
+          matchesMetadata: notice.fontSize === meta.fontSize && notice.color === meta.color,
+          fontStyle: notice.fontStyle,
+          background: notice.backgroundColor,
+          border: notice.borderWidth,
+          whiteSpace: notice.whiteSpace,
+          gap:
+            element.getBoundingClientRect().top -
+            element.previousElementSibling.getBoundingClientRect().bottom,
+        }
+      })
+      expect(style.matchesMetadata).toBe(true)
+      expect(style.fontStyle).toBe('normal')
+      expect(style.background).toBe('rgba(0, 0, 0, 0)')
+      expect(style.border).toBe('0px')
+      expect(style.whiteSpace).toBe('normal')
+      expect(style.gap).toBeGreaterThanOrEqual(4)
+      expect(style.gap).toBeLessThanOrEqual(8)
+      await expect(notice).not.toHaveAttribute('role', 'alert')
+      await expect(notice).not.toHaveAttribute('aria-live')
+      await capture(page, `stale-header-${width}-${mode}`)
+    })
+  }
+}
+
 test('CSP blocks untrusted inline scripts and event handlers', async ({ page, open }) => {
   await open('/')
   const injection = await page.evaluate(async () => {

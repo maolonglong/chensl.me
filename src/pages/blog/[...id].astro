@@ -6,6 +6,7 @@ import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
 import Upvote from '../../components/Upvote.astro'
 import { publishedPosts, displayDate } from '../../lib/posts'
+import { isStaleSince } from '../../lib/stale'
 export async function getStaticPaths() {
   return (await publishedPosts()).map((post) => ({ params: { id: post.id }, props: { post } }))
 }
@@ -14,14 +15,24 @@ interface Props {
 }
 const { post } = Astro.props
 const { Content, headings } = await render(post)
+const lastModified = post.data.updatedDate ?? post.data.pubDate
 ---
 
-<BaseLayout {...post.data} updatedDate={post.data.updatedDate ?? post.data.pubDate} article>
+<BaseLayout {...post.data} updatedDate={lastModified} article>
   <article class="post">
     <header class="post-header">
       <h1>{post.data.title}</h1>
       <p class="post-meta">
         <time datetime={post.data.pubDate.toISOString()}>{displayDate(post.data.pubDate)}</time>
+      </p>
+      <p
+        class="post-notice"
+        data-stale-since={lastModified.toISOString()}
+        hidden={!isStaleSince(lastModified)}
+      >
+        {post.data.updatedDate
+          ? '这篇文章最后更新于两年多以前，部分内容可能已经过时。'
+          : '这篇文章写于两年多以前，部分内容可能已经过时。'}
       </p>
     </header>
     <FloatingToc headings={headings} />
@@ -34,15 +45,34 @@ const { Content, headings } = await render(post)
   {post.data.comments && <Comments />}
 </BaseLayout>
 
+<script>
+  import { isStaleSince } from '../../lib/stale'
+
+  for (const notice of document.querySelectorAll<HTMLElement>(
+    '.post-notice[data-stale-since][hidden]',
+  )) {
+    const lastModified = new Date(notice.dataset.staleSince!)
+    if (!Number.isNaN(lastModified.valueOf()) && isStaleSince(lastModified)) {
+      notice.removeAttribute('hidden')
+    }
+  }
+</script>
+
 <style>
   .post-header {
     margin-bottom: 40px;
   }
-  .post-meta {
+  .post-meta,
+  .post-notice {
     margin: 0;
     font-size: 0.875rem;
     color: var(--muted-color);
+  }
+  .post-meta {
     font-variant-numeric: tabular-nums;
+  }
+  .post-notice {
+    margin-top: 8px;
   }
   /* Markdown descendants do not carry this component's scope attribute. */
   .prose :global(.astro-code),
