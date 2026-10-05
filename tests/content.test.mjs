@@ -71,6 +71,24 @@ test('Astro rejects misspelled publication fields instead of publishing a draft'
   assert.match(result.stderr + result.stdout, /darft/)
 })
 
+for (const [name, creation, field] of [
+  ['unknown mode', { mode: 'automatic' }, 'mode'],
+  ['missing mode', { note: 'Only a note.' }, 'mode'],
+  ['blank note', { mode: 'ai-assisted', note: '   ' }, 'note'],
+]) {
+  test(`Astro rejects a creation declaration with ${name}`, async () => {
+    const fixture = await astroProject('astro-invalid-creation-')
+    await write(
+      fixture,
+      'src/content/blog/invalid.md',
+      `${frontmatter('Invalid creation', '2025-01-01', `creation: ${JSON.stringify(creation)}\n`)}Body.`,
+    )
+    const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
+    assert.notEqual(result.status, 0, `${name} must fail the build`)
+    assert.match(result.stderr + result.stdout, new RegExp(`creation[\\s\\S]*${field}`))
+  })
+}
+
 test('home, archive, and RSS build without page Markdown entries', async () => {
   const fixture = await astroProject('astro-standalone-pages-')
   await rm(path.join(fixture, 'src/content/home.md'), { force: true })

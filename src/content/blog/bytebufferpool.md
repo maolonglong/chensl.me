@@ -2,6 +2,8 @@
 title: 高性能字节池 - bytebufferpool 源码分析
 pubDate: 2021-06-28T16:19:02+08:00
 description: '分析 bytebufferpool 的设计与实现，探讨高性能字节池的优化策略。'
+creation:
+  mode: handmade
 ---
 
 ## 简介

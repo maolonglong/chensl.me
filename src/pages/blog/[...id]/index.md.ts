@@ -1,6 +1,12 @@
 import type { APIContext } from 'astro'
 import type { CollectionEntry } from 'astro:content'
-import { displayDate, postUrl, publishedPosts } from '../../../lib/posts'
+import {
+  creationLabels,
+  displayDate,
+  escapeMarkdownText,
+  postUrl,
+  publishedPosts,
+} from '../../../lib/posts'
 
 export const prerender = true
 
@@ -10,12 +16,15 @@ export async function getStaticPaths() {
 
 export function GET({ props, site }: APIContext) {
   const post: CollectionEntry<'blog'> = props.post
+  const { creation } = post.data
   const header = [
     `# ${post.data.title}`,
     '',
     `Published: ${displayDate(post.data.pubDate)}`,
     ...(post.data.updatedDate ? [`Updated: ${displayDate(post.data.updatedDate)}`] : []),
     `Canonical: ${new URL(postUrl(post), site)}`,
+    ...(creation ? [`Creation: ${creationLabels[creation.mode]}`] : []),
+    ...(creation?.note ? [`Creation note: ${escapeMarkdownText(creation.note)}`] : []),
   ].join('\n')
   // Keep dev responses UTF-8; production static assets rely on public/_headers.
   return new Response(`${header}\n\n${post.body ?? ''}`, {

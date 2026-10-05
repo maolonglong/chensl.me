@@ -26,6 +26,10 @@ Preserve article IDs and the author's text when editing collection or publicatio
 
 Article headers show a notice when `updatedDate ?? pubDate` is more than two calendar years old, using the same rule from `src/lib/stale.ts` at build time and on each browser visit so articles can become stale without a rebuild when JavaScript runs; without JavaScript, only build-time staleness shows.
 
+Creation declarations are author-supplied metadata, not automated assessments. Optional `creation.mode` is `handmade` (手作, no generative AI involved in creating the article), `ai-assisted` (AI 辅助, author-led content with AI assistance), or `ai-generated` (AI 生成, prose mainly drafted by AI). An omitted `creation` object means undeclared and displays nothing; when the object is present, `mode` is required. Optional `creation.note` describes the specific involvement as nonblank plain text. A label alone makes no claim about human review. Only backfill historical posts from the author's declaration, never from dates or writing style.
+
+The label follows the article date, with an optional note before the stale notice. Both reuse the date's neutral typography without icons, badge surfaces, or interactions. Declarations also appear before RSS content and in Markdown export metadata; the original article body stays unchanged. Home and archive lists omit them.
+
 Pages and RSS must share Astro-rendered collection content and optimized local images. Preserve alt text, dimensions, lazy loading, and absolute RSS resource URLs. Keep the single feed at `/index.xml` and avoid a second Markdown parser. Use Astro's default heading and footnote anchors.
 
 Published articles also provide `/blog/<id>/index.md`, discovered through the article's alternate link and `/llms.txt`. The export preserves the original Markdown body; relative collection images are published at their original paths so readers can resolve them without changing the text. These originals add static assets alongside the optimized images used by pages and RSS. Exports follow the same publication rules and rebuild schedule as article pages.

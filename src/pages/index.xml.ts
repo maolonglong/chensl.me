@@ -6,7 +6,7 @@ import { unified } from 'unified'
 import rehypeParse from 'rehype-parse'
 import rehypeStringify from 'rehype-stringify'
 import { visit } from 'unist-util-visit'
-import { publishedPosts, postUrl } from '../lib/posts'
+import { creationLabels, publishedPosts, postUrl } from '../lib/posts'
 
 const processor = unified().use(rehypeParse, { fragment: true }).use(rehypeStringify)
 
@@ -26,6 +26,20 @@ export async function GET(context: APIContext) {
         // Render through Astro so optimized local image URLs also work in feed readers.
         // Parse HTML before resolving URLs: attributes may contain named or numeric entities.
         const tree = processor.parse(html)
+        const { creation } = post.data
+        if (creation) {
+          tree.children.unshift({
+            type: 'element',
+            tagName: 'p',
+            properties: {},
+            children: [
+              {
+                type: 'text',
+                value: `创作方式：${creationLabels[creation.mode]}${creation.note ? `。${creation.note}` : ''}`,
+              },
+            ],
+          })
+        }
         visit(tree, 'element', (node) => {
           for (const attribute of ['href', 'src']) {
             const value = node.properties[attribute]

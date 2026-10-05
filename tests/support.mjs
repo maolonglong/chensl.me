@@ -11,17 +11,12 @@ import { after } from 'node:test'
 // its own directories.
 
 export const root = path.resolve(import.meta.dirname, '..')
-const temporaryDirectories = []
+const cleanups = []
+after(() => Promise.all(cleanups.map((cleanup) => cleanup())))
 
-after(async () =>
-  Promise.all(
-    temporaryDirectories.map((directory) => rm(directory, { recursive: true, force: true })),
-  ),
-)
-
-export async function temporaryDirectory(prefix) {
+export async function temporaryDirectory(prefix, onCleanup = (cleanup) => cleanups.push(cleanup)) {
   const directory = await mkdtemp(path.join(os.tmpdir(), prefix))
-  temporaryDirectories.push(directory)
+  onCleanup(() => rm(directory, { recursive: true, force: true }))
   return directory
 }
 
@@ -35,8 +30,8 @@ export function run(command, args, cwd) {
   return spawnSync(command, args, { cwd, encoding: 'utf8', env: { ...process.env, TZ: 'UTC' } })
 }
 
-export async function astroProject(prefix) {
-  const fixture = await temporaryDirectory(prefix)
+export async function astroProject(prefix, onCleanup) {
+  const fixture = await temporaryDirectory(prefix, onCleanup)
   for (const relative of [
     'astro.config.mjs',
     'wrangler.jsonc',

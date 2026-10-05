@@ -5,7 +5,7 @@ import FloatingToc from '../../components/FloatingToc.astro'
 import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
 import Upvote from '../../components/Upvote.astro'
-import { publishedPosts, displayDate } from '../../lib/posts'
+import { creationLabels, publishedPosts, displayDate } from '../../lib/posts'
 import { isStaleSince } from '../../lib/stale'
 export async function getStaticPaths() {
   return (await publishedPosts()).map((post) => ({ params: { id: post.id }, props: { post } }))
@@ -16,6 +16,7 @@ interface Props {
 const { post } = Astro.props
 const { Content, headings } = await render(post)
 const lastModified = post.data.updatedDate ?? post.data.pubDate
+const { creation } = post.data
 ---
 
 <BaseLayout {...post.data} updatedDate={lastModified} article>
@@ -24,7 +25,15 @@ const lastModified = post.data.updatedDate ?? post.data.pubDate
       <h1>{post.data.title}</h1>
       <p class="post-meta">
         <time datetime={post.data.pubDate.toISOString()}>{displayDate(post.data.pubDate)}</time>
+        {creation && (
+          <>
+            {' '}
+            <span aria-hidden="true">·</span>{' '}
+            <span class="post-creation">{creationLabels[creation.mode]}</span>
+          </>
+        )}
       </p>
+      {creation?.note && <p class="post-creation-note">{creation.note}</p>}
       <p
         class="post-notice"
         data-stale-since={lastModified.toISOString()}
@@ -60,6 +69,7 @@ const lastModified = post.data.updatedDate ?? post.data.pubDate
     margin-bottom: 40px;
   }
   .post-meta,
+  .post-creation-note,
   .post-notice {
     margin: 0;
     font-size: 0.875rem;
@@ -68,8 +78,15 @@ const lastModified = post.data.updatedDate ?? post.data.pubDate
   .post-meta {
     font-variant-numeric: tabular-nums;
   }
+  .post-creation-note,
   .post-notice {
     margin-top: 8px;
+  }
+  .post-creation {
+    white-space: nowrap;
+  }
+  .post-creation-note {
+    overflow-wrap: anywhere;
   }
   /* Markdown descendants do not carry this component's scope attribute. */
   .prose :global(.astro-code),

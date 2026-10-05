@@ -12,6 +12,12 @@ export const collections = {
       updatedDate: z.coerce.date().optional(),
       draft: z.boolean().default(false),
       comments: z.boolean().default(true),
+      creation: z
+        .strictObject({
+          mode: z.enum(['handmade', 'ai-assisted', 'ai-generated']),
+          note: z.string().trim().min(1).optional(),
+        })
+        .optional(),
     }),
   }),
 }

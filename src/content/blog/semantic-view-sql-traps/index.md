@@ -3,6 +3,8 @@ title: SQL 跑通了，数字却是错的
 description: 用三笔订单和 DuckDB 复现数据分析里几个常见的坑，看看 Semantic View 是怎样避开它们的。
 pubDate: 2026-09-23T00:00:00+08:00
 draft: false
+creation:
+  mode: ai-generated
 ---
 
 最近在学 Data Agent，读到的材料里反复出现一个判断：让模型写出能运行的 SQL 并不难，难的是让它算出正确的数字。

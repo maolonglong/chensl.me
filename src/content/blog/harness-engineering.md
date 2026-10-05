@@ -3,6 +3,8 @@ title: Harness：让 Agent 的工作可以验证
 description: 同一套模型换个环境就变笨，问题多半不在模型，而在项目有没有可验证的工程环境。
 pubDate: 2026-08-07T16:56:00+08:00
 draft: false
+creation:
+  mode: ai-assisted
 ---
 
 同一套模型，在某个工具里表现不错，换到另一个就明显变笨。这一年见过太多“换个环境，模型像换了个人”的例子。解释它的词叫 Harness：Agent 周围那套环境。产品侧怎么设计这套环境，我在[《薄 Agent，厚流程》](/blog/thin-agent-thick-harness/)里写过。本文写另一半：**使用团队自己要维护的那层**。更值得记住的分界是 **Agent ≠ Harness**。

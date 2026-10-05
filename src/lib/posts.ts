@@ -1,5 +1,14 @@
 import { getCollection, type CollectionEntry } from 'astro:content'
 
+export const creationLabels = {
+  handmade: '手作',
+  'ai-assisted': 'AI 辅助',
+  'ai-generated': 'AI 生成',
+}
+
+export const escapeMarkdownText = (value: string) =>
+  value.replace(/\s*\n\s*/g, ' ').replace(/[\\`*_[\]<>]/g, '\\$&')
+
 export async function publishedPosts() {
   const now = Date.now()
   const posts = await getCollection(

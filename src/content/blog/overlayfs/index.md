@@ -2,6 +2,8 @@
 title: 堆叠文件系统 OverlayFS
 pubDate: 2021-10-24T13:12:42+08:00
 description: 本文介绍了 OverlayFS 的基本概念及其在 Docker 中的应用，并通过实践演示了如何手动挂载和使用 OverlayFS 实现简易容器。
+creation:
+  mode: handmade
 ---
 
 因为工作需求，所以花时间了解了一下 OverlayFS。第一次知道这个概念，是使用 Docker 时，它默认使用的 Graph Driver 是 Overlay2，容器的 rootfs 就是直接以目录的形式在宿主机上组织。

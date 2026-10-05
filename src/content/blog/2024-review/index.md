@@ -3,6 +3,8 @@ title: 2024 简单总结
 pubDate: 2025-01-29T13:11:18+08:00
 draft: false
 description: 2024年工作总结与技术学习心得，包括工作反思、技术提升和生活变化。
+creation:
+  mode: handmade
 ---
 
 ## 工作相关

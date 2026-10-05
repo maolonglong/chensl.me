@@ -2,6 +2,8 @@
 title: 熔断器模式
 pubDate: 2021-09-16T16:21:28+08:00
 description: '介绍熔断器模式及其在微服务中的应用，分析 gobreaker 的实现。'
+creation:
+  mode: handmade
 ---
 
 熔断器模式提高了系统从故障恢复时的稳定性，最小化了故障对性能的影响。
