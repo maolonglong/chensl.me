@@ -29,7 +29,7 @@
 
 - Before changing CSP or the pre-paint theme script, read [CSP and theme bootstrap](docs/maintenance.md#csp-and-theme-bootstrap) for policy ownership, script ordering, and production-preview verification.
 - Before dependency upgrades, read [Dependency upgrades](docs/maintenance.md#dependency-upgrades) for release-note collection and version synchronization.
-- Before changing fonts or regenerating subsets, read [font licensing and regeneration](public/fonts/tsanger-jinkai02/NOTICE.md). Fonts are not covered by the repository's code license.
+- Before changing fonts or font subsetting, read [font licensing and subsetting](public/fonts/tsanger-jinkai02/NOTICE.md). Fonts are not covered by the repository's code license.
 - Before changing content conventions, publication behavior, or RSS, read [Content and RSS](docs/maintenance.md#content-and-rss).
 - Before changing upvote Actions, cookies, or D1 behavior, read [Upvotes and D1](docs/maintenance.md#upvotes-and-d1) for vote semantics, disposable-local-data E2E checks, and remote migration boundaries.
 - Before changing browser verification, read [Preview and browser verification](docs/maintenance.md#preview-and-browser-verification), `playwright.config.mjs`, and `e2e/site.mjs`.

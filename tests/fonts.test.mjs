@@ -6,9 +6,9 @@ import fontverter from 'fontverter'
 import { Blob, Face } from 'harfbuzzjs'
 import { astroProject, behaviorFixture, buildAstro, frontmatter, root, write } from './support.mjs'
 
-// Font declarations, precedence, versioning, conditional code fonts, and the cold-visit transfer budget.
+// Font declarations, page coverage, versioning, conditional code fonts, and the cold-visit transfer budget.
 
-test('JinKai declarations preserve precedence, versioning, and cold-visit budget', async () => {
+test('JinKai declarations cover page text with versioned files within the cold-visit budget', async () => {
   const { dist } = await behaviorFixture()
   const index = await readFile(path.join(dist, 'index.html'), 'utf8')
   const faces = [...index.matchAll(/@font-face\s*\{([^}]+)\}/g)]
@@ -26,15 +26,31 @@ test('JinKai declarations preserve precedence, versioning, and cold-visit budget
       return [Number.parseInt(start, 16), Number.parseInt(end ?? start, 16)]
     }),
   }))
-  const text = index.replace(/<(script|style)\b[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, '')
-  const needed = new Set()
-  for (const character of text) {
-    const codepoint = character.codePointAt(0)
-    const face = candidates.find((candidate) =>
-      candidate.ranges.some(([start, end]) => codepoint >= start && codepoint <= end),
-    )
-    if (face?.url) needed.add(face.url)
+  const supported = new Set(
+    new Face(
+      new Blob(
+        await readFile(path.join(root, 'vendor/fonts/tsanger-jinkai02/TsangerJinKai02-W04.ttf')),
+      ),
+    ).collectUnicodes(),
+  )
+  // Every page declares the same faces. Each character JinKai supports must reach one of them.
+  async function facesFor(file) {
+    const html = await readFile(path.join(dist, file), 'utf8')
+    const text = html.replace(/<(script|style)\b[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, '')
+    const urls = new Set()
+    for (const character of text) {
+      const codepoint = character.codePointAt(0)
+      if (!supported.has(codepoint)) continue
+      const face = candidates.find((candidate) =>
+        candidate.ranges.some(([start, end]) => codepoint >= start && codepoint <= end),
+      )
+      assert.ok(face?.url, `${file}: no JinKai face covers ${JSON.stringify(character)}`)
+      urls.add(face.url)
+    }
+    return urls
   }
+  await facesFor('blog/render/index.html')
+  const needed = await facesFor('index.html')
   let total = 0
   for (const url of needed) {
     const file = await readFile(path.join(dist, url.split('?')[0].replace(/^\//, '')))
@@ -44,21 +60,6 @@ test('JinKai declarations preserve precedence, versioning, and cold-visit budget
   }
   assert.equal(needed.size, 1, 'home must use only its small common subset')
   assert.ok(total <= 100 * 1024, `${Math.round(total / 1024)} KiB exceeds 100 KiB`)
-  const source = new Face(
-    new Blob(
-      await readFile(path.join(root, 'vendor/fonts/tsanger-jinkai02/TsangerJinKai02-W04.ttf')),
-    ),
-  )
-  const coverage = new Set()
-  for (const candidate of candidates) {
-    const buffer = await readFile(path.join(dist, candidate.url))
-    const face = new Face(new Blob(await fontverter.convert(buffer, 'sfnt')))
-    for (const cp of face.collectUnicodes()) coverage.add(cp)
-  }
-  assert.deepEqual(
-    [...coverage].sort((a, b) => a - b),
-    [...source.collectUnicodes()],
-  )
 })
 
 test('shared layouts declare code fonts without preloading them', async () => {
@@ -85,7 +86,7 @@ test('font subsets follow edited content and remain deterministic across builds'
       .map(([, face]) => face)
       .filter((face) => face.includes('TsangerJinKai02'))
     return Promise.all(
-      faces.slice(-2).map(async (css) => {
+      faces.map(async (css) => {
         const url = css.match(/url\(["']?([^)'"]+)/)[1]
         const bytes = await readFile(path.join(dist, url))
         const face = new Face(new Blob(await fontverter.convert(bytes, 'sfnt')))
@@ -112,6 +113,9 @@ test('font subsets follow edited content and remain deterministic across builds'
   )
   await buildAstro(fixture)
   const updated = await subsets()
-  assert.ok(updated[1].chars.includes('麤'.codePointAt(0)))
-  assert.notEqual(updated[1].url, first[1].url)
+  // The home page now uses the article's only character, so the article subset is empty and
+  // the build declares only the common subset.
+  assert.equal(updated.length, 1)
+  assert.ok(updated[0].chars.includes('麤'.codePointAt(0)))
+  assert.notEqual(updated[0].url, first[1].url)
 })

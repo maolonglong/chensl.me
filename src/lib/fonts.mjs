@@ -32,16 +32,22 @@ export async function siteFonts() {
   const common = new Set()
   const articles = new Set()
 
-  // Conservatively scan source, including template strings and decoded HTML entities.
+  // Conservatively scan source, including template strings and decoded HTML entities. The
+  // Astro config holds Markdown labels, such as the footnote heading.
   // This runs before Astro resolves fonts, with no dependence on a previous build.
-  for (const file of (await readdir(path.join(root, 'src'), { recursive: true })).sort()) {
+  const sources = (await readdir(path.join(root, 'src'), { recursive: true }))
+    .sort()
+    .map((file) => path.join('src', file))
+  for (const file of [...sources, 'astro.config.mjs']) {
     if (!/\.(astro|md|ts|mjs|css)$/.test(file)) continue
-    const input = await readFile(path.join(root, 'src', file), 'utf8')
+    const input = await readFile(path.join(root, file), 'utf8')
     let text = input
     visit(parser.parse(input), 'text', (node) => {
       text += node.value
     })
-    const target = file.startsWith(`content${path.sep}blog${path.sep}`) ? articles : common
+    const target = file.startsWith(path.join('src', 'content', 'blog', path.sep))
+      ? articles
+      : common
     for (const character of text) {
       const point = character.codePointAt(0)
       if (supported.has(point)) target.add(point)
@@ -49,19 +55,10 @@ export async function siteFonts() {
   }
   for (const point of common) articles.delete(point)
 
-  const family = './src/assets/fonts/tsanger-jinkai02'
-  const variants = (await readdir(`${family}/subsets`)).sort().map((file) => {
-    const [, start, end] = file.replace('.woff2', '').split('-')
-    return {
-      src: [`${family}/subsets/${file}`],
-      weight: '400 500',
-      style: 'normal',
-      unicodeRange: [`U+${start}-${end}`],
-    }
-  })
+  const variants = []
   const directory = path.join(root, '.astro/site-fonts')
   await mkdir(directory, { recursive: true })
-  // Later overlapping faces win. Common and article subsets are mutually exclusive.
+  // Common and article subsets are mutually exclusive.
   for (const [name, points] of [
     ['articles', articles],
     ['common', common],
