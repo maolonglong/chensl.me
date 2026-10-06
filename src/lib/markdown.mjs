@@ -97,8 +97,8 @@ function theme(name, dark) {
     name,
     type: dark ? 'dark' : 'light',
     colors: {
-      'editor.foreground': dark ? '#d4d3cd' : '#3d3d3a',
-      'editor.background': dark ? '#30302e' : '#f0eee6',
+      'editor.foreground': dark ? '#faf9f5' : '#141413',
+      'editor.background': dark ? '#30302e' : '#faf9f5',
     },
     tokenColors: [
       {
@@ -112,8 +112,12 @@ function theme(name, dark) {
         settings: { foreground: dark ? '#94b4d4' : '#1b365d' },
       },
       {
-        scope: ['entity.name.function', 'entity.name.type'],
-        settings: { foreground: dark ? '#faf9f5' : '#141413' },
+        scope: ['string'],
+        settings: { foreground: dark ? '#c2c0b6' : '#504e49' },
+      },
+      {
+        scope: ['constant.numeric'],
+        settings: { foreground: dark ? '#d4d3cd' : '#3d3d3a' },
       },
       {
         scope: ['comment', 'punctuation.definition.comment'],

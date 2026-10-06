@@ -12,12 +12,13 @@
         Consolas, 'Liberation Mono', var(--font-serif);
     --background-color: light-dark(#f5f4ed, #141413);
     --heading-color: light-dark(#141413, #faf9f5);
-    --text-color: light-dark(#3d3d3a, #d4d3cd);
+    --text-color: light-dark(#504e49, #d4d3cd);
     --muted-color: light-dark(#6b6a64, #b0aea5);
     --link-color: light-dark(#1b365d, #94b4d4);
     --link-hover-color: light-dark(#2d5a8a, #bfd2e5);
     --visited-color: light-dark(#4a5d78, #7e93a8);
     --code-background-color: light-dark(#f0eee6, #30302e);
+    --code-block-background-color: light-dark(#faf9f5, #30302e);
     --code-color: light-dark(#3d3d3a, #d4d3cd);
     --blockquote-color: light-dark(#504e49, #b0aea5);
     --border-color: light-dark(#e8e6dc, #3d3d3a);
@@ -202,7 +203,7 @@ cite {
 }
 
 .prose li + li {
-    margin-top: 0.25em;
+    margin-top: 8px;
 }
 
 .prose li::marker {
@@ -256,12 +257,13 @@ blockquote cite {
 
 /* ------------------------------------------------------------------- code */
 
+/* Kami's inline code: 13.5px against its 16px prose body. */
 :not(pre) > code {
-    padding: 2px 5px;
-    font-size: 0.875em;
+    padding: 0 3px;
+    font-size: 0.84375em;
     color: var(--code-color);
     background-color: var(--code-background-color);
-    border-radius: 4px;
+    border-radius: 2px;
 }
 
 pre {
@@ -289,7 +291,8 @@ pre code {
 
 /* The scroller carries the fill too, so iOS rubber-banding past either end never opens a gap. */
 .highlight {
-    background-color: var(--code-background-color);
+    background-color: var(--code-block-background-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
 }
 
@@ -335,6 +338,7 @@ math[display='block'] {
 /* The wrapper scrolls so the <table> keeps its role in the accessibility tree. */
 table {
     width: 100%;
+    font-size: 0.875rem;
     border-collapse: collapse;
 }
 
@@ -343,12 +347,17 @@ td {
     padding: 10px 12px;
     text-align: left;
     vertical-align: top;
-    border-bottom: 1px solid var(--border-color);
 }
 
+/* Kami's header rule outweighs its row rules. A 0.5px row rule is a hairline on HiDPI screens and 1px elsewhere. */
 th {
     font-weight: 500;
     color: var(--heading-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+td {
+    border-bottom: 0.5px solid var(--border-color);
 }
 
 th:first-child,
