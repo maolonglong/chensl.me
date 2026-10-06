@@ -8,6 +8,8 @@ const checker = path.join(root, 'scripts/check-site.mjs')
 
 // scripts/check-site.mjs rejects broken links, images, and policies, and accepts valid output.
 
+const adapterCacheRule = '/_astro/*\n  Cache-Control: public, max-age=31536000, immutable\n'
+
 async function checkerFixture() {
   const fixture = await temporaryDirectory('site-checker-')
   await write(fixture, 'dist/index.html', '<link rel="canonical" href="https://chensl.me/">')
@@ -21,7 +23,8 @@ async function checkerFixture() {
   await write(
     fixture,
     'dist/_headers',
-    headers.replace(
+    // The Cloudflare adapter prepends this rule to the built _headers.
+    `${adapterCacheRule}\n${headers}`.replace(
       'Content-Security-Policy:',
       "Content-Security-Policy: script-src 'self' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' https://giscus.app https://static.cloudflareinsights.com;",
     ),
@@ -288,11 +291,25 @@ test('site checker rejects permissive or missing script CSP', async () => {
 test('site checker requires immutable caching for fonts and fingerprinted CSS', async () => {
   const fixture = await checkerFixture()
   const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
-  await write(fixture, 'dist/_headers', headers.replace(/^\/_astro\/fonts\/\*\n[\s\S]*?\n\n/m, ''))
+  await write(fixture, 'dist/_headers', headers.replace(adapterCacheRule, ''))
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
-  assert.match(result.stderr, /\/_astro\/fonts\/\* as immutable/)
-  assert.doesNotMatch(result.stderr, /\/css\/\* as immutable/)
+  assert.match(result.stderr, /\/_astro\/fonts\/font\.woff2 one immutable Cache-Control/)
+  assert.doesNotMatch(result.stderr, /\/css\/style\.css/)
+})
+
+test('site checker rejects a Cache-Control that two rules join for one path', async () => {
+  const fixture = await checkerFixture()
+  const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
+  // Cloudflare joins the values of every matching rule, so the font would get the value twice.
+  await write(
+    fixture,
+    'dist/_headers',
+    `${headers}\n/_astro/fonts/*\n  Cache-Control: public, max-age=31536000, immutable\n`,
+  )
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /\/_astro\/fonts\/font\.woff2 one immutable Cache-Control/)
 })
 
 test('site checker requires cross-origin access for giscus themes', async () => {

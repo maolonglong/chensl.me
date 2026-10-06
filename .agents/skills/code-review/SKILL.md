@@ -33,7 +33,8 @@ A rubric of traps, not a second copy of the contracts: `AGENTS.md`, `docs/design
 - Two policies enforce independently: the meta CSP in `astro.config.mjs` and `public/_headers`. A source added to one is still blocked by the other (`0202fd0`: giscus `style-src` needed both). `frame-ancestors` lives only in the header. The source also goes into `scripts/check-site.mjs` and its test.
 - Scripts run only through Astro hashes: a component `<script>` (bundled) or `injectScript('head-inline')`. `is:inline` scripts, event-handler attributes, or `unsafe-inline` in `script-src` are hits (`242093e`). `unsafe-inline` in `style-src` is deliberate (Shiki, table alignment, no-script).
 - A CSP console error from Cloudflare's injected JavaScript Detections script is dashboard config; loosening the policy for it is a hit (`0202fd0`).
-- `immutable` caching (`/_astro/fonts/*`, `/css/*`) holds only while the URL carries a content hash (`src/lib/assets.ts`). An immutable path with a stable URL serves stale forever.
+- `immutable` caching (`/_astro/*` from the Cloudflare adapter, `/css/*` from `public/_headers`) holds only while the URL carries a content hash (`src/lib/assets.ts`). An immutable path with a stable URL serves stale forever.
+- Cloudflare joins the values of every `_headers` rule that matches a path. A rule that overlaps another rule, such as `/_astro/fonts/*` under the adapter's `/_astro/*`, sends Cache-Control twice: hit. `scripts/check-site.mjs` counts the values per path.
 
 ### Upvotes — [maintenance.md](../../../docs/maintenance.md#upvotes-and-d1)
 

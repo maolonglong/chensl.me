@@ -183,16 +183,28 @@ for (const [file, tree] of treeByFile) {
   }
 }
 // Workers Assets defaults to `max-age=0, must-revalidate`, which would revalidate every font.
-for (const immutable of ['/_astro/fonts/*', '/css/*']) {
-  const rule = headerRule(immutable)
-  if (!/^\s*Cache-Control:.*\bimmutable\b/im.test(rule)) {
+// Cloudflare joins the values of every rule that matches a path, and the Cloudflare adapter
+// prepends its own /_astro/* rule, so count the Cache-Control values that one path receives.
+const routeMatches = (route, pathname) =>
+  new RegExp(
+    `^${route
+      .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+      .replaceAll('*', '.*')
+      .replace(/:\w+/g, '[^/]+')}$`,
+  ).test(pathname)
+for (const pathname of ['/_astro/fonts/font.woff2', '/css/style.css']) {
+  const values = [...headers.matchAll(/^(\/\S*)[ \t]*\n((?:[ \t].*(?:\n|$))*)/gm)]
+    .filter(([, route]) => routeMatches(route, pathname))
+    .flatMap(([, , lines]) => [...lines.matchAll(/^\s*Cache-Control:\s*(.*)$/gim)])
+    .map(([, value]) => value)
+  if (values.length !== 1 || !/\bimmutable\b/.test(values[0])) {
     errors.push(
-      `dist/_headers must mark ${immutable} as immutable so fingerprinted assets are not revalidated`,
+      `dist/_headers must give ${pathname} one immutable Cache-Control, not ${JSON.stringify(values)}`,
     )
   }
-  if (immutable === '/css/*' && !/^\s*Access-Control-Allow-Origin:\s*\*\s*$/im.test(rule)) {
-    errors.push('dist/_headers must allow cross-origin CSS so giscus can load its custom themes')
-  }
+}
+if (!/^\s*Access-Control-Allow-Origin:\s*\*\s*$/im.test(headerRule('/css/*'))) {
+  errors.push('dist/_headers must allow cross-origin CSS so giscus can load its custom themes')
 }
 const anchorsByFile = new Map()
 for (const [file, tree] of treeByFile) {
