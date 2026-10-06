@@ -1,12 +1,5 @@
 ---
 import { giscusThemes } from '../lib/assets'
-
-const config = {
-  repo: 'maolonglong/chensl.me',
-  repoId: 'MDEwOlJlcG9zaXRvcnk0MDY3MzAwMDI=',
-  category: 'Announcements',
-  categoryId: 'DIC_kwDOGD41Es4ClVVI',
-}
 ---
 
 <section
@@ -14,10 +7,6 @@ const config = {
   aria-labelledby="comments-title"
   data-light-theme={giscusThemes.light}
   data-dark-theme={giscusThemes.dark}
-  data-repo={config.repo}
-  data-repo-id={config.repoId}
-  data-category={config.category}
-  data-category-id={config.categoryId}
 >
   <h2 id="comments-title">评论</h2>
   <div class="giscus"></div>
@@ -44,10 +33,10 @@ const config = {
     script.async = true
     script.crossOrigin = 'anonymous'
     Object.assign(script.dataset, {
-      repo: section.dataset.repo,
-      repoId: section.dataset.repoId,
-      category: section.dataset.category,
-      categoryId: section.dataset.categoryId,
+      repo: 'maolonglong/chensl.me',
+      repoId: 'MDEwOlJlcG9zaXRvcnk0MDY3MzAwMDI=',
+      category: 'Announcements',
+      categoryId: 'DIC_kwDOGD41Es4ClVVI',
       mapping: 'pathname',
       strict: '1',
       reactionsEnabled: '1',
