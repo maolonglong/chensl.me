@@ -2,6 +2,9 @@ import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
+import rehypeParse from 'rehype-parse'
+import { unified } from 'unified'
+import { visit } from 'unist-util-visit'
 
 const root = process.cwd()
 const outputDir = path.resolve(root, process.argv[2] ?? 'dist')
@@ -13,28 +16,15 @@ async function walk(directory) {
     .map((entry) => path.join(entry.parentPath, entry.name))
 }
 
-function getAttributes(tag) {
-  const attributes = new Map()
-  const pattern = /\b([\w:-]+)=(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g
-  for (const match of tag.matchAll(pattern)) {
-    attributes.set(match[1].toLowerCase(), match[2] ?? match[3] ?? match[4])
-  }
-  return attributes
-}
+// The HTML parser decodes character references, so attribute values arrive as browsers read them.
+const parseHtml = (html) => unified().use(rehypeParse).parse(html)
 
-function decodeXmlEntities(value) {
-  const named = { amp: '&', apos: "'", gt: '>', lt: '<', quot: '"' }
-  return value.replace(
-    /&(?:#(\d+)|#x([\da-f]+)|(amp|apos|gt|lt|quot));/gi,
-    (match, decimal, hex, name) => {
-      if (name) {
-        return named[name.toLowerCase()]
-      }
-
-      const codePoint = Number.parseInt(decimal ?? hex, decimal ? 10 : 16)
-      return codePoint <= 0x10ffff ? String.fromCodePoint(codePoint) : match
-    },
-  )
+function elements(tree, tagNames) {
+  const found = []
+  visit(tree, 'element', (node) => {
+    if (tagNames.includes(node.tagName)) found.push(node)
+  })
+  return found
 }
 
 function pageUrlFor(file) {
@@ -46,7 +36,7 @@ function pageUrlFor(file) {
 // Resolves an attribute value against its page; null when the value is not a valid URL.
 function resolveUrl(value, file) {
   try {
-    return new URL(value.replaceAll('&amp;', '&'), pageUrlFor(file))
+    return new URL(value, pageUrlFor(file))
   } catch {
     return null
   }
@@ -124,17 +114,13 @@ for (const required of [
 }
 
 const htmlFiles = files.filter((file) => file.endsWith('.html'))
-const htmlByFile = new Map(
-  await Promise.all(htmlFiles.map(async (file) => [file, await readFile(file, 'utf8')])),
+const treeByFile = new Map(
+  await Promise.all(htmlFiles.map(async (file) => [file, parseHtml(await readFile(file, 'utf8'))])),
 )
-const homeHtml = htmlByFile.get(path.join(outputDir, 'index.html')) ?? ''
-const canonicalTag = [...homeHtml.matchAll(/<link\b[^>]*>/gi)].find((match) =>
-  getAttributes(match[0])
-    .get('rel')
-    ?.split(/\s+/)
-    .some((value) => value.toLowerCase() === 'canonical'),
-)?.[0]
-const canonicalUrl = canonicalTag ? getAttributes(canonicalTag).get('href') : null
+const homeTree = treeByFile.get(path.join(outputDir, 'index.html'))
+const canonicalUrl = (homeTree ? elements(homeTree, ['link']) : []).find((link) =>
+  link.properties.rel?.some((value) => value.toLowerCase() === 'canonical'),
+)?.properties.href
 let siteOrigin = 'https://site.invalid'
 try {
   siteOrigin = new URL(canonicalUrl).origin
@@ -170,12 +156,11 @@ for (const [directive, source] of [
   }
 }
 // Header and meta policies are enforced independently, not merged as allowlists.
-for (const [file, html] of htmlByFile) {
+for (const [file, tree] of treeByFile) {
   const policies = [csp]
-  for (const [tag] of html.matchAll(/<meta\b[^>]*>/gi)) {
-    const attributes = getAttributes(tag)
-    if (attributes.get('http-equiv')?.toLowerCase() === 'content-security-policy') {
-      policies.push(decodeXmlEntities(attributes.get('content') ?? ''))
+  for (const meta of elements(tree, ['meta'])) {
+    if (meta.properties.httpEquiv?.join(' ').toLowerCase() === 'content-security-policy') {
+      policies.push(meta.properties.content ?? '')
     }
   }
   const scriptPolicies = policies.filter((policy) =>
@@ -210,31 +195,19 @@ for (const immutable of ['/_astro/fonts/*', '/css/*']) {
   }
 }
 const anchorsByFile = new Map()
-for (const [file, html] of htmlByFile) {
+for (const [file, tree] of treeByFile) {
   const anchors = new Set()
-  for (const match of html.matchAll(/<[a-z][^>]*>/gi)) {
-    const attributes = getAttributes(match[0])
-    const id = attributes.get('id')
-    const name = match[0].toLowerCase().startsWith('<a') ? attributes.get('name') : null
-    if (id) {
-      anchors.add(decodeXmlEntities(id))
-    }
-    if (name) {
-      anchors.add(decodeXmlEntities(name))
-    }
-  }
+  visit(tree, 'element', ({ tagName, properties }) => {
+    if (properties.id) anchors.add(properties.id)
+    if (tagName === 'a' && properties.name) anchors.add(properties.name)
+  })
   anchorsByFile.set(path.relative(outputDir, file).split(path.sep).join('/'), anchors)
 }
 
-for (const [file, html] of htmlByFile) {
+for (const [file, tree] of treeByFile) {
   const relative = path.relative(root, file)
-  for (const match of html.matchAll(/<(?:a|img|link|script)\b[^>]*>/gi)) {
-    const tag = match[0]
-    const attributes = getAttributes(tag)
-    const lowerTag = tag.toLowerCase()
-    const url = attributes.get(
-      lowerTag.startsWith('<a') || lowerTag.startsWith('<link') ? 'href' : 'src',
-    )
+  for (const { tagName, properties } of elements(tree, ['a', 'img', 'link', 'script'])) {
+    const url = tagName === 'a' || tagName === 'link' ? properties.href : properties.src
     if (url && isInternalUrl(url, file)) {
       const error = internalReferenceError(url, file)
       if (error) {
@@ -242,17 +215,16 @@ for (const [file, html] of htmlByFile) {
       }
     }
 
-    if (!lowerTag.startsWith('<img')) {
+    if (tagName !== 'img') {
       continue
     }
-    const alt = attributes.get('alt')
-    if (!alt?.trim()) {
+    if (!properties.alt?.trim()) {
       errors.push(`${relative} contains an image without descriptive alt text`)
     }
-    if (attributes.get('loading') !== 'lazy' || attributes.get('decoding') !== 'async') {
+    if (properties.loading !== 'lazy' || properties.decoding !== 'async') {
       errors.push(`${relative} contains an image without lazy loading and async decoding`)
     }
-    const src = attributes.get('src') ?? ''
+    const src = properties.src ?? ''
     const imageUrl = resolveUrl(src, file)
     // ponytail: supports our CSP's self/data/exact HTTPS origins; extend with tests before adopting wildcards or path sources.
     const imageAllowed =
@@ -266,7 +238,7 @@ for (const [file, html] of htmlByFile) {
     if (
       isInternalUrl(src, file) &&
       !imageUrl?.pathname.toLowerCase().endsWith('.svg') &&
-      (!attributes.has('width') || !attributes.has('height'))
+      (properties.width == null || properties.height == null)
     ) {
       errors.push(
         `${relative} contains a local image without intrinsic dimensions: ${JSON.stringify(src)}`,
@@ -274,10 +246,9 @@ for (const [file, html] of htmlByFile) {
     }
   }
 
-  for (const match of html.matchAll(/<meta\b[^>]*>/gi)) {
-    const attributes = getAttributes(match[0])
-    const key = (attributes.get('property') ?? attributes.get('name') ?? '').toLowerCase()
-    const value = attributes.get('content')
+  for (const meta of elements(tree, ['meta'])) {
+    const key = (meta.properties.property ?? meta.properties.name ?? '').toLowerCase()
+    const value = meta.properties.content
     if ((key === 'og:image' || key === 'twitter:image') && value && isInternalUrl(value, file)) {
       const error = internalReferenceError(value, file)
       if (error) errors.push(`${relative} ${error}`)
@@ -305,8 +276,8 @@ const markdownProcessor = await createMarkdownProcessor({
 for (const markdown of markdownFiles) {
   const file = path.join(outputDir, markdown)
   const { code } = await markdownProcessor.render(await readFile(file, 'utf8'))
-  for (const [tag] of code.matchAll(/<img\b[^>]*>/gi)) {
-    const src = decodeXmlEntities(getAttributes(tag).get('src') ?? '')
+  for (const image of elements(parseHtml(code), ['img'])) {
+    const src = image.properties.src ?? ''
     if (isInternalUrl(src, file)) {
       const error = internalReferenceError(src, file)
       if (error) errors.push(`${markdown} ${error}`)
@@ -314,9 +285,14 @@ for (const markdown of markdownFiles) {
   }
 }
 for (const file of files.filter((file) => file.endsWith('.xml'))) {
-  const xml = decodeXmlEntities(await readFile(file, 'utf8'))
-  for (const match of xml.matchAll(/<img\b[^>]*>/gi)) {
-    const src = getAttributes(match[0]).get('src') ?? ''
+  // Feed items carry escaped HTML, so parse the decoded text once more.
+  const feed = parseHtml(await readFile(file, 'utf8'))
+  let text = ''
+  visit(feed, 'text', (node) => {
+    text += node.value
+  })
+  for (const image of [...elements(feed, ['img']), ...elements(parseHtml(text), ['img'])]) {
+    const src = image.properties.src ?? ''
     if (!/^(?:https?:|data:)/i.test(src)) {
       errors.push(
         `${path.relative(root, file)} contains non-absolute RSS image URL ${JSON.stringify(src)}`,

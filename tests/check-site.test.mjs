@@ -145,7 +145,11 @@ test('site checker rejects a content store nested in the sibling Worker bundle',
 
 test('site checker rejects relative RSS images and CSP-blocked images', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'dist/index.xml', '<rss version="2.0"><img src="/missing.png"></rss>')
+  await write(
+    fixture,
+    'dist/index.xml',
+    '<rss version="2.0"><img src="/missing.png"><content:encoded>&lt;img src=&quot;/escaped.png&quot;&gt;</content:encoded></rss>',
+  )
   await write(
     fixture,
     'dist/index.html',
@@ -153,7 +157,8 @@ test('site checker rejects relative RSS images and CSP-blocked images', async ()
   )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1)
-  assert.match(result.stderr, /non-absolute RSS image URL/)
+  assert.match(result.stderr, /non-absolute RSS image URL "\/missing\.png"/)
+  assert.match(result.stderr, /non-absolute RSS image URL "\/escaped\.png"/)
   assert.match(result.stderr, /blocked by CSP img-src/)
 })
 
