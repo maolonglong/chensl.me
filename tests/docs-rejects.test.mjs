@@ -7,8 +7,9 @@ import { test } from 'node:test'
 
 // tests/docs.test.mjs passes on this repository; this proves that each of its rules can fail.
 // The fixture is a git repository with one defect per rule, and the test expects every message.
+// It also holds valid cases, and expects no message for them.
 
-test('the document checks reject each defect', (t) => {
+test('the document checks reject each defect and accept valid cases', (t) => {
   const root = mkdtempSync(path.join(tmpdir(), 'docs-rejects-'))
   t.after(() => rmSync(root, { recursive: true, force: true }))
   const write = (file, text) => {
@@ -20,16 +21,25 @@ test('the document checks reject each defect', (t) => {
       cwd: root,
       encoding: 'utf8',
     }).trim()
+  const note = (title, status, sections) =>
+    [`# Agent Note: ${title}`, '', `Status: ${status}`, '', ...sections, ''].join('\n')
 
   write('skills-lock.json', '{ "skills": {} }\n')
-  write('AGENTS.md', '# Root\n')
+  write('AGENTS.md', `# Root\n\n${'word '.repeat(500)}\n`)
   write('docs/AGENTS.md', '# Standard\n')
   write('.agents/notes/AGENTS.md', '# Notes\n')
   write('src/keep.txt', '\n')
-  git('init', '-q')
+  git('init', '-q', '-b', 'main')
   git('add', '.')
   git('commit', '-q', '-m', 'base')
-  // A commit that left the history: `cat-file` still finds it, the history of HEAD does not.
+  const base = git('rev-parse', '--short=12', 'HEAD')
+  // The checkout is a branch. Its own commit is in the history of HEAD, not of main, and a
+  // squash merge would leave it out.
+  git('switch', '-q', '-c', 'feature')
+  write('src/keep.txt', 'feature\n')
+  git('commit', '-q', '-am', 'feature')
+  const branchOnly = git('rev-parse', '--short=12', 'HEAD')
+  // A commit that left the history: `cat-file` still finds it, no history does.
   write('src/keep.txt', 'gone\n')
   git('commit', '-q', '-am', 'gone')
   const dangling = git('rev-parse', '--short=12', 'HEAD')
@@ -38,29 +48,41 @@ test('the document checks reject each defect', (t) => {
   write(
     'docs/guide.md',
     [
-      '# Guide',
+      '# Guide', // 1
       '',
-      'See [missing](missing.md) and [anchor](#nowhere).',
+      'See [missing](missing.md) and [anchor](#nowhere).', // 3
       '',
-      '[ref]: absent.md',
+      '[ref]: absent.md', // 5
       '',
-      'Paths `src/missing.ts` and `Missing.astro`.',
+      'Paths `src/missing.ts`, `Missing.astro`, and `gone/missing.ts`.', // 7
       '',
-      `Commit \`${dangling}\` and file \`${dangling}:src/keep.txt\`.`,
+      `Commits \`${dangling}\`, \`${branchOnly}\`, and \`${base}:nope.txt\`.`, // 9
       '',
-      'A wrapped',
-      'paragraph.',
+      'A wrapped', // 11
+      'paragraph.', // 12
       '',
-      '- An item',
-      '  continued.',
+      '- An item', // 14
+      '  continued.', // 15
       '',
-      'Press',
-      '<kbd>Ctrl</kbd> to copy.',
+      'Press', // 17
+      '<kbd>Ctrl</kbd> to copy.', // 18
+      '',
+      '> A quoted', // 20
+      '> wrap.', // 21
+      '',
+      'Valid: [angled](<../AGENTS.md>), [encoded](../AGENT%53.md), [query](../AGENTS.md?plain=1).', // 23
+      '',
+      '    indented code', // 25
+      '    more code', // 26
+      '',
+      `Valid: \`${base}\` and \`${base}:src/keep.txt\`.`, // 28
       '',
     ].join('\n'),
   )
   write('.agents/skills/bad/SKILL.md', '---\nname: wrong\ndescription: Bad.\n---\n')
+  write('.agents/skills/plain/SKILL.md', '---\nname: plain\n---\n')
   mkdirSync(path.join(root, '.claude/skills'), { recursive: true })
+  symlinkSync('../../.agents/skills/plain', path.join(root, '.claude/skills/plain'))
   symlinkSync('../../.agents/skills/gone', path.join(root, '.claude/skills/gone'))
   write('.agents/notes/stray.md', '# Stray\n')
   write(
@@ -78,6 +100,30 @@ test('the document checks reject each defect', (t) => {
       '',
     ].join('\n'),
   )
+  write(
+    '.agents/notes/rejected/2026-10-08-vague.md',
+    note('Vague', 'rejected', ['## Problem', '', '## Alternatives considered']),
+  )
+  write(
+    '.agents/notes/implemented/2026-10-08-fenced.md',
+    note('Fenced', 'implemented', ['## Problem', '', '```markdown', '## Decision', '```']),
+  )
+  write(
+    '.agents/notes/implemented/2026-10-08-good.md',
+    note('Good', 'implemented', [
+      '## Problem',
+      '',
+      '## Decision',
+      '',
+      '```markdown',
+      '## Proposal',
+      '```',
+      '',
+      '## Alternatives considered',
+      '',
+      '## Consequences',
+    ]),
+  )
 
   // NODE_TEST_CONTEXT would make the inner run report to this runner instead of to stdout.
   const env = { ...process.env, DOCS_CHECK_ROOT: root }
@@ -94,20 +140,44 @@ test('the document checks reject each defect', (t) => {
     'docs/guide.md:5 links to missing docs/absent.md',
     'docs/guide.md:7 names missing path src/missing.ts',
     'docs/guide.md:7 names Missing.astro without its folder',
-    `docs/guide.md:9 cites ${dangling}, which is not a commit in the history of HEAD`,
-    `docs/guide.md:9 cites ${dangling}:src/keep.txt, but the history of HEAD has no such`,
+    'docs/guide.md:7 names missing path gone/missing.ts',
+    `docs/guide.md:9 cites ${dangling}, which is not a commit in the history of main`,
+    `docs/guide.md:9 cites ${branchOnly}, which is not a commit in the history of main`,
+    `docs/guide.md:9 cites ${base}:nope.txt, but the history of main has no such`,
     'docs/guide.md:12 continues the paragraph above',
     'docs/guide.md:15 continues the paragraph above',
     'docs/guide.md:18 continues the paragraph above',
+    'docs/guide.md:21 continues the paragraph above',
     'docs/guide.md has no word budget',
+    'AGENTS.md has 502 words; the budget is',
     '.claude/skills/bad is not a link',
     '.agents/skills/bad/SKILL.md front matter needs "name: bad"',
+    '.agents/skills/plain/SKILL.md front matter needs a description',
     '.claude/skills/gone links to a skill that does not exist',
     '.agents/notes/stray.md: a note sits directly in',
     '2026-10-08-late.md: line 4 is not blank',
     '2026-10-08-late.md: only notes dated before 2026-10-07 may waive',
     '2026-10-08-late.md: "## Migration plan" is proposal text',
+    '2026-10-08-vague.md: line 3 "Status: rejected" does not match the rejected/ folder',
+    '2026-10-08-vague.md: "## Proposal" is missing',
+    '2026-10-08-fenced.md: "## Decision" is missing',
   ]
-  const missing = expected.filter((message) => !run.stdout.includes(message))
-  assert.deepEqual(missing, [], `Output of the checks:\n${run.stdout}`)
+  const unexpected = [
+    'docs/guide.md:23',
+    'docs/guide.md:25',
+    'docs/guide.md:26',
+    'docs/guide.md:28',
+    '2026-10-08-good.md',
+  ]
+  const output = `Output of the checks:\n${run.stdout}`
+  assert.deepEqual(
+    expected.filter((message) => !run.stdout.includes(message)),
+    [],
+    output,
+  )
+  assert.deepEqual(
+    unexpected.filter((message) => run.stdout.includes(message)),
+    [],
+    output,
+  )
 })

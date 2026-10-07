@@ -56,10 +56,10 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 
 Two policies apply independently ([decision](../.agents/notes/implemented/2026-09-28-hash-based-script-csp.md)):
 
-- The meta policy from `astro.config.mjs` carries the script hashes.
+- The meta policy from `astro.config.mjs` carries the script hashes and the external script sources.
 - The HTTP policy in `public/_headers` carries `frame-ancestors` and the other response protections.
 
-Allow a third-party source in both policies and in `scripts/check-site.mjs`.
+`public/_headers` defines no `script-src`. Add any other third-party source to each policy that defines its directive, and to `scripts/check-site.mjs`.
 
 ## Delivery
 

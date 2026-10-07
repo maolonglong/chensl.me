@@ -31,7 +31,7 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 
 ### CSP — [architecture](../../../docs/architecture.md#csp)
 
-- Two policies enforce independently: the meta CSP in `astro.config.mjs` and `public/_headers`. A source added to one is still blocked by the other (`0202fd0`: giscus `style-src` needed both). The source also goes into `scripts/check-site.mjs` and its test.
+- Two policies enforce independently: the meta CSP in `astro.config.mjs` and `public/_headers`. When both define a directive, a source added to one is still blocked by the other (`0202fd0`: giscus `style-src` needed both). Script sources go only in the meta CSP, because `public/_headers` has no `script-src`. The source also goes into `scripts/check-site.mjs` and its test.
 - Scripts run only through Astro hashes: a component `<script>` (bundled) or `injectScript('head-inline')`. `is:inline` scripts, event-handler attributes, or `unsafe-inline` in `script-src` are hits (`242093e`). `unsafe-inline` in `style-src` is deliberate (Shiki, table alignment, no-script).
 - A CSP console error from Cloudflare's injected JavaScript Detections script is dashboard configuration; loosening the policy for it is a hit (`0202fd0`).
 - `immutable` caching (`/_astro/*` from the Cloudflare adapter, `/css/*` from `public/_headers`) holds only while the URL carries a content hash (`src/lib/assets.ts`). An immutable path with a stable URL serves stale content forever.
@@ -41,7 +41,6 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 - `requirePost` uses `redirect: 'manual'` and demands exactly 200 (`d16b247`). Any new prerendered page under `/blog/<x>/` that is not an article passes that check: hit.
 - Each Action calls `requireQuota` with its own limiter; sharing a budget or omitting one is a hit (`287be50`). A new limiter is a new account resource on deploy.
 - A write followed by a read is one `env.VOTES.batch`; two round trips let the count miss the caller's vote (`287be50`).
-- The `__Host-blog-voter` cookie needs `Secure`, `Path=/`, and no `Domain`; with a `domain` attribute, browsers drop it.
 
 ### Content — [product](../../../docs/product.md), [architecture](../../../docs/architecture.md#build)
 

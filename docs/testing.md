@@ -31,7 +31,7 @@ Run the narrowest check that fails for the regression, plus the checks below for
 | Site output, build, content rules | `pnpm check` |
 | Layout, styles, fonts, browser interactions, CSP, upvotes | `pnpm check` and `pnpm test:e2e`, then inspect the screenshots |
 | Dependencies or `wrangler.jsonc` | `pnpm check`, then `pnpm exec wrangler deploy --dry-run` on the fresh build |
-| Markdown outside `public/` and `src/` | `node --test tests/docs.test.mjs` and `git diff --check` |
+| Markdown outside `public/` and `src/` | `node --test tests/docs*.test.mjs` and `git diff --check` |
 | Tooling only | The checks that the tool affects |
 
 `pnpm format` applies Prettier; `pnpm check` fails on unformatted files.

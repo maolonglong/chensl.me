@@ -59,12 +59,17 @@ function anchors(file) {
   return result
 }
 
+const fileName =
+  /^[\w@-][\w.@-]*\.(?:astro|c?js|mjs|ts|css|md|jsonc?|ya?ml|toml|py|sh|txt|xml|html)$/
+
 function eachSpan(file, visit) {
   proseLines(file).forEach((line, index) => {
     const where = `${file}:${index + 1}`
     const prose = line.replace(/`[^`]*`/g, '')
-    for (const [, target] of prose.matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
-      visit({ kind: 'link', value: target, where })
+    for (const [, angled, bare] of prose.matchAll(
+      /\[[^\]]*\]\((?:<([^>]+)>|([^)\s]+))(?:\s+"[^"]*")?\)/g,
+    )) {
+      visit({ kind: 'link', value: angled ?? bare, where })
     }
     // A reference-style link definition: `[label]: target`.
     const definition = prose.match(/^\s*\[[^\]]+\]:\s*(\S+)/)?.[1]
@@ -73,10 +78,19 @@ function eachSpan(file, visit) {
   })
 }
 
-// A cited commit must be in the history of HEAD; a dangling local object would pass `cat-file`.
+// Cited commits must be in the history of main (docs/AGENTS.md). A pull-request checkout has
+// only origin/main. A dangling local object would pass `cat-file`, so test ancestry.
+const mainRef = ['main', 'origin/main', 'HEAD'].find((ref) => {
+  try {
+    git('rev-parse', '--verify', '--quiet', `${ref}^{commit}`)
+    return true
+  } catch {
+    return false
+  }
+})
 function isAncestor(commit) {
   try {
-    git('merge-base', '--is-ancestor', commit, 'HEAD')
+    git('merge-base', '--is-ancestor', commit, mainRef)
     return true
   } catch {
     return false
@@ -95,7 +109,8 @@ test('relative links and anchors in first-party Markdown resolve', () => {
   for (const file of documents) {
     eachSpan(file, ({ kind, value, where }) => {
       if (kind !== 'link' || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value)) return
-      const [target, hash] = value.split('#')
+      const [address, hash] = value.split('#')
+      const target = decodeURIComponent(address.split('?')[0])
       const resolved = target ? path.posix.join(path.posix.dirname(file), target) : file
       if (!existsSync(path.join(root, resolved))) {
         errors.push(`${where} links to missing ${resolved}; fix the path or restore the file.`)
@@ -117,25 +132,23 @@ test('repository paths and commits named in first-party Markdown exist', () => {
     eachSpan(file, ({ kind, value, where }) => {
       if (kind !== 'code') return
       // Repository-relative paths such as `src/lib/posts.ts`; placeholders and globs are not paths.
+      // A path under a missing top-level folder still counts when it names a file type.
       if (
         /^[\w.@-]+(?:\/[\w.@[\]-]+)+\/?$/.test(value) &&
-        topLevel.has(value.split('/')[0]) &&
+        (topLevel.has(value.split('/')[0]) || fileName.test(path.posix.basename(value))) &&
         !existsSync(path.join(root, value))
       ) {
         errors.push(`${where} names missing path ${value}; update it to the current location.`)
       }
       // A bare file name is a path from the root: `package.json` is one, `posts.ts` is not.
-      if (
-        /^[\w@-][\w.@-]*\.(?:astro|c?js|mjs|ts|css|md|jsonc?|ya?ml|toml|py|sh|txt|xml|html)$/.test(
-          value,
-        ) &&
-        !existsSync(path.join(root, value))
-      ) {
+      if (fileName.test(value) && !existsSync(path.join(root, value))) {
         errors.push(`${where} names ${value} without its folder; write the path from the root.`)
       }
       if (/^[0-9a-f]{7,40}$/.test(value) && /[a-f]/.test(value) && /\d/.test(value)) {
         if (!isAncestor(value)) {
-          errors.push(`${where} cites ${value}, which is not a commit in the history of HEAD.`)
+          errors.push(
+            `${where} cites ${value}, which is not a commit in the history of ${mainRef}.`,
+          )
         }
       }
       // A removed file is cited as `<commit>:<path>`, at a commit where it exists.
@@ -149,7 +162,7 @@ test('repository paths and commits named in first-party Markdown exist', () => {
         }
         if (!exists) {
           errors.push(
-            `${where} cites ${value}, but the history of HEAD has no such commit and path.`,
+            `${where} cites ${value}, but the history of ${mainRef} has no such commit and path.`,
           )
         }
       }
@@ -160,15 +173,25 @@ test('repository paths and commits named in first-party Markdown exist', () => {
 
 test('each Markdown paragraph is one physical line', () => {
   // A wrapped line that follows a list can also join the wrong item when it renders.
+  // ponytail: line heuristics, not a Markdown parser; move to an AST when a real case slips by.
   const html = /^\s*<(?:!--|\/?(?:details|summary|div|p|table|picture|figure|section|img|br)\b)/i
-  const block = /^\s*(?:[-*+]\s|\d+[.)]\s|\||#|>|$)/
+  const block = /^\s*(?:[-*+]\s|\d+[.)]\s|\||#|$)/
   const errors = []
   for (const file of documents) {
     const lines = proseLines(file)
     // Skill front matter is YAML, not prose.
     const start = lines[0] === '---' ? lines.indexOf('---', 1) + 1 : 0
+    let code = false
     for (let index = start + 1; index < lines.length; index++) {
-      const [previous, line] = [lines[index - 1], lines[index]]
+      // An indented code block starts after a blank line and keeps its 4-space indent.
+      code = /^ {4}/.test(lines[index]) && (code || !lines[index - 1].trim())
+      if (code) continue
+      // Compare blockquote lines by the text after their `>` markers.
+      const quoted = /^\s*>/.test(lines[index])
+      if (quoted !== /^\s*>/.test(lines[index - 1]) && quoted) continue
+      const [previous, line] = [lines[index - 1], lines[index]].map((text) =>
+        quoted ? text.replace(/^\s*(?:>\s?)+/, '') : text,
+      )
       if (block.test(line) || html.test(line)) continue
       if (!previous.trim() || /^\s*(?:\||#)/.test(previous) || html.test(previous)) continue
       errors.push(`${file}:${index + 1} continues the paragraph above; join the two lines.`)
@@ -272,7 +295,8 @@ test('Agent Notes follow the lifecycle format', () => {
         : status === `Status: ${lifecycle}`
     if (!statusMatches) fail(`line 3 "${status}" does not match the ${lifecycle}/ folder`)
     if (lines[3] !== '') fail('line 4 is not blank')
-    const headings = lines.flatMap((line) => line.match(/^## (.+)$/)?.[1] ?? [])
+    // A fenced example heading is not a section.
+    const headings = proseLines(file).flatMap((line) => line.match(/^## (.+)$/)?.[1] ?? [])
     if (headings[0] !== 'Problem') fail('the body does not open with "## Problem"')
     for (const section of sections[lifecycle]) {
       const waived = section === 'Alternatives considered' && lines.includes(unrecorded)

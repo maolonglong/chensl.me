@@ -15,7 +15,7 @@ The [documentation standard](../../../docs/AGENTS.md) holds the rules: the homes
 4. **Fact-check.** Follow [Fact-check](#fact-check). Done when every command, path, default, and value is observed or traced, or deleted.
 5. **Agent Notes.** For a new note, run the [supersession check](#supersession-check). For a note that a change touches, keep its paths, names, and mechanisms current. Done when no two active notes own the same decision without links both ways.
 6. **Audit.** Run the slop checklist over every document that you touched, not only the lines you changed. Done when each item is fixed or is a deliberate keep that you can name.
-7. **Validate.** Run `node --test tests/docs.test.mjs` and `git diff --check`. When the change also reaches site output, run the checks in [Evidence for each change](../../../docs/testing.md#evidence-for-each-change). Read the complete diff once for correctness, then once for brevity. Done when the checks pass and both reads find nothing to fix.
+7. **Validate.** Run `node --test tests/docs*.test.mjs` and `git diff --check`. When the change also reaches site output, run the checks in [Evidence for each change](../../../docs/testing.md#evidence-for-each-change). Read the complete diff once for correctness, then once for brevity. Done when the checks pass and both reads find nothing to fix.
 8. **Report.** List the documents changed, the deliberate keeps, the claims that you could not verify, and each check that ran with its result. Done when each item in the list names a file or a command.
 
 ## Fact-check

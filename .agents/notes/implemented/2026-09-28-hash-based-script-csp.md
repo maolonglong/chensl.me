@@ -8,14 +8,14 @@ The site allowed inline script execution, so an injected inline script or event 
 
 ## Decision
 
-Scripts run only when Astro hashes them. A component `<script>` is bundled and hashed. The theme bootstrap, `src/scripts/theme-bootstrap.js`, is injected through `injectScript('head-inline')` in `astro.config.mjs`, so Astro emits the CSP before any executable script and hashes the exact emitted bytes.
+An inline script runs only when Astro hashes it, and an external script runs only from a source in the meta policy's `script-src`. A component `<script>` is bundled and hashed. The theme bootstrap, `src/scripts/theme-bootstrap.js`, is injected through `injectScript('head-inline')` in `astro.config.mjs`, so Astro emits the CSP before any executable script and hashes the exact emitted bytes.
 
 Two policies apply independently, and a browser enforces both:
 
 - The meta CSP from `astro.config.mjs` holds the script hashes, which only the build knows.
 - The HTTP header in `public/_headers` holds `frame-ancestors`, which a meta policy cannot enforce, and the other response protections.
 
-A third-party source must be allowed in both. Inline styles stay allowed for Shiki, table alignment, and the no-script fallback.
+`public/_headers` defines no `script-src`, so a script source goes only in the meta policy. A frame, style, image, or connection source goes in each policy that defines its directive. Inline styles stay allowed for Shiki, table alignment, and the no-script fallback.
 
 `tests/document.test.mjs` checks policy order and hashes in a real build, `scripts/check-site.mjs` rejects a permissive script policy, and `e2e/page-shell.spec.mjs` injects scripts and event handlers in a browser.
 
@@ -25,4 +25,4 @@ A third-party source must be allowed in both. Inline styles stay allowed for Shi
 
 ## Consequences
 
-Every interaction is a compiled component script. An `is:inline` script or an event-handler attribute does not run. A new third-party script, frame, or connection needs a source in both policies and in the site checker.
+Every interaction is a compiled component script. An `is:inline` script or an event-handler attribute does not run. A new third-party resource needs its source in each policy that defines its directive, and in `scripts/check-site.mjs`.
