@@ -34,11 +34,8 @@ export async function getStaticPaths({ routePattern }: GetStaticPathsOptions) {
 
 export async function GET({ props }: APIContext) {
   const subtype =
-    props.extension === '.svg'
-      ? 'svg+xml'
-      : props.extension === '.jpg'
-        ? 'jpeg'
-        : props.extension.slice(1)
+    ({ '.svg': 'svg+xml', '.jpg': 'jpeg' } as Record<string, string>)[props.extension] ??
+    props.extension.slice(1)
   return new Response(new Uint8Array(await readFile(props.source)), {
     headers: { 'Content-Type': `image/${subtype}` },
   })

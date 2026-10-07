@@ -34,13 +34,7 @@ function pageUrlFor(file) {
 }
 
 // Resolves an attribute value against its page; null when the value is not a valid URL.
-function resolveUrl(value, file) {
-  try {
-    return new URL(value, pageUrlFor(file))
-  } catch {
-    return null
-  }
-}
+const resolveUrl = (value, file) => URL.parse(value, pageUrlFor(file))
 
 function isInternalUrl(value, file) {
   const url = resolveUrl(value, file)
@@ -121,12 +115,11 @@ const homeTree = treeByFile.get(path.join(outputDir, 'index.html'))
 const canonicalUrl = (homeTree ? elements(homeTree, ['link']) : []).find((link) =>
   link.properties.rel?.some((value) => value.toLowerCase() === 'canonical'),
 )?.properties.href
-let siteOrigin = 'https://site.invalid'
-try {
-  siteOrigin = new URL(canonicalUrl).origin
-} catch {
+const canonical = URL.parse(canonicalUrl)
+if (!canonical) {
   errors.push('Unable to determine the site origin from the dist/index.html canonical URL')
 }
+const siteOrigin = canonical?.origin ?? 'https://site.invalid'
 
 const headers = outputFiles.has('_headers')
   ? await readFile(path.join(outputDir, '_headers'), 'utf8')
