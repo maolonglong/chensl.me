@@ -2,3 +2,7 @@ allowBuilds:
   esbuild: true
   sharp: true
   workerd: true
+
+overrides:
+  # Miniflare pins an affected sharp release (GHSA-wq5f-xc86-pv6w).
+  'miniflare@5.20260926.1-alpha>sharp': 0.35.5
