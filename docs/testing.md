@@ -20,7 +20,7 @@ Read this before you add or change a test, or when you choose the checks for a c
 | Browser specs | `e2e/*.spec.mjs` | Layout, interactions, themes, CSP in a real browser, and the upvote Actions against local D1 | `pnpm test:e2e` |
 | Exploration | agent-browser | A question no spec answers yet | By hand; turn a finding worth keeping into a spec |
 
-Some build regressions run `python3` on purpose: it reads the output with a parser that the site does not use ([decision](../.agents/notes/rejected/2026-10-04-replace-python-test-reader.md)).
+Some build regressions run `python3` on purpose: it reads the output with a parser that the site does not use ([decision](../.agents/notes/rejected/simplification/2026-10-04-replace-python-test-reader.md)).
 
 ## Evidence for each change
 
@@ -52,4 +52,4 @@ Run the narrowest check that fails for the regression, plus the checks below for
 
 - **Development.** `pnpm dev` serves drafts and reloads on edits. Under a process supervisor, set `ASTRO_DEV_BACKGROUND=0` so the supervisor owns the process. `/_astro/status` returns `{"ok":true}` when the server is ready.
 - **Production.** Run `pnpm build`, then `pnpm exec wrangler dev --port 8787`. It serves the existing build and does not rebuild. Use it, not `astro dev`, for CSP and upvote checks.
-- Local Wrangler adds UTF-8 to every `text/*` response. A charset that only the preview shows is not proof for production ([decision](../.agents/notes/rejected/2026-10-04-drop-headers-checks.md)).
+- Local Wrangler adds UTF-8 to every `text/*` response. A charset that only the preview shows is not proof for production ([decision](../.agents/notes/rejected/simplification/2026-10-04-drop-headers-checks.md)).

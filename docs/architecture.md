@@ -8,7 +8,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 - Keep pages light. Use a native HTML or CSS feature, such as a popover, before a script; keep each script small and owned by its component. Scripts enhance the page; they are not required to read it. When scripts do not run, the contents list still opens natively, script-only controls are hidden, and a notice that was stale at build time still shows (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
 - Use Astro's native features and official integrations first. For an Astro API or configuration change, read the Astro docs (the Astro Docs MCP when available) and confirm that the installed version supports it.
 - One Markdown pipeline renders every view of an article: the page, the RSS item, and the Markdown export metadata come from the same collection entry.
-- Scripts run only through Astro CSP hashes ([decision](../.agents/notes/implemented/2026-09-28-hash-based-script-csp.md)).
+- Scripts run only through Astro CSP hashes ([decision](../.agents/notes/implemented/architecture/2026-09-28-hash-based-script-csp.md)).
 - Build output is generated. Edit the source: `src/`, `public/`, the config files, and `vendor/`.
 
 ## Map
@@ -36,14 +36,14 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 - **Markdown.** `src/lib/markdown.mjs` adds alerts, scroll wrappers for code, tables, and display math, code captions, and the Shiki code themes. Temml renders TeX to MathML at build time.
 - **Routes.** `src/pages/` holds the home, the archive, article pages, the Markdown exports (`/blog/<id>/index.md`), `/index.xml`, `/llms.txt`, and the giscus theme stylesheets (`src/pages/css/`, built from `src/styles/giscus*.css` by `src/lib/assets.ts`). `src/lib/markdown-images.ts` publishes the original article images next to the exports.
 - **RSS.** `src/pages/index.xml.ts` renders each entry through the Astro container, so feed items use the same HTML and optimized images as pages, then makes every URL absolute.
-- **Fonts.** `src/lib/fonts.mjs` builds JinKai subsets from the source text before Astro resolves fonts ([decision](../.agents/notes/implemented/2026-10-06-subset-fonts-from-source-text.md)).
+- **Fonts.** `src/lib/fonts.mjs` builds JinKai subsets from the source text before Astro resolves fonts ([decision](../.agents/notes/implemented/simplification/2026-10-06-subset-fonts-from-source-text.md)).
 
 ## Runtime
 
 `wrangler.jsonc` defines the Worker, its bindings, and the static assets in `dist/client`.
 
 - **Static assets.** Workers Static Assets serves the prerendered files. `public/_headers` sets the response headers: the HTTP CSP, cache rules, and the text charsets that production does not add.
-- **Actions.** `src/actions/index.ts` defines `getVotes` and `upvote`. `src/middleware.ts` rejects cross-origin Action requests and makes Action responses private. The Actions use D1 (`VOTES`), two rate limiters, and the `ASSETS` binding to confirm that an ID is a published article ([decision](../.agents/notes/implemented/2026-09-29-validate-articles-through-built-pages.md)). Schema changes are files in `migrations/`.
+- **Actions.** `src/actions/index.ts` defines `getVotes` and `upvote`. `src/middleware.ts` rejects cross-origin Action requests and makes Action responses private. The Actions use D1 (`VOTES`), two rate limiters, and the `ASSETS` binding to confirm that an ID is a published article ([decision](../.agents/notes/implemented/architecture/2026-09-29-validate-articles-through-built-pages.md)). Schema changes are files in `migrations/`.
 - **Bindings.** Production and Workers Previews use separate D1 databases.
 
 ## Browser
@@ -54,7 +54,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 
 ## CSP
 
-Two policies apply independently ([decision](../.agents/notes/implemented/2026-09-28-hash-based-script-csp.md)):
+Two policies apply independently ([decision](../.agents/notes/implemented/architecture/2026-09-28-hash-based-script-csp.md)):
 
 - The meta policy from `astro.config.mjs` carries the script hashes and the external script sources.
 - The HTTP policy in `public/_headers` carries `frame-ancestors` and the other response protections.

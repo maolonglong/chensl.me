@@ -11,7 +11,7 @@ The [documentation standard](../../../docs/AGENTS.md) holds the rules: the homes
 
 1. **Read.** Read root `AGENTS.md`, the standard, the target document, and the source and tests that own each fact it names. Done when you can name the owner of every fact you will write or keep.
 2. **Place.** Choose one home for each fact from the standard's table. When code, configuration, or a test carries the fact, link the source instead. Done when every new sentence has one home, and a search for its distinctive phrase finds no second copy.
-3. **Write.** Apply the writing rules, and the [prose coverage](#prose-coverage) for the kind of text. Done when the text passes the admission rule sentence by sentence, and each shortened passage keeps all of its propositions.
+3. **Write.** Apply the writing rules, and the [prose coverage](#prose-coverage) for the kind of text. Before you shorten or restructure text, read the [calibration examples](references/examples.md). Done when the text passes the admission rule sentence by sentence, and each shortened passage keeps all of its propositions.
 4. **Fact-check.** Follow [Fact-check](#fact-check). Done when every command, path, default, and value is observed or traced, or deleted.
 5. **Agent Notes.** For a new note, run the [supersession check](#supersession-check). For a note that a change touches, keep its paths, names, and mechanisms current. Done when no two active notes own the same decision without links both ways.
 6. **Audit.** Run the slop checklist over every document that you touched, not only the lines you changed, then the [newcomer test](#newcomer-test). Done when each item is fixed or is a deliberate keep that you can name.
@@ -59,7 +59,7 @@ A reader with no context reads root `AGENTS.md` and at most three linked pages. 
 
 ## Supersession check
 
-1. Search the active notes for the same decision, mechanism, or rejected option: `grep -ril <topic> .agents/notes/`. Search for the names of the files and settings that the decision touches, not only its title.
+1. Search the active notes for the same decision, mechanism, or rejected option: `grep -ril --exclude-dir=archived <topic> .agents/notes/`. Search for the names of the files and settings that the decision touches, not only its title.
 2. Read each match. Classify it as fully superseded, partly superseded, an obsolete rejection, or unrelated, by the [Agent Note rules](../../notes/AGENTS.md#retention).
 3. Apply the result in the same commit as the new note: delete or update the old note, add the links both ways, and repair inbound links.
 
@@ -67,10 +67,25 @@ Done when each match has a class and its result is in the commit.
 
 ## Audit the notes
 
-When you review the notes as a set, classify each one by the [retention rules](../../notes/AGENTS.md#retention). Word count and age are not criteria. Inspect every note in scope, and report the borderline cases.
+When you review the notes as a set, classify each active note by the [retention rules](../../notes/AGENTS.md#retention) as keep, archive, or delete. Word count and age are not criteria. Inspect every note in scope, and report the borderline cases. Skip `archived/`.
 
 These cases set the bar:
 
-- **Keep** [TypeScript 6 for astro check](../../notes/implemented/2026-09-27-typescript-6-for-astro-check.md): it is short, but its reopen condition stops a TypeScript 7 upgrade that would break `pnpm check`.
-- **Keep** [delete the archived W05 font](../../notes/rejected/2026-10-04-delete-archived-w05-font.md): removing an unused 19 MB file stays tempting, and the note says why it loses.
+- **Keep** [TypeScript 6 for astro check](../../notes/implemented/process/2026-09-27-typescript-6-for-astro-check.md): it is short, but its reopen condition stops a TypeScript 7 upgrade that would break `pnpm check`.
+- **Keep** [delete the archived W05 font](../../notes/rejected/simplification/2026-10-04-delete-archived-w05-font.md): removing an unused 19 MB file stays tempting, and the note says why it loses.
 - **Delete** a note that only records a new color for a hover state, or a renamed helper: nothing in it can guide a later change.
+
+## Archive a note
+
+Archive a note only when the retention rules say so, in a commit that does nothing else to it.
+
+1. Move it with its name unchanged: `git mv .agents/notes/implemented/<class>/<name> .agents/notes/archived/<class>/<name>`.
+2. Insert `Archived: YYYY-MM-DD`, with today's date, as line 4, directly below `Status: implemented`. Keep the blank line after it.
+3. Seal it from the repository root: `shasum -a 256 .agents/notes/archived/<class>/<name> >> .agents/notes/archived/SEALS.sha256`.
+4. Repair or delete each inbound link. Keep a link only where the text cites history.
+
+Done when `node --test tests/docs.test.mjs` passes and the diff of the note shows only the move and line 4.
+
+## Calibrate
+
+[Examples](references/examples.md) holds the cases that set the bar for shortening and restructuring. When the owner decides a case that two versions could satisfy, add it there in the same commit: the principle, the versions, and the commit that shows it. Then apply the principle to the analogous passages in scope.

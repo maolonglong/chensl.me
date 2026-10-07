@@ -16,7 +16,7 @@ Read this before you change layout, styles, fonts, or browser interactions. It s
 Article text follows the `.prose` rules of Kami's site pages. These differences are deliberate:
 
 - **Dark theme.** Kami defines no dark palette, so the dark theme is this site's own. Kami's link color fails contrast on the dark background, so dark links use lighter tints.
-- **Headings, `strong`, and table headers** use the near-black heading color. The single W04 weight gives 500 no visible extra stroke, so color sets them apart ([decision](../.agents/notes/implemented/2026-09-23-serve-jinkai-w04-only.md)).
+- **Headings, `strong`, and table headers** use the near-black heading color. The single W04 weight gives 500 no visible extra stroke, so color sets them apart ([decision](../.agents/notes/implemented/simplification/2026-09-23-serve-jinkai-w04-only.md)).
 - **List markers** are muted, not ink-blue as in Kami's print spec, because ink-blue means a link.
 - **Alerts** use the code background fill, because Kami's ivory barely separates from the page.
 - **Code blocks** follow Kami's landing page: an ivory fill, a thin border, and near-black base text. Token colors follow Kami's syntax table.

@@ -33,7 +33,7 @@ The page, the RSS item, and the Markdown export show the same declaration, and t
 
 ## Upvotes
 
-A reader can upvote an article once per browser identity ([decision](../.agents/notes/implemented/2026-09-28-anonymous-cookie-upvotes.md)). `e2e/upvotes.spec.mjs` guards the behavior.
+A reader can upvote an article once per browser identity ([decision](../.agents/notes/implemented/feature/2026-09-28-anonymous-cookie-upvotes.md)). `e2e/upvotes.spec.mjs` guards the behavior.
 
 - The button responds at once and does not wait for the server. The display is not a confirmation that the vote was saved; a reload shows the stored state.
 - Votes are anonymous. The site stores article and visitor IDs, not IP addresses.

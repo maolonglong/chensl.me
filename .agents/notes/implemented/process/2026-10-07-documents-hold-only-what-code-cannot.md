@@ -15,14 +15,15 @@ The maintenance guide (`6b0a84d:docs/maintenance.md`) mixed six kinds of content
 
 ## Decision
 
-The repository follows the [documentation standard](../../../docs/AGENTS.md), which adapts two references: OpenAI's harness engineering report (a short `AGENTS.md` as a map, the repository as the system of record, mechanical checks on the knowledge base) and the documentation workflow of `deepseek-ai/deepseek-harness`, as read at [its commit 5badb15009](https://github.com/deepseek-ai/deepseek-harness/tree/5badb15009).
+The repository follows the [documentation standard](../../../../docs/AGENTS.md), which adapts two references: OpenAI's harness engineering report (a short `AGENTS.md` as a map, the repository as the system of record, mechanical checks on the knowledge base) and the documentation workflow of `deepseek-ai/deepseek-harness`, as read at [its commit 5badb15009](https://github.com/deepseek-ai/deepseek-harness/tree/5badb15009).
 
 - Each kind of content has one home: root `AGENTS.md` for standing orders and routing; subtree `AGENTS.md` files for the rules of their folder; `docs/architecture.md`, `docs/product.md`, `docs/design.md`, and `docs/testing.md` for reference; Agent Notes for decisions; project skills for procedures.
 - A sentence enters a document only if code, configuration, and tests cannot carry it. A value appears only with the test that pins it.
-- The standard holds the rules, and the [`maintain-docs`](../../skills/maintain-docs/SKILL.md) skill holds the procedure. DeepSeek splits the same way, between `docs/AGENTS.md` and its `dsh-doc`, `dsh-prose-standard`, and `dsh-archive-agent-notes` skills.
+- The standard holds the rules, and the [`maintain-docs`](../../../skills/maintain-docs/SKILL.md) skill holds the procedure. DeepSeek splits the same way, between `docs/AGENTS.md` and its `dsh-doc`, `dsh-prose-standard`, and `dsh-archive-agent-notes` skills.
 - Shortening keeps every proposition: actor, condition, modality, exception, and failure. This is DeepSeek's complete-proposition rule, and it balances the word budgets.
 - Review adds two tests from DeepSeek, as steps in `maintain-docs`: the newcomer test from `dsh-doc`, and the test for references that only the writing session can resolve, from `dsh-trim-cot-leakage`.
-- Agent Notes follow DeepSeek's lifecycle, format, supersession, consolidation, and retention rules. Only notes dated before the format started may waive their alternatives.
+- Agent Notes follow DeepSeek's lifecycle, format, supersession, consolidation, and retention rules. Only notes dated before the format started may waive their alternatives. [A later decision](2026-10-08-agent-note-classes-and-archive.md) adds DeepSeek's class folders and sealed archive.
+- `maintain-docs` keeps [calibration examples](../../../skills/maintain-docs/references/examples.md) from this repository's history, as DeepSeek's `dsh-prose-standard` does. When the owner decides a borderline case, it becomes an example.
 - `tests/docs.test.mjs` enforces the rules that a script can decide, and `tests/docs-rejects.test.mjs` proves that each of those checks can fail.
 - Decisions that only an agent's private memory held are Agent Notes.
 
@@ -35,10 +36,6 @@ The repository follows the [documentation standard](../../../docs/AGENTS.md), wh
 **Procedures in a cookbook folder under `docs/` instead of skills.** The owner chose skills: an agent loads a skill when its description matches the task, while a cookbook page depends on a routing line.
 
 **A word budget for root `AGENTS.md` only.** Only that file is in every session, but the other standing documents grow too. A ceiling makes an agent relocate or condense before it adds, as DeepSeek's budgets do.
-
-**DeepSeek's class folders** (`feature/`, `bug-fix/`, `architecture/`, and others) under each lifecycle. With about a dozen notes, a folder listing and a search find a note at once, and a class adds one more choice for each note.
-
-**DeepSeek's frozen archive** for implemented notes that no longer guide work. The retention rules either keep a note or delete it, and git keeps the deleted text. An archive pays off when many notes have historical value but no future use.
 
 **Chinese counterparts for each document**, with a pairing check. The documents are in English, and one maintainer reads them. A pair doubles the cost of each edit.
 
@@ -60,8 +57,6 @@ The repository follows the [documentation standard](../../../docs/AGENTS.md), wh
 
 ## Reopen when
 
-- A lifecycle folder holds about 50 notes, so a listing no longer fits on one screen: add class folders.
-- Many implemented notes have historical value but no future use: add a frozen archive.
 - An incident needs a causal chain that does not fit a commit body: add a postmortem folder.
 - A reference document has too many sections to scan: add a Summary and a table of contents.
 - Copied values come back in review often: add a check that, for example, rejects a CSS value in a document that names no test.

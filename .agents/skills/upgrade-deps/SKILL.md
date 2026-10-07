@@ -19,7 +19,7 @@ description: Upgrade chensl.me dependencies. Use for a Dependabot pull request, 
    The output must start at TARGET_TAG, and CURRENT_TAG must be in the tag list; a wrong tag gives an empty file or runs past the range. Drop `--exclude-pre-releases` only when a prerelease is in scope. Done when every breaking change and deprecation in the range is matched to the code that uses it, or marked as not used here.
 3. **Constraints.** Check what pins the versions:
    - A package pinned to an exact version in `package.json` moves with `pnpm-lock.yaml` in the same commit.
-   - Astro: confirm that the official Markdown processor and integrations support the target, and that `@astrojs/check` supports the TypeScript version ([decision](../../notes/implemented/2026-09-27-typescript-6-for-astro-check.md)).
+   - Astro: confirm that the official Markdown processor and integrations support the target, and that `@astrojs/check` supports the TypeScript version ([decision](../../notes/implemented/process/2026-09-27-typescript-6-for-astro-check.md)).
    - Node.js: the CI `node-version` in `.github/workflows/ci.yml` and the requirement in `README.md` change together. `engines.node` in `package.json` is the lowest supported version; it equals the `engines.node` of the installed `astro` package, so raise it when Astro raises its own.
 
    Done when each constraint is satisfied or the upgrade stops with the reason.

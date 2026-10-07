@@ -10,7 +10,7 @@ Every page downloaded two JinKai subsets: W04 for body text and W05 for headings
 
 The site serves only W04. `src/lib/fonts.mjs` declares it for weights 400 to 500, so headings and `<strong>` use the regular glyphs. `font-synthesis: none` in `src/styles/global.css` stops the browser from faking a bold. Size and color carry the hierarchy.
 
-The W05 source file stays in `vendor/fonts/tsanger-jinkai02/` as an archival copy of the upstream source; [NOTICE.md](../../../public/fonts/tsanger-jinkai02/NOTICE.md) records its digest. See [the rejected proposal to delete it](../rejected/2026-10-04-delete-archived-w05-font.md).
+The W05 source file stays in `vendor/fonts/tsanger-jinkai02/` as an archival copy of the upstream source; [NOTICE.md](../../../../public/fonts/tsanger-jinkai02/NOTICE.md) records its digest. See [the rejected proposal to delete it](../../rejected/simplification/2026-10-04-delete-archived-w05-font.md).
 
 `tests/fonts.test.mjs` pins the result: every JinKai face declares weights 400 to 500, and the cold-visit font cost stays within its budget.
 
