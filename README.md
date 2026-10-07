@@ -1,14 +1,14 @@
 # chensl.me
 
-Source for [chensl.me](https://chensl.me), a personal site and technical blog built with Astro and deployed to Cloudflare Workers. Pages are prerendered static assets; the official Cloudflare adapter runs the upvote Actions. There is no client UI framework.
+Source for [chensl.me](https://chensl.me), a personal site and technical blog. Astro prerenders the pages to static assets on Cloudflare Workers, and a small Worker runs the article upvotes. There is no client UI framework.
 
 ## Setup
 
-Use Node.js 26 and the pnpm version pinned in `package.json` (Astro requires Node.js 22.12 or later). Python 3 is also required: the tests use its standard library as an independent HTML and XML reader.
+Use Node.js 26 and the pnpm version pinned in `package.json`. The tests also need Python 3, which they use as an independent HTML and XML reader.
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm cf:types   # regenerate binding types from wrangler.jsonc
+pnpm cf:types   # generate binding types from wrangler.jsonc
 pnpm exec wrangler d1 migrations apply VOTES --local
 ```
 
@@ -16,39 +16,27 @@ pnpm exec wrangler d1 migrations apply VOTES --local
 
 ```sh
 pnpm dev        # local preview, including drafts
-pnpm build      # production build: static assets in dist/client, Worker in dist/server
-pnpm format     # Prettier for maintained code (see .prettierignore)
-pnpm check      # formatting, lint, type check, build, regression tests, output validation
-pnpm test:e2e   # build, then Playwright specs against a local Wrangler preview
-pnpm exec wrangler deploy --dry-run   # validate Cloudflare configuration after a build
+pnpm check      # all fast checks and the production build
+pnpm test:e2e   # browser specs against a local Wrangler preview
+pnpm format     # format maintained code
 ```
 
-Regression tests build disposable Astro fixtures. TypeScript stays on 6.x because the current `astro check` does not support TypeScript 7.
-
-Components own their scoped styles and compiled scripts; `src/styles/global.css` holds design tokens and Markdown typography. Prerendering runs in Node with build-time image optimization; the Giscus theme CSS route reads its stylesheets with `node:fs`. Sessions are disabled; no KV or Cloudflare Images resource is required.
-
-## Deployment
-
-GitHub Actions ([CI workflow](.github/workflows/ci.yml)) runs `pnpm check`, the Wrangler dry run and the Playwright specs on pushes and pull requests; it does not publish the site. Cloudflare's Git integration builds and deploys production when `main` is pushed, configured in the Cloudflare dashboard following [Astro's Cloudflare guide](https://docs.astro.build/en/guides/deploy/cloudflare/): build command `pnpm build`, deploy command `pnpm exec wrangler deploy`. `pnpm run deploy` deploys manually; plain `pnpm deploy` is a built-in pnpm command and does not run this script.
-
-`wrangler.jsonc` binds production and Workers Previews to separate D1 databases. Apply new migrations remotely before deploying code that needs them; see [Shipping and deployment](docs/maintenance.md#shipping-and-deployment).
-
-Upvotes are anonymous and cookie-based, with per-address rate limits; this is not a one-person-one-vote system. See [Upvotes and D1](docs/maintenance.md#upvotes-and-d1).
+`package.json` lists every script. [Testing](docs/testing.md) explains which checks a change needs and how to run a production preview.
 
 ## Writing
 
-Articles live under `src/content/blog`, with YAML front matter: `title`, `pubDate`, and optional `description`, `updatedDate`, `draft`, `comments` and `creation`; unknown fields are rejected. `creation` declares how the article was written; see [Content and RSS](docs/maintenance.md#content-and-rss). Drafts and future posts appear only in `pnpm dev`. The file or directory name is the URL (`/blog/<name>/`), so keep existing names stable.
+Articles live in `src/content/blog/`, as `<name>.md` or `<name>/index.md`. The name is the URL, `/blog/<name>/`, so keep it stable. [`src/content.config.ts`](src/content.config.ts) defines the front matter, and the build rejects unknown fields. [Product](docs/product.md) explains drafts, scheduled posts, creation declarations, comments, and the exports.
 
-Keep local images alongside the Markdown and use relative paths with descriptive alt text; Astro optimizes them. Put unprocessed downloads in `public/downloads/` and link to `/downloads/...`. Prefer local images: a remote image source must be allowed in both the Astro CSP and `public/_headers`.
+Keep local images next to the Markdown, link them with relative paths, and give them descriptive alt text; Astro optimizes them. Put files for download in `public/downloads/`. A remote image needs its origin in both CSP policies ([Architecture](docs/architecture.md#csp)).
 
-Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, TeX math (`$…$` inline, `$$…$$` display), and code captions written as `title="db/user.go"` on the fence. The RSS feed at `/index.xml` renders the same content.
+Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, TeX math (`$…$` inline, `$$…$$` display), and code captions (`title="db/user.go"` on the fence).
 
-Published articles have a raw Markdown version at `/blog/<name>/index.md`, including their local images. `/llms.txt` indexes these exports for readers and agents.
+JinKai font subsets are built from the source text, so new text needs no font step; restart `pnpm dev` to refresh them. Font licensing is in [NOTICE.md](public/fonts/tsanger-jinkai02/NOTICE.md).
 
-JinKai font subsets are generated from source text at build time and dev-server startup, so new text needs no font command; restart the dev server to refresh them. Font licensing is in [NOTICE.md](public/fonts/tsanger-jinkai02/NOTICE.md).
+## Deployment
 
-## Further reading
+GitHub Actions runs the checks on every push and pull request; it does not publish the site. Cloudflare's Git integration builds and deploys production when `main` changes. `pnpm run deploy` builds and deploys manually from the local tree. The Worker needs the D1 databases and rate limiters in `wrangler.jsonc`, and no KV or Cloudflare Images resource.
 
-- [AGENTS.md](AGENTS.md): instructions for coding agents.
-- [Site design contracts](docs/design.md): layout, typography, accessibility and interaction rules.
-- [Maintenance workflows](docs/maintenance.md): browser verification, CSP, content and RSS, upvotes, dependency upgrades, shipping.
+## For agents and maintainers
+
+[AGENTS.md](AGENTS.md) is the entry point: standing orders and a map of the documents in [`docs/`](docs/AGENTS.md), the decision records in `.agents/notes/`, and the project skills.

@@ -15,8 +15,4 @@ The original TTF files from Kami are archived in this public repository under `v
 - `TsangerJinKai02-W04.ttf`: `47a9b416c27ad5436794c880ce3f666a3135a862ed1e2c91aa7db48914a6a487`
 - `TsangerJinKai02-W05.ttf`: `9744dc96801ec8c91a3390bed24c993d4722fb406e1d879177d343d40e985a6e`
 
-Only W04 is served on the web, following Kami's rule that W05 is for PDF output. `src/lib/fonts.mjs` declares it for weights 400-500 through Astro's local Fonts API, so headings and bold text reuse the regular glyphs instead of fetching a second weight or synthesizing bold. All faces use `font-display: swap`, without preloads.
-
-At build time and dev-server startup, `subset-font` (HarfBuzz/WASM) generates WOFF2 subsets under `.astro/site-fonts/` from source text, including decoded HTML entities. The common subset covers page templates and shared UI; the article subset covers remaining blog characters. They have disjoint Unicode ranges. The home page needs only the common subset. The build retains source name IDs, including copyright metadata; regression checks verify character coverage and deterministic output. Astro fingerprints the resulting files under `/_astro/fonts/`.
-
-No other JinKai files are served. Characters outside the source text, such as text a browser extension adds, or text edited in the dev server before a restart, use the next font in the `--font-serif` stack. To update the source font, replace the archived TTF and rebuild.
+The site serves only WOFF2 subsets of W04, which the build generates from the source text with their name tables, including the copyright metadata, kept. W05 is archived but not served. To update the source font, replace the archived TTF and rebuild.

@@ -126,7 +126,7 @@ test('repository paths and commits named in first-party Markdown exist', () => {
 
 test('root AGENTS.md stays within its word budget', () => {
   // AGENTS.md is in every agent session. Move detail behind a pointer before you raise this.
-  const budget = 600
+  const budget = 450
   const words = readFileSync(path.join(root, 'AGENTS.md'), 'utf8').split(/\s+/).filter(Boolean)
   assert.ok(
     words.length <= budget,

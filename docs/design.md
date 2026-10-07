@@ -1,16 +1,43 @@
-# Site design contracts
+# Design
 
-Read when changing layout, styles, fonts, or browser interactions. Paths are relative to the repository root.
+Read this before you change layout, styles, fonts, or browser interactions. It states the visual intent and the reasons behind it. The values live in `src/styles/global.css` (tokens and Markdown typography) and in each component's scoped styles; a value appears here only with the test that pins it.
 
-Kami is a visual reference, not this site's implementation specification. Its landing-page defaults for unadorned links, Latin-first font stacks, and self-scrolling tables do not override these contracts. Read only the relevant parts of [Kami's design reference](../.agents/skills/kami/references/design.md): the Principles, Color, Typography, Spacing, and Depth & Separation sections.
+## Intent
 
-- Header, main, and footer share the same `42rem` column; short pages keep the footer at the bottom. Reuse `src/styles/global.css` tokens.
-- Keep headings at least as large as the article body. At equal sizes, distinguish headings through weight, color, and spacing: more space above than below. Preserve underlined article/footer links, archive visited-link styling, visible focus, and meaningful diff signs.
-- Emphasis stays upright: `<em>` carries CJK emphasis dots, `<strong>` weight 500 in the heading color. Do not use ink-blue for emphasis; on this site it means a link.
-- Kami defines no dark palette, so the whole dark theme is this site's own; its code-block, inline-code, and alert fill uses Kami's `#30302e` dark-surface, and code strings use `#c2c0b6`, between the dark body and comment grays. Beyond Kami's light palette, the site deliberately adds only these chromatic values: dark-mode link tints (Kami's `#2D5A8A` is about 2.6:1 on `#141413`), the selection and visited tints in `global.css`, and giscus's red/green/amber diff and state colors, confined to `giscus-*.css`. Register any further color here first.
-- Article text follows the `.prose` rules of Kami's site pages: 16px body at line-height 1.65 in olive `#504e49`, 8px between list items, list markers in `--muted-color`, and 13.5px inline code on the `#f0eee6` fill. Tables set 14px text, as on Kami's site, with Kami's heavier header rule: 1px under headers, 0.5px between rows, both in `--border-color`. The 16px body holds a 42rem column near 42 characters per line.
-- Deliberate differences from Kami, not drift. Headings, `strong` and table headers use near-black `--heading-color`, because the single W04 file gives weight 500 no visible extra weight and color is what sets them apart. Kami's print spec colors list markers ink-blue; this site does not, since ink-blue means a link here. Alerts fill with `--code-background-color` (`#f0eee6`) because Kami's ivory barely separates from parchment. Code blocks follow Kami's landing page: an ivory fill, a 1px `--border-color` edge, and near-black base text. Token colors follow Kami's syntax table: ink-blue keywords, olive strings, dark-warm numbers, stone comments; names share the base color. The 13px code caption and narrow-screen code stay off Kami's ladder: a file label sits below the code it names, and Kami itself shrinks code on phones.
-- Keep the single prerendered contents list: a hover rail beside the column and a native popover elsewhere, available without JavaScript when there are at least three H2/H3 headings. Keep SVG controls and 44px touch targets.
-- Preserve theme cycling `auto` → `light` → `dark`, OS tracking in auto, forced `color-scheme`, persistence, storage-failure handling, accessible labels, and no-script fallback. For script changes, read [CSP and theme bootstrap](maintenance.md#csp-and-theme-bootstrap).
-- Keep JinKai first for mixed Chinese/Latin text, W04 alone at weights 400–500, and synthesized bold disabled. Fonts remain self-hosted with `font-display: swap`, content-versioned URLs, no preloads, and build-time subsets that cover every character in the source text. Declare code fonts for all pages; let the browser load them only when used. The cold-visit font budget is 640 KiB.
-- Keep tables inside focusable `.table-scroll` wrappers, with column alignment preserved. Making the table itself the scroll box loses its accessibility role. Preserve code-fence captions without a `title` attribute on the code wrapper, which would add a tooltip.
+- A warm neutral page with ink-blue links, JinKai type, an introductory home, a year-grouped archive, and single-column articles.
+- Header, main, and footer share one reading column. Short pages keep the footer at the bottom.
+- Ink-blue means a link. Emphasis, list markers, and headings use other means.
+- Every interactive control works with a keyboard, has a visible focus ring and an accessible name, and has a touch target of at least 44 px (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`).
+
+## Kami as the reference
+
+[Kami](https://github.com/tw93/Kami) is the visual reference, not the specification. Read only the Principles, Color, Typography, Spacing, and Depth & Separation sections of [Kami's design reference](../.agents/skills/kami/references/design.md). Kami's landing-page defaults for plain links, Latin-first font stacks, and self-scrolling tables do not apply here.
+
+Article text follows the `.prose` rules of Kami's site pages. These differences are deliberate:
+
+- **Dark theme.** Kami defines no dark palette, so the dark theme is this site's own. Kami's link color fails contrast on the dark background, so dark links use lighter tints.
+- **Headings, `strong`, and table headers** use the near-black heading color. The single W04 weight gives 500 no visible extra stroke, so color sets them apart ([decision](../.agents/notes/implemented/2026-09-23-serve-jinkai-w04-only.md)).
+- **List markers** are muted, not ink-blue as in Kami's print spec, because ink-blue means a link.
+- **Alerts** use the code background fill, because Kami's ivory barely separates from the page.
+- **Code blocks** follow Kami's landing page: an ivory fill, a thin border, and near-black base text. Token colors follow Kami's syntax table.
+- **Code captions and code on narrow screens** use smaller sizes than Kami's type scale: a file label sits below the code it names, and Kami itself shrinks code on phones.
+
+## Color
+
+Beyond Kami's light palette, the site adds these chromatic values: the dark-mode link tints, the selection and visited tints in `global.css`, and the red, green, and amber diff and state colors in the giscus themes (`src/styles/giscus*.css`). Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
+
+## Typography
+
+- JinKai comes first for mixed Chinese and Latin text. W04 alone covers weights 400 to 500, and synthesized bold is off.
+- Fonts are self-hosted with `font-display: swap` and content-versioned URLs, without preloads. Code fonts are declared on every page, and the browser loads them only when a page uses them (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
+- A cold visit to the home page loads at most 100 KiB of JinKai (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
+- Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart.
+- `<em>` stays upright and carries CJK emphasis dots. `<strong>` uses weight 500 in the heading color.
+
+## Components
+
+- **Contents.** One prerendered list: a hover rail beside the column where a pointer can hover and the column leaves room, a native popover elsewhere (`e2e/contents.spec.mjs`).
+- **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails (`e2e/appearance.spec.mjs`).
+- **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
+- **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
+- **Links** in article text and the footer are underlined. Archive links show a visited color.

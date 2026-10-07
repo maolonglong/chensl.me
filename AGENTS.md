@@ -1,39 +1,28 @@
 # AGENTS.md
 
-## Project boundaries
+chensl.me is a personal site and blog. Astro prerenders the pages to static assets on Cloudflare Workers; the Worker runs one feature, the upvote Actions on D1. This file holds the standing orders and the map. Facts live in the documents it links.
 
-- Keep agent instructions in `AGENTS.md`. README is the repository homepage for human readers; `docs/` holds internal references for maintainers and agents, including shared design contracts and maintenance workflows. Link to source or shared technical references for facts rather than duplicating them as agent rules.
-- Keep pages prerendered with Astro components, scoped CSS, and native browser scripts. The existing Cloudflare adapter runs upvote Actions backed by D1; add client frameworks or further server-rendered behavior only for concrete requirements.
-- Prefer Astro's native capabilities and official integrations. For Astro API or configuration changes, consult Astro Docs MCP when available, otherwise the official docs; verify compatibility with the installed version. Latest documentation is not a version guarantee.
-- Edit source, not `dist/`, `.astro/`, `.wrangler/`, or `node_modules/`. `public/` contains source assets.
-- Preserve the author's words, emojis, dates, and credits. Keep article URLs stable; the blog's only RSS feed is `/index.xml`. Use Astro's default heading and footnote anchors.
-- Pushing `main` triggers production deployment through Cloudflare's external Git integration. Before shipping or changing deployment configuration, read [Shipping and deployment](docs/maintenance.md#shipping-and-deployment).
-- Local builds, previews, local D1 migrations, `wrangler deploy --dry-run`, and E2E checks against disposable local data need no approval. Remote D1 migrations, Cloudflare resource or dashboard changes, manual deployment, and pushing `main` need explicit authorization.
-- Manage installed skills with `npx skills`, committing skill changes and `skills-lock.json` together rather than editing either by hand.
+## Standing orders
 
-## Verification
+- **Approval.** Local builds, previews, local D1 migrations, `pnpm exec wrangler deploy --dry-run`, and E2E runs against disposable local data need no approval. Ask before every change to shared state: a push to `main` (it deploys production), a remote D1 migration, a manual deployment, or a Cloudflare resource or dashboard change. One approval covers one action.
+- **Production bindings.** A version preview URL uses the production D1. Send remote test writes only to Workers Previews, with approval.
+- **Content.** Articles in `src/content/blog/` keep the author's words, emojis, dates, and credits. File and directory names are article URLs, so they stay stable. `/index.xml` is the only RSS feed.
+- **Source.** Edit source files, including `public/`. `dist/`, `.astro/`, `.wrangler/`, and `node_modules/` are generated.
+- **Skills.** Third-party skills change only through `npx skills`, committed together with `skills-lock.json`. Project skills are the folders in `.agents/skills/` that `skills-lock.json` does not list; edit them by hand, and link each one from `.claude/skills/`.
+- **Documents.** Each fact has one home. A change to documented behavior updates that home in the same commit. Before you write any document, read the [documentation standard](docs/AGENTS.md).
 
-- For site output or build changes, run `pnpm check`. Apply formatting with `pnpm format`.
-- For dependencies or Cloudflare configuration, also run `pnpm exec wrangler deploy --dry-run` against the freshly built output.
-- For layout, styles, fonts, or browser interactions, run `pnpm test:e2e`. Follow [Preview and browser verification](docs/maintenance.md#preview-and-browser-verification) for the preview it uses.
-- Keep browser regression coverage in Playwright specs under `e2e/`. Use `agent-browser` to explore by hand, and turn any finding worth keeping into a spec.
-- Inspect the screenshots in `test-results/screenshots`, including affected light/dark, narrow/wide, and open/closed states; successful capture alone is not visual verification. Add targeted checks for affected states the specs do not exercise. Browser viewport emulation is not real-device testing.
-- For tooling-only changes, run affected checks. Documentation outside site content needs command/link verification, not a site build.
+## Map
 
-## Design constraints
+| Before you… | Read |
+| --- | --- |
+| change how the site builds, serves, or runs scripts, or touch the CSP | [Architecture](docs/architecture.md) |
+| change what readers see or rely on: pages, articles, feeds, exports, upvotes, comments | [Product](docs/product.md) |
+| change layout, styles, fonts, or browser interactions | [Design](docs/design.md) |
+| add or change a test, or choose the checks for a change | [Testing](docs/testing.md) |
+| remove, replace, or reintroduce something, or propose a simplification | [Agent Notes](.agents/notes/AGENTS.md): search them for the topic first |
+| write a document, an Agent Note, or a skill | [Documentation standard](docs/AGENTS.md) |
 
-- Preserve the warm neutral/ink-blue palette, JinKai typography, introductory home, year-grouped archive, and single-column articles. Reuse `src/styles/global.css` tokens.
-- Before changing layout, styles, fonts, or browser interactions, read [Site design contracts](docs/design.md) for the site's accessibility, typography, interaction requirements, and scoped Kami reference.
+## Done
 
-## Read when needed
-
-- Before changing CSP or the pre-paint theme script, read [CSP and theme bootstrap](docs/maintenance.md#csp-and-theme-bootstrap) for policy ownership, script ordering, and production-preview verification.
-- Before dependency upgrades, read [Dependency upgrades](docs/maintenance.md#dependency-upgrades) for release-note collection and version synchronization.
-- Before changing fonts or font subsetting, read [font licensing and subsetting](public/fonts/tsanger-jinkai02/NOTICE.md). Fonts are not covered by the repository's code license.
-- Before changing content conventions, publication behavior, or RSS, read [Content and RSS](docs/maintenance.md#content-and-rss).
-- Before changing upvote Actions, cookies, or D1 behavior, read [Upvotes and D1](docs/maintenance.md#upvotes-and-d1) for vote semantics, disposable-local-data E2E checks, and remote migration boundaries.
-- Before changing browser verification, read [Preview and browser verification](docs/maintenance.md#preview-and-browser-verification), `playwright.config.mjs`, and `e2e/site.mjs`.
-
-## Commits
-
-- Use Conventional Commits: `<type>(scope): <imperative summary>` (scope optional, at most 72 characters, no trailing period). Include a body explaining why, actual verification, and material limitations.
+- Run the checks that [Testing](docs/testing.md#evidence-for-each-change) names for each surface you changed. Report each check you ran with its result, and each check you skipped with the reason.
+- Commits follow Conventional Commits: `<type>(scope): <imperative summary>`, with an optional scope, at most 72 characters, and no trailing period. The body explains why, the verification that actually ran, and the material limits.
