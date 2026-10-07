@@ -34,4 +34,4 @@ No note qualified for the archive when it was built: each implemented note still
 
 Each new note needs a class, and a move between lifecycles keeps it. Links to notes are one folder deeper. A note that becomes history keeps its full text in the tree, outside the active notes that agents search.
 
-The seal check compares with `main`. Before a commit on `main`, that is the previous commit, so `node --test tests/docs.test.mjs` catches a commit that rewrites an archived note and its seal line together. In CI, `main` is the pushed commit itself, so CI cannot see that edit.
+The archive guards the seals only where the hook runs. In CI, `main` is the pushed commit itself, so CI cannot see a commit that rewrites an archived note and its seal line together. The pre-commit hook compares with the `main` before the commit, but `git commit --no-verify` skips it.

@@ -1,0 +1,26 @@
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "whitespace"
+name = "git diff --check"
+language = "system"
+entry = "git diff --cached --check"
+pass_filenames = false
+
+# Runs on every commit: a rename anywhere can break a path that a document names.
+[[repos.hooks]]
+id = "docs"
+name = "document checks"
+language = "system"
+entry = "node --test tests/docs.test.mjs"
+pass_filenames = false
+always_run = true
+
+[[repos.hooks]]
+id = "docs-rejects"
+name = "document checks reject defects"
+language = "system"
+entry = "node --test tests/docs-rejects.test.mjs"
+pass_filenames = false
+files = "^tests/docs"

@@ -10,6 +10,7 @@ Use Node.js 26 and the pnpm version pinned in `package.json`. The tests also nee
 pnpm install --frozen-lockfile
 pnpm cf:types   # generate binding types from wrangler.jsonc
 pnpm exec wrangler d1 migrations apply VOTES --local
+pnpm exec prek install   # run the document checks before each commit
 ```
 
 ## Development

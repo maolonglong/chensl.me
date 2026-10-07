@@ -36,6 +36,8 @@ Run the narrowest check that fails for the regression, plus the checks below for
 
 `pnpm format` applies Prettier; `pnpm check` fails on unformatted files.
 
+Before each commit, `prek.toml` runs the document checks and `git diff --cached --check` on the staged tree. `pnpm exec prek install` enables the hook once per clone ([decision](../.agents/notes/implemented/process/2026-10-08-pre-commit-document-checks.md)).
+
 ## Screenshots
 
 `capture()` in `e2e/site.mjs` writes screenshots to `test-results/screenshots`. A screenshot is evidence only after someone looks at it. Inspect each affected state: light and dark, narrow and wide, open and closed. When a spec does not reach an affected state, add a targeted check. Viewport emulation is not a real device.
