@@ -29,7 +29,7 @@ Components own their scoped styles and compiled scripts; `src/styles/global.css`
 
 ## Deployment
 
-GitHub Actions ([CI workflow](.github/workflows/ci.yml)) runs `pnpm check`, the Wrangler dry run and the Playwright specs on pushes and pull requests; it does not publish the site. Cloudflare's Git integration builds and deploys production when `main` is pushed, configured in the Cloudflare dashboard following [Astro's Cloudflare guide](https://docs.astro.build/en/guides/deploy/cloudflare/): build command `pnpm build`, deploy command `pnpm exec wrangler deploy`. `pnpm deploy` deploys manually.
+GitHub Actions ([CI workflow](.github/workflows/ci.yml)) runs `pnpm check`, the Wrangler dry run and the Playwright specs on pushes and pull requests; it does not publish the site. Cloudflare's Git integration builds and deploys production when `main` is pushed, configured in the Cloudflare dashboard following [Astro's Cloudflare guide](https://docs.astro.build/en/guides/deploy/cloudflare/): build command `pnpm build`, deploy command `pnpm exec wrangler deploy`. `pnpm run deploy` deploys manually; plain `pnpm deploy` is a built-in pnpm command and does not run this script.
 
 `wrangler.jsonc` binds production and Workers Previews to separate D1 databases. Apply new migrations remotely before deploying code that needs them; see [Shipping and deployment](docs/maintenance.md#shipping-and-deployment).
 
@@ -37,11 +37,11 @@ Upvotes are anonymous and cookie-based, with per-address rate limits; this is no
 
 ## Writing
 
-Articles live under `src/content/blog`, with YAML front matter: `title`, `pubDate`, and optional `description`, `updatedDate`, `draft` and `comments`; unknown fields are rejected. Drafts and future posts appear only in `pnpm dev`. The file or directory name is the URL (`/blog/<name>/`), so keep existing names stable.
+Articles live under `src/content/blog`, with YAML front matter: `title`, `pubDate`, and optional `description`, `updatedDate`, `draft`, `comments` and `creation`; unknown fields are rejected. `creation` declares how the article was written; see [Content and RSS](docs/maintenance.md#content-and-rss). Drafts and future posts appear only in `pnpm dev`. The file or directory name is the URL (`/blog/<name>/`), so keep existing names stable.
 
 Keep local images alongside the Markdown and use relative paths with descriptive alt text; Astro optimizes them. Put unprocessed downloads in `public/downloads/` and link to `/downloads/...`. Prefer local images: a remote image source must be allowed in both the Astro CSP and `public/_headers`.
 
-Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, and code captions written as `title="db/user.go"` on the fence. The RSS feed at `/index.xml` renders the same content.
+Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, TeX math (`$…$` inline, `$$…$$` display), and code captions written as `title="db/user.go"` on the fence. The RSS feed at `/index.xml` renders the same content.
 
 Published articles have a raw Markdown version at `/blog/<name>/index.md`, including their local images. `/llms.txt` indexes these exports for readers and agents.
 
