@@ -35,7 +35,7 @@ JinKai font subsets are built from the source text, so new text needs no font st
 
 ## Deployment
 
-GitHub Actions runs the checks on every push and pull request; it does not publish the site. Cloudflare's Git integration builds and deploys production when `main` changes. `pnpm run deploy` builds and deploys manually from the local tree. The Worker needs the D1 databases and rate limiters in `wrangler.jsonc`, and no KV or Cloudflare Images resource.
+Cloudflare builds and deploys production when `main` changes, and GitHub Actions only runs the checks ([Delivery](docs/architecture.md#delivery)). `pnpm run deploy` builds and deploys by hand from the local tree. `wrangler.jsonc` lists the Cloudflare resources that the Worker needs.
 
 ## For agents and maintainers
 

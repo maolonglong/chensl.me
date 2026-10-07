@@ -10,7 +10,7 @@ Several tests in `tests/` run `python3` to parse built HTML, RSS, and sitemap XM
 
 Parse the output in the Node tests with the same unified and rehype packages that the site and `scripts/check-site.mjs` use, and drop Python from the requirements.
 
-<!-- agent-note-format: alternatives-not-recorded -->
+<!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->
 
 ## Rejection
 

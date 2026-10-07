@@ -10,7 +10,9 @@ Write or update an Agent Note in the same commit when a change makes a lasting d
 - You remove something, and a later agent could bring it back.
 - You reject a proposal that looks attractive, such as a simplification that would break a hidden requirement.
 
-Local and mechanical edits need no note. When a note already owns the decision, update that note.
+Local and mechanical edits need no note, and neither do small changes to how a page looks. When a note already owns the decision, update that note.
+
+Every new note starts with a supersession check: search the active notes for the same decision, mechanism, or rejected option, and resolve each match in the same commit. The [`docs`](../skills/docs/SKILL.md#supersession-check) skill holds the steps.
 
 Before you propose to remove, replace, or reintroduce something, search the notes for its topic: `grep -ril <topic> .agents/notes/`. A note that covers it is the starting point: answer its rationale and its reopen condition, not only the general case.
 
@@ -20,9 +22,18 @@ The path encodes the status: `.agents/notes/<lifecycle>/YYYY-MM-DD-topic.md`. Th
 
 - `proposed/`: work that is decided in principle but not built.
 - `implemented/`: the decision is in the code. Keep its paths, names, and mechanisms current in the same commit that changes them. Rewrite facts in place; do not append history.
-- `rejected/`: the proposal was declined. Keep it while it stops a plausible mistake. Delete it when nobody would propose it again.
+- `rejected/`: the proposal was declined.
 
-Browse the folders or search. An index file would only copy the paths.
+Browse the folders or search. An index file would only copy the paths. Link from one note to another with a relative Markdown link, so the link check follows it when a note moves.
+
+## Retention
+
+- **Implemented, delete:** the note only describes a small change to how a page looks, or a purely mechanical change. A small implementation is not a reason by itself: a local bug fix or a new capability can still carry a lasting reason.
+- **Implemented, keep:** its rationale, alternatives, negative guarantee, security rule, or reopen condition can still guide a change.
+- **Rejected, keep:** the rejected idea is still a tempting mistake, and the note says why it loses.
+- **Rejected, delete:** the idea is obsolete, superseded, or no longer plausible.
+
+Repair or remove the inbound links when you delete a note.
 
 A note never changes into a different decision. To reverse or replace a decision, write a new note, say which note it supersedes, and link both ways. Delete the old note only when the new note keeps all of its unique rationale, rejected options, and consequences.
 
@@ -50,10 +61,12 @@ An implemented note has no `## Proposal`, `## Plan`, or `## Acceptance criteria`
 
 ### Alternatives considered
 
-Give each real alternative one bold-led paragraph that says why it lost. Record alternatives; do not invent them. When the record (commits, review threads, the owner's words) names no alternative, write this exact line in place of the section:
+Give each real alternative one bold-led paragraph, or a `### Why not <X>?` subsection for a contested one, that says why it lost. A decision without what it beat invites the same debate again. Record alternatives; do not invent them.
+
+A note dated before 2026-10-07, when this format started, may have no recorded alternatives. When its record (commits, the owner's words) names none, write this exact line in place of the section. The check accepts it only in those notes:
 
 ```markdown
-<!-- agent-note-format: alternatives-not-recorded -->
+<!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->
 ```
 
 ## Moving between lifecycles

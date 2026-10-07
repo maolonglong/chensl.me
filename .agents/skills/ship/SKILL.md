@@ -5,7 +5,7 @@ description: Ship chensl.me to production. Use when pushing or merging to main, 
 
 # Ship chensl.me
 
-A push to `main` is a production deployment: Cloudflare Workers Builds builds and deploys it, and does not wait for GitHub CI. The Cloudflare dashboard owns that integration and its deployment records.
+A push to `main` deploys production. Cloudflare builds it without waiting for GitHub CI ([delivery](../../../docs/architecture.md#delivery)), so CI and deployment are separate results.
 
 ## Steps
 
@@ -27,5 +27,3 @@ A push to `main` is a production deployment: Cloudflare Workers Builds builds an
 ## Report
 
 Report three facts separately: pushed (the commit range), CI (the run and its result), and deployed (the evidence, or "unverified"). A green CI run does not prove a deployment, and the absence of a GitHub deployment job does not prove that none ran.
-
-Leave manual deployment to the owner: `pnpm run deploy` builds and deploys from the local tree, and runs only on an explicit request. A version preview URL uses the production bindings, so a vote sent to it writes to production D1.

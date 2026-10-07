@@ -36,7 +36,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 - **Markdown.** `src/lib/markdown.mjs` adds alerts, scroll wrappers for code, tables, and display math, code captions, and the Shiki code themes. Temml renders TeX to MathML at build time.
 - **Routes.** `src/pages/` holds the home, the archive, article pages, the Markdown exports (`/blog/<id>/index.md`), `/index.xml`, `/llms.txt`, and the giscus theme stylesheets (`src/pages/css/`, built from `src/styles/giscus*.css` by `src/lib/assets.ts`). `src/lib/markdown-images.ts` publishes the original article images next to the exports.
 - **RSS.** `src/pages/index.xml.ts` renders each entry through the Astro container, so feed items use the same HTML and optimized images as pages, then makes every URL absolute.
-- **Fonts.** `src/lib/fonts.mjs` builds JinKai subsets from the source text before Astro resolves fonts ([decision](../.agents/notes/implemented/2026-10-06-subset-fonts-from-source-text.md)). Font licensing is in [NOTICE.md](../public/fonts/tsanger-jinkai02/NOTICE.md).
+- **Fonts.** `src/lib/fonts.mjs` builds JinKai subsets from the source text before Astro resolves fonts ([decision](../.agents/notes/implemented/2026-10-06-subset-fonts-from-source-text.md)).
 
 ## Runtime
 

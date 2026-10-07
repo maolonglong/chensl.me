@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, readlinkSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 
@@ -124,14 +124,82 @@ test('repository paths and commits named in first-party Markdown exist', () => {
   assert.deepEqual(errors, [])
 })
 
-test('root AGENTS.md stays within its word budget', () => {
-  // AGENTS.md is in every agent session. Move detail behind a pointer before you raise this.
-  const budget = 450
-  const words = readFileSync(path.join(root, 'AGENTS.md'), 'utf8').split(/\s+/).filter(Boolean)
-  assert.ok(
-    words.length <= budget,
-    `AGENTS.md has ${words.length} words; the budget is ${budget}. Move detail to the doc that owns it.`,
-  )
+test('each Markdown paragraph is one physical line', () => {
+  // A wrapped line that follows a list can also join the wrong item when it renders.
+  const block = /^\s*(?:[-*+]\s|\d+[.)]\s|\||#|>|<|$)/
+  const errors = []
+  for (const file of documents) {
+    const lines = proseLines(file)
+    // Skill front matter is YAML, not prose.
+    const start = lines[0] === '---' ? lines.indexOf('---', 1) + 1 : 0
+    for (let index = start + 1; index < lines.length; index++) {
+      const previous = lines[index - 1]
+      if (block.test(lines[index]) || !previous.trim() || /^\s*(?:\||#|<)/.test(previous)) continue
+      errors.push(`${file}:${index + 1} continues the paragraph above; join the two lines.`)
+    }
+  }
+  assert.deepEqual(errors, [])
+})
+
+test('standing documents stay within their word budgets', () => {
+  // docs/AGENTS.md says how to respond: relocate, condense, then raise with a reason.
+  const budgets = {
+    'AGENTS.md': 435,
+    'docs/AGENTS.md': 1120,
+    'docs/architecture.md': 750,
+    'docs/design.md': 750,
+    'docs/product.md': 560,
+    'docs/testing.md': 815,
+    '.agents/notes/AGENTS.md': 825,
+  }
+  const standing = documents.filter((file) => /(?:^|\/)AGENTS\.md$|^docs\/[^/]+\.md$/.test(file))
+  const errors = []
+  for (const file of standing) {
+    if (!(file in budgets)) errors.push(`${file} has no word budget; add one in this test.`)
+  }
+  for (const [file, budget] of Object.entries(budgets)) {
+    if (!existsSync(path.join(root, file))) {
+      errors.push(`${file} has a budget but does not exist; remove the budget.`)
+      continue
+    }
+    const words = readFileSync(path.join(root, file), 'utf8').split(/\s+/).filter(Boolean).length
+    if (words > budget) {
+      errors.push(`${file} has ${words} words; the budget is ${budget}. See docs/AGENTS.md.`)
+    }
+  }
+  assert.deepEqual(errors, [])
+})
+
+test('each skill has a matching name and a Claude Code link', () => {
+  const errors = []
+  for (const name of readdirSync(path.join(root, '.agents/skills'))) {
+    const link = `.claude/skills/${name}`
+    let target
+    try {
+      target = readlinkSync(path.join(root, link))
+    } catch {
+      target = null
+    }
+    if (target !== `../../.agents/skills/${name}`) {
+      errors.push(`${link} is not a link to ../../.agents/skills/${name}; create it with ln -s.`)
+    }
+    if (installedSkills.includes(name)) continue
+    const front = readFileSync(path.join(root, `.agents/skills/${name}/SKILL.md`), 'utf8').match(
+      /^---\n([\s\S]*?)\n---\n/,
+    )?.[1]
+    if (front?.match(/^name: (.+)$/m)?.[1] !== name) {
+      errors.push(`.agents/skills/${name}/SKILL.md front matter needs "name: ${name}".`)
+    }
+    if (!/^description: \S/m.test(front ?? '')) {
+      errors.push(`.agents/skills/${name}/SKILL.md front matter needs a description.`)
+    }
+  }
+  for (const name of readdirSync(path.join(root, '.claude/skills'))) {
+    if (!existsSync(path.join(root, '.agents/skills', name))) {
+      errors.push(`.claude/skills/${name} links to a skill that does not exist; remove it.`)
+    }
+  }
+  assert.deepEqual(errors, [])
 })
 
 test('Agent Notes follow the lifecycle format', () => {
@@ -140,7 +208,9 @@ test('Agent Notes follow the lifecycle format', () => {
     implemented: ['Problem', 'Decision', 'Alternatives considered', 'Consequences'],
     rejected: ['Problem', 'Proposal', 'Alternatives considered'],
   }
-  const unrecorded = '<!-- agent-note-format: alternatives-not-recorded -->'
+  const unrecorded = '<!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->'
+  // The format started on this date; later notes record their alternatives.
+  const formatStart = '2026-10-07'
   const errors = []
   for (const file of tracked.filter((file) => /^\.agents\/notes\/[^/]+\/.+\.md$/.test(file))) {
     const lifecycle = file.split('/')[2]
@@ -167,6 +237,9 @@ test('Agent Notes follow the lifecycle format', () => {
     for (const section of sections[lifecycle]) {
       const waived = section === 'Alternatives considered' && lines.includes(unrecorded)
       if (!headings.includes(section) && !waived) fail(`"## ${section}" is missing`)
+    }
+    if (lines.includes(unrecorded) && path.basename(file) >= formatStart) {
+      fail(`only notes dated before ${formatStart} may waive "## Alternatives considered"`)
     }
     if (lifecycle === 'implemented') {
       for (const section of ['Proposal', 'Plan', 'Acceptance criteria']) {

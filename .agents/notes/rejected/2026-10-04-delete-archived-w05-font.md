@@ -10,7 +10,7 @@ Status: rejected — W05 is the archival copy of the upstream source that NOTICE
 
 Delete the W05 file from `vendor/`, and remove it from `public/fonts/tsanger-jinkai02/NOTICE.md`.
 
-<!-- agent-note-format: alternatives-not-recorded -->
+<!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->
 
 ## Rejection
 

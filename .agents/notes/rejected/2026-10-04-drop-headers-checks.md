@@ -10,7 +10,7 @@ Status: rejected — local Wrangler masks production header behavior, so only th
 
 Delete the `_headers` checks from `scripts/check-site.mjs` and their cases in `tests/check-site.test.mjs`, and rely on browser specs against the Wrangler preview.
 
-<!-- agent-note-format: alternatives-not-recorded -->
+<!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->
 
 ## Rejection
 

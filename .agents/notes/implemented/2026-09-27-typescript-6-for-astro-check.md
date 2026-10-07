@@ -10,7 +10,7 @@ Status: implemented
 
 `package.json` keeps `typescript` on a 6.x range.
 
-<!-- agent-note-format: alternatives-not-recorded -->
+<!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->
 
 ## Consequences
 
