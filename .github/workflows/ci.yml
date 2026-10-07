@@ -17,6 +17,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+        with:
+          # tests/docs.test.mjs resolves the commits that documents cite.
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 26
