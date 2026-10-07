@@ -44,7 +44,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 
 - **Static assets.** Workers Static Assets serves the prerendered files. `public/_headers` sets the response headers: the HTTP CSP, cache rules, and the text charsets that production does not add.
 - **Actions.** `src/actions/index.ts` defines `getVotes` and `upvote`. `src/middleware.ts` rejects cross-origin Action requests and makes Action responses private. The Actions use D1 (`VOTES`), two rate limiters, and the `ASSETS` binding to confirm that an ID is a published article ([decision](../.agents/notes/implemented/2026-09-29-validate-articles-through-built-pages.md)). Schema changes are files in `migrations/`.
-- **Bindings.** Production and Workers Previews use separate D1 databases. A version preview URL uses the production bindings.
+- **Bindings.** Production and Workers Previews use separate D1 databases.
 
 ## Browser
 

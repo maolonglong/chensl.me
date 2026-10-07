@@ -1,6 +1,6 @@
 # Design
 
-Read this before you change layout, styles, fonts, or browser interactions. It states the visual intent and the reasons behind it. The values live in `src/styles/global.css` (tokens and Markdown typography) and in each component's scoped styles; a value appears here only with the test that pins it.
+Read this before you change layout, styles, fonts, or browser interactions. It states the visual intent and the reasons behind it. The values live in `src/styles/global.css` (tokens and Markdown typography) and in each component's scoped styles; a value appears here only with the test that pins it. Reuse a `global.css` token before you add a value.
 
 ## Intent
 
@@ -24,12 +24,13 @@ Article text follows the `.prose` rules of Kami's site pages. These differences 
 
 ## Color
 
-Beyond Kami's light palette, the site adds these chromatic values: the dark-mode link tints, the selection and visited tints in `global.css`, and the red, green, and amber diff and state colors in the giscus themes (`src/styles/giscus*.css`). Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
+Beyond Kami's light palette, the site adds these chromatic values: the dark-mode link tints, the selection and visited tints in `global.css`, and the red, green, and amber diff and state colors in the giscus themes (`src/styles/giscus*.css`). The diff colors carry addition and deletion meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
 
 ## Typography
 
 - JinKai comes first for mixed Chinese and Latin text. W04 alone covers weights 400 to 500, and synthesized bold is off.
 - Fonts are self-hosted with `font-display: swap` and content-versioned URLs, without preloads. Code fonts are declared on every page, and the browser loads them only when a page uses them (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
+- The fonts are not under the repository's code license; read [NOTICE.md](../public/fonts/tsanger-jinkai02/NOTICE.md) before you add or change one.
 - A cold visit to the home page loads at most 100 KiB of JinKai (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
 - Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart.
 - `<em>` stays upright and carries CJK emphasis dots. `<strong>` uses weight 500 in the heading color.
@@ -39,5 +40,7 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - **Contents.** One prerendered list: a hover rail beside the column where a pointer can hover and the column leaves room, a native popover elsewhere (`e2e/contents.spec.mjs`).
 - **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails (`e2e/appearance.spec.mjs`).
 - **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
+- **Creation label.** It follows the article date in the date's neutral typography, with no icon, badge, or interaction. Its note sits before the stale notice. Home and archive lists omit it.
+- **Icons** are inline SVG, not font glyphs or an icon library.
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
 - **Links** in article text and the footer are underlined. Archive links show a visited color.

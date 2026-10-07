@@ -6,7 +6,7 @@ chensl.me is a personal site and blog. Astro prerenders the pages to static asse
 
 - **Approval.** Local builds, previews, local D1 migrations, `pnpm exec wrangler deploy --dry-run`, and E2E runs against disposable local data need no approval. Ask before every change to shared state: a push to `main` (it deploys production), a remote D1 migration, a manual deployment, or a Cloudflare resource or dashboard change. One approval covers one action.
 - **Production bindings.** A version preview URL uses the production D1. Send remote test writes only to Workers Previews, with approval.
-- **Content.** Articles in `src/content/blog/` keep the author's words, emojis, dates, and credits. File and directory names are article URLs, so they stay stable. `/index.xml` is the only RSS feed.
+- **Content.** Articles in `src/content/blog/` keep the author's words, emojis, dates, and credits. File and directory names are article URLs, and Astro's default heading and footnote anchors are fragment URLs, so both stay stable. `/index.xml` is the only RSS feed.
 - **Source.** Edit source files, including `public/`. `dist/`, `.astro/`, `.wrangler/`, and `node_modules/` are generated.
 - **Skills.** Third-party skills change only through `npx skills`, committed together with `skills-lock.json`. Project skills are the folders in `.agents/skills/` that `skills-lock.json` does not list; edit them by hand, and link each one from `.claude/skills/`.
 - **Documents.** Each fact has one home. A change to documented behavior updates that home in the same commit. Before you write any document, read the [documentation standard](docs/AGENTS.md).
