@@ -5,7 +5,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 ## Principles
 
 - Pages are prerendered Astro components with scoped CSS and native browser scripts. The Worker runs one feature: the upvote Actions. Add a client framework or more server-rendered behavior only for a concrete requirement.
-- Keep pages light. Use a native HTML or CSS feature, such as a popover, before a script; keep each script small and owned by its component. Pages need not work without JavaScript.
+- Keep pages light. Use a native HTML or CSS feature, such as a popover, before a script; keep each script small and owned by its component. Scripts enhance the page; they are not required to read it. When scripts do not run, the contents list still opens natively, script-only controls are hidden, and a notice that was stale at build time still shows (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
 - Use Astro's native features and official integrations first. For an Astro API or configuration change, read the Astro docs (the Astro Docs MCP when available) and confirm that the installed version supports it.
 - One Markdown pipeline renders every view of an article: the page, the RSS item, and the Markdown export metadata come from the same collection entry.
 - Scripts run only through Astro CSP hashes ([decision](../.agents/notes/implemented/2026-09-28-hash-based-script-csp.md)).
