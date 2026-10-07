@@ -163,22 +163,25 @@ test.describe('vote Actions', () => {
   // a burst must eventually be limited rather than at an exact request number.
   test('submission bursts are rate limited and leave the count alone', async ({ action }) => {
     const { cookie, count } = await visit(action)
-    const statuses = []
-    for (let i = 0; i < 65; i++) {
-      const vote = await action('upvote', article, { cookie })
-      statuses.push(vote.status)
+    // A sequential burst can cross the limiter's fixed one-minute window and refill the budget.
+    // Send the burst at once, and send the cookie-less vote right after it, to stay in one window.
+    const votes = await Promise.all(
+      Array.from({ length: 65 }, () => action('upvote', article, { cookie })),
+    )
+    const limited = await action('upvote', article)
+    const statuses = votes.map((vote) => vote.status)
+    for (const vote of votes) {
       if (vote.status === 200) expect(vote.data).toEqual({ count: count + 1, voted: true })
     }
-    expect(statuses[0]).toBe(200)
+    expect(statuses).toContain(200)
     expect(statuses).toContain(429)
     expect(statuses.every((status) => status === 200 || status === 429)).toBe(true)
+    expect(limited.status).toBe(429)
+    expect(limited.headers['set-cookie']).toBeUndefined()
     expect((await action('getVotes', article, { cookie })).data).toEqual({
       count: count + 1,
       voted: true,
     })
-    const limited = await action('upvote', article)
-    expect(limited.status).toBe(429)
-    expect(limited.headers['set-cookie']).toBeUndefined()
     expect((await action('getVotes', article)).data.count).toBe(count + 1)
   })
 
