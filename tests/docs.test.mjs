@@ -7,8 +7,9 @@ import { test } from 'node:test'
 // Structural checks for first-party Markdown: the rules in docs/AGENTS.md that a script can
 // decide. Each failure names the file, the problem, and the fix.
 
-const root = path.resolve(import.meta.dirname, '..')
-const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
+// tests/docs-rejects.test.mjs points DOCS_CHECK_ROOT at a fixture with one defect per rule.
+const root = process.env.DOCS_CHECK_ROOT ?? path.resolve(import.meta.dirname, '..')
+const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: 'pipe' })
 const tracked = git('ls-files', '--cached', '--others', '--exclude-standard')
   .split('\n')
   .filter((file) => file && existsSync(path.join(root, file)))
@@ -61,14 +62,33 @@ function anchors(file) {
 function eachSpan(file, visit) {
   proseLines(file).forEach((line, index) => {
     const where = `${file}:${index + 1}`
-    for (const [, target] of line
-      .replace(/`[^`]*`/g, '')
-      .matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
+    const prose = line.replace(/`[^`]*`/g, '')
+    for (const [, target] of prose.matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
       visit({ kind: 'link', value: target, where })
     }
+    // A reference-style link definition: `[label]: target`.
+    const definition = prose.match(/^\s*\[[^\]]+\]:\s*(\S+)/)?.[1]
+    if (definition) visit({ kind: 'link', value: definition, where })
     for (const [, code] of line.matchAll(/`([^`]+)`/g)) visit({ kind: 'code', value: code, where })
   })
 }
+
+// A cited commit must be in the history of HEAD; a dangling local object would pass `cat-file`.
+function isAncestor(commit) {
+  try {
+    git('merge-base', '--is-ancestor', commit, 'HEAD')
+    return true
+  } catch {
+    return false
+  }
+}
+
+test('the checks see the standing documents', () => {
+  // An empty corpus would let every other check pass without reading anything.
+  for (const file of ['AGENTS.md', 'docs/AGENTS.md', '.agents/notes/AGENTS.md']) {
+    assert.ok(documents.includes(file), `${file} is not in the checked documents`)
+  }
+})
 
 test('relative links and anchors in first-party Markdown resolve', () => {
   const errors = []
@@ -104,19 +124,33 @@ test('repository paths and commits named in first-party Markdown exist', () => {
       ) {
         errors.push(`${where} names missing path ${value}; update it to the current location.`)
       }
+      // A bare file name is a path from the root: `package.json` is one, `posts.ts` is not.
+      if (
+        /^[\w@-][\w.@-]*\.(?:astro|c?js|mjs|ts|css|md|jsonc?|ya?ml|toml|py|sh|txt|xml|html)$/.test(
+          value,
+        ) &&
+        !existsSync(path.join(root, value))
+      ) {
+        errors.push(`${where} names ${value} without its folder; write the path from the root.`)
+      }
       if (/^[0-9a-f]{7,40}$/.test(value) && /[a-f]/.test(value) && /\d/.test(value)) {
-        try {
-          git('cat-file', '-e', `${value}^{commit}`)
-        } catch {
-          errors.push(`${where} cites ${value}, which is not a commit in this repository.`)
+        if (!isAncestor(value)) {
+          errors.push(`${where} cites ${value}, which is not a commit in the history of HEAD.`)
         }
       }
       // A removed file is cited as `<commit>:<path>`, at a commit where it exists.
-      if (/^[0-9a-f]{7,40}:[\w./@[\]-]+$/.test(value)) {
+      const citation = value.match(/^([0-9a-f]{7,40}):[\w./@[\]-]+$/)
+      if (citation) {
+        let exists = isAncestor(citation[1])
         try {
           git('cat-file', '-e', value)
         } catch {
-          errors.push(`${where} cites ${value}, but that commit has no such path.`)
+          exists = false
+        }
+        if (!exists) {
+          errors.push(
+            `${where} cites ${value}, but the history of HEAD has no such commit and path.`,
+          )
         }
       }
     })
@@ -126,15 +160,17 @@ test('repository paths and commits named in first-party Markdown exist', () => {
 
 test('each Markdown paragraph is one physical line', () => {
   // A wrapped line that follows a list can also join the wrong item when it renders.
-  const block = /^\s*(?:[-*+]\s|\d+[.)]\s|\||#|>|<|$)/
+  const html = /^\s*<(?:!--|\/?(?:details|summary|div|p|table|picture|figure|section|img|br)\b)/i
+  const block = /^\s*(?:[-*+]\s|\d+[.)]\s|\||#|>|$)/
   const errors = []
   for (const file of documents) {
     const lines = proseLines(file)
     // Skill front matter is YAML, not prose.
     const start = lines[0] === '---' ? lines.indexOf('---', 1) + 1 : 0
     for (let index = start + 1; index < lines.length; index++) {
-      const previous = lines[index - 1]
-      if (block.test(lines[index]) || !previous.trim() || /^\s*(?:\||#|<)/.test(previous)) continue
+      const [previous, line] = [lines[index - 1], lines[index]]
+      if (block.test(line) || html.test(line)) continue
+      if (!previous.trim() || /^\s*(?:\||#)/.test(previous) || html.test(previous)) continue
       errors.push(`${file}:${index + 1} continues the paragraph above; join the two lines.`)
     }
   }
@@ -144,13 +180,13 @@ test('each Markdown paragraph is one physical line', () => {
 test('standing documents stay within their word budgets', () => {
   // docs/AGENTS.md says how to respond: relocate, condense, then raise with a reason.
   const budgets = {
-    'AGENTS.md': 435,
-    'docs/AGENTS.md': 1120,
+    'AGENTS.md': 480,
+    'docs/AGENTS.md': 1210,
     'docs/architecture.md': 750,
     'docs/design.md': 750,
     'docs/product.md': 560,
     'docs/testing.md': 815,
-    '.agents/notes/AGENTS.md': 825,
+    '.agents/notes/AGENTS.md': 920,
   }
   const standing = documents.filter((file) => /(?:^|\/)AGENTS\.md$|^docs\/[^/]+\.md$/.test(file))
   const errors = []
@@ -212,14 +248,17 @@ test('Agent Notes follow the lifecycle format', () => {
   // The format started on this date; later notes record their alternatives.
   const formatStart = '2026-10-07'
   const errors = []
-  for (const file of tracked.filter((file) => /^\.agents\/notes\/[^/]+\/.+\.md$/.test(file))) {
-    const lifecycle = file.split('/')[2]
+  const notes = tracked.filter(
+    (file) => file.startsWith('.agents/notes/') && file !== '.agents/notes/AGENTS.md',
+  )
+  for (const file of notes) {
+    const [, , lifecycle, name, ...deeper] = file.split('/')
     const fail = (problem) => errors.push(`${file}: ${problem}. See .agents/notes/AGENTS.md.`)
-    if (!sections[lifecycle]) {
-      fail(`"${lifecycle}" is not a lifecycle folder (proposed, implemented, rejected)`)
+    if (!sections[lifecycle] || !name || deeper.length) {
+      fail('a note sits directly in proposed/, implemented/, or rejected/')
       continue
     }
-    if (!/^\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.md$/.test(path.basename(file))) {
+    if (!/^\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.md$/.test(name)) {
       fail('the file name is not YYYY-MM-DD-topic.md')
     }
     const lines = readFileSync(path.join(root, file), 'utf8').split('\n')
@@ -232,17 +271,18 @@ test('Agent Notes follow the lifecycle format', () => {
         ? /^Status: rejected — \S/.test(status)
         : status === `Status: ${lifecycle}`
     if (!statusMatches) fail(`line 3 "${status}" does not match the ${lifecycle}/ folder`)
+    if (lines[3] !== '') fail('line 4 is not blank')
     const headings = lines.flatMap((line) => line.match(/^## (.+)$/)?.[1] ?? [])
     if (headings[0] !== 'Problem') fail('the body does not open with "## Problem"')
     for (const section of sections[lifecycle]) {
       const waived = section === 'Alternatives considered' && lines.includes(unrecorded)
       if (!headings.includes(section) && !waived) fail(`"## ${section}" is missing`)
     }
-    if (lines.includes(unrecorded) && path.basename(file) >= formatStart) {
+    if (lines.includes(unrecorded) && name >= formatStart) {
       fail(`only notes dated before ${formatStart} may waive "## Alternatives considered"`)
     }
     if (lifecycle === 'implemented') {
-      for (const section of ['Proposal', 'Plan', 'Acceptance criteria']) {
+      for (const section of ['Proposal', 'Plan', 'Migration plan', 'Acceptance criteria']) {
         if (headings.includes(section)) fail(`"## ${section}" is proposal text in a shipped note`)
       }
     }

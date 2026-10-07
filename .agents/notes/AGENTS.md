@@ -12,7 +12,7 @@ Write or update an Agent Note in the same commit when a change makes a lasting d
 
 Local and mechanical edits need no note, and neither do small changes to how a page looks. When a note already owns the decision, update that note.
 
-Every new note starts with a supersession check: search the active notes for the same decision, mechanism, or rejected option, and resolve each match in the same commit. The [`docs`](../skills/docs/SKILL.md#supersession-check) skill holds the steps.
+Every new note starts with a supersession check: search the active notes for the same decision, mechanism, or rejected option, and resolve each match in the same commit. The [`maintain-docs`](../skills/maintain-docs/SKILL.md#supersession-check) skill holds the steps.
 
 Before you propose to remove, replace, or reintroduce something, search the notes for its topic: `grep -ril <topic> .agents/notes/`. A note that covers it is the starting point: answer its rationale and its reopen condition, not only the general case.
 
@@ -35,7 +35,9 @@ Browse the folders or search. An index file would only copy the paths. Link from
 
 Repair or remove the inbound links when you delete a note.
 
-A note never changes into a different decision. To reverse or replace a decision, write a new note, say which note it supersedes, and link both ways. Delete the old note only when the new note keeps all of its unique rationale, rejected options, and consequences.
+A note never changes into a different decision. To reverse or replace a decision, write a new note, say which note it supersedes, and link both ways. Delete the old note only when the new note keeps all of its unique rationale, rejected options, and consequences. When the new note replaces only part of the old decision, keep both, link both ways, and correct each fact in the old note that is no longer current.
+
+A note that added a feature may merge into the note that removed it only when nothing of the feature remains: no code, configuration, data, documentation, or test that treats it as supported. The removal note then keeps the original motivation, why it no longer justified the feature, the alternatives to full removal, the capability given up, and the conditions to bring it back.
 
 ## Format
 

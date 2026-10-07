@@ -20,7 +20,7 @@ description: Upgrade chensl.me dependencies. Use for a Dependabot pull request, 
 3. **Constraints.** Check what pins the versions:
    - A package pinned to an exact version in `package.json` moves with `pnpm-lock.yaml` in the same commit.
    - Astro: confirm that the official Markdown processor and integrations support the target, and that `@astrojs/check` supports the TypeScript version ([decision](../../notes/implemented/2026-09-27-typescript-6-for-astro-check.md)).
-   - Node.js: the CI `node-version` in `.github/workflows/ci.yml` and the requirement in `README.md` change together.
+   - Node.js: the CI `node-version` in `.github/workflows/ci.yml` and the requirement in `README.md` change together. `engines.node` in `package.json` is the lowest supported version; it equals the `engines.node` of the installed `astro` package, so raise it when Astro raises its own.
 
    Done when each constraint is satisfied or the upgrade stops with the reason.
 4. **Change.** Update `package.json` and run `pnpm install`, so the lockfile follows. For an advisory in a transitive package, first try a lockfile refresh inside the allowed range. When no allowed version has the fix, add an override in `pnpm-workspace.yaml` keyed by the vulnerable range, such as `'pkg@<1.2.3': 1.2.3`, with a comment that names the advisory. A selector keyed by a parent version stops matching when the parent moves. A `minimumReleaseAgeExclude` entry skips pnpm's release-age delay; add one only with a stated reason. Done when `pnpm install --frozen-lockfile` passes.

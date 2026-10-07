@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Review a diff, PR or commit in the chensl.me repo (Astro blog on Cloudflare Workers) against the regressions its fix history keeps producing — CSP, upvote Actions/D1, Markdown pipeline, content/RSS, a11y and touch UI, checks and shipping, and documents.
+description: Review a chensl.me diff, pull request, or commit against the regressions its fix history keeps producing. Use when you review a change, or before you commit one, that touches CSP, upvote Actions or D1, the Markdown pipeline, content or RSS, accessibility or touch UI, checks and shipping, or documents.
 ---
 
 # Review chensl.me
@@ -10,7 +10,7 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 ## Steps
 
 1. **Read the whole diff**: source, tests, documents, and the commit body. Done when every changed file maps to a surface below, or is named "no surface".
-2. **Read the home** of each touched surface (linked in its heading). Skip untouched surfaces.
+2. **Read the home** of each touched surface (linked in its heading). Skip untouched surfaces. Done when you have read the home of every touched surface.
 3. **Hunt.** Rule on every trap of every touched surface: _hit_, _clear_, or _n/a_. A hit is a finding only with `file:line` and a failure scenario (input → wrong output).
 4. **Audit the proof**, always:
    - A fix must go _red_ without its source hunk. Where the test is cheap (`node --test tests/x.test.mjs`), revert the hunk and run it; otherwise the commit body must record that it failed before.
@@ -22,10 +22,10 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 
 | Diff touches | Surface |
 | --- | --- |
-| `astro.config.mjs` `security`, `public/_headers`, `theme-bootstrap.js`, `Theme.astro`, any `<script>` or handler | CSP |
-| `src/actions/`, `src/middleware.ts`, `Upvote.astro`, `migrations/`, `wrangler.jsonc` bindings | Upvotes |
-| `src/lib/markdown.mjs`, `astro.config.mjs` `markdown`, `index.xml.ts`, `content.config.ts`, `posts.ts`, `src/content/` | Content |
-| `src/components/`, `src/styles/`, `BaseLayout.astro`, fonts | UI |
+| `astro.config.mjs` `security`, `public/_headers`, `src/scripts/theme-bootstrap.js`, `src/components/Theme.astro`, any `<script>` or handler | CSP |
+| `src/actions/`, `src/middleware.ts`, `src/components/Upvote.astro`, `migrations/`, `wrangler.jsonc` bindings | Upvotes |
+| `src/lib/markdown.mjs`, `astro.config.mjs` `markdown`, `src/pages/index.xml.ts`, `src/content.config.ts`, `src/lib/posts.ts`, `src/content/` | Content |
+| `src/components/`, `src/styles/`, `src/layouts/BaseLayout.astro`, fonts | UI |
 | `scripts/`, `tests/`, `e2e/`, `.github/`, `package.json`, `pnpm-*`, `wrangler.jsonc`, `skills-lock.json` | Checks & ship |
 | `*.md` outside `src/content/` and `archived/`, `.agents/notes/`, project skills | Documents |
 

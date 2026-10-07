@@ -9,6 +9,8 @@ chensl.me is a personal site and blog. Astro prerenders the pages to static asse
 - **Content.** Articles in `src/content/blog/` keep the author's words, emojis, dates, and credits. File and directory names are article URLs, and Astro's default heading and footnote anchors are fragment URLs, so both stay stable. `/index.xml` is the only RSS feed.
 - **Source.** Edit source files, including `public/`. `dist/`, `.astro/`, `.wrangler/`, and `node_modules/` are generated.
 - **Skills.** Third-party skills change only through `npx skills`, committed together with `skills-lock.json`. Project skills are the folders in `.agents/skills/` that `skills-lock.json` does not list; edit them by hand, and link each one from `.claude/skills/`.
+- **Decisions.** When a change chooses between real options, removes something, or rejects a proposal, write or update an Agent Note in the same commit ([when to write one](.agents/notes/AGENTS.md#when-to-write-one)).
+- **Comments.** A code comment states a contract or a surprising reason, not what the code does.
 - **Documents.** Each fact has one home. A change to documented behavior updates that home in the same commit. Before you write any document, read the [documentation standard](docs/AGENTS.md).
 
 ## Map

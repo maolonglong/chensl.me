@@ -4,7 +4,7 @@ Status: implemented
 
 ## Problem
 
-The site shipped 255 JinKai fallback blocks (11 MB, 128 code points each) beside the subsets that `src/lib/fonts.mjs` builds. `bc876c2` added the blocks so that a new article rendered in JinKai without a manual font regeneration. That reason expired when `fonts.mjs` began to build the subsets from source text on every build and dev-server start. The blocks then covered only text that is not in the source.
+The site shipped 255 JinKai fallback blocks (11 MB, 128 code points each) beside the subsets that `src/lib/fonts.mjs` builds. `bc876c2` added the blocks so that a new article rendered in JinKai without a manual font regeneration. That reason expired when `src/lib/fonts.mjs` began to build the subsets from source text on every build and dev-server start. The blocks then covered only text that is not in the source.
 
 ## Decision
 

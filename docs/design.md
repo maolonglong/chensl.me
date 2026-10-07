@@ -1,6 +1,6 @@
 # Design
 
-Read this before you change layout, styles, fonts, or browser interactions. It states the visual intent and the reasons behind it. The values live in `src/styles/global.css` (tokens and Markdown typography) and in each component's scoped styles; a value appears here only with the test that pins it. Reuse a `global.css` token before you add a value.
+Read this before you change layout, styles, fonts, or browser interactions. It states the visual intent and the reasons behind it. The values live in `src/styles/global.css` (tokens and Markdown typography) and in each component's scoped styles; a value appears here only with the test that pins it. Reuse a `src/styles/global.css` token before you add a value.
 
 ## Intent
 
@@ -24,7 +24,7 @@ Article text follows the `.prose` rules of Kami's site pages. These differences 
 
 ## Color
 
-Beyond Kami's light palette, the site adds these chromatic values: the dark-mode link tints, the selection and visited tints in `global.css`, and the red, green, and amber diff and state colors in the giscus themes (`src/styles/giscus*.css`). The diff colors carry addition and deletion meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
+Beyond Kami's light palette, the site adds these chromatic values: the dark-mode link tints, the selection and visited tints in `src/styles/global.css`, and the red, green, and amber diff and state colors in the giscus themes (`src/styles/giscus*.css`). The diff colors carry addition and deletion meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
 
 ## Typography
 

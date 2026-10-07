@@ -32,7 +32,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 
 `astro.config.mjs` wires the build. `output: 'static'` prerenders every page; the Cloudflare adapter prerenders in Node and optimizes images at build time.
 
-- **Content.** `src/content.config.ts` holds the front matter schema. `publishedPosts()` in `src/lib/posts.ts` is the only filter for drafts and future posts; pages, RSS, exports, and the archive call it. It also stops the build when an entry failed to render.
+- **Content.** `src/content.config.ts` holds the front matter schema. `publishedPosts()` in `src/lib/posts.ts` is the only filter for drafts and future posts, and the only reader of the `blog` collection. It also stops the build when an entry failed to render.
 - **Markdown.** `src/lib/markdown.mjs` adds alerts, scroll wrappers for code, tables, and display math, code captions, and the Shiki code themes. Temml renders TeX to MathML at build time.
 - **Routes.** `src/pages/` holds the home, the archive, article pages, the Markdown exports (`/blog/<id>/index.md`), `/index.xml`, `/llms.txt`, and the giscus theme stylesheets (`src/pages/css/`, built from `src/styles/giscus*.css` by `src/lib/assets.ts`). `src/lib/markdown-images.ts` publishes the original article images next to the exports.
 - **RSS.** `src/pages/index.xml.ts` renders each entry through the Astro container, so feed items use the same HTML and optimized images as pages, then makes every URL absolute.
