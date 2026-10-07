@@ -21,6 +21,7 @@ The repository follows the [documentation standard](../../../docs/AGENTS.md), wh
 - A sentence enters a document only if code, configuration, and tests cannot carry it. A value appears only with the test that pins it.
 - The standard holds the rules, and the [`maintain-docs`](../../skills/maintain-docs/SKILL.md) skill holds the procedure. DeepSeek splits the same way, between `docs/AGENTS.md` and its `dsh-doc`, `dsh-prose-standard`, and `dsh-archive-agent-notes` skills.
 - Shortening keeps every proposition: actor, condition, modality, exception, and failure. This is DeepSeek's complete-proposition rule, and it balances the word budgets.
+- Review adds two tests from DeepSeek, as steps in `maintain-docs`: the newcomer test from `dsh-doc`, and the test for references that only the writing session can resolve, from `dsh-trim-cot-leakage`.
 - Agent Notes follow DeepSeek's lifecycle, format, supersession, consolidation, and retention rules. Only notes dated before the format started may waive their alternatives.
 - `tests/docs.test.mjs` enforces the rules that a script can decide, and `tests/docs-rejects.test.mjs` proves that each of those checks can fail.
 - Decisions that only an agent's private memory held are Agent Notes.
@@ -43,13 +44,15 @@ The repository follows the [documentation standard](../../../docs/AGENTS.md), wh
 
 **A postmortem folder.** Commit bodies record incidents, `code-review` traps cite them, and the promotion rule moves each lesson toward a check. That covers every incident so far.
 
-**Release tags and pull-request numbers in place of commit hashes**, as DeepSeek's reference check requires. DeepSeek's history references point at pull requests, whose branch commits a squash merge leaves out. Here most changes land on `main` directly, and `main` is never rewritten, so a hash in its history is stable. The check requires each cited commit to be in the history of HEAD.
+**Release tags and pull-request numbers in place of commit hashes**, as DeepSeek's reference check requires. DeepSeek's history references point at pull requests, whose branch commits a squash merge leaves out. Here most changes land on `main` directly, and `main` is never rewritten, so a hash in its history is stable. The check requires each cited commit to be in the history of `main`.
 
 **A rules file in each source folder**, as DeepSeek has for `packages/`, `scripts/`, and `.github/`. The source tree is small, the root routing table reaches each home, and a link works with every agent harness, while the loading of a nested file depends on the harness.
 
 **DeepSeek's tutorial and reference split, with scope set by tree position.** The four reference documents are flat and reference-only. The only tutorial is the Writing section of `README.md`.
 
 **DeepSeek's page kinds, metadata, and templates; its documentation website; generated references; compiled code blocks; and the check that documents named in source code exist.** Each serves a package tree, a published website, or generated catalogs, and this repository has none of them.
+
+**DeepSeek's page skeleton:** a Summary, a table of contents, Further Exploration, and a final Dev Note on each page. Each reference document here has five to seven sections, and its first paragraph already says when to read it and what it holds. A Dev Note is a scratch area inside a current-state document; here an undecided idea goes in a proposed Agent Note.
 
 **DeepSeek's check for banned terms.** It enforces one term that DeepSeek's own history made ambiguous. This repository has no such term yet; the writing rules ask for one term per concept.
 
@@ -60,6 +63,7 @@ The repository follows the [documentation standard](../../../docs/AGENTS.md), wh
 - A lifecycle folder holds about 50 notes, so a listing no longer fits on one screen: add class folders.
 - Many implemented notes have historical value but no future use: add a frozen archive.
 - An incident needs a causal chain that does not fit a commit body: add a postmortem folder.
+- A reference document has too many sections to scan: add a Summary and a table of contents.
 - Copied values come back in review often: add a check that, for example, rejects a CSS value in a document that names no test.
 
 ## Consequences

@@ -59,6 +59,7 @@ Find and fix these in every document you touch:
 - History in a current-state document: "now", "no longer", "was changed to".
 - Status annotations that rot: "implemented", "future", "TODO" in prose.
 - A reasoning transcript: the steps that led to a result, proof of an obvious branch, or a local option that lost. Keep the result and its lasting reason.
+- A reference that only the writing session can resolve: "decision 3", "as discussed", "the reviewer asked", a section of an uncommitted draft. Restate the fact so that a reader at HEAD can check it.
 - The same reason repeated beside each sibling, instead of once at the shared owner.
 - A no-op: an instruction that the agent follows by default.
 - A paragraph that carries several rules. Split it, or move the detail to its home.

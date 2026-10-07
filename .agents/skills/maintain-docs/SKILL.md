@@ -14,7 +14,7 @@ The [documentation standard](../../../docs/AGENTS.md) holds the rules: the homes
 3. **Write.** Apply the writing rules, and the [prose coverage](#prose-coverage) for the kind of text. Done when the text passes the admission rule sentence by sentence, and each shortened passage keeps all of its propositions.
 4. **Fact-check.** Follow [Fact-check](#fact-check). Done when every command, path, default, and value is observed or traced, or deleted.
 5. **Agent Notes.** For a new note, run the [supersession check](#supersession-check). For a note that a change touches, keep its paths, names, and mechanisms current. Done when no two active notes own the same decision without links both ways.
-6. **Audit.** Run the slop checklist over every document that you touched, not only the lines you changed. Done when each item is fixed or is a deliberate keep that you can name.
+6. **Audit.** Run the slop checklist over every document that you touched, not only the lines you changed, then the [newcomer test](#newcomer-test). Done when each item is fixed or is a deliberate keep that you can name.
 7. **Validate.** Run `node --test tests/docs*.test.mjs` and `git diff --check`. When the change also reaches site output, run the checks in [Evidence for each change](../../../docs/testing.md#evidence-for-each-change). Read the complete diff once for correctness, then once for brevity. Done when the checks pass and both reads find nothing to fix.
 8. **Report.** List the documents changed, the deliberate keeps, the claims that you could not verify, and each check that ran with its result. Done when each item in the list names a file or a command.
 
@@ -37,6 +37,25 @@ Add text where code cannot show a required fact, and remove text that code alrea
 - **Agent Note:** the unique rationale, the alternatives and why they lost, the consequences, the tests that pin the decision, and the known gaps.
 - **Commit body:** the trigger, the change and its reason, the verification that ran, and the limits.
 - **README:** what a human needs to set up the project and write a post, and a short deployment overview that links its home.
+
+## History and session references
+
+This probe finds candidates for the two slop items on history and session references. It is not the definition: judge each hit, and also read the densest prose without it.
+
+```sh
+grep -rnEi 'no longer|used to|was changed|\bnow\b|as discussed|in review|this session' AGENTS.md README.md docs .agents/skills/{maintain-docs,ship,upgrade-deps,code-review}
+```
+
+Keep these; they are not history:
+
+- A counterfactual that pins a fixed bug: "without X, Y happens".
+- A measured bound that names its evidence: "measured: <value> on <machine>".
+- Old and new runtime states, such as an old value that stays until a write succeeds.
+- The change story in an Agent Note's alternatives, with the commits it cites.
+
+## Newcomer test
+
+A reader with no context reads root `AGENTS.md` and at most three linked pages. Then they can say, for the surface that you changed, what it does, how to run and check it safely, where its state lives, how it fails, and where to change it. When an answer needs the source code only to find the flow, add the missing sentence or pointer to its home. When the reader must read unrelated detail first, move that detail to its home.
 
 ## Supersession check
 
