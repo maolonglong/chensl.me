@@ -5,8 +5,8 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  miniflare@5.20260926.1-alpha>sharp: 0.35.5
-  micromark-extension-math@3.1.0>katex: 0.18.2
+  sharp@<0.35.5: 0.35.5
+  katex@<0.18.2: 0.18.2
 
 importers:
 

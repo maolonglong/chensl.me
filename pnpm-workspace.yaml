@@ -5,6 +5,6 @@ allowBuilds:
 
 overrides:
   # Miniflare pins an affected sharp release (GHSA-wq5f-xc86-pv6w).
-  'miniflare@5.20260926.1-alpha>sharp': 0.35.5
-  # No fixed 0.16 release exists; the package loads katex but never calls it.
-  'micromark-extension-math@3.1.0>katex': 0.18.2
+  'sharp@<0.35.5': 0.35.5
+  # No fixed 0.16 release exists; micromark-extension-math loads katex but never calls it.
+  'katex@<0.18.2': 0.18.2
