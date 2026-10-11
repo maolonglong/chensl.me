@@ -278,17 +278,23 @@ test('an unavailable initial count stays blank and does not prevent a first vote
   const response = page.waitForResponse('**/_actions/upvote/**')
   await button.click()
   expect((await response).status()).toBe(200)
+  await expect(button).toBeDisabled()
+  await expect(count).toHaveText('')
+  await expect(button).toHaveAccessibleName('已点赞')
+  await expect(page.locator('[data-upvote] [aria-live]')).toHaveText('已点赞')
+  await captureStates(page, capture, 'voted-unloaded')
   await page.unroute('**/_actions/getVotes/**')
   await page.reload()
   await expect(count).toHaveText(String(baseline + 1))
   await expect(button).toBeDisabled()
 })
 
-test('a first vote succeeds while the initial read is pending and keeps its cookie', async ({
+test('a first vote while the initial read is pending keeps its cookie and display', async ({
   page,
   context,
   open,
   action,
+  clientAddress,
 }) => {
   const baseline = (await action('getVotes', article)).data.count
   let release
@@ -296,31 +302,45 @@ test('a first vote succeeds while the initial read is pending and keeps its cook
   let received
   const reading = new Promise((resolve) => (received = resolve))
   await page.route('**/_actions/getVotes/**', async (route) => {
+    // Read before the click, then deliver that body afterwards. The count in it predates the vote.
+    const response = await route.fetch({
+      headers: { ...route.request().headers(), 'cf-connecting-ip': clientAddress },
+    })
     received()
     await pending
-    await route.fallback()
+    await route.fulfill({ response })
   })
   await open(`/blog/${article}/`)
   await reading
+  const button = page.locator('[data-upvote] button')
+  const count = page.locator('[data-upvote] [data-count]')
   const voterCookies = async () =>
     (await context.cookies()).filter((cookie) => cookie.name === '__Host-blog-voter')
   expect(await voterCookies()).toEqual([])
+  await expect(count).toHaveText('')
 
   try {
     const response = page.waitForResponse('**/_actions/upvote/**')
-    await page.locator('[data-upvote] button').click()
+    await button.click()
     expect((await response).status()).toBe(200)
     const cookies = await voterCookies()
     expect(cookies).toHaveLength(1)
     const value = cookies[0].value
+    await expect(button).toBeDisabled()
+    await expect(count).toHaveText('')
+    await expect(button).toHaveAccessibleName('已点赞')
+    await expect(page.locator('[data-upvote] [aria-live]')).toHaveText('已点赞')
     const read = page.waitForResponse('**/_actions/getVotes/**')
     release()
     expect((await read).headers()['set-cookie']).toBeUndefined()
     expect((await voterCookies()).map((cookie) => cookie.value)).toEqual([value])
+    await expect(count).toHaveText('')
+    await expect(button).toBeDisabled()
+    await expect(button).toHaveAccessibleName('已点赞')
     await page.unroute('**/_actions/getVotes/**')
     await page.reload()
-    await expect(page.locator('[data-upvote] [data-count]')).toHaveText(String(baseline + 1))
-    await expect(page.locator('[data-upvote] button')).toBeDisabled()
+    await expect(count).toHaveText(String(baseline + 1))
+    await expect(button).toBeDisabled()
   } finally {
     release()
   }

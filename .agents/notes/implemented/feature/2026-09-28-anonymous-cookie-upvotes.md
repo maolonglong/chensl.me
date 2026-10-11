@@ -13,7 +13,8 @@ Astro Actions in `src/actions/index.ts` run on Cloudflare Workers and store vote
 - Identity is an anonymous visitor UUID in the `__Host-blog-voter` cookie. Reads never set it. The first vote that D1 saves creates it, so a delayed read cannot replace a new identity.
 - A duplicate vote is idempotent. Action responses are private and not cacheable. `src/middleware.ts` rejects cross-origin requests.
 - Two rate limiters, for reads and for submissions, key on the client address. Their budgets are in `wrangler.jsonc`.
-- The button follows Bear Blog. On click it increments, colors, and disables at once, without waiting for the Action. A failed submission stays silent, and a reload shows the stored state.
+- The button follows Bear Blog. On click it colors and disables at once, without waiting for the Action, and it increments when a count is already shown. A failed submission stays silent, and a reload shows the stored state.
+- A count that has not loaded stays blank. The placeholder is not zero, and a read still in flight is ignored, so that read cannot replace the display.
 
 `e2e/upvotes.spec.mjs` asserts these behaviors; its test titles are the list.
 
@@ -22,6 +23,8 @@ Astro Actions in `src/actions/index.ts` run on Cloudflare Workers and store vote
 **Wait for the response and show inline retry feedback.** The first version (`f78824f`) did this. `bfa3a4d` replaced it: immediate feedback is simpler, and the reload reconciles the display with storage.
 
 **Create the visitor identity on the first read.** The first version made reads depend on an initial identity, and a delayed read could replace a cookie from a first vote. `bfa3a4d` moved identity creation to the first saved vote.
+
+**Treat the blank placeholder as zero, or apply the in-flight read after the click.** The placeholder is a nbsp, so an increment from it shows 1. The read can predate the insert and then paint the old count on a disabled button.
 
 ## Consequences
 
