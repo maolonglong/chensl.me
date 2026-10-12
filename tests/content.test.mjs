@@ -27,6 +27,12 @@ test('a clock time with no timezone is Shanghai time', () => {
   assert.match(rewritten, /pubDate: 2024-06-15T23:00:00\+08:00/)
   assert.match(rewritten, /updatedDate: 2024-06-15T23:00:00\+08:00\n/)
   assert.match(rewritten, /23:00 stays in the body/)
+  assert.equal(
+    rewriteUnzonedFrontMatter(
+      '---\npubDate: 2024-06-15T23:00:00 # publication\nupdatedDate: 2024-06-16T23:00:00 # modification\n---\n',
+    ),
+    '---\npubDate: 2024-06-15T23:00:00+08:00 # publication\nupdatedDate: 2024-06-16T23:00:00+08:00 # modification\n---\n',
+  )
 })
 
 test('sitemap discovers built pages and excludes unpublished content and endpoints', async () => {

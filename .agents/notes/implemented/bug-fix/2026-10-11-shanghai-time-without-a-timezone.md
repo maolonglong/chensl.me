@@ -8,7 +8,7 @@ An article clock time with no offset was read as UTC. `23:00` on a date then fal
 
 ## Decision
 
-`loadWithShanghaiFrontMatter` in `src/lib/post-date.ts` rewrites a clock time with no offset to `+08:00` while the blog loader reads the Markdown file. A date with no clock stays UTC midnight, which is already the same Shanghai calendar day on every machine. The schema then sees a zoned timestamp. Quoted timestamps stay strings, and `parsePostDate` handles those. The loader cannot patch js-yaml: Astro parses front matter with a separate copy, and the `Date` it builds is identical to one written with `Z`.
+The blog loader wraps `parseData` in `src/content.config.ts`, which `glob` calls for initial loading, changes, and additions. It reads the source, uses `rewriteUnzonedFrontMatter` in `src/lib/post-date.ts` to add `+08:00` to bare clock times while preserving YAML comments, and parses it with Astro's front matter parser. Only `pubDate` and `updatedDate` replace the loader's parsed values before schema validation. A date with no clock stays UTC midnight. Quoted timestamps stay strings, and `parsePostDate` handles those. The content digest includes the date interpretation so entries cached without normalization are revalidated.
 
 ## Alternatives considered
 
@@ -16,6 +16,8 @@ An article clock time with no offset was read as UTC. `23:00` on a date then fal
 
 **Subtract eight hours from every parsed `Date`.** Values written with `+08:00` or `Z` would move too.
 
+**Replace the global file reader while `glob.load()` runs.** File watchers run after the reader has been restored, so editing only the body changes the date interpretation. Keeping the replacement active would affect other collections and file readers.
+
 ## Consequences
 
-An unzoned clock time is Shanghai local time, on every build machine. Date-only values and explicit offsets stay as they were. `tests/content.test.mjs` pins the rule.
+An unzoned clock time is Shanghai local time during builds and development reloads. Date-only values and explicit offsets stay as they were. Each changed entry needs one extra file read and front matter parse; Markdown rendering and the stored body remain owned by `glob`. `tests/content.test.mjs` and `tests/post-dates.test.mjs` pin the rule.
