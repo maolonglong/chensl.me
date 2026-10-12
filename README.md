@@ -26,7 +26,7 @@ pnpm format     # format maintained code
 
 ## Writing
 
-Articles live in `src/content/blog/`, as `<name>.md` or `<name>/index.md`. The name is the URL, `/blog/<name>/`, so keep it stable. [`src/content.config.ts`](src/content.config.ts) defines the front matter, and the build rejects unknown fields. [Product](docs/product.md) explains drafts, scheduled posts, creation declarations, comments, and the exports.
+Articles live in `src/content/blog/`, as `<name>.md` or `<name>/index.md`. The name is the URL, `/blog/<name>/`, so keep it stable. [`src/content.config.ts`](src/content.config.ts) defines the front matter, and the build rejects unknown fields. A clock time with no timezone is Shanghai time. [Product](docs/product.md) explains drafts, scheduled posts, creation declarations, comments, and the exports.
 
 Keep local images next to the Markdown, link them with relative paths, and give them descriptive alt text; Astro optimizes them. Put files for download in `public/downloads/`. A remote image needs its origin in both CSP policies ([Architecture](docs/architecture.md#csp)).
 

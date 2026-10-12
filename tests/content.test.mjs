@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile, readdir, rm } from 'node:fs/promises'
 import path from 'node:path'
 import { test } from 'node:test'
+import { parsePostDate, rewriteUnzonedFrontMatter } from '../src/lib/post-date.ts'
 import {
   astroProject,
   behaviorFixture,
@@ -13,6 +14,20 @@ import {
 } from './support.mjs'
 
 // Collection validation, publication rules, standalone pages, and the sitemap.
+
+test('a clock time with no timezone is Shanghai time', () => {
+  assert.equal(parsePostDate('2024-06-15T23:00:00').toISOString(), '2024-06-15T15:00:00.000Z')
+  assert.equal(parsePostDate('2024-06-15 23:00:00').toISOString(), '2024-06-15T15:00:00.000Z')
+  assert.equal(parsePostDate('2024-06-15T23:00:00+08:00').toISOString(), '2024-06-15T15:00:00.000Z')
+  assert.equal(parsePostDate('2024-06-15T23:00:00Z').toISOString(), '2024-06-15T23:00:00.000Z')
+  assert.equal(parsePostDate('2024-06-15').toISOString(), '2024-06-15T00:00:00.000Z')
+  const source =
+    '---\npubDate: 2024-06-15T23:00:00\nupdatedDate: 2024-06-15T23:00:00+08:00\n---\n\n23:00 stays in the body\n'
+  const rewritten = rewriteUnzonedFrontMatter(source)
+  assert.match(rewritten, /pubDate: 2024-06-15T23:00:00\+08:00/)
+  assert.match(rewritten, /updatedDate: 2024-06-15T23:00:00\+08:00\n/)
+  assert.match(rewritten, /23:00 stays in the body/)
+})
 
 test('sitemap discovers built pages and excludes unpublished content and endpoints', async () => {
   const { dist } = await behaviorFixture()
@@ -223,6 +238,15 @@ async function staleFixture() {
           hidden: false,
         },
         { id: 'fresh', pubDate: recent, notice: writtenNotice, hidden: true },
+        // 23:00 with no offset is the next Shanghai day if it is read as UTC.
+        {
+          id: 'zoneless',
+          pubDate: '2024-06-15T23:00:00',
+          notice: writtenNotice,
+          hidden: false,
+          instant: '2024-06-15T15:00:00.000Z',
+          displayed: '2024-06-15',
+        },
       ]
       for (const { id, pubDate, updatedDate } of cases) {
         await write(
@@ -238,7 +262,7 @@ async function staleFixture() {
 
 test('stale article notices use the last modification date and stay out of content exports', async () => {
   const { dist, cases } = await staleFixture()
-  for (const { id, pubDate, updatedDate, notice, hidden } of cases) {
+  for (const { id, pubDate, updatedDate, notice, hidden, instant, displayed } of cases) {
     const html = await readFile(path.join(dist, `blog/${id}/index.html`), 'utf8')
     const header = html.match(/<header class="post-header"[^>]*>([\s\S]*?)<\/header>/)?.[1]
     assert.ok(header, `${id}: missing article header`)
@@ -251,9 +275,10 @@ test('stale article notices use the last modification date and stay out of conte
     const attributes = notices[0][1]
     assert.equal(
       attributes.match(/\bdata-stale-since="([^"]+)"/)?.[1],
-      new Date(updatedDate ?? pubDate).toISOString(),
+      instant ?? new Date(updatedDate ?? pubDate).toISOString(),
       `${id}: last modification date`,
     )
+    if (displayed) assert.match(header, new RegExp(`<time[^>]*>${displayed}</time>`))
     assert.equal(/\shidden(?=\s|$)/.test(attributes), hidden, `${id}: build-time visibility`)
     assert.match(header, /class="post-meta"[^>]*>[\s\S]*?<\/p>\s*<p class="post-notice"/)
     const markdown = await readFile(path.join(dist, `blog/${id}/index.md`), 'utf8')
