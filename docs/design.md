@@ -7,7 +7,7 @@ Read this before you change layout, styles, fonts, or browser interactions. It s
 - A warm neutral page with ink-blue links, JinKai type, an introductory home, a year-grouped archive, and single-column articles.
 - Header, main, and footer share one reading column. Short pages keep the footer at the bottom.
 - Ink-blue means a link. Emphasis, list markers, and headings use other means.
-- Every interactive control works with a keyboard, has a visible focus ring and an accessible name, and has a touch target of at least 44 px (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`).
+- Every interactive control works with a keyboard, has a visible focus ring and an accessible name, and has a touch target of at least 44 px (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`). Header links and archive rows keep their text spacing: padding them up to 44 px was rejected.
 
 ## Kami as the reference
 
