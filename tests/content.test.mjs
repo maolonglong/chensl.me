@@ -293,3 +293,24 @@ test('stale article notices use the last modification date and stay out of conte
     )
   }
 })
+
+test('the RSS feed keeps the 20 newest articles', async () => {
+  const fixture = await astroProject('astro-rss-limit-')
+  for (let index = 0; index <= 20; index++) {
+    const day = String(index + 1).padStart(2, '0')
+    const id = `feed-${day}`
+    await write(
+      fixture,
+      `src/content/blog/${id}.md`,
+      `${frontmatter(`Feed ${day}`, `2020-01-${day}T00:00:00+08:00`)}Body.\n`,
+    )
+  }
+  const dist = await buildAstro(fixture)
+  const rss = await readFile(path.join(dist, 'index.xml'), 'utf8')
+  const titles = [...rss.matchAll(/<title>([^<]*)<\/title>/g)].map(([, title]) => title)
+  assert.deepEqual(
+    titles.slice(1),
+    Array.from({ length: 20 }, (_, index) => `Feed ${String(21 - index).padStart(2, '0')}`),
+  )
+  assert.equal(titles.includes('Feed 01'), false)
+})

@@ -26,7 +26,7 @@ The page, the RSS item, and the Markdown export show the same declaration, and t
 
 ## Feeds and exports
 
-- `/index.xml` is the only RSS feed. Items carry the rendered article with absolute URLs (`tests/markdown.test.mjs`).
+- `/index.xml` is the only RSS feed. It lists the 20 newest published articles, and each item carries the rendered article with absolute URLs (`tests/content.test.mjs`, `tests/markdown.test.mjs`).
 - Each published article has a Markdown export at `/blog/<id>/index.md`: a metadata header, then the original body. Its local images are published at their original paths, so relative links resolve (`tests/content.test.mjs`).
 - `/llms.txt` lists the exports for readers and agents (`tests/content.test.mjs`).
 - The exports and `/llms.txt` are UTF-8, and `public/_headers` must say so: browsers on a Chinese-locale system read text without a charset as GBK (`tests/check-site.test.mjs`).
