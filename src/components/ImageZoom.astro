@@ -1,0 +1,156 @@
+<template id="image-zoom-open-template">
+  <button class="image-zoom-open" type="button"></button>
+</template>
+<dialog class="image-zoom" aria-label="放大的图片">
+  <button class="image-zoom-close" type="button" aria-label="关闭" autofocus>
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M6 6l12 12M18 6 6 18" />
+    </svg>
+  </button>
+</dialog>
+<script>
+  ;(() => {
+    const template = document.querySelector<HTMLTemplateElement>('#image-zoom-open-template')
+    const dialog = document.querySelector<HTMLDialogElement>('dialog.image-zoom')
+    if (!template || !dialog) return
+    const view = document.createElement('img')
+    dialog.append(view)
+    const shut = () => dialog.close()
+    dialog.querySelector('.image-zoom-close')?.addEventListener('click', shut)
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) shut()
+    })
+    dialog.addEventListener('close', () => {
+      view.removeAttribute('src')
+      view.alt = ''
+    })
+    for (const image of document.querySelectorAll<HTMLImageElement>('.prose img')) {
+      if (image.closest('a, button')) continue
+      const button = template.content.firstElementChild!.cloneNode(true) as HTMLButtonElement
+      const alt = image.alt
+      button.setAttribute('aria-label', alt ? `放大图片：${alt}` : '放大图片')
+      image.setAttribute('aria-hidden', 'true')
+      image.before(button)
+      button.append(image)
+      button.addEventListener('click', () => {
+        if (dialog.open) return
+        view.alt = alt
+        view.src = image.currentSrc || image.src
+        dialog.showModal()
+      })
+    }
+  })()
+</script>
+
+<style>
+  .image-zoom-open {
+    display: grid;
+    place-items: center;
+    width: fit-content;
+    max-width: 100%;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius);
+    touch-action: manipulation;
+  }
+  .image-zoom-open :global(img) {
+    display: block;
+    border-radius: inherit;
+  }
+  /* display on a closed dialog overrides the UA display:none and shows it. */
+  .image-zoom[open] {
+    position: fixed;
+    inset: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: var(--gutter);
+    overflow: auto;
+    background: transparent;
+    border: 0;
+  }
+  .image-zoom::backdrop {
+    background: color-mix(in srgb, var(--near-black) 72%, transparent);
+  }
+  .image-zoom :global(img) {
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius);
+  }
+  @media (min-width: 601px) {
+    .image-zoom :global(img) {
+      max-width: 100%;
+      max-height: 100%;
+      min-width: 0;
+      min-height: 0;
+    }
+  }
+  @media (max-width: 600px) {
+    .image-zoom :global(img) {
+      width: auto;
+      max-width: none;
+      height: auto;
+      flex: 0 0 auto;
+      max-height: calc(100dvh - 2 * var(--gutter));
+    }
+  }
+  .image-zoom-close {
+    position: fixed;
+    top: var(--gutter);
+    right: var(--gutter);
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: var(--muted-color);
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    touch-action: manipulation;
+  }
+  .image-zoom-close:focus-visible {
+    border-radius: var(--radius);
+  }
+  @media (hover: hover) {
+    .image-zoom-open {
+      cursor: zoom-in;
+    }
+    .image-zoom-close:hover {
+      color: var(--heading-color);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .image-zoom[open] {
+      animation: image-zoom-in 100ms ease-out;
+    }
+  }
+  @keyframes image-zoom-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+</style>

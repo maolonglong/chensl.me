@@ -10,8 +10,9 @@
     --font-mono:
         var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo,
         Consolas, 'Liberation Mono', var(--font-serif);
-    --background-color: light-dark(#f5f4ed, #141413);
-    --heading-color: light-dark(#141413, #faf9f5);
+    --near-black: #141413;
+    --background-color: light-dark(#f5f4ed, var(--near-black));
+    --heading-color: light-dark(var(--near-black), #faf9f5);
     --text-color: light-dark(#504e49, #d4d3cd);
     --muted-color: light-dark(#6b6a64, #b0aea5);
     --link-color: light-dark(#1b365d, #94b4d4);

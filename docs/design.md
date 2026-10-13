@@ -44,3 +44,4 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - **Icons** are inline SVG, not font glyphs or an icon library.
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
 - **Links** in article text and the footer are underlined. Archive links show a visited color.
+- **Images.** The enlarged view dims the page with the theme near-black and adds no new color (`e2e/images.spec.mjs`).

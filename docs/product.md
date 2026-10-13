@@ -6,6 +6,7 @@ Read this before you change what readers see or rely on. Each section states a p
 
 - **Home** introduces the author. **Archive** (`/blog/`) lists published articles, grouped by year, newest first.
 - **Article pages** use one reading column. An article with at least three H2 or H3 headings gets a contents list (`tests/markdown.test.mjs`, `e2e/contents.spec.mjs`).
+- **Article images.** An image in the article that is not a link opens larger in a dialog. On a narrow page the dialog scrolls across that larger image. Escape, the close button, or the dimmed page closes it. Without scripts, the image stays in the column (`e2e/images.spec.mjs`).
 - **Stale notice.** An article whose last modification (`updatedDate`, else `pubDate`) is more than two calendar years old shows a notice under its header. The browser checks the current date on each visit, so the notice appears when the article crosses two years, with no rebuild. The build also marks articles that were already stale, so a visitor whose clock is behind the build time still sees the notice (`tests/stale.test.mjs`, `e2e/page-shell.spec.mjs`).
 
 ## Articles and publication

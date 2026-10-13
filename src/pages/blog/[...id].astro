@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import FloatingToc from '../../components/FloatingToc.astro'
 import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
+import ImageZoom from '../../components/ImageZoom.astro'
 import Upvote from '../../components/Upvote.astro'
 import { creationLabels, publishedPosts, displayDate } from '../../lib/posts'
 import { isStaleSince } from '../../lib/stale'
@@ -49,6 +50,7 @@ const { creation } = post.data
       <Content />
     </div>
     <CodeCopy />
+    <ImageZoom />
   </article>
   <Upvote postId={post.id} />
   {post.data.comments && <Comments />}
