@@ -60,6 +60,18 @@ for (const mode of ['light', 'dark']) {
     const box = await view.boundingBox()
     expect(box.height).toBeLessThanOrEqual(page.viewportSize().height)
     expect(box.width).toBeGreaterThan(before.width + 40)
+    const reach = await dialog.evaluate((element) => {
+      const image = element.querySelector('img')
+      element.scrollLeft = 0
+      const start = image.getBoundingClientRect().left - element.getBoundingClientRect().left
+      element.scrollLeft = element.scrollWidth
+      const end = element.getBoundingClientRect().right - image.getBoundingClientRect().right
+      element.scrollLeft = 0
+      return { start, end, overflows: element.scrollWidth > element.clientWidth }
+    })
+    expect(reach.overflows).toBe(true)
+    expect(reach.start).toBeGreaterThanOrEqual(0)
+    expect(reach.end).toBeGreaterThanOrEqual(0)
     await capture(page, `image-zoom-open-375-${mode}`)
     await page.keyboard.press('Escape')
     await capture(page, `image-zoom-closed-375-${mode}`)
@@ -74,7 +86,15 @@ test('a wide dark page shows the enlarged image inside the viewport', async ({
   await page.emulateMedia({ colorScheme: 'dark' })
   await open('/blog/2023-review/')
   await page.getByRole('button', { name }).click()
-  await expect(page.getByRole('dialog', { name: '放大的图片' })).toBeVisible()
+  const dialog = page.getByRole('dialog', { name: '放大的图片' })
+  const view = dialog.locator('img')
+  await expect(dialog).toBeVisible()
+  const box = await view.boundingBox()
+  const viewport = page.viewportSize()
+  expect(box.x).toBeGreaterThanOrEqual(0)
+  expect(box.y).toBeGreaterThanOrEqual(0)
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width)
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height)
   await capture(page, 'image-zoom-open-1280-dark')
 })
 

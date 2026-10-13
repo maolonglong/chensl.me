@@ -8,7 +8,7 @@ Article images are wider than the reading column. A screenshot or diagram is sha
 
 ## Decision
 
-`src/components/ImageZoom.astro` adds one `<dialog>` to each article page. Its script wraps each `.prose img` that is not already inside a link or a button. The dialog shows that same optimized URL. Astro's default image layout is `none`, so the bitmap keeps its intrinsic pixels and the column only shrinks the display. Wider viewports fit the whole image in the dialog. At the layout's narrow breakpoint and below, the image keeps its intrinsic size, the height stays within the viewport, and the dialog scrolls.
+`src/components/ImageZoom.astro` adds one `<dialog>` to each article page. Its script wraps each `.prose img` that is not already inside a link or a button. The dialog shows that same optimized URL. Astro's default image layout is `none`, so the bitmap keeps its intrinsic pixels and the column only shrinks the display. Wider viewports fit the whole image in the dialog. At the layout's narrow breakpoint and below, the image keeps its intrinsic size and the height stays within the viewport. Alignment there is `safe center`, so an image that fits stays centered and an image that overflows begins at the scroll origin. Scrolling reaches both edges.
 
 Escape, the close button, and a click on the dialog outside the image close it. `dialog.showModal()` traps focus and restores it. Without scripts, the image stays an ordinary image in the column. The Markdown pipeline, the RSS item, and the export body do not gain a wrapper.
 
