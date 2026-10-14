@@ -190,6 +190,10 @@ test.describe('on a touch screen', () => {
         'display',
         'none',
       )
+      await expect(
+        page.locator('[data-upvote] button'),
+        'No-script upvote control is hidden',
+      ).toHaveCSS('display', 'none')
       await expect(page.locator('.code-copy, .back-to-top')).toHaveCount(0)
       await page.locator('.toc-button').click()
       expect(
