@@ -1,13 +1,21 @@
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { fontProviders } from 'astro/config'
 import subsetFont from 'subset-font'
 import { Blob, Face } from 'harfbuzzjs'
 import { unified } from 'unified'
 import rehypeParse from 'rehype-parse'
+import remarkMath from 'remark-math'
 import { visit } from 'unist-util-visit'
+import { rehypeSite, remarkSite } from './markdown.mjs'
 
 const parser = unified().use(rehypeParse, { fragment: true })
+const markdownProcessor = createMarkdownProcessor({
+  remarkPlugins: [remarkSite, remarkMath],
+  rehypePlugins: [rehypeSite],
+  syntaxHighlight: false,
+})
 
 function unicodeRanges(points) {
   const ranges = []
@@ -31,6 +39,7 @@ export async function siteFonts() {
   const preserveNameIds = [...new Set(face.listNames().map(({ nameId }) => nameId))]
   const common = new Set()
   const articles = new Set()
+  const markdown = await markdownProcessor
 
   // Conservatively scan source, including template strings and decoded HTML entities. The
   // Astro config holds Markdown labels, such as the footnote heading.
@@ -41,8 +50,17 @@ export async function siteFonts() {
   for (const file of [...sources, 'astro.config.mjs']) {
     if (!/\.(astro|md|ts|mjs|css)$/.test(file)) continue
     const input = await readFile(path.join(root, file), 'utf8')
+    let html = input
+    if (file.endsWith('.md')) {
+      try {
+        const body = input.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '')
+        html += (await markdown.render(body)).code
+      } catch {
+        // Invalid Markdown or TeX fails in the collection loader with the article filename.
+      }
+    }
     let text = input
-    visit(parser.parse(input), 'text', (node) => {
+    visit(parser.parse(html), 'text', (node) => {
       text += node.value
     })
     const target = file.startsWith(path.join('src', 'content', 'blog', path.sep))

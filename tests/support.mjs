@@ -129,7 +129,7 @@ echo plain
 > [!NOTE]
 > Plain text
 
-Inline $a^2 + b_1$ math.
+Inline $a^2 - b_1 \\le \\alpha$ math.
 
 $$
 f(x) = \\frac{1}{2}

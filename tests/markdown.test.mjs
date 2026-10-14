@@ -205,7 +205,7 @@ test('TeX math renders to native MathML in pages and RSS', async () => {
     const inline = output.match(/Inline (<math\b[^>]*>[\s\S]*?<\/math>) math/)?.[1]
     assert.ok(inline, 'missing inline math')
     assert.doesNotMatch(inline, /display="block"/)
-    assert.match(inline, /<msup>\s*<mi>a<\/mi>\s*<mn>2<\/mn>\s*<\/msup>/)
+    assert.match(inline, /<msup>\s*<mi>a<\/mi>\s*<mn>2<\/mn>\s*<\/msup>\s*<mo>−<\/mo>/)
     const block = output.match(
       /<div class="math-scroll"[^>]*>\s*<math\b[^>]*display="block"[^>]*>[\s\S]*?<\/math>/,
     )?.[0]
