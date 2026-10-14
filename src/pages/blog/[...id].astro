@@ -1,6 +1,8 @@
 ---
+import '../../styles/floating-controls.css'
 import { render, type CollectionEntry } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import BackToTop from '../../components/BackToTop.astro'
 import FloatingToc from '../../components/FloatingToc.astro'
 import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
@@ -52,6 +54,7 @@ const { creation } = post.data
   </article>
   <Upvote postId={post.id} />
   {post.data.comments && <Comments />}
+  <BackToTop />
 </BaseLayout>
 
 <script>

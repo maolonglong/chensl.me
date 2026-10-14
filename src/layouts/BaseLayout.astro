@@ -1,7 +1,5 @@
 ---
 import '../styles/global.css'
-import '../styles/floating-controls.css'
-import BackToTop from '../components/BackToTop.astro'
 import Theme from '../components/Theme.astro'
 import ThemeToggle from '../components/ThemeToggle.astro'
 import { Font } from 'astro:assets'
@@ -139,7 +137,6 @@ const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'lo
         <a href="https://github.com/tw93/Kami">Kami</a>
       </p>
     </footer>
-    {article && <BackToTop />}
   </body>
 </html>
 

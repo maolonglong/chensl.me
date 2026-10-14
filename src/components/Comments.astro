@@ -22,12 +22,11 @@ import { giscusThemes } from '../lib/assets'
       light: new URL(section.dataset.lightTheme!, window.location.origin).href,
       dark: new URL(section.dataset.darkTheme!, window.location.origin).href,
     }
-    const resolvedTheme = (): 'light' | 'dark' =>
-      document.documentElement.dataset.theme === 'dark' ||
-      (!document.documentElement.dataset.theme &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-        ? 'dark'
-        : 'light'
+    const resolvedTheme = (): 'light' | 'dark' => {
+      const { theme } = document.documentElement.dataset
+      if (theme === 'light' || theme === 'dark') return theme
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
     const script = document.createElement('script')
     script.src = 'https://giscus.app/client.js'
     script.async = true
@@ -58,13 +57,13 @@ import { giscusThemes } from '../lib/assets'
     }
     window.addEventListener('site-theme-change', () => syncTheme(resolvedTheme()))
     const container = section.querySelector<HTMLElement>('.giscus')!
-    const frameObserver = new MutationObserver(() => {
-      const frame = container.querySelector('iframe.giscus-frame')
-      if (!frame) return
-      frameObserver.disconnect()
-      frame.addEventListener('load', () => syncTheme(resolvedTheme()), { once: true })
-    })
-    frameObserver.observe(container, { childList: true })
+    container.addEventListener(
+      'load',
+      (event) => {
+        if (event.target instanceof HTMLIFrameElement) syncTheme(resolvedTheme())
+      },
+      true,
+    )
     container.append(script)
   })()
 </script>

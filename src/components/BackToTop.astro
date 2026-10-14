@@ -39,25 +39,3 @@
     })
   })()
 </script>
-
-<style>
-  .back-to-top {
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 100ms ease-out;
-  }
-  .back-to-top[data-visible] {
-    visibility: visible;
-    opacity: 1;
-  }
-  @media (hover: hover) {
-    .back-to-top:hover {
-      color: var(--heading-color);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .back-to-top {
-      transition: none;
-    }
-  }
-</style>

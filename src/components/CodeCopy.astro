@@ -91,7 +91,9 @@
     border-radius: var(--radius);
   }
   .code-copy:focus-visible,
-  .code-copy:active {
+  .code-copy:active,
+  .code-copy[data-state] {
+    color: var(--heading-color);
     opacity: 1;
   }
   :global(.code-block) :global(.line:first-child) {
@@ -108,14 +110,10 @@
     .code-copy {
       opacity: 0;
     }
-    :global(.code-block:hover) .code-copy,
-    :global(.code-block:focus-within) .code-copy,
-    .code-copy[data-state] {
+    :where(:global(.code-block:hover, .code-block:focus-within)) .code-copy {
       opacity: 0.75;
     }
-    :global(.code-block) .code-copy:hover,
-    :global(.code-block) .code-copy:focus-visible,
-    :global(.code-block) .code-copy:active {
+    .code-copy:hover {
       color: var(--heading-color);
       opacity: 1;
     }
