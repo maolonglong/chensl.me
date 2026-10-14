@@ -24,11 +24,12 @@ export async function publishedPosts() {
   )
 }
 
+const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Shanghai',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
 export const postUrl = (post: CollectionEntry<'blog'>) => `/blog/${post.id}/`
-export const displayDate = (date: Date) =>
-  new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date)
+export const displayDate = (date: Date) => dateFormatter.format(date)

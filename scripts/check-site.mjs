@@ -17,7 +17,8 @@ async function walk(directory) {
 }
 
 // The HTML parser decodes character references, so attribute values arrive as browsers read them.
-const parseHtml = (html) => unified().use(rehypeParse).parse(html)
+const htmlParser = unified().use(rehypeParse)
+const parseHtml = (html) => htmlParser.parse(html)
 
 function elements(tree, tagNames) {
   const found = []

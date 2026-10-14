@@ -21,6 +21,11 @@ test('the document checks reject each defect and accept valid cases', (t) => {
     execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args], {
       cwd: root,
       encoding: 'utf8',
+      env: {
+        ...process.env,
+        GIT_AUTHOR_DATE: '2026-10-01T00:00:00Z',
+        GIT_COMMITTER_DATE: '2026-10-01T00:00:00Z',
+      },
     }).trim()
   const note = (title, status, sections) =>
     [`# Agent Note: ${title}`, '', `Status: ${status}`, '', ...sections, ''].join('\n')
