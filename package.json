@@ -26,7 +26,7 @@
     "@j178/prek": "0.5.5",
     "@playwright/test": "1.63.0",
     "@types/node": "^26.6.4",
-    "astro": "7.3.5",
+    "astro": "7.3.8",
     "fontverter": "2.0.0",
     "harfbuzzjs": "1.6.2",
     "oxlint": "1.86.0",
