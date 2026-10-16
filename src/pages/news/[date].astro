@@ -1,0 +1,52 @@
+---
+import { getLiveEntry } from 'astro:content'
+import { LiveEntryNotFoundError } from 'astro/content/runtime'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import NewsGroups from '../../components/NewsGroups.astro'
+import { isIssueDate, newsCacheControl } from '../../lib/news'
+
+export const prerender = false
+
+const { date } = Astro.params
+async function load(date: string) {
+  const { entry, error } = await getLiveEntry('news', date)
+  if (error && !(error instanceof LiveEntryNotFoundError)) throw error
+  return entry?.data ?? null
+}
+const issue = isIssueDate(date) ? await load(date) : null
+// A missing or retracted issue may be published at any moment, so its 404 is not cached.
+Astro.response.headers.set('Cache-Control', issue ? newsCacheControl : 'no-store')
+if (!issue) Astro.response.status = 404
+---
+
+{issue ? (
+  <BaseLayout title={`AI News ${issue.date}：${issue.title}`} description={issue.summary}>
+    <article>
+      <header class="page-header">
+        <p class="meta">
+          <a href="/news/">AI News</a> · <time datetime={issue.date}>{issue.date}</time>
+        </p>
+        <h1>{issue.title}</h1>
+        <p>{issue.summary}</p>
+      </header>
+      <NewsGroups items={issue.items} level={2} />
+    </article>
+  </BaseLayout>
+) : (
+  <BaseLayout title="没有这一期" notFound>
+    <h1>没有这一期</h1>
+    <p>
+      <a href="/news/">返回 AI News</a>
+    </p>
+  </BaseLayout>
+)}
+
+<style>
+  .page-header {
+    margin-bottom: 40px;
+  }
+  .meta {
+    color: var(--muted-color);
+    font-size: 0.875rem;
+  }
+</style>

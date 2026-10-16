@@ -1,0 +1,58 @@
+---
+import { getLiveCollection } from 'astro:content'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import NewsGroups from '../../components/NewsGroups.astro'
+import { newsCacheControl, newsUrl, recentIssueCount } from '../../lib/news'
+
+export const prerender = false
+
+const { entries, error } = await getLiveCollection('news', { limit: recentIssueCount })
+if (!entries) throw error
+const issues = entries.map((entry) => entry.data)
+Astro.response.headers.set('Cache-Control', newsCacheControl)
+---
+
+<BaseLayout title="AI News" description="每天 AI 圈发生了什么：模型、产品和工具的动态摘要">
+  <header class="page-header">
+    <h1>AI News</h1>
+    <p class="note">
+      每天 AI 圈发生了什么。由 bot 收集整理，作者不逐条审阅。这里显示最近 7 期，更早的在
+      <a href="/news/archive/">归档</a>。
+      <a href="/news/index.xml" type="application/rss+xml">
+        订阅 RSS
+      </a>
+    </p>
+  </header>
+  {issues.length ? (
+    issues.map((issue) => (
+      <section class="day">
+        <h2>
+          <a href={newsUrl(issue.date)}>
+            <time datetime={issue.date}>{issue.date}</time> · {issue.title}
+          </a>
+        </h2>
+        <p>{issue.summary}</p>
+        <NewsGroups items={issue.items} level={3} />
+      </section>
+    ))
+  ) : (
+    <p>还没有内容。</p>
+  )}
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: 40px;
+  }
+  .note {
+    color: var(--muted-color);
+    font-size: 0.875rem;
+  }
+  .day {
+    margin-bottom: 48px;
+  }
+  .day h2 {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+  }
+</style>

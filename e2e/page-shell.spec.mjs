@@ -129,6 +129,39 @@ test('home loads JinKai in one request and at most 100 KiB on a cold visit', asy
   expect(fonts.bytes).toBeGreaterThan(0)
   expect(fonts.bytes).toBeLessThanOrEqual(100 * 1024)
   expect(fonts.requests).toBe(1)
+  const slices = await page.evaluate(
+    () =>
+      performance.getEntriesByType('resource').filter((entry) => entry.name.includes('/slice-'))
+        .length,
+  )
+  expect(slices, 'home text must not need a JinKai slice').toBe(0)
+})
+
+// Text that only exists at runtime, such as a news issue read from D1, is in no build-time
+// subset. It must still render in JinKai by downloading the slice that covers it.
+test('runtime text outside the build-time subsets loads a JinKai slice', async ({ page, open }) => {
+  await open('/')
+  const result = await page.evaluate(async () => {
+    const probe = document.createElement('p')
+    // Neither character appears in the source, so only a slice can cover them.
+    probe.textContent = '龘鼐'
+    document.querySelector('main').append(probe)
+    await document.fonts.load(`16px ${getComputedStyle(probe).fontFamily}`, probe.textContent)
+    await document.fonts.ready
+    return {
+      slices: performance
+        .getEntriesByType('resource')
+        .filter((entry) => /\/_astro\/slice-\d+\.[\w-]+\.woff2$/.test(entry.name))
+        .map((entry) => entry.encodedBodySize),
+      loaded: [...document.fonts].some(
+        (font) =>
+          font.family.replaceAll('"', '') === 'TsangerJinKai02 Slices' && font.status === 'loaded',
+      ),
+    }
+  })
+  expect(result.loaded, 'a JinKai slice must load').toBe(true)
+  expect(result.slices.length).toBeGreaterThanOrEqual(1)
+  expect(result.slices.length).toBeLessThanOrEqual(2)
 })
 
 // Code added to a standalone page must work without article metadata or layout flags.

@@ -61,6 +61,9 @@ print(json.dumps(sorted(e.text for e in pages.findall('s:url/s:loc', ns))))`,
     'https://chensl.me/blog/below/',
     'https://chensl.me/blog/older/',
     'https://chensl.me/blog/render/',
+    // On-demand news routes without parameters are listed; issue and month pages are not.
+    'https://chensl.me/news/',
+    'https://chensl.me/news/archive/',
   ])
   assert.match(
     await readFile(path.join(dist, 'robots.txt'), 'utf8'),

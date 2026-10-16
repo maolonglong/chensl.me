@@ -1,6 +1,6 @@
 # chensl.me
 
-Source for [chensl.me](https://chensl.me), a personal site and technical blog. Astro prerenders the pages to static assets on Cloudflare Workers, and a small Worker runs the article upvotes. There is no client UI framework.
+Source for [chensl.me](https://chensl.me), a personal site and technical blog. Astro prerenders the pages to static assets on Cloudflare Workers, and a small Worker runs the article upvotes and the public, bot-written AI News section (`/news/`). There is no client UI framework.
 
 ## Setup
 
@@ -32,7 +32,7 @@ Keep local images next to the Markdown, link them with relative paths, and give 
 
 Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, TeX math (`$…$` inline, `$$…$$` display), and code captions (`title="db/user.go"` on the fence).
 
-JinKai font subsets are built from the source text, so new text needs no font step; restart `pnpm dev` to refresh them. Font licensing is in [NOTICE.md](public/fonts/tsanger-jinkai02/NOTICE.md).
+JinKai font subsets are built from the source text, and slices cover the rest of the font for runtime text, so new text needs no font step; restart `pnpm dev` to refresh them. Font licensing is in [NOTICE.md](public/fonts/tsanger-jinkai02/NOTICE.md).
 
 ## Deployment
 

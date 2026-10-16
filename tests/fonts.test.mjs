@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { test } from 'node:test'
 import fontverter from 'fontverter'
@@ -60,6 +60,49 @@ test('JinKai declarations cover page text with versioned files within the cold-v
   }
   assert.equal(needed.size, 1, 'home must use only its small common subset')
   assert.ok(total <= 100 * 1024, `${Math.round(total / 1024)} KiB exceeds 100 KiB`)
+})
+
+test('JinKai slices cover every supported character exactly once, in cached files', async () => {
+  const { dist } = await behaviorFixture()
+  const source = await readFile(
+    path.join(root, 'vendor/fonts/tsanger-jinkai02/TsangerJinKai02-W04.ttf'),
+  )
+  const supported = new Set(new Face(new Blob(source)).collectUnicodes())
+  const directory = path.join(dist, '_astro')
+  const css = (
+    await Promise.all(
+      (await readdir(directory))
+        .filter((file) => file.endsWith('.css'))
+        .map((file) => readFile(path.join(directory, file), 'utf8')),
+    )
+  ).join('')
+  const faces = [...css.matchAll(/@font-face\s*\{([^}]+)\}/g)]
+    .map(([, body]) => body)
+    .filter((body) => body.includes('TsangerJinKai02 Slices'))
+  assert.ok(faces.length > 100, `${faces.length} slices`)
+  const owner = new Map()
+  for (const face of faces) {
+    const url = face.match(/url\(["']?([^)'"]+)/)[1]
+    assert.match(url, /^\/_astro\/slice-\d+\.[\w-]+\.woff2$/, 'slices are fingerprinted files')
+    for (const token of face.match(/unicode-range:\s*([^;}]+)/)[1].split(',')) {
+      const [start, end = start] = token.trim().slice(2).split('-')
+      for (let point = Number.parseInt(start, 16); point <= Number.parseInt(end, 16); point++) {
+        assert.ok(!owner.has(point), `U+${point.toString(16)} is in two slices`)
+        owner.set(point, url)
+      }
+    }
+  }
+  for (const point of supported) assert.ok(owner.has(point), `U+${point.toString(16)} has no slice`)
+  // Characters that only arrive at runtime, from news text in D1, must be inside their slice.
+  for (const character of '美国龘鼐') {
+    const url = owner.get(character.codePointAt(0))
+    const bytes = await readFile(path.join(dist, url))
+    const face = new Face(new Blob(await fontverter.convert(bytes, 'sfnt')))
+    assert.ok(face.collectUnicodes().includes(character.codePointAt(0)), character)
+    assert.ok(face.getName(0, 'en').length > 0, 'slices keep the copyright name')
+  }
+  // The slice family must follow the site subsets in the stack, or it is never used.
+  assert.match(css, /var\(--font-jinkai\),\s*["']TsangerJinKai02 Slices["']/)
 })
 
 test('shared layouts declare code fonts without preloading them', async () => {

@@ -1,0 +1,54 @@
+---
+import { getLiveCollection } from 'astro:content'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { newsCacheControl } from '../../../lib/news'
+
+export const prerender = false
+
+const { entries, error } = await getLiveCollection('newsMonths')
+if (!entries) throw error
+const months = entries.map((entry) => entry.data)
+Astro.response.headers.set('Cache-Control', newsCacheControl)
+---
+
+<BaseLayout title="AI News 归档" description="AI News 按月归档">
+  <header class="page-header">
+    <p class="meta">
+      <a href="/news/">AI News</a>
+    </p>
+    <h1>归档</h1>
+  </header>
+  {months.length ? (
+    <ul class="months">
+      {months.map(({ month, count }) => (
+        <li>
+          <a href={`/news/archive/${month}/`}>{month}</a>
+          <span class="count">{count} 期</span>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p>还没有内容。</p>
+  )}
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: 40px;
+  }
+  .meta,
+  .count {
+    color: var(--muted-color);
+    font-size: 0.875rem;
+  }
+  .months {
+    padding: 0;
+    list-style: none;
+  }
+  .months li {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+</style>

@@ -10,7 +10,7 @@ The upvote Actions must reject IDs that are not published articles. They called 
 
 `requirePost` in `src/actions/index.ts` sends a `HEAD` request for `/blog/<id>/` through the `ASSETS` binding. Prerendering omits drafts and future posts, so a built page means a published article. The request does not follow redirects and requires exactly 200: Cloudflare redirects `/blog/index/` toward the archive, and following that redirect made the archive votable (`d16b247`). The Action input accepts only slug-shaped IDs, so path syntax cannot select another page.
 
-`scripts/check-site.mjs` fails the build when a content-store chunk reaches `dist/server`, and when an article directory does not match the slug pattern that the Actions accept.
+`scripts/check-site.mjs` fails the build when the content store in `dist/server` exceeds its size limit (it originally rejected any content-store chunk; see [AI News](../feature/2026-10-16-bot-written-news-on-d1.md)), and when an article directory does not match the slug pattern that the Actions accept.
 
 ## Alternatives considered
 
@@ -18,4 +18,4 @@ The upvote Actions must reject IDs that are not published articles. They called 
 
 ## Consequences
 
-The Worker upload dropped from 1780 KiB to 747 KiB. Worker code must not import `astro:content` or `src/lib/posts.ts`. A new prerendered page under `/blog/<x>/` that is not an article becomes votable. An article ID outside the slug pattern cannot be voted on, and the build fails for it.
+The Worker upload dropped from 1780 KiB to 747 KiB. The Actions still must not look articles up in the content store. Since 2026-10-16 the AI News live collections import `astro:content`, so the store is bundled again (924,982 bytes); the owner accepted this, and a 1,200,000-byte cap replaces the ban. A new prerendered page under `/blog/<x>/` that is not an article becomes votable. An article ID outside the slug pattern cannot be voted on, and the build fails for it.

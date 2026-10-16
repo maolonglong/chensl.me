@@ -1,12 +1,12 @@
 # AGENTS.md
 
-chensl.me is a personal site and blog. Astro prerenders the pages to static assets on Cloudflare Workers; the Worker runs one feature, the upvote Actions on D1. This file holds the standing orders and the map. Facts live in the documents it links.
+chensl.me is a personal site and blog. Astro prerenders the pages to static assets on Cloudflare Workers. The Worker runs the upvote Actions and the bot-written AI News (`/news/`) on D1. This file holds the standing orders and the map. Facts live in the documents it links.
 
 ## Standing orders
 
 - **Approval.** Local builds, previews, local D1 migrations, `pnpm exec wrangler deploy --dry-run`, and E2E runs against disposable local data need no approval. Ask before every change to shared state: a push to `main` (it deploys production), a remote D1 migration, a manual deployment, or a Cloudflare resource or dashboard change. One approval covers one action.
 - **Production bindings.** A version preview URL uses the production D1. Send remote test writes only to Workers Previews, with approval.
-- **Content.** Articles in `src/content/blog/` keep the author's words, emojis, dates, and credits. File and directory names are article URLs, and Astro's default heading and footnote anchors are fragment URLs, so both stay stable. `/index.xml` is the only RSS feed.
+- **Content.** Articles in `src/content/blog/` keep the author's words, emojis, dates, and credits. File and directory names are article URLs, and Astro's default heading and footnote anchors are fragment URLs, so both stay stable. `/index.xml` is the only article feed.
 - **Source.** Edit source files, including `public/`. `dist/`, `.astro/`, `.wrangler/`, and `node_modules/` are generated.
 - **Skills.** Third-party skills change only through `npx skills`, committed together with `skills-lock.json`. Project skills are the folders in `.agents/skills/` that `skills-lock.json` does not list; edit them by hand, and link each one from `.claude/skills/`.
 - **Decisions.** When a change chooses between real options, removes something, or rejects a proposal, write or update an Agent Note in the same commit ([when to write one](.agents/notes/AGENTS.md#when-to-write-one)). Archived notes are frozen history: never edit them or follow them as current rules.

@@ -1,0 +1,58 @@
+---
+import { groupByTag, isWebUrl, type NewsItem } from '../lib/news'
+
+export interface Props {
+  items: NewsItem[]
+  level: 2 | 3
+}
+const { items, level } = Astro.props
+const Group = `h${level}` as 'h2' | 'h3'
+const Item = `h${level + 1}` as 'h3' | 'h4'
+---
+
+{groupByTag(items).map((group) => (
+  <section class="group">
+    <Group class="group-tag">{group.tag}</Group>
+    <ul class="items">
+      {group.items.map((item) => (
+        <li>
+          <Item class="item-title">
+            {isWebUrl(item.url) ? (
+              <a href={item.url} rel="noopener noreferrer">
+                {item.title}
+              </a>
+            ) : (
+              item.title
+            )}
+          </Item>
+          <p>{item.summary}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+))}
+
+<style>
+  .group {
+    margin-bottom: 28px;
+  }
+  .group-tag {
+    margin: 0 0 10px;
+    font-size: 1rem;
+  }
+  .items {
+    margin: 0;
+    padding-left: 1.25em;
+  }
+  .items li {
+    margin-bottom: 16px;
+  }
+  .item-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  .items p {
+    margin: 4px 0 0;
+  }
+</style>

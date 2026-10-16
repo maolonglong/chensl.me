@@ -1,0 +1,66 @@
+---
+import { getLiveCollection } from 'astro:content'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import NewsTags from '../../../components/NewsTags.astro'
+import { isMonth, issueTags, newsCacheControl, newsUrl } from '../../../lib/news'
+
+export const prerender = false
+
+const { month } = Astro.params
+async function load(month: string) {
+  const { entries, error } = await getLiveCollection('news', { month })
+  if (!entries) throw error
+  return entries.map((entry) => entry.data)
+}
+const issues = isMonth(month) ? await load(month) : []
+Astro.response.headers.set('Cache-Control', issues.length ? newsCacheControl : 'no-store')
+if (!issues.length) Astro.response.status = 404
+---
+
+{issues.length ? (
+  <BaseLayout title={`AI News ${month}`} description={`AI News ${month} 的全部期数`}>
+    <header class="page-header">
+      <p class="meta">
+        <a href="/news/">AI News</a> · <a href="/news/archive/">归档</a>
+      </p>
+      <h1>{month}</h1>
+    </header>
+    <ol class="issues">
+      {issues.map((issue) => (
+        <li>
+          <time datetime={issue.date}>{issue.date}</time>
+          <a href={newsUrl(issue.date)}>{issue.title}</a>
+          <NewsTags tags={issueTags(issue)} />
+        </li>
+      ))}
+    </ol>
+  </BaseLayout>
+) : (
+  <BaseLayout title="没有这个月" notFound>
+    <h1>没有这个月</h1>
+    <p>
+      <a href="/news/archive/">返回归档</a>
+    </p>
+  </BaseLayout>
+)}
+
+<style>
+  .page-header {
+    margin-bottom: 40px;
+  }
+  .meta,
+  .issues time {
+    color: var(--muted-color);
+    font-size: 0.875rem;
+  }
+  .issues {
+    padding: 0;
+    list-style: none;
+  }
+  .issues > li {
+    margin-bottom: 20px;
+  }
+  .issues time {
+    display: block;
+  }
+</style>

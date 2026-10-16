@@ -1,5 +1,8 @@
 ---
 import '../styles/global.css'
+// JinKai slices for text outside the build-time subsets, such as news read from D1.
+// src/lib/fonts.mjs writes this file before Astro starts.
+import '../../.astro/site-fonts/slices.css'
 import Theme from '../components/Theme.astro'
 import ThemeToggle from '../components/ThemeToggle.astro'
 import { Font } from 'astro:assets'
@@ -24,6 +27,7 @@ const {
 const siteTitle = '~chensl'
 const path = Astro.url.pathname
 const isHome = path === '/'
+const isNews = path === '/news' || path.startsWith('/news/')
 const documentTitle = isHome ? siteTitle : `${title} | ${siteTitle}`
 const metadataTitle = isHome ? siteTitle : title
 const canonical = new URL(path, Astro.site!)
@@ -51,6 +55,7 @@ if (article)
     ...(updatedDate && { dateModified: updatedDate.toISOString() }),
     mainEntityOfPage: canonical.href,
   })
+const newsCurrent = path === '/news/' ? 'page' : path.startsWith('/news/') ? 'location' : undefined
 const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'location' : undefined
 ---
 
@@ -99,12 +104,24 @@ const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'lo
     <link rel="sitemap" href="/sitemap-index.xml" />
     <Font cssVariable="--font-jinkai" preload={false} />
     <Font cssVariable="--font-jetbrains" preload={false} />
-    <link
-      rel="alternate"
-      type="application/rss+xml"
-      href={new URL('/index.xml', Astro.site!)}
-      title={siteTitle}
-    />
+    {
+      // News pages advertise the news feed in place of the blog feed; the nav link stays.
+      isNews ? (
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          href="https://chensl.me/news/index.xml"
+          title="~chensl AI News"
+        />
+      ) : (
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          href={new URL('/index.xml', Astro.site!)}
+          title={siteTitle}
+        />
+      )
+    }
     {article && <link rel="alternate" type="text/markdown" href={new URL('index.md', canonical)} />}
   </head>
   <body>
@@ -121,6 +138,9 @@ const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'lo
         </a>
         <a href="/blog/" aria-current={blogCurrent}>
           博客
+        </a>
+        <a href="/news/" aria-current={newsCurrent}>
+          AI News
         </a>
         <a href="/index.xml" type="application/rss+xml">
           RSS
