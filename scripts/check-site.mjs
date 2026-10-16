@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { readFile, readdir } from 'node:fs/promises'
+import { readFile, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import rehypeParse from 'rehype-parse'
@@ -321,14 +321,24 @@ for (const file of outputFiles) {
   }
 }
 
-// Actions validate articles through the built pages. Bundling the content store would grow the
-// Worker, and its cold-start cost, with every post.
+// The AI News pages read through live content collections, and any astro:content import bundles
+// the content store into the Worker. The owner accepted that cost; this cap keeps it from growing
+// unnoticed. The store was 924,982 bytes on 2026-10-16; the cap leaves about 30% for new posts.
+const contentStoreLimitBytes = 1_200_000
 const serverDir = path.resolve(outputDir, '../server')
 if (existsSync(serverDir)) {
+  let contentStoreBytes = 0
+  const contentStoreFiles = []
   for (const file of await walk(serverDir)) {
     if (path.basename(file).includes('data-layer-content')) {
-      errors.push(`Worker bundle must not include the content store: ${path.relative(root, file)}`)
+      contentStoreBytes += (await stat(file)).size
+      contentStoreFiles.push(path.relative(root, file))
     }
+  }
+  if (contentStoreBytes > contentStoreLimitBytes) {
+    errors.push(
+      `Worker content store is ${contentStoreBytes} bytes, over the ${contentStoreLimitBytes}-byte limit: ${contentStoreFiles.join(', ')}`,
+    )
   }
 }
 

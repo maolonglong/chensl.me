@@ -129,20 +129,23 @@ test('site checker rejects directory links without an index page', async () => {
   assert.match(result.stderr, /missing internal URL "\/assets\/nested\/"/)
 })
 
-test('site checker rejects a content store nested in the sibling Worker bundle', async () => {
+test('site checker caps the content store in the Worker bundle, nested chunks included', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'server/chunks/nested/worker.mjs', 'export {}')
+  await write(fixture, 'server/chunks/worker.mjs', 'export {}')
+  // Two chunks that together stay at the 1,200,000-byte limit pass.
+  await write(fixture, 'server/chunks/data-layer-content.a.mjs', 'x'.repeat(700_000))
+  await write(fixture, 'server/chunks/nested/data-layer-content.b.mjs', 'x'.repeat(500_000))
   const valid = run(process.execPath, [checker], fixture)
   assert.equal(valid.status, 0, valid.stderr)
 
-  await write(fixture, 'server/chunks/nested/data-layer-content.fixture.mjs', 'export {}')
+  // One more byte, in the nested chunk, fails and names both files.
+  await write(fixture, 'server/chunks/nested/data-layer-content.b.mjs', 'x'.repeat(500_001))
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
-  assert.match(result.stderr, /Worker bundle must not include the content store:/)
+  assert.match(result.stderr, /Worker content store is 1200001 bytes, over the 1200000-byte limit/)
   assert.ok(
-    result.stderr.includes(
-      path.join('server', 'chunks', 'nested', 'data-layer-content.fixture.mjs'),
-    ),
+    result.stderr.includes(path.join('server', 'chunks', 'nested', 'data-layer-content.b.mjs')),
+    result.stderr,
   )
 })
 
