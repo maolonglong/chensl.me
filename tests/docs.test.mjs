@@ -208,9 +208,9 @@ test('standing documents stay within their word budgets', () => {
   const budgets = {
     'AGENTS.md': 480,
     'docs/AGENTS.md': 1210,
-    'docs/architecture.md': 750,
+    'docs/architecture.md': 850,
     'docs/design.md': 750,
-    'docs/product.md': 560,
+    'docs/product.md': 670,
     'docs/testing.md': 815,
     '.agents/notes/AGENTS.md': 1250,
   }

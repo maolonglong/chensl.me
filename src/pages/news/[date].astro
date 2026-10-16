@@ -1,0 +1,75 @@
+---
+import { env } from 'cloudflare:workers'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getIssue, isIssueDate, isWebUrl, newsCacheControl } from '../../lib/news'
+
+export const prerender = false
+
+const { date } = Astro.params
+const issue = isIssueDate(date) ? await getIssue(env.NEWS, date) : null
+// A missing issue may be published at any moment, so its 404 is not cached.
+Astro.response.headers.set('Cache-Control', issue ? newsCacheControl : 'no-store')
+if (!issue) Astro.response.status = 404
+---
+
+{issue ? (
+  <BaseLayout title={`AI 晚报 ${issue.date}：${issue.title}`} description={issue.summary}>
+    <article>
+      <header class="page-header">
+        <p class="meta">
+          <a href="/news/">AI 晚报</a> · <time datetime={issue.date}>{issue.date}</time>
+        </p>
+        <h1>{issue.title}</h1>
+        <p>{issue.summary}</p>
+      </header>
+      <ol class="items">
+        {issue.items.map((item) => (
+          <li>
+            <h2>
+              {isWebUrl(item.url) ? (
+                <a href={item.url} rel="noopener noreferrer">
+                  {item.title}
+                </a>
+              ) : (
+                item.title
+              )}
+            </h2>
+            <p class="tag">{item.tag}</p>
+            <p>{item.summary}</p>
+          </li>
+        ))}
+      </ol>
+    </article>
+  </BaseLayout>
+) : (
+  <BaseLayout title="没有这一期" notFound>
+    <h1>没有这一期</h1>
+    <p>
+      <a href="/news/">返回 AI 晚报</a>
+    </p>
+  </BaseLayout>
+)}
+
+<style>
+  .page-header {
+    margin-bottom: 40px;
+  }
+  .meta,
+  .tag {
+    color: var(--muted-color);
+    font-size: 0.875rem;
+  }
+  .items {
+    padding-left: 1.5em;
+  }
+  .items li {
+    margin-bottom: 28px;
+  }
+  .items h2 {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+  .items p {
+    margin: 4px 0 0;
+  }
+</style>

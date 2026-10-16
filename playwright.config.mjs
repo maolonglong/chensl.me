@@ -32,6 +32,9 @@ if (!['localhost', '127.0.0.1'].includes(new URL(baseURL).hostname)) {
   throw new Error(`SITE_URL must be a local preview, got ${baseURL}`)
 }
 
+// The local Worker and e2e/news.spec.mjs share this test-only write token through the environment.
+process.env.NEWS_TOKEN ??= 'local-e2e-news-token'
+
 export default defineConfig({
   testDir: 'e2e',
   testMatch: '*.spec.mjs',
@@ -54,7 +57,7 @@ export default defineConfig({
     ? undefined
     : {
         command:
-          'pnpm exec wrangler d1 migrations apply VOTES --local && pnpm exec wrangler dev --port 8790',
+          'pnpm exec wrangler d1 migrations apply VOTES --local && pnpm exec wrangler d1 migrations apply NEWS --local && pnpm exec wrangler dev --port 8790',
         url: baseURL,
         reuseExistingServer: false,
         timeout: 120_000,

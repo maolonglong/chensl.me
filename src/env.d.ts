@@ -6,3 +6,8 @@ type Fetcher = import('@cloudflare/workers-types').Fetcher
 declare module 'cloudflare:workers' {
   export const env: Cloudflare.Env
 }
+
+// Workers' non-standard Web Crypto extension; the DOM lib that Astro pages use lacks it.
+interface SubtleCrypto {
+  timingSafeEqual(a: ArrayBuffer | ArrayBufferView, b: ArrayBuffer | ArrayBufferView): boolean
+}

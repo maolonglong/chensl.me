@@ -17,7 +17,7 @@ Read this before you add or change a test, or when you choose the checks for a c
 | Build regressions | `tests/*.test.mjs` | Most of them build a disposable Astro fixture project and check the output: content rules, Markdown, fonts, CSP order, RSS | `pnpm check`, or `node --test tests/<name>.test.mjs` |
 | Output checks | `scripts/check-site.mjs`, `tests/check-site.test.mjs` | The real build has valid links, images, CSP sources, `_headers` rules, and no content store in the Worker | `pnpm check` |
 | Document checks | `tests/docs.test.mjs`, `tests/docs-rejects.test.mjs` | First-party Markdown and skills follow the rules of the [documentation standard](AGENTS.md#checks) that a script can decide | `node --test tests/docs.test.mjs` |
-| Browser specs | `e2e/*.spec.mjs` | Layout, interactions, themes, CSP in a real browser, and the upvote Actions against local D1 | `pnpm test:e2e` |
+| Browser specs | `e2e/*.spec.mjs` | Layout, interactions, themes, CSP in a real browser, the upvote Actions and the AI 晚报 against local D1 | `pnpm test:e2e` |
 | Exploration | agent-browser | A question no spec answers yet | By hand; turn a finding worth keeping into a spec |
 
 Some build regressions run `python3` on purpose: it reads the output with a parser that the site does not use ([decision](../.agents/notes/rejected/simplification/2026-10-04-replace-python-test-reader.md)).
@@ -48,7 +48,7 @@ Before each commit, `prek.toml` runs the document checks and `git diff --cached 
 
 - `e2e/site.mjs` holds the shared fixtures. `test.use({ hasTouch: true })` selects a touch screen, and `open()` fails when the browser's hover capability differs from what the test asked for. Viewport width alone does not reproduce hover or touch states.
 - The upvote specs write to D1, so the config accepts only a loopback `SITE_URL`. Each test sends its own client address, so the rate limits do not depend on suite speed. Each run adds votes to the `dockertest` article; the specs compare counts with a baseline read at the start of each test.
-- To reuse a preview that you started, set `SITE_URL` and apply the local migrations first: `pnpm exec wrangler d1 migrations apply VOTES --local`.
+- To reuse your own preview, set `SITE_URL`, apply the local migrations (`pnpm exec wrangler d1 migrations apply VOTES --local`, then `NEWS`), and start it with the `NEWS_TOKEN` from `playwright.config.mjs`.
 
 ## Previews
 

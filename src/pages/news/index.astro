@@ -1,0 +1,60 @@
+---
+import { env } from 'cloudflare:workers'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { listIssues, newsCacheControl, newsUrl } from '../../lib/news'
+
+export const prerender = false
+
+const issues = await listIssues(env.NEWS, 60)
+Astro.response.headers.set('Cache-Control', newsCacheControl)
+---
+
+<BaseLayout title="AI 晚报" description="由 bot 每天整理的 AI 新闻摘要">
+  <header class="page-header">
+    <h1>AI 晚报</h1>
+    <p class="note">
+      由 bot 每天整理，内容未经作者逐条审阅。
+      <a href="/news/index.xml" type="application/rss+xml">
+        订阅 RSS
+      </a>
+    </p>
+  </header>
+  {issues.length ? (
+    <ol class="issues">
+      {issues.map((issue) => (
+        <li>
+          <time datetime={issue.date}>{issue.date}</time>
+          <a href={newsUrl(issue.date)}>{issue.title}</a>
+          <p>{issue.summary}</p>
+        </li>
+      ))}
+    </ol>
+  ) : (
+    <p>还没有内容。</p>
+  )}
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: 40px;
+  }
+  .note {
+    color: var(--muted-color);
+    font-size: 0.875rem;
+  }
+  .issues {
+    padding: 0;
+    list-style: none;
+  }
+  .issues li {
+    margin-bottom: 28px;
+  }
+  .issues time {
+    display: block;
+    color: var(--muted-color);
+    font-size: 0.875rem;
+  }
+  .issues p {
+    margin: 4px 0 0;
+  }
+</style>

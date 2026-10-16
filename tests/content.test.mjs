@@ -61,6 +61,8 @@ print(json.dumps(sorted(e.text for e in pages.findall('s:url/s:loc', ns))))`,
     'https://chensl.me/blog/below/',
     'https://chensl.me/blog/older/',
     'https://chensl.me/blog/render/',
+    // The on-demand news index has no parameters, so the sitemap lists it; issue pages are not.
+    'https://chensl.me/news/',
   ])
   assert.match(
     await readFile(path.join(dist, 'robots.txt'), 'utf8'),

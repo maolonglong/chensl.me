@@ -26,7 +26,8 @@ The page, the RSS item, and the Markdown export show the same declaration, and t
 
 ## Feeds and exports
 
-- `/index.xml` is the only RSS feed. It lists the 20 newest published articles, and each item carries the rendered article with absolute URLs (`tests/content.test.mjs`, `tests/markdown.test.mjs`).
+- `/index.xml` is the only article feed. It lists the 20 newest published articles, and each item carries the rendered article with absolute URLs (`tests/content.test.mjs`, `tests/markdown.test.mjs`).
+- `/news/index.xml` lists the newest AI 晚报 issues and no articles (`e2e/news.spec.mjs`).
 - Each published article has a Markdown export at `/blog/<id>/index.md`: a metadata header, then the original body. Its local images are published at their original paths, so relative links resolve (`tests/content.test.mjs`).
 - `/llms.txt` lists the exports for readers and agents (`tests/content.test.mjs`).
 - The exports and `/llms.txt` are UTF-8, and `public/_headers` must say so: browsers on a Chinese-locale system read text without a charset as GBK (`tests/check-site.test.mjs`).
@@ -38,6 +39,14 @@ A reader can upvote an article once per browser identity ([decision](../.agents/
 - The button responds at once and does not wait for the server. The display is not a confirmation that the vote was saved; a reload shows the stored state.
 - Votes are anonymous. The site stores article and visitor IDs, not IP addresses.
 - This is not one-person-one-vote: clearing cookies or switching browsers allows another vote.
+
+## AI 晚报
+
+`/news/` lists the daily issues, newest first, and `/news/<date>/` shows one. A bot writes them through `POST /api/news/`, and the author does not review each item; the index page says so ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). `e2e/news.spec.mjs` guards the behavior.
+
+- Issues are plain text. Markup shows as text, and items link only to `http` or `https` URLs.
+- A repeated write for a date changes nothing; a changed write replaces that issue.
+- Edge caching can delay a new issue by a few minutes.
 
 ## Comments
 

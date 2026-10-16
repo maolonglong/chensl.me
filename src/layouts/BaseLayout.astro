@@ -51,6 +51,7 @@ if (article)
     ...(updatedDate && { dateModified: updatedDate.toISOString() }),
     mainEntityOfPage: canonical.href,
   })
+const newsCurrent = path === '/news/' ? 'page' : path.startsWith('/news/') ? 'location' : undefined
 const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'location' : undefined
 ---
 
@@ -121,6 +122,9 @@ const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'lo
         </a>
         <a href="/blog/" aria-current={blogCurrent}>
           博客
+        </a>
+        <a href="/news/" aria-current={newsCurrent}>
+          AI 晚报
         </a>
         <a href="/index.xml" type="application/rss+xml">
           RSS

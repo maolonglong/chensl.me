@@ -66,6 +66,8 @@ function internalReferenceError(value, file) {
     candidates.add(`${relative}.html`)
   }
   const target = [...candidates].find((candidate) => outputFiles.has(candidate))
+  // The Worker renders /news/ on request from D1, so those pages are never in the build.
+  if (!target && /^news\/(?:$|\d{4}-\d{2}-\d{2}\/$|index\.xml$)/.test(relative)) return null
   if (!target) {
     return `references missing internal URL ${JSON.stringify(value)}`
   }
