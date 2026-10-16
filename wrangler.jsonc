@@ -22,6 +22,20 @@
         "migrations_dir": "migrations/news",
       },
     ],
+    // Same limits as production. Separate namespace IDs keep Preview traffic out of the
+    // production counters.
+    "ratelimits": [
+      {
+        "name": "VOTE_LIMITER",
+        "namespace_id": "2001",
+        "simple": { "limit": 30, "period": 60 },
+      },
+      {
+        "name": "READ_LIMITER",
+        "namespace_id": "2002",
+        "simple": { "limit": 120, "period": 60 },
+      },
+    ],
   },
   "observability": {
     "enabled": true,
