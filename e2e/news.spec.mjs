@@ -240,6 +240,40 @@ test.describe('news pages', () => {
     expect((await page.goto(`/news/${old}/`)).status()).toBe(200)
   })
 
+  test('news pages advertise only the news feed; blog pages keep the blog feed', async ({
+    post,
+    page,
+    date,
+  }) => {
+    expect((await post(issueFor(date))).status).toBe(201)
+    const feeds = () =>
+      page
+        .locator('head link[rel="alternate"][type="application/rss+xml"]')
+        .evaluateAll((links) =>
+          links.map((link) => ({ href: link.getAttribute('href'), title: link.title })),
+        )
+    for (const path of [
+      '/news/',
+      `/news/${date}/`,
+      '/news/archive/',
+      `/news/archive/${date.slice(0, 7)}/`,
+    ]) {
+      expect((await page.goto(path)).status(), path).toBe(200)
+      expect(await feeds(), path).toEqual([
+        { href: 'https://chensl.me/news/index.xml', title: '~chensl AI News' },
+      ])
+      await expect(page.locator('nav[aria-label="主导航"] a[href="/index.xml"]'), path).toHaveCount(
+        1,
+      )
+    }
+    for (const path of ['/', '/blog/', '/blog/dockertest/']) {
+      await page.goto(path)
+      expect(await feeds(), path).toEqual([
+        { href: 'https://chensl.me/index.xml', title: '~chensl' },
+      ])
+    }
+  })
+
   test('a missing or malformed date is a 404 that is not cached', async ({ page }) => {
     for (const path of [
       '/news/1899-01-01/',
