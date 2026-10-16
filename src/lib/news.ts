@@ -76,8 +76,7 @@ function fromRow(row: IssueRow): StoredIssue | null {
     : null
 }
 
-// All reads go through the live collection in src/live.config.ts; this is its only SQL.
-// Retracted issues (hidden_at set) are never returned. Dates are the primary key of a
+// All news SQL lives here; pages call these functions. Retracted issues (hidden_at set) are never returned. Dates are the primary key of a
 // WITHOUT ROWID table, so lookups, ranges and ORDER BY date use it.
 const columns = 'date, title, summary, items_json, created_at, updated_at, version'
 const visible = 'hidden_at IS NULL'

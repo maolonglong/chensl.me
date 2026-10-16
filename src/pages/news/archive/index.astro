@@ -1,13 +1,11 @@
 ---
-import { getLiveCollection } from 'astro:content'
+import { env } from 'cloudflare:workers'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { newsCacheControl } from '../../../lib/news'
+import { newsCacheControl, queryMonths } from '../../../lib/news'
 
 export const prerender = false
 
-const { entries, error } = await getLiveCollection('newsMonths')
-if (!entries) throw error
-const months = entries.map((entry) => entry.data)
+const months = await queryMonths(env.NEWS)
 Astro.response.headers.set('Cache-Control', newsCacheControl)
 ---
 
