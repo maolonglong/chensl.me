@@ -1,13 +1,12 @@
 import rss from '@astrojs/rss'
 import type { APIContext } from 'astro'
-import { env } from 'cloudflare:workers'
+import { getLiveCollection } from 'astro:content'
 import {
   feedIssueCount,
   isWebUrl,
   issueTags,
   newsCacheControl,
   newsUrl,
-  queryIssues,
   type StoredIssue,
 } from '../../lib/news'
 
@@ -33,7 +32,9 @@ function itemHtml(issue: StoredIssue) {
 }
 
 export async function GET(context: APIContext) {
-  const issues = await queryIssues(env.NEWS, { limit: feedIssueCount })
+  const { entries, error } = await getLiveCollection('news', { limit: feedIssueCount })
+  if (!entries) throw error
+  const issues = entries.map((entry) => entry.data)
   const response = await rss({
     title: '~chensl AI News',
     description: '每天 AI 圈发生了什么：模型、产品和工具的动态摘要',

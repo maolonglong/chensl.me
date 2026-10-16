@@ -1,13 +1,18 @@
 ---
-import { env } from 'cloudflare:workers'
+import { getLiveCollection } from 'astro:content'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NewsTags from '../../../components/NewsTags.astro'
-import { isMonth, issueTags, newsCacheControl, newsUrl, queryIssues } from '../../../lib/news'
+import { isMonth, issueTags, newsCacheControl, newsUrl } from '../../../lib/news'
 
 export const prerender = false
 
 const { month } = Astro.params
-const issues = isMonth(month) ? await queryIssues(env.NEWS, { month }) : []
+async function load(month: string) {
+  const { entries, error } = await getLiveCollection('news', { month })
+  if (!entries) throw error
+  return entries.map((entry) => entry.data)
+}
+const issues = isMonth(month) ? await load(month) : []
 Astro.response.headers.set('Cache-Control', issues.length ? newsCacheControl : 'no-store')
 if (!issues.length) Astro.response.status = 404
 ---

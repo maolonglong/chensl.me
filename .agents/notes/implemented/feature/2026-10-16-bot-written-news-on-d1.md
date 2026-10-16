@@ -14,7 +14,7 @@ The bot writes each issue to its own D1 database (`NEWS`, `blog-news`) through `
 - **Authentication.** The endpoint compares a Bearer token with the `NEWS_TOKEN` secret in constant time, after the existing submission limiter (`VOTE_LIMITER`, with its own key prefix). Without the secret it refuses every write. `secrets.required` in `wrangler.jsonc` makes a deploy fail when the secret is missing.
 - **Append-only versions.** Issues publish at once; there is no draft step. Each changed write adds the next version to `issue_versions`, and `issues` holds the newest one for reads. Older versions stay, so a rollback is a write of earlier content, which becomes the next version. A retry with the same content as the newest version adds nothing and reports `unchanged`, so redelivery is safe. `created_at` keeps the first publication time for the feed.
 - **Retraction.** `POST /api/news/retract/` with the same token sets `hidden_at` for one date; `"hidden": false` clears it. Reads skip hidden issues, so the page returns 404 and the feed and archive omit it. A later write keeps the issue hidden. Nothing is deleted.
-- **Direct queries.** Pages call `src/lib/news.ts`, which holds all news SQL. Live content collections were tried, but any `astro:content` import puts the article content store (about 900 KB) into the Worker bundle, which `scripts/check-site.mjs` forbids.
+- **Live collections.** Pages read through `getLiveCollection()` and `getLiveEntry()` from `src/live.config.ts`; the SQL lives in `src/lib/news.ts`. The loader imports `cloudflare:workers` only at request time, because `astro sync` loads the config in Node. Caching stays on `s-maxage`: Astro route caching needs a cache provider, and the Cloudflare provider is experimental.
 - **Retention and archive.** Issues are kept forever: there is no delete endpoint and no cleanup job, so every `/news/<date>/` URL stays valid. `/news/` shows the seven newest issues. `/news/archive/` lists months with a count, and `/news/archive/<YYYY-MM>/` lists one month. Every query has a `LIMIT` (7, 20, 31, 600 months), and each uses the `date` primary key of the `WITHOUT ROWID` table, so the schema needs no other index.
 - **Separate database.** News and votes have different writers and lifetimes, so each has its own database and migrations directory. Workers Previews use `blog-news-preview`.
 - **Explicit routing.** With a compatibility date after 2025-04-01, assets answer browser navigations to a missing file with the 404 page, before the Worker runs. `assets.run_worker_first` lists the Worker paths (`/_actions/*`, `/api/*`, `/news/*`). An array turns off that navigation rule, so every other missing path, including a POST, gets the 404 page from assets.
@@ -38,8 +38,6 @@ The bot writes each issue to its own D1 database (`NEWS`, `blog-news`) through `
 **Purge the cache on each write.** The issue appears at once, but the purge API has rate limits, and a delay of a few minutes does not matter for a daily brief. The same delay applies to a retraction.
 
 **Overwrite in place, or keep a version for every POST, even a retry.** Overwriting loses the history needed for a rollback. A version per retry adds identical rows without new information.
-
-**Astro live content collections.** They give pages a typed `getLiveCollection()` API, but the `astro:content` import bundles the content store into the Worker.
 
 **`Astro.cache` with `cacheCloudflare()`.** It could purge a retracted page at once, but the provider is experimental in `@astrojs/cloudflare` 14.
 
