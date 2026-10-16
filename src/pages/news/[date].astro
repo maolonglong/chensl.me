@@ -1,14 +1,20 @@
 ---
-import { env } from 'cloudflare:workers'
+import { getLiveEntry } from 'astro:content'
+import { LiveEntryNotFoundError } from 'astro/content/runtime'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import NewsGroups from '../../components/NewsGroups.astro'
-import { getIssue, isIssueDate, newsCacheControl } from '../../lib/news'
+import { isIssueDate, newsCacheControl } from '../../lib/news'
 
 export const prerender = false
 
 const { date } = Astro.params
-const issue = isIssueDate(date) ? await getIssue(env.NEWS, date) : null
-// A missing issue may be published at any moment, so its 404 is not cached.
+async function load(date: string) {
+  const { entry, error } = await getLiveEntry('news', date)
+  if (error && !(error instanceof LiveEntryNotFoundError)) throw error
+  return entry?.data ?? null
+}
+const issue = isIssueDate(date) ? await load(date) : null
+// A missing or retracted issue may be published at any moment, so its 404 is not cached.
 Astro.response.headers.set('Cache-Control', issue ? newsCacheControl : 'no-store')
 if (!issue) Astro.response.status = 404
 ---

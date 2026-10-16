@@ -1,12 +1,14 @@
 ---
-import { env } from 'cloudflare:workers'
+import { getLiveCollection } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import NewsGroups from '../../components/NewsGroups.astro'
-import { listIssues, newsCacheControl, newsUrl, recentIssueCount } from '../../lib/news'
+import { newsCacheControl, newsUrl, recentIssueCount } from '../../lib/news'
 
 export const prerender = false
 
-const issues = await listIssues(env.NEWS, recentIssueCount)
+const { entries, error } = await getLiveCollection('news', { limit: recentIssueCount })
+if (!entries) throw error
+const issues = entries.map((entry) => entry.data)
 Astro.response.headers.set('Cache-Control', newsCacheControl)
 ---
 

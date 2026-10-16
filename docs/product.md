@@ -42,7 +42,7 @@ A reader can upvote an article once per browser identity ([decision](../.agents/
 
 ## AI News
 
-AI News is a public section: what happened in AI each day. `/news/` shows the seven newest issues, newest first, each grouped by tag in the order each tag first appears. `/news/<date>/` shows one issue the same way. `/news/archive/` lists the months, and `/news/archive/<YYYY-MM>/` lists that month's issues with their tags. Issues are never deleted, so each `/news/<date>/` URL stays valid. A bot writes the issues through `POST /api/news/`, and the author does not review each item; the index page says so ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). `e2e/news.spec.mjs` guards the behavior.
+AI News is a public section: what happened in AI each day. `/news/` shows the seven newest issues, newest first, each grouped by tag in the order each tag first appears. `/news/<date>/` shows one issue the same way. `/news/archive/` lists the months, and `/news/archive/<YYYY-MM>/` lists that month's issues with their tags. Issues are never deleted. A bot publishes through `POST /api/news/` with no draft step; each changed write adds a version and the newest is shown. `POST /api/news/retract/` hides a day from the pages and feed, and can restore it. The author does not review each item; the index page says so ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). `e2e/news.spec.mjs` guards the behavior.
 
 - A tag names a vendor or a tool, such as OpenAI or DeepSeek, and keeps its capitalization.
 - Issues are plain text. Markup shows as text, and items link only to `http` or `https` URLs.

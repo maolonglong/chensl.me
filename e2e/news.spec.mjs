@@ -13,26 +13,31 @@ const test = base.extend({
     await use(day.toISOString().slice(0, 10))
   },
   post: async ({ playwright, baseURL, clientAddress }, use) => {
-    await use(async (data, { authorization = `Bearer ${token}`, contentType } = {}) => {
-      const api = await playwright.request.newContext()
-      try {
-        const response = await api.post(new URL('/api/news/', baseURL).href, {
-          headers: {
-            'CF-Connecting-IP': clientAddress,
-            ...(authorization && { Authorization: authorization }),
-            ...(contentType && { 'Content-Type': contentType }),
-          },
-          data,
-        })
-        return {
-          status: response.status(),
-          headers: response.headers(),
-          body: await response.json(),
+    await use(
+      async (
+        data,
+        { authorization = `Bearer ${token}`, contentType, path = '/api/news/' } = {},
+      ) => {
+        const api = await playwright.request.newContext()
+        try {
+          const response = await api.post(new URL(path, baseURL).href, {
+            headers: {
+              'CF-Connecting-IP': clientAddress,
+              ...(authorization && { Authorization: authorization }),
+              ...(contentType && { 'Content-Type': contentType }),
+            },
+            data,
+          })
+          return {
+            status: response.status(),
+            headers: response.headers(),
+            body: await response.json(),
+          }
+        } finally {
+          await api.dispose()
         }
-      } finally {
-        await api.dispose()
-      }
-    })
+      },
+    )
   },
 })
 
@@ -94,24 +99,80 @@ test.describe('news API', () => {
     ).toBe(415)
   })
 
-  test('a repeated write is idempotent and a changed write replaces the issue', async ({
+  test('writes append versions, a retry adds none, and the newest version is shown', async ({
     post,
     page,
     date,
   }) => {
     const first = await post(issueFor(date))
     expect(first.status).toBe(201)
-    expect(first.body).toMatchObject({ status: 'created', date })
+    expect(first.body).toMatchObject({ status: 'created', date, version: 1 })
     const again = await post(issueFor(date))
     expect(again.status).toBe(200)
-    expect(again.body.status).toBe('unchanged')
+    expect(again.body).toMatchObject({ status: 'unchanged', version: 1 })
     const changed = await post(issueFor(date, { title: '更正后的标题' }))
     expect(changed.status).toBe(200)
-    expect(changed.body.status).toBe('updated')
+    expect(changed.body).toMatchObject({ status: 'updated', version: 2 })
 
     await page.goto(`/news/${date}/`)
     await expect(page.locator('h1')).toHaveText('更正后的标题')
     await expect(page.locator('main .items > li')).toHaveCount(4)
+
+    // Rolling back means posting the earlier content again; it becomes the next version.
+    const rollback = await post(issueFor(date))
+    expect(rollback.body).toMatchObject({ status: 'updated', version: 3 })
+    await page.reload()
+    await expect(page.locator('h1')).toHaveText('<b>今日</b> AI News')
+  })
+})
+
+test.describe('news retraction', () => {
+  const retract = (post, body, options) => post(body, { path: '/api/news/retract/', ...options })
+
+  test('needs the token and an existing, valid date', async ({ post, page, date }) => {
+    expect((await post(issueFor(date))).status).toBe(201)
+    for (const authorization of [null, 'Bearer wrong-token']) {
+      expect((await retract(post, { date }, { authorization })).status).toBe(401)
+    }
+    expect((await retract(post, { date: '2026-02-30' })).status).toBe(422)
+    expect((await retract(post, { date, reason: 'x' })).status).toBe(422)
+    expect((await retract(post, { date: `18${date.slice(2)}` })).status).toBe(404)
+    expect((await page.goto(`/news/${date}/`)).status()).toBe(200)
+  })
+
+  test('hides the issue from its page and the archive, and can restore it', async ({
+    post,
+    page,
+    date,
+  }) => {
+    expect((await post(issueFor(date))).status).toBe(201)
+    const hidden = await retract(post, { date })
+    expect(hidden.status).toBe(200)
+    expect(hidden.body).toEqual({ status: 'hidden', date })
+
+    const response = await page.goto(`/news/${date}/`)
+    expect(response.status()).toBe(404)
+    expect(response.headers()['cache-control']).toBe('no-store')
+    await page.goto(`/news/archive/${date.slice(0, 7)}/`)
+    await expect(page.locator(`main a[href="/news/${date}/"]`)).toHaveCount(0)
+
+    // A new write keeps a retracted issue hidden; only an explicit restore shows it again.
+    expect((await post(issueFor(date, { title: '改过' }))).body.status).toBe('updated')
+    expect((await page.goto(`/news/${date}/`)).status()).toBe(404)
+    const restored = await retract(post, { date, hidden: false })
+    expect(restored.body).toEqual({ status: 'visible', date })
+    expect((await page.goto(`/news/${date}/`)).status()).toBe(200)
+    await expect(page.locator('h1')).toHaveText('改过')
+  })
+
+  test('removes the issue from the news feed', async ({ post, request }) => {
+    // This date is among the newest the specs write, so the feed would otherwise list it.
+    const date = '9999-11-29'
+    expect([200, 201]).toContain((await post(issueFor(date))).status)
+    expect((await retract(post, { date, hidden: false })).status).toBe(200)
+    expect(await (await request.get('/news/index.xml')).text()).toContain(`/news/${date}/`)
+    expect((await retract(post, { date })).status).toBe(200)
+    expect(await (await request.get('/news/index.xml')).text()).not.toContain(`/news/${date}/`)
   })
 })
 
