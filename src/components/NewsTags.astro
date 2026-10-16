@@ -1,0 +1,30 @@
+---
+export interface Props {
+  tags: string[]
+}
+const { tags } = Astro.props
+---
+
+<ul class="tags" aria-label="涉及">
+  {tags.map((tag) => (
+    <li class="tag">{tag}</li>
+  ))}
+</ul>
+
+<style>
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tag {
+    padding: 0 6px;
+    color: var(--muted-color);
+    font-size: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+  }
+</style>

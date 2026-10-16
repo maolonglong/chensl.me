@@ -27,7 +27,7 @@ The page, the RSS item, and the Markdown export show the same declaration, and t
 ## Feeds and exports
 
 - `/index.xml` is the only article feed. It lists the 20 newest published articles, and each item carries the rendered article with absolute URLs (`tests/content.test.mjs`, `tests/markdown.test.mjs`).
-- `/news/index.xml` lists the newest AI 晚报 issues and no articles (`e2e/news.spec.mjs`).
+- `/news/index.xml` lists the 20 newest AI News issues, with their tags as categories, and no articles (`e2e/news.spec.mjs`).
 - Each published article has a Markdown export at `/blog/<id>/index.md`: a metadata header, then the original body. Its local images are published at their original paths, so relative links resolve (`tests/content.test.mjs`).
 - `/llms.txt` lists the exports for readers and agents (`tests/content.test.mjs`).
 - The exports and `/llms.txt` are UTF-8, and `public/_headers` must say so: browsers on a Chinese-locale system read text without a charset as GBK (`tests/check-site.test.mjs`).
@@ -40,10 +40,11 @@ A reader can upvote an article once per browser identity ([decision](../.agents/
 - Votes are anonymous. The site stores article and visitor IDs, not IP addresses.
 - This is not one-person-one-vote: clearing cookies or switching browsers allows another vote.
 
-## AI 晚报
+## AI News
 
-`/news/` lists the daily issues, newest first, and `/news/<date>/` shows one. A bot writes them through `POST /api/news/`, and the author does not review each item; the index page says so ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). `e2e/news.spec.mjs` guards the behavior.
+AI News is a public section: what happened in AI each day. `/news/` shows the seven newest issues, newest first, each grouped by tag in the order each tag first appears. `/news/<date>/` shows one issue the same way. `/news/archive/` lists the months, and `/news/archive/<YYYY-MM>/` lists that month's issues with their tags. Issues are never deleted, so each `/news/<date>/` URL stays valid. A bot writes the issues through `POST /api/news/`, and the author does not review each item; the index page says so ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). `e2e/news.spec.mjs` guards the behavior.
 
+- A tag names a vendor or a tool, such as OpenAI or DeepSeek, and keeps its capitalization.
 - Issues are plain text. Markup shows as text, and items link only to `http` or `https` URLs.
 - A repeated write for a date changes nothing; a changed write replaces that issue.
 - Edge caching can delay a new issue by a few minutes.

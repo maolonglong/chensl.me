@@ -17,7 +17,7 @@ Read this before you add or change a test, or when you choose the checks for a c
 | Build regressions | `tests/*.test.mjs` | Most of them build a disposable Astro fixture project and check the output: content rules, Markdown, fonts, CSP order, RSS | `pnpm check`, or `node --test tests/<name>.test.mjs` |
 | Output checks | `scripts/check-site.mjs`, `tests/check-site.test.mjs` | The real build has valid links, images, CSP sources, `_headers` rules, and no content store in the Worker | `pnpm check` |
 | Document checks | `tests/docs.test.mjs`, `tests/docs-rejects.test.mjs` | First-party Markdown and skills follow the rules of the [documentation standard](AGENTS.md#checks) that a script can decide | `node --test tests/docs.test.mjs` |
-| Browser specs | `e2e/*.spec.mjs` | Layout, interactions, themes, CSP in a real browser, the upvote Actions and the AI 晚报 against local D1 | `pnpm test:e2e` |
+| Browser specs | `e2e/*.spec.mjs` | Layout, interactions, themes, CSP in a real browser, the upvote Actions and the AI News against local D1 | `pnpm test:e2e` |
 | Exploration | agent-browser | A question no spec answers yet | By hand; turn a finding worth keeping into a spec |
 
 Some build regressions run `python3` on purpose: it reads the output with a parser that the site does not use ([decision](../.agents/notes/rejected/simplification/2026-10-04-replace-python-test-reader.md)).

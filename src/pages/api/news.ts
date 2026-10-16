@@ -20,14 +20,10 @@ async function tokenMatches(provided: string, expected: string) {
   return crypto.subtle.timingSafeEqual(a, b)
 }
 
-export const POST: APIRoute = async (context) => {
-  const response = await handle(context)
-  // Local Wrangler dropped the connection when an early response left the request body unread.
-  if (!context.request.bodyUsed) await context.request.body?.cancel()
-  return response
-}
-
-async function handle({ request, clientAddress }: Parameters<APIRoute>[0]) {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  // Read the body before any early response: local Wrangler dropped the connection when a
+  // response left the request body unread.
+  const body = await request.text()
   // The limiter runs before authentication, so it also slows token guessing.
   const { success } = await env.VOTE_LIMITER.limit({ key: `news:${clientAddress}` })
   if (!success) return reply(429, { error: 'rate_limited' })
@@ -46,7 +42,6 @@ async function handle({ request, clientAddress }: Parameters<APIRoute>[0]) {
   if (!/^application\/json\b/i.test(request.headers.get('content-type') ?? '')) {
     return reply(415, { error: 'unsupported_media_type' })
   }
-  const body = await request.text()
   if (new TextEncoder().encode(body).byteLength > maxBodyBytes) {
     return reply(413, { error: 'payload_too_large' })
   }

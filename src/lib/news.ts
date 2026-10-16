@@ -21,7 +21,8 @@ export const newsItem = z.strictObject({
   title: text(200),
   summary: text(1000),
   url: z.string().max(2048).refine(isWebUrl, 'URL must use http or https'),
-  tag: text(32),
+  // A vendor or tool name (OpenAI, DeepSeek, pi), kept as written. Free text, not an enum.
+  tag: text(32).regex(/^[\p{L}\p{N}](?:[\p{L}\p{N} .+&_-]*[\p{L}\p{N}+])?$/u),
 })
 
 export const newsIssue = z.strictObject({
@@ -69,6 +70,32 @@ export async function listIssues(db: D1Database, limit: number) {
   return results.map(fromRow).filter((issue) => issue !== null)
 }
 
+// Dates are the primary key of a WITHOUT ROWID table, so ranges and ORDER BY date use it.
+export async function listMonth(db: D1Database, month: string) {
+  const { results } = await db
+    .prepare(
+      'SELECT date, title, summary, items_json, created_at FROM issues WHERE date >= ? AND date < ? ORDER BY date DESC LIMIT 31',
+    )
+    .bind(`${month}-01`, `${month}-32`)
+    .all<IssueRow>()
+  return results.map(fromRow).filter((issue) => issue !== null)
+}
+
+export async function listMonths(db: D1Database) {
+  const { results } = await db
+    .prepare(
+      'SELECT substr(date, 1, 7) AS month, COUNT(*) AS count FROM issues GROUP BY month ORDER BY month DESC LIMIT 600',
+    )
+    .all<{ month: string; count: number }>()
+  return results
+}
+
+export const isMonth = (value: string | undefined): value is string =>
+  /^\d{4}-(?:0[1-9]|1[0-2])$/.test(value ?? '')
+
+export const recentIssueCount = 7
+export const feedIssueCount = 20
+
 export async function getIssue(db: D1Database, date: string) {
   const row = await db
     .prepare('SELECT date, title, summary, items_json, created_at FROM issues WHERE date = ?')
@@ -103,5 +130,14 @@ export async function saveIssue(db: D1Database, issue: NewsIssue): Promise<SaveR
 }
 
 export const newsCacheControl = 'public, max-age=60, s-maxage=300'
+
+// Groups keep the order in which each tag first appears in the issue.
+export function groupByTag(items: NewsItem[]) {
+  const groups = new Map<string, NewsItem[]>()
+  for (const item of items) groups.set(item.tag, [...(groups.get(item.tag) ?? []), item])
+  return [...groups].map(([tag, items]) => ({ tag, items }))
+}
+
+export const issueTags = (issue: NewsIssue) => groupByTag(issue.items).map(({ tag }) => tag)
 
 export const newsUrl = (date: string) => `/news/${date}/`

@@ -1,34 +1,38 @@
 ---
 import { env } from 'cloudflare:workers'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { listIssues, newsCacheControl, newsUrl } from '../../lib/news'
+import NewsGroups from '../../components/NewsGroups.astro'
+import { listIssues, newsCacheControl, newsUrl, recentIssueCount } from '../../lib/news'
 
 export const prerender = false
 
-const issues = await listIssues(env.NEWS, 60)
+const issues = await listIssues(env.NEWS, recentIssueCount)
 Astro.response.headers.set('Cache-Control', newsCacheControl)
 ---
 
-<BaseLayout title="AI 晚报" description="由 bot 每天整理的 AI 新闻摘要">
+<BaseLayout title="AI News" description="每天 AI 圈发生了什么：模型、产品和工具的动态摘要">
   <header class="page-header">
-    <h1>AI 晚报</h1>
+    <h1>AI News</h1>
     <p class="note">
-      由 bot 每天整理，内容未经作者逐条审阅。
+      每天 AI 圈发生了什么。由 bot 收集整理，作者不逐条审阅。这里显示最近 7 期，更早的在
+      <a href="/news/archive/">归档</a>。
       <a href="/news/index.xml" type="application/rss+xml">
         订阅 RSS
       </a>
     </p>
   </header>
   {issues.length ? (
-    <ol class="issues">
-      {issues.map((issue) => (
-        <li>
-          <time datetime={issue.date}>{issue.date}</time>
-          <a href={newsUrl(issue.date)}>{issue.title}</a>
-          <p>{issue.summary}</p>
-        </li>
-      ))}
-    </ol>
+    issues.map((issue) => (
+      <section class="day">
+        <h2>
+          <a href={newsUrl(issue.date)}>
+            <time datetime={issue.date}>{issue.date}</time> · {issue.title}
+          </a>
+        </h2>
+        <p>{issue.summary}</p>
+        <NewsGroups items={issue.items} level={3} />
+      </section>
+    ))
   ) : (
     <p>还没有内容。</p>
   )}
@@ -42,19 +46,11 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
     color: var(--muted-color);
     font-size: 0.875rem;
   }
-  .issues {
-    padding: 0;
-    list-style: none;
+  .day {
+    margin-bottom: 48px;
   }
-  .issues li {
-    margin-bottom: 28px;
-  }
-  .issues time {
-    display: block;
-    color: var(--muted-color);
-    font-size: 0.875rem;
-  }
-  .issues p {
-    margin: 4px 0 0;
+  .day h2 {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
   }
 </style>

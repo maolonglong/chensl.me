@@ -4,7 +4,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 
 ## Principles
 
-- Pages are prerendered Astro components with scoped CSS and native browser scripts. The Worker runs two features: the upvote Actions and the AI 晚报 (`/news/`) ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). Add a client framework or more server-rendered behavior only for a concrete requirement.
+- Pages are prerendered Astro components with scoped CSS and native browser scripts. The Worker runs two features: the upvote Actions and the AI News (`/news/`) ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). Add a client framework or more server-rendered behavior only for a concrete requirement.
 - Keep pages light. Use a native HTML or CSS feature, such as a popover, before a script; keep each script small and owned by its component. Scripts enhance the page; they are not required to read it. When scripts do not run, the contents list still opens natively, script-only controls are hidden, and a notice that was stale at build time still shows (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
 - Use Astro's native features and official integrations first. For an Astro API or configuration change, read the Astro docs (the Astro Docs MCP when available) and confirm that the installed version supports it.
 - One Markdown pipeline renders every view of an article: the page, the RSS item, and the Markdown export metadata come from the same collection entry.
@@ -45,7 +45,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 
 - **Static assets.** Workers Static Assets serves the prerendered files. `public/_headers` sets the response headers: the HTTP CSP, cache rules, and the text charsets that production does not add.
 - **Actions.** `src/actions/index.ts` defines `getVotes` and `upvote`. `src/middleware.ts` rejects cross-origin Action requests and makes Action responses private. The Actions use D1 (`VOTES`), two rate limiters, and the `ASSETS` binding to confirm that an ID is a published article ([decision](../.agents/notes/implemented/architecture/2026-09-29-validate-articles-through-built-pages.md)). Schema changes are files in `migrations/`.
-- **News.** `src/pages/api/news.ts` checks the `NEWS_TOKEN` secret and upserts the bot's daily issue into D1 (`NEWS`). `src/lib/news.ts` holds the shared schema. The `/news/` pages and feed render on request, and Workers Cache serves them for their `s-maxage`. Schema changes are files in `migrations/news/`.
+- **News.** `src/pages/api/news.ts` checks the `NEWS_TOKEN` secret and upserts the bot's daily issue into D1 (`NEWS`). `src/lib/news.ts` holds the shared schema. The `/news/` pages, the monthly archive, and the feed render on request with a bounded query on the `date` primary key, and Workers Cache serves them for their `s-maxage`. Schema changes are files in `migrations/news/`.
 - **Routing.** `assets.run_worker_first` in `wrangler.jsonc` lists every Worker path. Any other missing path gets the 404 page from assets, also for a POST.
 - **Bindings.** Production and Workers Previews use separate D1 databases.
 
