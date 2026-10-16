@@ -1,4 +1,5 @@
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { fontProviders } from 'astro/config'
@@ -16,6 +17,98 @@ const markdownProcessor = createMarkdownProcessor({
   rehypePlugins: [rehypeSite],
   syntaxHighlight: false,
 })
+
+// Google Fonts' Noto Sans SC slicing: each entry is one @font-face unicode-range list, ordered
+// from the most to the least frequent characters. Source and date: public/fonts/tsanger-jinkai02/NOTICE.md.
+const sliceSource = 'vendor/fonts/google-fonts-noto-sans-sc-slices.json'
+// Supported characters that no Google slice lists, mostly rare ideographs, in code point order.
+const remainderSliceSize = 500
+
+function parseRanges(tokens) {
+  return tokens.map((token) => {
+    const [start, end = start] = token.split('-').map((hex) => Number.parseInt(hex, 16))
+    return [start, end]
+  })
+}
+
+// Every character JinKai supports lands in exactly one slice. Slices depend only on the font
+// and the slice table, never on site text, so their URLs stay cached across content edits.
+export function sliceCodepoints(supported, table) {
+  const assigned = new Set()
+  const slices = []
+  for (const ranges of table) {
+    const points = []
+    for (const [start, end] of parseRanges(ranges))
+      for (let point = start; point <= end; point++)
+        if (supported.has(point) && !assigned.has(point)) {
+          assigned.add(point)
+          points.push(point)
+        }
+    if (points.length) slices.push(points)
+  }
+  const rest = [...supported].filter((point) => !assigned.has(point)).sort((a, b) => a - b)
+  for (let index = 0; index < rest.length; index += remainderSliceSize)
+    slices.push(rest.slice(index, index + remainderSliceSize))
+  return slices
+}
+
+const textOf = (points) =>
+  [...points]
+    .sort((a, b) => a - b)
+    .map((point) => String.fromCodePoint(point))
+    .join('')
+
+// Slices take about a minute to build, so they are cached by font and table digest. Parallel
+// test builds share the cache: each writes a temporary file and renames it into place.
+async function buildSlices(root, source, supported, preserveNameIds) {
+  const table = JSON.parse(await readFile(path.join(root, sliceSource), 'utf8'))
+  const digest = createHash('sha256')
+    .update(source)
+    .update(JSON.stringify(table))
+    .update(String(remainderSliceSize))
+    .digest('hex')
+    .slice(0, 16)
+  const directory = path.join(root, 'node_modules/.cache/site-fonts', digest)
+  await mkdir(directory, { recursive: true })
+  const existing = new Set(await readdir(directory))
+  const slices = sliceCodepoints(supported, table)
+  return Promise.all(
+    slices.map(async (points, index) => {
+      const name = `slice-${String(index).padStart(3, '0')}.woff2`
+      const file = path.join(directory, name)
+      if (!existing.has(name)) {
+        const temporary = `${file}.${process.pid}.${Math.random().toString(36).slice(2)}`
+        await writeFile(
+          temporary,
+          await subsetFont(source, textOf(points), { targetFormat: 'woff2', preserveNameIds }),
+        )
+        await rename(temporary, file)
+      }
+      return { file, points }
+    }),
+  )
+}
+
+// The slice faces form a second family, next after the Astro-managed one in --font-serif.
+// The browser tries it only for a character outside the site subsets and then downloads the
+// one slice whose range holds it. The ranges total about 110 KB, too much to inline in every
+// page as Astro inlines its font faces, so BaseLayout imports this file and Vite bundles it
+// into the shared, cached stylesheet and fingerprints the slice URLs.
+export const sliceFamily = 'TsangerJinKai02 Slices'
+async function writeSliceStylesheet(directory, slices) {
+  const css = slices
+    .map(
+      ({ file, points }) =>
+        `@font-face{font-family:"${sliceFamily}";src:url("${path
+          .relative(directory, file)
+          .split(path.sep)
+          .join(
+            '/',
+          )}") format("woff2");font-weight:400 500;font-style:normal;font-display:swap;unicode-range:${unicodeRanges(points).join(',')}}`,
+    )
+    .join('\n')
+  await writeFile(path.join(directory, 'slices.css'), `${css}\n`)
+}
 
 function unicodeRanges(points) {
   const ranges = []
@@ -76,20 +169,18 @@ export async function siteFonts() {
   const variants = []
   const directory = path.join(root, '.astro/site-fonts')
   await mkdir(directory, { recursive: true })
+  await writeSliceStylesheet(directory, await buildSlices(root, source, supported, preserveNameIds))
+
   // Common and article subsets are mutually exclusive.
   for (const [name, points] of [
     ['articles', articles],
     ['common', common],
   ]) {
     if (!points.size) continue
-    const text = [...points]
-      .sort((a, b) => a - b)
-      .map((point) => String.fromCodePoint(point))
-      .join('')
     const file = path.join(directory, `${name}.woff2`)
     await writeFile(
       file,
-      await subsetFont(source, text, { targetFormat: 'woff2', preserveNameIds }),
+      await subsetFont(source, textOf(points), { targetFormat: 'woff2', preserveNameIds }),
     )
     variants.push({
       src: [file],

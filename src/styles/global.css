@@ -5,8 +5,8 @@
     --gutter: 24px;
     --radius: 6px;
     --font-serif:
-        var(--font-jinkai), 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', Charter,
-        Georgia, serif;
+        var(--font-jinkai), 'TsangerJinKai02 Slices', 'Noto Serif SC', 'Source Han Serif SC',
+        'Songti SC', 'STSong', Charter, Georgia, serif;
     --font-mono:
         var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo,
         Consolas, 'Liberation Mono', var(--font-serif);

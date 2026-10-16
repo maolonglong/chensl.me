@@ -1,5 +1,8 @@
 ---
 import '../styles/global.css'
+// JinKai slices for text outside the build-time subsets, such as news read from D1.
+// src/lib/fonts.mjs writes this file before Astro starts.
+import '../../.astro/site-fonts/slices.css'
 import Theme from '../components/Theme.astro'
 import ThemeToggle from '../components/ThemeToggle.astro'
 import { Font } from 'astro:assets'
