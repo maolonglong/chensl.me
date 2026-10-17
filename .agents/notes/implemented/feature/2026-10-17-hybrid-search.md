@@ -60,8 +60,11 @@ On 2026-10-17 the preview index held 17 articles (52 chunks) and one issue (15 i
 
 - Before every migration of a D1 database, record a Time Travel bookmark: `wrangler d1 time-travel info <database>`. `wrangler d1 export` fails for a database with an FTS5 table, but an export with `--table` for each real table works; on the preview, `issues` and `issue_versions` exported after `0003_search.sql`.
 - The production index needs a one-time news backfill. The owner exports the visible issues with a Wrangler login, and `scripts/index-news.mjs` embeds them with the embed token; its header holds the commands. The news write token is never used for this. Articles fill on the first `main` run.
-- Vectorize bills queried dimensions each month as (queried vectors + stored vectors) × 1024; the two terms add. With 1000 queries a month and 5,000 stored vectors, that is about 6 million, well under the free 30 million. The real limit is 5 million stored dimensions on the Free plan: about 4,880 vectors.
-- Capacity plan: articles need about 3 chunks each, and an issue about 15 items, so items fill the index in about 300 days. Before the index passes 4,000 vectors, keep item vectors only for the last six months and collapse each older issue to one vector of its title and summaries (`news:<date>:0`). The alternative is Matryoshka truncation to 512 dimensions, which doubles the room; the Qwen model card lists it, but the Workers AI model page offers no dimension option, so it needs a check and a new calibration first.
+- Vectorize bills queried dimensions each month as (queried vectors + stored vectors) × 1024; the two terms add. With 1000 queries a month and 5,000 stored vectors, that is about 6 million, well under the free 30 million. The real limit is 5 million stored dimensions on the Free plan: about 4,880 vectors. Articles average about 3 chunks and an issue about 15 items, so items fill the index in about 300 days.
 - Cost on 2026-10-17: a full article sync was about 30 neurons, an issue about 0.75, and a query about 0.03.
 - Without the `AI` and `SEARCH_INDEX` bindings, as in local runs without them, `/api/search` returns AI News keyword hits only.
 - Recheck the floors with `scripts/search-eval.mjs` when the corpus grows; the CI job runs it after each index update.
+
+## Reopen when
+
+- Stored vectors approach 4,000: keep item vectors only for the last six months and collapse each older issue to one vector of its title and summaries (`news:<date>:0`), or check whether Workers AI exposes 512-dimension Matryoshka truncation for Qwen and recalibrate.

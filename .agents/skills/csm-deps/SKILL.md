@@ -1,5 +1,5 @@
 ---
-name: upgrade-deps
+name: csm-deps
 description: Upgrade chensl.me dependencies. Use for a Dependabot pull request, a version bump, a security advisory or pnpm audit finding, a Node.js version change, or a pnpm override.
 ---
 

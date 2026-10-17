@@ -12,7 +12,7 @@ Write or update an Agent Note in the same commit when a change makes a lasting d
 
 Local and mechanical edits need no note, and neither do small changes to how a page looks. When a note already owns the decision, update that note.
 
-Every new note starts with a supersession check: search the active notes for the same decision, mechanism, or rejected option, and resolve each match in the same commit. The [`maintain-docs`](../skills/maintain-docs/SKILL.md#supersession-check) skill holds the steps.
+Every new note starts with a supersession check: search the active notes for the same decision, mechanism, or rejected option, and resolve each match in the same commit. The [`csm-doc`](../skills/csm-doc/SKILL.md#supersession-check) skill holds the steps.
 
 Before you propose to remove, replace, or reintroduce something, search the notes for its topic: `grep -ril <topic> .agents/notes/`. A note that covers it is the starting point: answer its rationale and its reopen condition, not only the general case.
 
@@ -60,7 +60,7 @@ A note that added a feature may merge into the note that removed it only when no
 
 An archived note is a frozen snapshot. Never edit, move, or delete it after the commit that archives it, and never treat it as a current rule; write an active note or a document for that. An active document may link to an archived note to cite history.
 
-The archiving commit may change only this: it moves the note to `archived/<class>/` with the same name, inserts `Archived: YYYY-MM-DD` as line 4 below `Status: implemented`, appends the note's line to `.agents/notes/archived/SEALS.sha256`, and repairs or deletes inbound links. The [`maintain-docs`](../skills/maintain-docs/SKILL.md#archive-a-note) skill holds the steps.
+The archiving commit may change only this: it moves the note to `archived/<class>/` with the same name, inserts `Archived: YYYY-MM-DD` as line 4 below `Status: implemented`, appends the note's line to `.agents/notes/archived/SEALS.sha256`, and repairs or deletes inbound links. The [`csm-doc`](../skills/csm-doc/SKILL.md#archive-a-note) skill holds the steps.
 
 `tests/docs.test.mjs` compares each archived note with its seal, and rejects a seal file that drops a line that `main` has. The other document checks skip archived notes, so their links and paths may go stale.
 

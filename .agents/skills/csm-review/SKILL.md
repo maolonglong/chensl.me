@@ -1,6 +1,6 @@
 ---
-name: code-review
-description: Review a chensl.me diff, pull request, or commit against the regressions its fix history keeps producing. Use when you review a change, or before you commit one, that touches CSP, upvote Actions or D1, the Markdown pipeline, content or RSS, accessibility or touch UI, checks and shipping, or documents.
+name: csm-review
+description: Review a chensl.me diff, pull request, or commit against the regressions its fix history keeps producing. Use when you review a change, or before you commit one, that touches CSP, upvotes, AI News, search, share cards, comments, the Markdown pipeline, content or RSS, accessibility or touch UI, checks and shipping, or documents.
 ---
 
 # Review chensl.me
@@ -23,9 +23,13 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 | Diff touches | Surface |
 | --- | --- |
 | `astro.config.mjs` `security`, `public/_headers`, `src/scripts/theme-bootstrap.js`, `src/components/Theme.astro`, any `<script>` or handler | CSP |
-| `src/actions/`, `src/middleware.ts`, `src/components/Upvote.astro`, `migrations/`, `wrangler.jsonc` bindings | Upvotes |
-| `src/lib/markdown.mjs`, `astro.config.mjs` `markdown`, `src/pages/index.xml.ts`, `src/content.config.ts`, `src/lib/posts.ts`, `src/content/` | Content |
-| `src/components/`, `src/styles/`, `src/layouts/BaseLayout.astro`, fonts | UI |
+| `src/actions/`, `src/middleware.ts`, `src/components/Upvote.astro`, `migrations/0001_votes.sql`, `wrangler.jsonc` bindings | Upvotes |
+| `src/live.config.ts`, `src/lib/news*`, `src/pages/news/`, `src/pages/api/`, `src/components/News*`, `migrations/news/` | AI News |
+| `src/worker.ts`, `src/lib/search*`, `src/lib/related.ts`, `src/pages/search.astro`, `src/data/related-posts.json`, `scripts/*search*`, `scripts/embed-posts.mjs`, `scripts/index-news.mjs` | Search |
+| `src/lib/og*`, `src/pages/og/` | Share cards |
+| `src/components/Comments.astro`, `src/styles/giscus*.css`, `src/pages/css/` | Comments |
+| `src/lib/markdown.mjs`, `astro.config.mjs` `markdown`, `src/pages/index.xml.ts`, `src/content.config.ts`, `src/lib/posts.ts`, `src/lib/post-date.ts`, `src/content/` | Content |
+| `src/components/`, `src/styles/`, `src/layouts/BaseLayout.astro`, `src/lib/fonts.mjs`, fonts | UI |
 | `scripts/`, `tests/`, `e2e/`, `.github/`, `package.json`, `pnpm-*`, `wrangler.jsonc`, `skills-lock.json` | Checks & ship |
 | `*.md` outside `src/content/` and `archived/`, `.agents/notes/`, project skills | Documents |
 
@@ -36,18 +40,39 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 - A CSP console error from Cloudflare's injected JavaScript Detections script is dashboard configuration; loosening the policy for it is a hit (`0202fd0`).
 - `immutable` caching (`/_astro/*` from the Cloudflare adapter, `/css/*` from `public/_headers`) holds only while the URL carries a content hash (`src/lib/assets.ts`). An immutable path with a stable URL serves stale content forever.
 
-### Upvotes — [product](../../../docs/product.md#upvotes)
+### Upvotes — [product](../../../docs/product.md#upvotes), [decision](../../notes/implemented/feature/2026-09-28-anonymous-cookie-upvotes.md)
 
 - `requirePost` uses `redirect: 'manual'` and demands exactly 200 (`d16b247`). Any new prerendered page under `/blog/<x>/` that is not an article passes that check: hit.
 - Each Action calls `requireQuota` with its own limiter; sharing a budget or omitting one is a hit (`287be50`). A new limiter is a new account resource on deploy.
 - A write followed by a read is one `env.VOTES.batch`; two round trips let the count miss the caller's vote (`287be50`).
+- An early 4xx return on a POST request drains the bounded request body first, or local `wrangler dev` drops the next request on the reused connection (`d104578`, `49b6241`).
+
+### AI News — [product](../../../docs/product.md#ai-news), [decision](../../notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)
+
+- `saveIssue` reports whether the issue stays hidden, so `POST /api/news/` removes vectors instead of re-indexing a retracted date (`49b6241`).
+- `wrangler.jsonc` `previews` does not inherit top-level bindings; a binding added at the top level without a preview counterpart is missing on Workers Previews (`7803132`).
+
+### Search — [product](../../../docs/product.md#pages), [decision](../../notes/implemented/feature/2026-10-17-hybrid-search.md)
+
+- Slice and chunk text by Unicode code points, not UTF-16 code units: `.slice()` splits a surrogate pair into a lone surrogate that breaks `encodeURIComponent` or embedding (`49b6241`, `66fee1c`).
+- Filter retracted D1 dates before `rankMatches` computes the top news score, or a retracted issue suppresses visible issues below `semanticMaxGap` (`49b6241`).
+- Fold control characters before building an FTS5 phrase query, or a NUL byte breaks `MATCH` (`49b6241`).
+- Ignore `input` events while `event.isComposing` is true and search on `compositionend`, so an input method does not query unfinished pinyin (`5eb9145`).
+
+### Share cards — [product](../../../docs/product.md#pages), [design](../../../docs/design.md#components), [decision](../../notes/implemented/feature/2026-10-17-build-time-share-cards.md)
+
+- Keep `@takumi-rs/core` out of the Worker bundle, and create a fresh `Renderer` per card so subset faces do not accumulate across cards (`cd34a90`).
+
+### Comments — [product](../../../docs/product.md#comments), [design](../../../docs/design.md#color)
+
+- Theme URLs are content-hashed (`/css/giscus-*.css`), served with `Access-Control-Allow-Origin: *`, and synced to `iframe.giscus-frame` on theme change and iframe load (`0202fd0`, `fa2263a`).
 
 ### Content — [product](../../../docs/product.md), [architecture](../../../docs/architecture.md#build)
 
 - The tree you edit is not the HTML the browser gets. Shiki emits lowercase `tabindex`, so `delete node.properties.tabIndex` silently did nothing (`82d1217`). Check every plugin `delete` and regex against emitted HTML from a real build.
 - Plugins leave a clean tree, with no emptied text node after a stripped marker (`dfa3891`).
 - One Markdown pipeline. A second parser for RSS or exports is a hit. Parse HTML before you rewrite `href`/`src` (entities), and every feed URL ends absolute (`988b08d`).
-- `publishedPosts()` is the only draft and future filter; a direct `getCollection('blog')` leaks drafts. `import.meta.env.DEV` shows drafts by design.
+- `publishedPosts()` and `isPublishedPost()` are the only draft and future filters; a direct `getCollection('blog')` or a build scan of `src/content/blog/` that skips `isPublishedPost()` leaks unpublished text into the output or font subsets (`66fee1c`). `import.meta.env.DEV` shows drafts by design.
 - Dates display through `displayDate` (`Asia/Shanghai`). CI runs UTC and the author's machine runs CST, so local-time getters or `toLocale*` without `timeZone` differ between them.
 
 ### UI — [design](../../../docs/design.md)
@@ -61,11 +86,11 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 - Underline contexts set `text-decoration-line`, not the `text-decoration` shorthand: the shorthand resets thickness, and the CSS minifier dropped a thickness that followed `text-decoration: none` in the same rule (`61b7873`). Compare computed styles against a baseline build; a screenshot does not show it.
 - A new chromatic value without an entry in [design § Color](../../../docs/design.md#color) is a hit; ink-blue means link only.
 
-### Checks & ship — [testing](../../../docs/testing.md), `ship`, `upgrade-deps`
+### Checks & ship — [testing](../../../docs/testing.md), `csm-ship`, `csm-deps`
 
 - Regexes over HTML or paths: `replace('*', …)` escapes one match, so use `replaceAll`; tag matchers ignore case and allow attributes on end tags (`8bb9190`, `25cc570`).
 - A weakened assertion that turns a check green is a hit.
-- A dependency change follows the `upgrade-deps` skill; a push to `main` follows the `ship` skill.
+- A dependency change follows the `csm-deps` skill; a push to `main` follows the `csm-ship` skill.
 
 ### Documents — [documentation standard](../../../docs/AGENTS.md)
 

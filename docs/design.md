@@ -31,7 +31,7 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - JinKai comes first for mixed Chinese and Latin text. W04 alone covers weights 400 to 500, and synthesized bold is off.
 - Fonts are self-hosted with `font-display: swap` and content-versioned URLs, without preloads. Code fonts are declared on every page, and the browser loads them only when a page uses them (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
 - The fonts are not under the repository's code license; read [NOTICE.md](../public/fonts/tsanger-jinkai02/NOTICE.md) before you add or change one.
-- A cold visit to the home page loads at most 100 KiB of JinKai (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`). `/news/` loads about 865 KB: its D1 text needs cached JinKai slices.
+- A cold visit to the home page loads at most 100 KiB of JinKai, and `/news/` loads cached JinKai slices for its D1 text (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
 - Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart.
 - `<em>` stays upright and carries CJK emphasis dots. `<strong>` uses weight 500 in the heading color.
 

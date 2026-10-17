@@ -17,13 +17,13 @@ The maintenance guide (`6b0a84d:docs/maintenance.md`) mixed six kinds of content
 
 The repository follows the [documentation standard](../../../../docs/AGENTS.md), which adapts two references: OpenAI's harness engineering report (a short `AGENTS.md` as a map, the repository as the system of record, mechanical checks on the knowledge base) and the documentation workflow of `deepseek-ai/deepseek-harness`, as read at [its commit 5badb15009](https://github.com/deepseek-ai/deepseek-harness/tree/5badb15009).
 
-- Each kind of content has one home: root `AGENTS.md` for standing orders and routing; subtree `AGENTS.md` files for the rules of their folder; `docs/architecture.md`, `docs/product.md`, `docs/design.md`, and `docs/testing.md` for reference; Agent Notes for decisions; project skills for procedures.
+- Each kind of content has one home: root `AGENTS.md` for standing orders and routing; subtree `AGENTS.md` files for the rules of their folder; `docs/architecture.md`, `docs/product.md`, `docs/design.md`, and `docs/testing.md` for reference; Agent Notes for decisions; project skills (`csm-doc`, `csm-review`, `csm-ship`, `csm-deps`, prefixed so a human scanning `.agents/skills/` can tell them apart from lockfile skills) for procedures.
 - A sentence enters a document only if code, configuration, and tests cannot carry it. A value appears only with the test that pins it.
-- The standard holds the rules, and the [`maintain-docs`](../../../skills/maintain-docs/SKILL.md) skill holds the procedure. DeepSeek splits the same way, between `docs/AGENTS.md` and its `dsh-doc`, `dsh-prose-standard`, and `dsh-archive-agent-notes` skills.
+- The standard holds the rules, and the [`csm-doc`](../../../skills/csm-doc/SKILL.md) skill holds the procedure. DeepSeek splits the same way, between `docs/AGENTS.md` and its `dsh-doc`, `dsh-prose-standard`, and `dsh-archive-agent-notes` skills; one skill covers all three here so the repository pays for one always-loaded description.
 - Shortening keeps every proposition: actor, condition, modality, exception, and failure. This is DeepSeek's complete-proposition rule, and it balances the word budgets.
-- Review adds two tests from DeepSeek, as steps in `maintain-docs`: the newcomer test from `dsh-doc`, and the test for references that only the writing session can resolve, from `dsh-trim-cot-leakage`.
+- Review adds two tests from DeepSeek, as steps in `csm-doc`: the newcomer test from `dsh-doc`, and the test for references that only the writing session can resolve, from `dsh-trim-cot-leakage`.
 - Agent Notes follow DeepSeek's lifecycle, format, supersession, consolidation, and retention rules. Only notes dated before the format started may waive their alternatives. [A later decision](2026-10-08-agent-note-classes-and-archive.md) adds DeepSeek's class folders and sealed archive.
-- `maintain-docs` keeps [calibration examples](../../../skills/maintain-docs/references/examples.md) from this repository's history, as DeepSeek's `dsh-prose-standard` does. When the owner decides a borderline case, it becomes an example.
+- `csm-doc` keeps [calibration examples](../../../skills/csm-doc/references/examples.md) from this repository's history, as DeepSeek's `dsh-prose-standard` does. When the owner decides a borderline case, it becomes an example.
 - `tests/docs.test.mjs` enforces the rules that a script can decide, and `tests/docs-rejects.test.mjs` proves that each of those checks can fail.
 - Decisions that only an agent's private memory held are Agent Notes.
 
@@ -39,7 +39,7 @@ The repository follows the [documentation standard](../../../../docs/AGENTS.md),
 
 **Chinese counterparts for each document**, with a pairing check. The documents are in English, and one maintainer reads them. A pair doubles the cost of each edit.
 
-**A postmortem folder.** Commit bodies record incidents, `code-review` traps cite them, and the promotion rule moves each lesson toward a check. That covers every incident so far.
+**A postmortem folder.** Commit bodies record incidents, `csm-review` traps cite them, and the promotion rule moves each lesson toward a check. That covers every incident so far.
 
 **Release tags and pull-request numbers in place of commit hashes**, as DeepSeek's reference check requires. DeepSeek's history references point at pull requests, whose branch commits a squash merge leaves out. Here most changes land on `main` directly, and `main` is never rewritten, so a hash in its history is stable. The check requires each cited commit to be in the history of `main`.
 
@@ -53,7 +53,7 @@ The repository follows the [documentation standard](../../../../docs/AGENTS.md),
 
 **DeepSeek's check for banned terms.** It enforces one term that DeepSeek's own history made ambiguous. This repository has no such term yet; the writing rules ask for one term per concept.
 
-**Execution plans, a tech-debt tracker, quality grades, and generated references** from the OpenAI report. This repository has one maintainer and little change. `ponytail:` comments and the `ponytail-debt` skill already track debt.
+**Execution plans, a tech-debt tracker, quality grades, and generated references** from the OpenAI report. This repository has one maintainer and little change. `ponytail:` comments already track debt.
 
 ## Reopen when
 
@@ -63,4 +63,4 @@ The repository follows the [documentation standard](../../../../docs/AGENTS.md),
 
 ## Consequences
 
-Agents must follow the routing table in root `AGENTS.md` to reach a reference document; a skill loads by its description. The checks catch broken references, wrapped paragraphs, growth, and format errors, but not a copied value. The admission rule depends on review for that, and the `code-review` skill carries the trap.
+Agents must follow the routing table in root `AGENTS.md` to reach a reference document; a skill loads by its description. The checks catch broken references, wrapped paragraphs, growth, and format errors, but not a copied value. The admission rule depends on review for that, and the `csm-review` skill carries the trap.

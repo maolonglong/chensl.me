@@ -163,6 +163,15 @@ test('drafts and future posts are filtered and dates sort by instants', async ()
   await assert.rejects(readFile(path.join(dist, 'blog/future/index.html'), 'utf8'))
 })
 
+test('articles show giscus comments unless front matter sets comments: false', async () => {
+  const { dist } = await behaviorFixture()
+  const withComments = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  assert.match(withComments, /<section[^>]*\bclass="comments"/)
+  assert.match(withComments, /https:\/\/giscus\.app\/client\.js/)
+  const withoutComments = await readFile(path.join(dist, 'blog/older/index.html'), 'utf8')
+  assert.doesNotMatch(withoutComments, /\bclass="comments"|giscus\.app\/client\.js/)
+})
+
 test('Markdown exports preserve the raw body and publish only visible articles', async () => {
   const { fixture, dist } = await behaviorFixture()
   const exports = (await readdir(path.join(dist, 'blog'), { recursive: true }))

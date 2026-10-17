@@ -45,4 +45,4 @@ The bot writes each issue to its own D1 database (`NEWS`, `blog-news`) through `
 
 ## Consequences
 
-The site has more server-rendered behavior: five pages and two endpoints read or write D1 at request time, so a D1 outage shows as errors on `/news/` only. A new Worker route must also go into `run_worker_first`, or browsers and POST requests get the 404 page. A new issue can take up to the `s-maxage` to appear. The JinKai subset comes from the source text, so characters that only an issue uses fall back to another font. The author does not review the bot's text before it is public; the index page says so.
+The site has more server-rendered behavior: five pages and two endpoints read or write D1 at request time, so a D1 outage shows as errors on `/news/` only. A new Worker route must also go into `run_worker_first`, or browsers and POST requests get the 404 page. A new issue can take up to the `s-maxage` to appear. Characters in an issue that the source-text subsets do not hold load from the [JinKai unicode-range slices](2026-10-16-jinkai-unicode-range-slices.md). The author does not review the bot's text before it is public; the index page says so.

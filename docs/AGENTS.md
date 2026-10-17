@@ -1,6 +1,6 @@
 # AGENTS.md — Documentation standard
 
-Read this before you write or edit `AGENTS.md`, a file in `docs/`, an Agent Note, a project skill, `README.md`, or a code comment that explains a decision. It defines where each fact lives, what may enter a document, the writing rules, the word budgets, and the checks. The [`maintain-docs`](../.agents/skills/maintain-docs/SKILL.md) skill is the procedure that applies these rules: placement, fact-check, audit, and validation.
+Read this before you write or edit `AGENTS.md`, a file in `docs/`, an Agent Note, a project skill, `README.md`, or a code comment that explains a decision. It defines where each fact lives, what may enter a document, the writing rules, the word budgets, and the checks. The [`csm-doc`](../.agents/skills/csm-doc/SKILL.md) skill is the procedure that applies these rules: placement, fact-check, audit, and validation.
 
 ## One home per fact
 
@@ -34,7 +34,7 @@ State a value only when a test pins it, and name that test. A value without a te
 A lesson moves toward enforcement:
 
 1. The commit body records an incident: what broke, why, and the fix.
-2. A trap in [`code-review`](../.agents/skills/code-review/SKILL.md) records a lesson that review must catch again. It cites the commit.
+2. A trap in [`csm-review`](../.agents/skills/csm-review/SKILL.md) records a lesson that review must catch again. It cites the commit.
 3. A test or check enforces the rule when a script can decide it. Then delete the trap. A prose rule that a check enforces keeps only what a writer needs to comply, and names the check.
 
 ## Writing rules

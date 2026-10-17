@@ -70,4 +70,4 @@ Two policies apply independently ([decision](../.agents/notes/implemented/archit
 
 ## Delivery
 
-GitHub Actions (`.github/workflows/ci.yml`) runs the checks on pushes and pull requests and publishes nothing. Cloudflare Workers Builds builds and deploys production when `main` changes; the Cloudflare dashboard owns that configuration and the deployment records. Cloudflare does not wait for GitHub CI. The [`ship`](../.agents/skills/ship/SKILL.md) skill holds the release procedure.
+GitHub Actions (`.github/workflows/ci.yml`) runs the checks on pushes and pull requests and publishes nothing. Cloudflare Workers Builds builds and deploys production when `main` changes; the Cloudflare dashboard owns that configuration and the deployment records. Cloudflare does not wait for GitHub CI. The [`csm-ship`](../.agents/skills/csm-ship/SKILL.md) skill holds the release procedure.

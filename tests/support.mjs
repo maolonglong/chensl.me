@@ -144,7 +144,7 @@ $$
       await write(
         fixture,
         'src/content/blog/older.md',
-        `${frontmatter('Older', '2024-01-01')}Published.`,
+        `${frontmatter('Older', '2024-01-01', 'comments: false\n')}Published.`,
       )
       await write(
         fixture,

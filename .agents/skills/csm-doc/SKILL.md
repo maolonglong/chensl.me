@@ -1,6 +1,6 @@
 ---
-name: maintain-docs
-description: Write, review, or audit chensl.me documentation. Use when you add or change AGENTS.md, a file in docs/, README.md, an Agent Note, a project skill, or a code comment that records a decision, and when you audit documents for stale, copied, or misplaced facts.
+name: csm-doc
+description: Document chensl.me. Use when you add or change AGENTS.md, a file in docs/, README.md, an Agent Note, a project skill, or a code comment that records a decision, or when you audit documents for stale, copied, or misplaced facts.
 ---
 
 # Maintain chensl.me documents
@@ -43,7 +43,7 @@ Add text where code cannot show a required fact, and remove text that code alrea
 This probe finds candidates for the two slop items on history and session references. It is not the definition: judge each hit, and also read the densest prose without it.
 
 ```sh
-grep -rnEi 'no longer|used to|was changed|\bnow\b|as discussed|in review|this session' AGENTS.md README.md docs .agents/skills/{maintain-docs,ship,upgrade-deps,code-review}
+grep -rnEi 'no longer|used to|was changed|\bnow\b|as discussed|in review|this session' AGENTS.md README.md docs .agents/skills/csm-*
 ```
 
 Keep these; they are not history:

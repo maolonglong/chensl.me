@@ -56,4 +56,4 @@ AI News is a public section: what happened in AI each day. `/news/` shows the se
 
 ## Comments
 
-Articles show giscus comments from GitHub Discussions unless the front matter sets `comments: false`.
+Articles show giscus comments from GitHub Discussions unless the front matter sets `comments: false` (`tests/content.test.mjs`).

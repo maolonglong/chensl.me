@@ -1,5 +1,5 @@
 ---
-name: ship
+name: csm-ship
 description: Ship chensl.me to production. Use when pushing or merging to main, deploying, applying remote D1 migrations, or confirming that a pushed change is live.
 ---
 
@@ -24,9 +24,9 @@ A push to `main` deploys production. Cloudflare builds it without waiting for Gi
 
    Run only the commands for the binding whose `migrations_dir` gained a file. The token needs D1 edit permission. Done when `pnpm exec wrangler d1 migrations list <BINDING> --remote` (and with `--preview`) lists no unapplied migration.
 6. **Push.** Run `git push origin <SHA>:main` with the SHA from step 1. Done when the remote reports that SHA as the new head.
-7. **CI.** Find the run for the pushed commit with `gh run list --branch main --limit 1 --json headSha,status,conclusion,url`, and wait for it. Done when its `headSha` is the SHA from step 1 and it concluded.
+7. **CI.** Find the runs for the pushed commit with `gh run list --commit <SHA> --json workflowName,headSha,status,conclusion,url`, and wait for them. A push to `main` starts both `.github/workflows/ci.yml` and `.github/workflows/search-index.yml`. Done when both runs have `headSha` equal to the SHA from step 1 and have concluded.
 8. **Deployment.** Match a Cloudflare deployment record to the pushed commit. When you cannot reach the records, check that production serves the change, for example with `curl -sI https://chensl.me/<changed path>`. A charset proves itself only in production, because local Wrangler adds one to every `text/*` response ([previews](../../../docs/testing.md#previews)). Done when the deployment is confirmed, or reported as unverified.
 
 ## Report
 
-Report three facts separately: pushed (the commit range), CI (the run and its result), and deployed (the evidence, or "unverified"). A green CI run does not prove a deployment, and the absence of a GitHub deployment job does not prove that none ran. CI only runs checks by design; that is not a reason for a manual deployment.
+Report three facts separately: pushed (the commit range), CI (both runs and their results), and deployed (the evidence, or "unverified"). A green CI run does not prove a deployment, and the absence of a GitHub deployment job does not prove that none ran. CI only runs checks by design; that is not a reason for a manual deployment.
