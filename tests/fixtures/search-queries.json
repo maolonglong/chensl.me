@@ -1,0 +1,32 @@
+{
+  "minRecall": 0.9,
+  "maxFalsePositives": 2,
+  "queries": [
+    { "query": "测试时依赖数据库怎么办", "expect": ["/blog/dockertest/"] },
+    { "query": "无锁队列", "expect": ["/blog/lock-free-queue/"] },
+    { "query": "内存管理", "expect": ["/blog/manual-memory-management/"], "allow": ["/blog/buddy/", "/blog/bytebufferpool/"] },
+    { "query": "垃圾回收", "expect": ["/blog/manual-memory-management/"], "allow": ["/blog/buddy/", "/blog/bytebufferpool/"] },
+    { "query": "智能体", "expect": ["/blog/harness-engineering/", "/blog/thin-agent-thick-harness/"], "allow": ["/blog/thinking-vs-research/"] },
+    { "query": "怎么验证 AI 写的代码", "expect": ["/blog/harness-engineering/"], "allow": ["/blog/thin-agent-thick-harness/", "/blog/semantic-view-sql-traps/"] },
+    { "query": "数据指标口径不一致", "expect": ["/blog/semantic-view-sql-traps/"] },
+    { "query": "LLM 推理", "expect": ["/blog/thinking-vs-research/"], "allow": ["/blog/harness-engineering/", "/blog/thin-agent-thick-harness/"] },
+    { "query": "微服务故障隔离", "expect": ["/blog/gobreaker/"] },
+    { "query": "容器文件系统", "expect": ["/blog/overlayfs/"], "allow": ["/blog/dockertest/"] },
+    { "query": "JIT 编译", "expect": ["/blog/bfjit-x86-64/"] },
+    { "query": "Rust 泛型", "expect": ["/blog/gat/"] },
+    { "query": "年终总结", "expect": ["/blog/2024-review/", "/blog/2023-review/"] },
+    { "query": "Zig 性能优化", "expect": ["/blog/1brc-in-zig/"], "allow": ["/blog/buddy/", "/blog/bfjit-x86-64/", "/blog/2023-review/"] },
+    { "query": "对象池复用内存", "expect": ["/blog/bytebufferpool/"], "allow": ["/blog/manual-memory-management/", "/blog/buddy/"] },
+    { "query": "不可变数据和柯里化", "expect": ["/blog/functional-programming/"] },
+    { "query": "红烧肉怎么做" },
+    { "query": "今天天气怎么样" },
+    { "query": "世界杯冠军是谁" },
+    { "query": "如何养猫" },
+    { "query": "股票投资技巧" },
+    { "query": "做饭菜谱" },
+    { "query": "快速模式", "expect": ["/news/2026-10-16/"], "gate": false },
+    { "query": "智谱", "expect": ["/news/2026-10-16/"], "gate": false },
+    { "query": "Claude 新模型", "expect": ["/news/2026-10-16/"], "gate": false },
+    { "query": "开源大模型排行", "expect": ["/news/2026-10-16/"], "gate": false }
+  ]
+}
