@@ -21,11 +21,13 @@ export function normalizeQuery(raw: string | null) {
   return query && [...query].length <= maxQueryLength ? query : null
 }
 
-// Calibrated against the deployed model on 2026-10-17 (.agents/notes/implemented/feature/2026-10-17-hybrid-search.md): the best
-// match of every off-topic query scored below 0.27, and every on-topic best match at least 0.33.
-// Hits that trail the best one by more than 0.10 were mostly loosely related articles.
+// Calibrated against the deployed model on 2026-10-17
+// (.agents/notes/implemented/feature/2026-10-17-hybrid-search.md): the best match of every
+// off-topic query scored below 0.27, and every on-topic best match at least 0.33. On the preview,
+// short names such as 智谱 matched the right issue and unrelated articles 0.06 to 0.10 below it;
+// articles on one topic, such as the two year reviews, stayed within 0.03 of each other.
 export const semanticMinScore = 0.3
-export const semanticMaxGap = 0.1
+export const semanticMaxGap = 0.05
 const semanticTopK = 10
 
 // Qwen3 embeddings take a task instruction on the query side only. A Chinese instruction that
