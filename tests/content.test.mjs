@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile, readdir, rm } from 'node:fs/promises'
 import path from 'node:path'
 import { test } from 'node:test'
-import { parsePostDate, rewriteUnzonedFrontMatter } from '../src/lib/post-date.ts'
+import { isPublishedPost, parsePostDate, rewriteUnzonedFrontMatter } from '../src/lib/post-date.ts'
 import {
   astroProject,
   behaviorFixture,
@@ -21,6 +21,11 @@ test('a clock time with no timezone is Shanghai time', () => {
   assert.equal(parsePostDate('2024-06-15T23:00:00+08:00').toISOString(), '2024-06-15T15:00:00.000Z')
   assert.equal(parsePostDate('2024-06-15T23:00:00Z').toISOString(), '2024-06-15T23:00:00.000Z')
   assert.equal(parsePostDate('2024-06-15').toISOString(), '2024-06-15T00:00:00.000Z')
+  const now = Date.parse('2024-06-15T15:00:00.000Z')
+  assert.equal(isPublishedPost({ pubDate: '2024-06-15T23:00:00' }, now), true)
+  assert.equal(isPublishedPost({ pubDate: '2024-06-15T23:00:01' }, now), false)
+  assert.equal(isPublishedPost({ draft: true, pubDate: '2024-06-15' }, now), false)
+  assert.equal(isPublishedPost({ draft: true, pubDate: '2024-06-15T23:00:01' }, now, true), true)
   const source =
     '---\npubDate: 2024-06-15T23:00:00\nupdatedDate: 2024-06-15T23:00:00+08:00\n---\n\n23:00 stays in the body\n'
   const rewritten = rewriteUnzonedFrontMatter(source)

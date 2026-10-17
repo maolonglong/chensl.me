@@ -3,6 +3,7 @@ import {
   clipSnippet,
   embeddingModel,
   newsItemEmbeddingText,
+  newsKeywordQuery,
   newsVectors,
   queryInstruction,
   rankMatches,
@@ -16,7 +17,7 @@ import { newsUrl, type NewsIssue } from './news'
 // The browser merges both with its Pagefind article hits; see src/pages/search.astro.
 // src/worker.ts routes GET /api/search/ here before the Astro handler.
 
-export { cleanQuery, maxQueryLength, normalizeQuery, type SearchHit }
+export { cleanQuery, maxQueryLength, newsKeywordQuery, normalizeQuery, type SearchHit }
 
 type SearchEnv = Pick<Cloudflare.Env, 'AI' | 'SEARCH_INDEX' | 'NEWS' | 'SEMANTIC_SEARCH'>
 
@@ -78,37 +79,6 @@ export async function semanticSearch(env: SearchEnv, query: string): Promise<Sea
     const { url, title, date, description } = match.metadata as unknown as BlogMetadata
     return { type: 'blog', url, title, date, snippet: clipSnippet(description), score }
   })
-}
-
-const newsKeywordLimit = 10
-const maxTerms = 5
-
-// FTS5 trigram needs three characters; a shorter term, such as a two-character Chinese word,
-// becomes a LIKE condition on the same rows. Quoting makes every term a literal string. D1 cuts
-// the snippet around the first match, so the Worker never parses items_json.
-export function newsKeywordQuery(query: string) {
-  const terms = [...new Set(query.split(' '))].slice(0, maxTerms)
-  const long = terms.filter((term) => [...term].length >= 3)
-  const short = terms.filter((term) => [...term].length < 3)
-  const where = ['issues.hidden_at IS NULL']
-  const binds: string[] = []
-  if (long.length) {
-    where.push('issues_fts MATCH ?')
-    binds.push(long.map((term) => `"${term.replaceAll('"', '""')}"`).join(' AND '))
-  }
-  for (const term of short) {
-    where.push("issues_fts.body LIKE ? ESCAPE '\\'")
-    binds.push(`%${term.replace(/[\\%_]/g, '\\$&')}%`)
-  }
-  const snippet = long.length
-    ? "snippet(issues_fts, 1, '', '', '…', 48)"
-    : `substr(issues_fts.body, max(1, instr(lower(issues_fts.body), lower(?)) - 24), 96)`
-  if (!long.length) binds.unshift(short[0])
-  const sql = `SELECT issues.date, issues.title, ${snippet} AS snippet
-    FROM issues_fts JOIN issues ON issues.date = issues_fts.date
-    WHERE ${where.join(' AND ')}
-    ORDER BY ${long.length ? 'issues_fts.rank' : 'issues.date DESC'} LIMIT ${newsKeywordLimit}`
-  return { sql, binds }
 }
 
 export async function newsKeywordSearch(db: D1Database, query: string): Promise<SearchHit[]> {

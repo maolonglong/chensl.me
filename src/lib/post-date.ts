@@ -8,6 +8,18 @@ export function parsePostDate(value: string): Date {
   return new Date(value)
 }
 
+export function isPublishedPost(
+  data: { draft?: unknown; pubDate?: unknown },
+  now = Date.now(),
+  dev = false,
+): boolean {
+  if (dev) return true
+  if (data.draft === true) return false
+  if (data.pubDate instanceof Date) return data.pubDate.valueOf() <= now
+  if (typeof data.pubDate === 'string') return parsePostDate(data.pubDate).valueOf() <= now
+  return true
+}
+
 const frontMatterTime = new RegExp(
   `^(pubDate|updatedDate):[ \\t]*(${unzonedTime.source.slice(1, -1)})([ \\t]*(?:[ \\t]+#.*)?)$`,
   'gm',

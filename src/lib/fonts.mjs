@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { createMarkdownProcessor } from '@astrojs/markdown-remark'
+import { createMarkdownProcessor, parseFrontmatter } from '@astrojs/markdown-remark'
 import { fontProviders } from 'astro/config'
 import subsetFont from 'subset-font'
 import { Blob, Face } from 'harfbuzzjs'
@@ -10,6 +10,7 @@ import rehypeParse from 'rehype-parse'
 import remarkMath from 'remark-math'
 import { visit } from 'unist-util-visit'
 import { rehypeSite, remarkSite } from './markdown.mjs'
+import { isPublishedPost, rewriteUnzonedFrontMatter } from './post-date.ts'
 
 const parser = unified().use(rehypeParse, { fragment: true })
 const markdownProcessor = createMarkdownProcessor({
@@ -133,6 +134,8 @@ export async function siteFonts() {
   const common = new Set()
   const articles = new Set()
   const markdown = await markdownProcessor
+  const now = Date.now()
+  const dev = process.argv.includes('dev')
 
   // Conservatively scan source, including template strings and decoded HTML entities. The
   // Astro config holds Markdown labels, such as the footnote heading.
@@ -143,9 +146,14 @@ export async function siteFonts() {
   for (const file of [...sources, 'astro.config.mjs']) {
     if (!/\.(astro|md|ts|mjs|css)$/.test(file)) continue
     const input = await readFile(path.join(root, file), 'utf8')
+    const isBlog = file.startsWith(path.join('src', 'content', 'blog', path.sep))
     let html = input
     if (file.endsWith('.md')) {
       try {
+        if (isBlog) {
+          const { frontmatter } = parseFrontmatter(rewriteUnzonedFrontMatter(input))
+          if (!isPublishedPost(frontmatter, now, dev)) continue
+        }
         const body = input.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '')
         html += (await markdown.render(body)).code
       } catch {
@@ -156,9 +164,7 @@ export async function siteFonts() {
     visit(parser.parse(html), 'text', (node) => {
       text += node.value
     })
-    const target = file.startsWith(path.join('src', 'content', 'blog', path.sep))
-      ? articles
-      : common
+    const target = isBlog ? articles : common
     for (const character of text) {
       const point = character.codePointAt(0)
       if (supported.has(point)) target.add(point)

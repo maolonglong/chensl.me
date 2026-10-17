@@ -122,6 +122,12 @@ test('font subsets follow edited content and remain deterministic across builds'
     `---\nimport BaseLayout from '../layouts/BaseLayout.astro'\n---\n<BaseLayout><p>龘 &amp; &#20598;</p></BaseLayout>`,
   )
   await write(fixture, 'src/content/blog/post.md', `${frontmatter('Article', '2025-01-01')}麤`)
+  await write(
+    fixture,
+    'src/content/blog/draft.md',
+    `${frontmatter('Draft', '2025-01-01', 'draft: true\n')}龗`,
+  )
+  await write(fixture, 'src/content/blog/future.md', `${frontmatter('Future', '2999-01-01')}龖`)
   const dist = await buildAstro(fixture)
   async function subsets() {
     const html = await readFile(path.join(dist, 'index.html'), 'utf8')
@@ -142,6 +148,13 @@ test('font subsets follow edited content and remain deterministic across builds'
   assert.ok(first[1].chars.includes('偶'.codePointAt(0)), 'decode HTML character references')
   assert.ok(first[0].chars.includes('麤'.codePointAt(0)))
   assert.ok(!first[1].chars.includes('麤'.codePointAt(0)))
+  for (const unpublished of ['龗', '龖']) {
+    assert.equal(
+      first.some((face) => face.chars.includes(unpublished.codePointAt(0))),
+      false,
+      `unpublished character ${unpublished} leaked into built font subsets`,
+    )
+  }
   assert.equal(
     first[0].chars.some((cp) => first[1].chars.includes(cp)),
     false,

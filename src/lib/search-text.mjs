@@ -40,10 +40,11 @@ export const chunkOverlapChars = 150
 const shortSectionChars = 300
 
 function splitLong(paragraph) {
+  const chars = [...paragraph]
   const pieces = []
-  for (let start = 0; start < paragraph.length; start += chunkMaxChars - chunkOverlapChars) {
-    pieces.push(paragraph.slice(start, start + chunkMaxChars))
-    if (start + chunkMaxChars >= paragraph.length) break
+  for (let start = 0; start < chars.length; start += chunkMaxChars - chunkOverlapChars) {
+    pieces.push(chars.slice(start, start + chunkMaxChars).join(''))
+    if (start + chunkMaxChars >= chars.length) break
   }
   return pieces
 }
@@ -53,22 +54,24 @@ function packSection(text) {
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean)
-    .flatMap((line) => (line.length > chunkMaxChars ? splitLong(line) : [line]))
+    .flatMap((line) => ([...line].length > chunkMaxChars ? splitLong(line) : [line]))
   const chunks = []
   let current = ''
   for (const paragraph of paragraphs) {
     const joined = current ? `${current}\n${paragraph}` : paragraph
-    if (current.length >= chunkMinChars || (current && joined.length > chunkMaxChars)) {
+    const currentChars = [...current]
+    const paragraphChars = [...paragraph]
+    if (currentChars.length >= chunkMinChars || (current && [...joined].length > chunkMaxChars)) {
       chunks.push(current)
       // splitLong pieces already begin with the previous piece's tail; other paragraphs get
       // the tail of the flushed chunk, cut at a line break when there is one.
       const alreadyOverlapped =
-        paragraph.length >= chunkOverlapChars &&
-        current.endsWith(paragraph.slice(0, chunkOverlapChars))
+        paragraphChars.length >= chunkOverlapChars &&
+        current.endsWith(paragraphChars.slice(0, chunkOverlapChars).join(''))
       if (alreadyOverlapped) {
         current = paragraph
       } else {
-        const tail = current.slice(-chunkOverlapChars)
+        const tail = currentChars.slice(-chunkOverlapChars).join('')
         const lineStart = tail.indexOf('\n')
         const overlap =
           lineStart >= 0 && lineStart < tail.length - 1 ? tail.slice(lineStart + 1) : tail
@@ -82,7 +85,7 @@ function packSection(text) {
   return chunks
 }
 
-const groupChars = (group) => group.reduce((sum, section) => sum + section.text.length, 0)
+const groupChars = (group) => group.reduce((sum, section) => sum + [...section.text].length, 0)
 
 // sections: [{ heading, text }] in page order; the first may have an empty heading.
 // Returns [{ section, text }], where text starts with "title › section" (or the title alone).
@@ -105,7 +108,7 @@ export function articleChunks({ title, sections }) {
   return groups.flatMap((group) => {
     // The chunk is named after the section that brings most of the text.
     const lead = group.reduce((best, section) =>
-      section.text.length >= best.text.length ? section : best,
+      [...section.text].length >= [...best.text].length ? section : best,
     )
     const text = group
       .map((section) =>
@@ -215,4 +218,42 @@ export function relatedFromVectors(items) {
         .slice(0, relatedCandidates),
     ]),
   )
+}
+
+const newsKeywordLimit = 10
+const maxTerms = 5
+const utf8 = new TextEncoder()
+
+// FTS5 trigram needs three characters; a shorter term, such as a two-character Chinese word,
+// becomes a LIKE condition on the same rows. Quoting makes every term a literal string. D1 cuts
+// the snippet around the most specific short term, so a generic prefix such as "AI" does not hide
+// the matching topic and the Worker never parses items_json.
+export function newsKeywordQuery(query) {
+  const terms = [...new Set(query.split(' '))].slice(0, maxTerms)
+  const long = terms.filter((term) => [...term].length >= 3)
+  const short = terms.filter((term) => [...term].length < 3)
+  const where = ['issues.hidden_at IS NULL']
+  const binds = []
+  if (long.length) {
+    where.push('issues_fts MATCH ?')
+    binds.push(long.map((term) => `"${term.replaceAll('"', '""')}"`).join(' AND '))
+  }
+  for (const term of short) {
+    where.push("issues_fts.body LIKE ? ESCAPE '\\'")
+    binds.push(`%${term.replace(/[\\%_]/g, '\\$&')}%`)
+  }
+  const snippet = long.length
+    ? "snippet(issues_fts, 1, '', '', '…', 48)"
+    : `substr(issues_fts.body, max(1, instr(lower(issues_fts.body), lower(?)) - 24), 96)`
+  if (!long.length) {
+    const anchor = short.reduce((best, term) =>
+      utf8.encode(term).length > utf8.encode(best).length ? term : best,
+    )
+    binds.unshift(anchor)
+  }
+  const sql = `SELECT issues.date, issues.title, ${snippet} AS snippet
+    FROM issues_fts JOIN issues ON issues.date = issues_fts.date
+    WHERE ${where.join(' AND ')}
+    ORDER BY ${long.length ? 'issues_fts.rank' : 'issues.date DESC'} LIMIT ${newsKeywordLimit}`
+  return { sql, binds }
 }

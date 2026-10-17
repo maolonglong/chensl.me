@@ -239,12 +239,21 @@ export async function syncArticles(api, articles, { prune = false } = {}) {
 // Writes the item vectors of AI News issues, as the Worker does on each news write. For a
 // backfill of issues that were published before search existed.
 export async function indexIssues(api, issues) {
+  if (!issues.length) return { issues: 0, neurons: api.neurons }
+  const texts = issues.flatMap((issue) => issue.items.map(newsItemEmbeddingText))
+  const embeddings = await api.embedDocuments(texts)
+  const upserts = []
+  const stale = []
+  let offset = 0
   for (const issue of issues) {
-    const embeddings = await api.embedDocuments(issue.items.map(newsItemEmbeddingText))
-    const { upserts, stale } = newsVectors(issue, embeddings)
-    await api.upsert(upserts)
-    await api.deleteByIds(stale)
+    const slice = embeddings.slice(offset, offset + issue.items.length)
+    offset += issue.items.length
+    const vectors = newsVectors(issue, slice)
+    upserts.push(...vectors.upserts)
+    stale.push(...vectors.stale)
   }
+  if (upserts.length) await api.upsert(upserts)
+  if (stale.length) await api.deleteByIds(stale)
   return { issues: issues.length, neurons: api.neurons }
 }
 

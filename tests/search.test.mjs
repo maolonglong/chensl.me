@@ -5,6 +5,7 @@ import {
   evaluateWithRetry,
   evaluationBudgetMs,
   evaluationRetryDelays,
+  indexIssues,
   searchIndexApi,
   syncArticles,
 } from '../scripts/search-index.mjs'
@@ -15,6 +16,7 @@ import {
   chunkMaxChars,
   chunkOverlapChars,
   clipSnippet,
+  newsKeywordQuery,
   newsVectors,
   rankMatches,
   semanticMaxGap,
@@ -101,6 +103,15 @@ test('a single paragraph over chunkMaxChars splits with one overlap per boundary
   const overlap = firstBody.slice(-chunkOverlapChars)
   assert.ok(secondBody.startsWith(overlap))
   assert.ok(!secondBody.slice(chunkOverlapChars).startsWith(overlap))
+
+  // Astral characters at the split and overlap boundaries must never split into lone surrogates.
+  const astralSplit = `${'a'.repeat(chunkMaxChars - 1)}𠀀${'b'.repeat(200)}`
+  const astralTail = `${'a'.repeat(700)}𠀀${'b'.repeat(chunkOverlapChars - 1)}\n${'c'.repeat(200)}`
+  for (const text of [astralSplit, astralTail]) {
+    for (const chunk of articleChunks({ title: 'T', sections: [{ heading: 'S', text }] })) {
+      assert.equal(chunk.text.isWellFormed(), true, `chunk contains lone surrogate: ${chunk.text}`)
+    }
+  }
 })
 
 const blog = (id, score, chunk = 0) => ({
@@ -184,6 +195,27 @@ test('news vectors cover each item and list the IDs a longer version left behind
   )
   assert.equal(stale[0], 'news:2026-10-16:2')
   assert.equal(stale.at(-1), 'news:2026-10-16:29')
+  assert.deepEqual(newsKeywordQuery('AI 芯片').binds, ['芯片', '%AI%', '%芯片%'])
+  assert.deepEqual(newsKeywordQuery('芯片 AI').binds, ['芯片', '%芯片%', '%AI%'])
+})
+
+test('indexIssues batches embeddings, upserts, and stale deletes across issues', async () => {
+  const api = fakeApi()
+  const issues = ['2026-10-16', '2026-10-15'].map((date) => ({
+    date,
+    title: `Issue ${date}`,
+    summary: 'S',
+    items: [{ tag: 'A', title: 't0', summary: 's0', url: 'https://a' }],
+  }))
+  const result = await indexIssues(api, issues)
+  assert.equal(result.issues, 2)
+  assert.deepEqual(
+    api.calls.operations.map(([kind, ids]) => [kind, ids.length]),
+    [
+      ['upsert', 2],
+      ['delete', 58],
+    ],
+  )
 })
 
 test('short queries put keyword hits first; longer ones fuse by rank', () => {

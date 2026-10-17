@@ -21,12 +21,12 @@ if (!values.index || positionals.length !== 1)
 
 const output = JSON.parse(await readFile(positionals[0], 'utf8'))
 const rows = output.flatMap((statement) => statement.results ?? [])
-const issues = rows.map(({ date, title, summary, items_json }) => ({
-  date,
-  title,
-  summary,
-  items: JSON.parse(items_json),
-}))
+const issues = rows.map(({ date, title, summary, items_json }) => {
+  const items = JSON.parse(items_json)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !title || !Array.isArray(items) || !items.length)
+    throw new Error(`Invalid news issue row for ${date ?? 'unknown date'}`)
+  return { date, title, summary, items }
+})
 const { accountId, request } = cloudflareFromEnv()
 const api = searchIndexApi(request, accountId, values.index)
 const result = await indexIssues(api, issues)

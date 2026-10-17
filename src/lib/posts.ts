@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content'
+import { isPublishedPost } from './post-date'
 
 export const creationLabels = {
   handmade: '手作',
@@ -11,9 +12,8 @@ export const escapeMarkdownText = (value: string) =>
 
 export async function publishedPosts() {
   const now = Date.now()
-  const posts = await getCollection(
-    'blog',
-    ({ data }) => import.meta.env.DEV || (!data.draft && data.pubDate.valueOf() <= now),
+  const posts = await getCollection('blog', ({ data }) =>
+    isPublishedPost(data, now, import.meta.env.DEV),
   )
   // The glob loader only logs a render error, such as invalid TeX, and keeps the entry without
   // `rendered`. Publishing it would ship an empty article, so stop instead.
