@@ -340,6 +340,7 @@ test('the evaluation reports top-3 recall and false positives of gated queries w
 test('the index client counts its writes and waits for the last mutation', async () => {
   let mutation = 0
   let processed = 0
+  let waits = 0
   const request = async ({ path }) => {
     if (path.endsWith('/info')) {
       processed = Math.min(processed + 1, mutation)
@@ -348,7 +349,8 @@ test('the index client counts its writes and waits for the last mutation', async
     mutation += 1
     return { success: true, result: { mutationId: `m${mutation}` } }
   }
-  const api = searchIndexApi(request, 'account', 'index')
+  // The index catches up on the second poll; the injected sleep keeps the test instant.
+  const api = searchIndexApi(request, 'account', 'index', { sleep: async () => waits++ })
   assert.deepEqual(api.writes, { upserted: 0, deleted: 0, lastMutation: undefined })
   await api.upsert([
     { id: 'a', values: [1] },
@@ -358,6 +360,7 @@ test('the index client counts its writes and waits for the last mutation', async
   await api.waitForWrites(1000)
   assert.deepEqual(api.writes, { upserted: 2, deleted: 1, lastMutation: 'm2' })
   assert.equal(processed, 2)
+  assert.equal(waits, 1, 'waitForWrites yields between polls')
 })
 
 // A clock that only moves when the code under test sleeps, so the retry schedule is exact.
@@ -425,7 +428,8 @@ test('a passing evaluation runs once and does not wait', async () => {
   assert.deepEqual(clock.waits, [])
 })
 
-test('the default retry schedule stays within about five minutes', () => {
-  assert.equal(evaluationBudgetMs, 300_000)
+test('the default retry schedule stays within the five-minute job budget', () => {
+  // The search-index job allows 15 minutes; the evaluation gets five of them.
+  assert.ok(evaluationBudgetMs <= 5 * 60_000, `${evaluationBudgetMs} ms exceeds five minutes`)
   assert.ok(evaluationRetryDelays.every((delay, index, all) => !index || delay > all[index - 1]))
 })

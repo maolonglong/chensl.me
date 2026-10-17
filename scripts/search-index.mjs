@@ -39,7 +39,12 @@ const batches = (items, size) =>
     items.slice(index * size, (index + 1) * size),
   )
 
-export function searchIndexApi(request, accountId, indexName) {
+export function searchIndexApi(
+  request,
+  accountId,
+  indexName,
+  { sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {},
+) {
   const account = `/accounts/${accountId}`
   const index = `${account}/vectorize/v2/indexes/${indexName}`
   let neurons = 0
@@ -66,7 +71,7 @@ export function searchIndexApi(request, accountId, indexName) {
         if (info.processedUpToMutation === lastMutation) return
         if (Date.now() > deadline)
           throw new Error(`Vectorize has not applied mutation ${lastMutation}`)
-        await new Promise((resolve) => setTimeout(resolve, 3000))
+        await sleep(3000)
       }
     },
     async embedDocuments(texts) {

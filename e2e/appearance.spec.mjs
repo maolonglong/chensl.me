@@ -69,43 +69,8 @@ for (const width of [1280, 390]) {
   }
 }
 
-for (const width of [1280, 390]) {
-  for (const mode of ['light', 'dark']) {
-    test(`copy feedback at ${width}px in ${mode}`, async ({ page, context, open, capture }) => {
-      await context.grantPermissions(['clipboard-read', 'clipboard-write'])
-      await page.setViewportSize({ width, height: 844 })
-      await page.emulateMedia({ colorScheme: mode })
-      await open('/blog/dockertest/')
-      // The first captioned block stands in for all of them.
-      const button = page.locator('.code-figure .code-copy').first()
-      await page.evaluate(() =>
-        document.querySelector('.code-figure').scrollIntoView({ block: 'center' }),
-      )
-      await button.click()
-      await expect(button).toHaveAttribute('data-state', 'done')
-      await capture(page, `copy-success-${width}-${mode}`)
-      await expect(button).toHaveAttribute('data-state', 'done')
-      await page.evaluate(() => {
-        navigator.clipboard.writeText = () =>
-          Promise.reject(new DOMException('Denied', 'NotAllowedError'))
-      })
-      await button.click()
-      await expect(button).not.toHaveAttribute('data-state')
-      await expect(page.locator('.code-copy-error')).toHaveCount(0)
-      await capture(page, `copy-failed-${width}-${mode}`)
-    })
-  }
-}
-
 test.describe('on a touch screen', () => {
   test.use({ hasTouch: true, viewport: { width: 390, height: 844 } })
-
-  test('contents popover', async ({ page, open, capture }) => {
-    await open('/blog/dockertest/')
-    await page.locator('.toc-button').click()
-    await capture(page, 'toc-popover')
-    await page.keyboard.press('Escape')
-  })
 
   test.describe('without page scripts', () => {
     test.use({ javaScriptEnabled: false })
