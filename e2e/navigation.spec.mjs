@@ -62,34 +62,50 @@ test('the search icon is a named link that marks the search page as current', as
   }
 })
 
-for (const width of [320, 390, 1280]) {
-  test(`the search icon and the theme toggle each own a 44px target at ${width}px`, async ({
+// The header keeps its text spacing (12 px on phones, 20 px on desktop). Each icon's target is
+// 44 px tall and reaches halfway into the gap beside it: 44 px wide on desktop, 36 px on phones.
+for (const [width, gap] of [
+  [320, 12],
+  [390, 12],
+  [1280, 20],
+]) {
+  test(`the search icon and the theme toggle own separate 44px-tall targets at ${width}px`, async ({
     open,
     page,
   }) => {
     await page.setViewportSize({ width, height: 844 })
     await open('/')
-    const owners = await page.evaluate(() => {
+    const result = await page.evaluate(() => {
+      const nav = document.querySelector('header nav')
       const controls = {
-        search: document.querySelector('header nav a[href="/search/"]'),
+        search: nav.querySelector('a[href="/search/"]'),
         theme: document.querySelector('[data-theme-toggle]'),
       }
-      // Sample a 44x44 square centred on each icon, edges included; every point must hit that control.
-      return Object.fromEntries(
+      const search = controls.search.getBoundingClientRect()
+      const theme = controls.theme.getBoundingClientRect()
+      const iconGap = theme.left - search.right
+      const halfWidth = Math.min(22, search.width / 2 + iconGap / 2)
+      // Sample each target, edges included (one pixel in); every point must hit that control,
+      // so neither target overlaps the other or lets a tap land on its neighbor.
+      const misses = Object.fromEntries(
         Object.entries(controls).map(([name, control]) => {
           const box = control.getBoundingClientRect()
           const x = box.left + box.width / 2
           const y = box.top + box.height / 2
-          const misses = []
-          for (const dx of [-21, -11, 0, 11, 21])
+          const missed = []
+          for (const dx of [-(halfWidth - 1), -halfWidth / 2, 0, halfWidth / 2, halfWidth - 1])
             for (const dy of [-21, -11, 0, 11, 21]) {
               const hit = document.elementFromPoint(x + dx, y + dy)?.closest('a, button')
-              if (hit !== control) misses.push([dx, dy])
+              if (hit !== control) missed.push([dx, dy])
             }
-          return [name, misses]
+          return [name, missed]
         }),
       )
+      return { navGap: getComputedStyle(nav).columnGap, iconGap, halfWidth, misses }
     })
-    expect(owners).toEqual({ search: [], theme: [] })
+    expect(result.navGap).toBe(`${gap}px`)
+    expect(result.iconGap).toBeCloseTo(gap, 0)
+    expect(result.halfWidth).toBeCloseTo(Math.min(22, 12 + gap / 2), 0)
+    expect(result.misses).toEqual({ search: [], theme: [] })
   })
 }

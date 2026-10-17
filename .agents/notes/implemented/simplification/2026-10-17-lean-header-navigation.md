@@ -26,7 +26,7 @@ The owner asked for this layout as a first version to try.
 
 ## Consequences
 
-No header item is current on the home page. The two icons sit 20 px apart at every width, so their 44 px targets do not overlap; the phone header lost its narrower 12 px gap. A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
+No header item is current on the home page. The header first set the icons 20 px apart at every width so their 44 px targets would not overlap; the owner found that too loose on phones, so the gap went back to 12 px there and each icon's target now reaches only halfway into the gap (44 px tall, 36 px wide on phones). A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
 
 ## Reopen when
 
