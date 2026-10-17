@@ -37,6 +37,11 @@ await api.waitForWrites()
 console.log(
   `${values.index}: ${articles.length} articles, ${result.changed.length} embedded (${result.changed.join(', ') || 'none'}), ${result.pruned.length} vectors pruned, ${result.neurons.toFixed(2)} neurons.`,
 )
+// Lets a reader of the CI log check the write against the index (`wrangler vectorize info`).
+const { upserted, deleted, lastMutation } = api.writes
+console.log(
+  `${values.index}: upserted ${upserted} vectors, deleted ${deleted}${lastMutation ? `, applied up to mutation ${lastMutation}` : ', no write'}.`,
+)
 
 const next = `${JSON.stringify(result.data, null, 2)}\n`
 if (values.write) {

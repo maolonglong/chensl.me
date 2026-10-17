@@ -44,6 +44,8 @@ export function searchIndexApi(request, accountId, indexName) {
   const index = `${account}/vectorize/v2/indexes/${indexName}`
   let neurons = 0
   let lastMutation
+  // Counts of what this client wrote, for the CI log.
+  const writes = { upserted: 0, deleted: 0 }
   const mutate = async (options) => {
     const result = await call(request, options)
     lastMutation = result?.mutationId ?? lastMutation
@@ -51,6 +53,9 @@ export function searchIndexApi(request, accountId, indexName) {
   return {
     get neurons() {
       return neurons
+    },
+    get writes() {
+      return { ...writes, lastMutation }
     },
     // Vectorize applies writes asynchronously. Waits until the index has processed the last
     // write of this client, so a query right after a sync sees it.
@@ -101,6 +106,7 @@ export function searchIndexApi(request, accountId, indexName) {
     },
     async upsert(vectors) {
       for (const batch of batches(vectors, upsertBatch)) {
+        writes.upserted += batch.length
         await mutate({
           method: 'POST',
           path: `${index}/upsert`,
@@ -112,6 +118,7 @@ export function searchIndexApi(request, accountId, indexName) {
     },
     async deleteByIds(ids) {
       for (const batch of batches(ids, upsertBatch)) {
+        writes.deleted += batch.length
         await mutate({
           method: 'POST',
           path: `${index}/delete_by_ids`,
