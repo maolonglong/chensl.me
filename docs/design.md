@@ -44,7 +44,7 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - **Search** is one input and a result list: title, type and date, excerpt. No filters or suggestions.
 - **Related articles** are one line of plain links after the text, in muted small type.
 - **Icons** are inline SVG, not font glyphs or an icon library.
-- **Header icons.** Search and theme share one style: an icon in the heading color, because each is a tool and not a section link. The search icon shows the current page with the underline of a current text link, drawn under the glyph. Each icon has a 44 px target that does not grow the header row (`e2e/navigation.spec.mjs`).
+- **Header icons.** Search and theme share one style: an icon in the heading color, because each is a tool and not a section link. The search icon shows the current page with the underline of a current text link, drawn under the glyph. Header items keep their text spacing (20 px, 12 px on phones); a wider gap was rejected. Each icon's target is 44 px tall and reaches halfway into the gap, so it is 36 px wide on phones and never overlaps its neighbor (`e2e/navigation.spec.mjs`).
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
 - **Links** in article text and the footer are underlined. Archive links show a visited color.
 - **Share cards** are 1200×630 PNGs (`scripts/check-site.mjs`). They use the light theme's page, border, and text tokens, with no gradient or shadow. `~chensl` sits at the top left, the title in the middle, and the date or section label with `chensl.me` at the bottom. A title longer than two lines ends with an ellipsis (`tests/og.test.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md).

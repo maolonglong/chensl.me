@@ -86,10 +86,11 @@
   :global(:root[data-theme-ready]) .theme-toggle {
     visibility: visible;
   }
+  /* 44 px tall; as wide as the header gap allows without overlapping the search icon's target. */
   .theme-toggle::before {
     content: '';
     position: absolute;
-    inset: -10px;
+    inset: -10px calc(var(--nav-gap, 20px) / -2);
   }
   .theme-toggle [data-theme-icon] {
     display: none;
