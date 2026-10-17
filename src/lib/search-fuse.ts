@@ -14,3 +14,21 @@ export function fuse<T extends { url: string }>(lists: T[][], k = rrfK): T[] {
   }
   return [...scored.values()].sort((a, b) => b.score - a.score).map(({ hit }) => hit)
 }
+
+// Short queries are usually names, such as 智谱 or METR, which keyword search matches exactly and
+// semantic search matches loosely. Up to this many characters, when keyword search found anything,
+// the keyword hits come first and semantic hits only add documents after them.
+export const shortQueryChars = 4
+
+export function merge<T extends { url: string }>(
+  query: string,
+  keyword: T[][],
+  semantic: T[],
+  k = rrfK,
+): T[] {
+  const keywordHits = fuse(keyword, k)
+  if ([...query].length > shortQueryChars || !keywordHits.length)
+    return fuse([...keyword, semantic], k)
+  const seen = new Set(keywordHits.map((hit) => hit.url))
+  return [...keywordHits, ...semantic.filter((hit) => !seen.has(hit.url))]
+}

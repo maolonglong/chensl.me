@@ -106,6 +106,32 @@ test.describe('search page', () => {
     await expect(results(page)).toHaveCount(2)
   })
 
+  test('a short query lists keyword hits before semantic hits', async ({ open, page }) => {
+    const issue = {
+      type: 'news',
+      url: '/news/2026-10-16/',
+      title: '日报',
+      date: '2026-10-16',
+      snippet: '智谱发布',
+    }
+    const article = {
+      type: 'blog',
+      url: '/blog/1brc-in-zig/',
+      title: '语义结果',
+      date: '2024-02-22',
+      snippet: '',
+    }
+    await page.route('**/api/search/**', (route) =>
+      route.fulfill({
+        json: { query: '智谱', semantic: [article, issue], news: [issue], semanticEnabled: true },
+      }),
+    )
+    await open('/search/?q=智谱')
+    const links = results(page).getByRole('link')
+    await expect(links.nth(0)).toHaveAttribute('href', '/news/2026-10-16/')
+    await expect(links.nth(1)).toHaveAttribute('href', '/blog/1brc-in-zig/')
+  })
+
   test('keeps article results when the search API fails', async ({ open, page }) => {
     await page.route('**/api/search/**', (route) => route.fulfill({ status: 500, body: '' }))
     await open('/search/?q=无锁队列')

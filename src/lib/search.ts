@@ -1,8 +1,19 @@
-import { embeddingModel, newsEmbeddingText } from './search-text.mjs'
-import { newsUrl, type NewsIssue, type NewsItem } from './news'
+import {
+  allNewsVectorIds,
+  clipSnippet,
+  embeddingModel,
+  newsItemEmbeddingText,
+  newsVectors,
+  queryInstruction,
+  rankMatches,
+  searchNamespace,
+  semanticTopK,
+} from './search-text.mjs'
+import { newsUrl, type NewsIssue } from './news'
 
 // Server side of /search/: semantic hits from Vectorize and AI News keyword hits from D1 FTS5.
 // The browser merges both with its Pagefind article hits; see src/pages/search.astro.
+// src/worker.ts routes GET /api/search/ here before the Astro handler.
 
 export interface SearchHit {
   type: 'blog' | 'news'
@@ -21,40 +32,21 @@ export function normalizeQuery(raw: string | null) {
   return query && [...query].length <= maxQueryLength ? query : null
 }
 
-// Calibrated against the deployed model on 2026-10-17
-// (.agents/notes/implemented/feature/2026-10-17-hybrid-search.md): the best match of every
-// off-topic query scored below 0.27, and every on-topic best match at least 0.33. On the preview,
-// short names such as 智谱 matched the right issue and unrelated articles 0.06 to 0.10 below it;
-// articles on one topic, such as the two year reviews, stayed within 0.03 of each other.
-export const semanticMinScore = 0.3
-export const semanticMaxGap = 0.05
-const semanticTopK = 10
-
-// Qwen3 embeddings take a task instruction on the query side only. A Chinese instruction that
-// names both kinds of document ranked the right article first for 智能体, which the default missed.
-export const queryInstruction = '给定一个搜索查询，检索能回答该查询的技术博客文章或 AI 新闻'
-
 type SearchEnv = Pick<Cloudflare.Env, 'AI' | 'SEARCH_INDEX' | 'NEWS'>
 
 export const semanticEnabled = (env: SearchEnv) => Boolean(env.AI && env.SEARCH_INDEX)
 
-export const vectorId = (type: SearchHit['type'], id: string) => `${type}:${id}`
-
 interface BlogMetadata {
-  type: 'blog'
   url: string
   title: string
   date: string
   description: string
 }
 
-const clipSnippet = (text: string) => (text.length > 120 ? `${text.slice(0, 119)}…` : text)
-
-export function keepConfident<T extends { score: number }>(matches: T[]) {
-  const best = Math.max(...matches.map((match) => match.score))
-  return matches.filter(
-    (match) => match.score >= semanticMinScore && match.score >= best - semanticMaxGap,
-  )
+interface NewsMetadata {
+  date: string
+  title: string
+  snippet: string
 }
 
 export async function semanticSearch(env: SearchEnv, query: string): Promise<SearchHit[]> {
@@ -68,37 +60,30 @@ export async function semanticSearch(env: SearchEnv, query: string): Promise<Sea
   const { matches } = await env.SEARCH_INDEX.query(vector, {
     topK: semanticTopK,
     returnMetadata: 'all',
+    namespace: searchNamespace,
   })
-  const confident = keepConfident(matches)
-  // News vectors carry only the date: titles come from D1, which also drops retracted issues.
-  const newsDates = confident
-    .filter((match) => match.id.startsWith('news:'))
-    .map((match) => match.id.slice('news:'.length))
-  const visibleNews = new Map<string, { title: string; summary: string }>()
+  const ranked = rankMatches(matches)
+  // A retraction deletes the issue's vectors; D1 still decides, in case that delete failed.
+  const newsDates = ranked
+    .filter((match) => match.type === 'news')
+    .map((match) => (match.metadata as unknown as NewsMetadata).date)
+  const visible = new Set<string>()
   if (newsDates.length) {
     const { results } = await env.NEWS.prepare(
-      `SELECT date, title, summary FROM issues WHERE hidden_at IS NULL AND date IN (${newsDates.map(() => '?').join(', ')})`,
+      `SELECT date FROM issues WHERE hidden_at IS NULL AND date IN (${newsDates.map(() => '?').join(', ')})`,
     )
       .bind(...newsDates)
-      .all<{ date: string; title: string; summary: string }>()
-    for (const row of results) visibleNews.set(row.date, row)
+      .all<{ date: string }>()
+    for (const row of results) visible.add(row.date)
   }
   const hits: SearchHit[] = []
-  for (const match of confident) {
+  for (const match of ranked) {
     const score = Math.round(match.score * 1000) / 1000
-    if (match.id.startsWith('news:')) {
-      const date = match.id.slice('news:'.length)
-      const issue = visibleNews.get(date)
-      if (issue)
-        hits.push({
-          type: 'news',
-          url: newsUrl(date),
-          title: issue.title,
-          date,
-          snippet: clipSnippet(issue.summary),
-          score,
-        })
-    } else if (match.metadata?.type === 'blog') {
+    if (match.type === 'news') {
+      const { date, title, snippet } = match.metadata as unknown as NewsMetadata
+      if (visible.has(date))
+        hits.push({ type: 'news', url: newsUrl(date), title, date, snippet, score })
+    } else {
       const { url, title, date, description } = match.metadata as unknown as BlogMetadata
       hits.push({ type: 'blog', url, title, date, snippet: clipSnippet(description), score })
     }
@@ -110,7 +95,8 @@ const newsKeywordLimit = 10
 const maxTerms = 5
 
 // FTS5 trigram needs three characters; a shorter term, such as a two-character Chinese word,
-// becomes a LIKE condition on the same rows. Quoting makes every term a literal string.
+// becomes a LIKE condition on the same rows. Quoting makes every term a literal string. D1 cuts
+// the snippet around the first match, so the Worker never parses items_json.
 export function newsKeywordQuery(query: string) {
   const terms = [...new Set(query.split(' '))].slice(0, maxTerms)
   const long = terms.filter((term) => [...term].length >= 3)
@@ -125,66 +111,67 @@ export function newsKeywordQuery(query: string) {
     where.push("issues_fts.body LIKE ? ESCAPE '\\'")
     binds.push(`%${term.replace(/[\\%_]/g, '\\$&')}%`)
   }
-  const sql = `SELECT issues.date, issues.title, issues.summary, issues.items_json
+  const snippet = long.length
+    ? "snippet(issues_fts, 1, '', '', '…', 48)"
+    : `substr(issues_fts.body, max(1, instr(lower(issues_fts.body), lower(?)) - 24), 96)`
+  if (!long.length) binds.unshift(short[0])
+  const sql = `SELECT issues.date, issues.title, ${snippet} AS snippet
     FROM issues_fts JOIN issues ON issues.date = issues_fts.date
     WHERE ${where.join(' AND ')}
     ORDER BY ${long.length ? 'issues_fts.rank' : 'issues.date DESC'} LIMIT ${newsKeywordLimit}`
-  return { sql, binds, terms }
-}
-
-// The snippet names the item that contains the most terms, so the reader sees why the issue matched.
-function matchingItem(itemsJson: string, terms: string[]) {
-  let items: NewsItem[]
-  try {
-    items = JSON.parse(itemsJson)
-  } catch {
-    return undefined
-  }
-  const lowered = terms.map((term) => term.toLowerCase())
-  let best: NewsItem | undefined
-  let bestCount = 0
-  for (const item of items) {
-    const text = `${item.tag} ${item.title} ${item.summary}`.toLowerCase()
-    const count = lowered.filter((term) => text.includes(term)).length
-    if (count > bestCount) [best, bestCount] = [item, count]
-  }
-  return best
+  return { sql, binds }
 }
 
 export async function newsKeywordSearch(db: D1Database, query: string): Promise<SearchHit[]> {
-  const { sql, binds, terms } = newsKeywordQuery(query)
+  const { sql, binds } = newsKeywordQuery(query)
   const { results } = await db
     .prepare(sql)
     .bind(...binds)
-    .all<{ date: string; title: string; summary: string; items_json: string }>()
-  return results.map((row) => {
-    const item = matchingItem(row.items_json, terms)
-    return {
-      type: 'news',
-      url: newsUrl(row.date),
-      title: row.title,
-      date: row.date,
-      snippet: clipSnippet(item ? `${item.title}：${item.summary}` : row.summary),
-    }
-  })
+    .all<{ date: string; title: string; snippet: string }>()
+  return results.map((row) => ({
+    type: 'news',
+    url: newsUrl(row.date),
+    title: row.title,
+    date: row.date,
+    snippet: clipSnippet(row.snippet.replace(/\s*\n\s*/g, ' · ').trim()),
+  }))
 }
 
-export type IndexResult = 'indexed' | 'disabled' | 'failed'
+export type IndexResult = 'indexed' | 'removed' | 'disabled' | 'failed'
 
-// Called after each accepted news write. A failure is logged and reported to the bot but never
-// fails the write: the issue is already published, and the next write of that date retries.
+// Every news write and retraction changes what /api/search returns, keyword hits included, so
+// the news endpoints drop the cached answers. Workers Cache
+// is absent in Previews and local Wrangler; a failed purge only delays new results by the TTL.
+// Called after each accepted news write, and when a retracted issue is shown again. Each item
+// gets its own vector; the vectors of items that a longer earlier version had are deleted. A
+// failure is logged and reported to the bot but never fails the write: the issue is already
+// published, and the next write of that date retries.
 export async function indexIssue(env: SearchEnv, issue: NewsIssue): Promise<IndexResult> {
   if (!env.AI || !env.SEARCH_INDEX) return 'disabled'
   try {
-    const { data } = await env.AI.run(embeddingModel, { documents: newsEmbeddingText(issue) })
-    const values = data?.[0]
-    if (!values) throw new Error('Workers AI returned no document embedding')
-    await env.SEARCH_INDEX.upsert([
-      { id: vectorId('news', issue.date), values, metadata: { type: 'news', date: issue.date } },
-    ])
+    const { data } = await env.AI.run(embeddingModel, {
+      documents: issue.items.map(newsItemEmbeddingText),
+    })
+    if (data?.length !== issue.items.length)
+      throw new Error('Workers AI returned too few embeddings')
+    const { upserts, stale } = newsVectors(issue, data)
+    await env.SEARCH_INDEX.upsert(upserts)
+    await env.SEARCH_INDEX.deleteByIds(stale)
     return 'indexed'
   } catch (error) {
     console.error('news search indexing failed', issue.date, error)
+    return 'failed'
+  }
+}
+
+// Called when an issue is retracted: its items leave semantic search at once.
+export async function removeIssue(env: SearchEnv, date: string): Promise<IndexResult> {
+  if (!env.SEARCH_INDEX) return 'disabled'
+  try {
+    await env.SEARCH_INDEX.deleteByIds(allNewsVectorIds(date))
+    return 'removed'
+  } catch (error) {
+    console.error('news search removal failed', date, error)
     return 'failed'
   }
 }
