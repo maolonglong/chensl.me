@@ -65,6 +65,57 @@ test.describe('search page', () => {
     await expect(page).toHaveURL(/\?q=%E6%97%A0%E9%94%81%E9%98%9F%E5%88%97$/)
   })
 
+  test('does not search while an input method is composing, and searches once after', async ({
+    open,
+    page,
+  }) => {
+    // A stand-in for the Pagefind module records every search, so a call before the
+    // composition ends shows up even though it would find nothing.
+    await page.route('**/pagefind/pagefind.js', (route) =>
+      route.fulfill({
+        contentType: 'text/javascript',
+        body: 'export async function search(term) { (globalThis.pagefindTerms ??= []).push(term); return { results: [] } }',
+      }),
+    )
+    const apiQueries = []
+    await page.route('**/api/search/**', (route) => {
+      apiQueries.push(new URL(route.request().url()).searchParams.get('q'))
+      return route.fulfill({
+        json: { query: '', semantic: [], news: [], semanticEnabled: true },
+      })
+    })
+    await open('/search/')
+    const box = page.getByRole('searchbox')
+    await box.focus()
+    // Pinyin keystrokes, each followed by a pause longer than the 300 ms debounce, as a slow
+    // typist would leave them. The browser marks these input events with isComposing.
+    await box.evaluate(async (input) => {
+      const pause = () => new Promise((resolve) => setTimeout(resolve, 450))
+      input.dispatchEvent(new CompositionEvent('compositionstart', { data: '' }))
+      for (const text of ['n', 'ni', 'ni h', 'ni ha', 'ni hao']) {
+        input.value = text
+        input.dispatchEvent(
+          new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }),
+        )
+        await pause()
+      }
+      input.value = '你好'
+      input.dispatchEvent(
+        new InputEvent('input', { isComposing: true, inputType: 'insertCompositionText' }),
+      )
+      input.dispatchEvent(new CompositionEvent('compositionend', { data: '你好' }))
+    })
+    await expect(page.getByRole('status')).toHaveText('没有找到相关内容')
+    // Give a second, late search the time it would need to start.
+    await page.waitForTimeout(600)
+    // Pagefind runs the plain and the phrase search once for the final text.
+    expect({
+      api: apiQueries,
+      pagefind: await page.evaluate(() => globalThis.pagefindTerms ?? []),
+    }).toEqual({ api: ['你好'], pagefind: ['你好', '"你好"'] })
+    await expect(page).toHaveURL(/\?q=%E4%BD%A0%E5%A5%BD$/)
+  })
+
   test('a Chinese phrase does not match articles that only contain its characters apart', async ({
     open,
     page,
