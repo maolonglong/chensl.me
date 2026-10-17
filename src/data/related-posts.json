@@ -1,0 +1,430 @@
+{
+  "model": "@cf/qwen/qwen3-embedding-0.6b",
+  "posts": {
+    "1brc-in-zig": {
+      "hash": "85f686abd78e3ff4ffa6ea97df961cc183dd1d8b819302012e00194ddd0a20e2",
+      "related": [
+        [
+          "bfjit-x86-64",
+          0.494
+        ],
+        [
+          "buddy",
+          0.452
+        ],
+        [
+          "2023-review",
+          0.448
+        ],
+        [
+          "semantic-view-sql-traps",
+          0.354
+        ],
+        [
+          "manual-memory-management",
+          0.349
+        ]
+      ]
+    },
+    "2023-review": {
+      "hash": "76e10b60721384f72883216e595b74e392c2dfdf1f8f17dafbb966fced1d4721",
+      "related": [
+        [
+          "2024-review",
+          0.585
+        ],
+        [
+          "functional-programming",
+          0.452
+        ],
+        [
+          "1brc-in-zig",
+          0.448
+        ],
+        [
+          "bfjit-x86-64",
+          0.42
+        ],
+        [
+          "buddy",
+          0.367
+        ]
+      ]
+    },
+    "2024-review": {
+      "hash": "9561fafe1d36688c9817e5097200a77ab0f090bf9ee96ef3c5a30cb3541b0870",
+      "related": [
+        [
+          "2023-review",
+          0.585
+        ],
+        [
+          "1brc-in-zig",
+          0.313
+        ],
+        [
+          "functional-programming",
+          0.302
+        ],
+        [
+          "semantic-view-sql-traps",
+          0.301
+        ],
+        [
+          "thin-agent-thick-harness",
+          0.293
+        ]
+      ]
+    },
+    "bfjit-x86-64": {
+      "hash": "f485d4f039a2b5c6c9aab27c1d30211aea784c022c5486d41e64edc56759e303",
+      "related": [
+        [
+          "1brc-in-zig",
+          0.494
+        ],
+        [
+          "buddy",
+          0.448
+        ],
+        [
+          "2023-review",
+          0.42
+        ],
+        [
+          "manual-memory-management",
+          0.346
+        ],
+        [
+          "functional-programming",
+          0.321
+        ]
+      ]
+    },
+    "buddy": {
+      "hash": "531c166b684bdeefeb4d548d8f768d2807b1a5d34ba8a3e9eb7773494e290e6b",
+      "related": [
+        [
+          "1brc-in-zig",
+          0.452
+        ],
+        [
+          "manual-memory-management",
+          0.449
+        ],
+        [
+          "bfjit-x86-64",
+          0.448
+        ],
+        [
+          "bytebufferpool",
+          0.369
+        ],
+        [
+          "2023-review",
+          0.367
+        ]
+      ]
+    },
+    "bytebufferpool": {
+      "hash": "5305168532758572073dedbdc181c10017f437d2e3326288f72d7563b47840ca",
+      "related": [
+        [
+          "manual-memory-management",
+          0.381
+        ],
+        [
+          "buddy",
+          0.369
+        ],
+        [
+          "1brc-in-zig",
+          0.345
+        ],
+        [
+          "gobreaker",
+          0.341
+        ],
+        [
+          "bfjit-x86-64",
+          0.308
+        ]
+      ]
+    },
+    "dockertest": {
+      "hash": "87a7662d198b64c6ea46775347457eb2b9e46a0c404dfdc55d27bf4cf3e6047c",
+      "related": [
+        [
+          "overlayfs",
+          0.377
+        ],
+        [
+          "manual-memory-management",
+          0.344
+        ],
+        [
+          "semantic-view-sql-traps",
+          0.324
+        ],
+        [
+          "harness-engineering",
+          0.295
+        ],
+        [
+          "2023-review",
+          0.273
+        ]
+      ]
+    },
+    "functional-programming": {
+      "hash": "103eda1809eda1c74b45ea2c85ac69bb3168c4f828135842db64460973de107d",
+      "related": [
+        [
+          "2023-review",
+          0.452
+        ],
+        [
+          "1brc-in-zig",
+          0.344
+        ],
+        [
+          "bfjit-x86-64",
+          0.321
+        ],
+        [
+          "semantic-view-sql-traps",
+          0.316
+        ],
+        [
+          "gat",
+          0.306
+        ]
+      ]
+    },
+    "gat": {
+      "hash": "e2c1da941256a079d9ba37a37c0dd4780da17d1ae6b0d5240ba9a2406f6f1dce",
+      "related": [
+        [
+          "functional-programming",
+          0.306
+        ],
+        [
+          "manual-memory-management",
+          0.303
+        ],
+        [
+          "harness-engineering",
+          0.28
+        ],
+        [
+          "semantic-view-sql-traps",
+          0.249
+        ],
+        [
+          "buddy",
+          0.243
+        ]
+      ]
+    },
+    "gobreaker": {
+      "hash": "e50de14f90cfe0a8f20d60179e702a78bf940088f0c5ade5ce2f126cc67dbffc",
+      "related": [
+        [
+          "semantic-view-sql-traps",
+          0.342
+        ],
+        [
+          "bytebufferpool",
+          0.341
+        ],
+        [
+          "manual-memory-management",
+          0.339
+        ],
+        [
+          "thin-agent-thick-harness",
+          0.332
+        ],
+        [
+          "harness-engineering",
+          0.317
+        ]
+      ]
+    },
+    "harness-engineering": {
+      "hash": "07c939c7dc28462e6f42c87994352e3ac45f04569ef01a53cf11c6ba1ec90f56",
+      "related": [
+        [
+          "thin-agent-thick-harness",
+          0.604
+        ],
+        [
+          "semantic-view-sql-traps",
+          0.401
+        ],
+        [
+          "2023-review",
+          0.336
+        ],
+        [
+          "thinking-vs-research",
+          0.318
+        ],
+        [
+          "gobreaker",
+          0.317
+        ]
+      ]
+    },
+    "lock-free-queue": {
+      "hash": "9baeb1e4db21e1e44458bc19ebd446daeaf8f542fb10c6f29ae1ee6c3b4c9a3d",
+      "related": [
+        [
+          "1brc-in-zig",
+          0.335
+        ],
+        [
+          "buddy",
+          0.333
+        ],
+        [
+          "bytebufferpool",
+          0.308
+        ],
+        [
+          "bfjit-x86-64",
+          0.299
+        ],
+        [
+          "2023-review",
+          0.29
+        ]
+      ]
+    },
+    "manual-memory-management": {
+      "hash": "57da1f294e06e42a9c5e1664538a3fd0c87863ad1bb30031b12c8d12df94b27f",
+      "related": [
+        [
+          "buddy",
+          0.449
+        ],
+        [
+          "bytebufferpool",
+          0.381
+        ],
+        [
+          "1brc-in-zig",
+          0.349
+        ],
+        [
+          "bfjit-x86-64",
+          0.346
+        ],
+        [
+          "dockertest",
+          0.344
+        ]
+      ]
+    },
+    "overlayfs": {
+      "hash": "89cba4c80dccde64a4db471094cbf283d8e79bc0648631245eb70a0bf60222dd",
+      "related": [
+        [
+          "dockertest",
+          0.377
+        ],
+        [
+          "manual-memory-management",
+          0.268
+        ],
+        [
+          "buddy",
+          0.242
+        ],
+        [
+          "1brc-in-zig",
+          0.238
+        ],
+        [
+          "2024-review",
+          0.229
+        ]
+      ]
+    },
+    "semantic-view-sql-traps": {
+      "hash": "98d8b38c916ed9fc44744b7ed5bcf3268832ab58fe75cf1b8c077831f074e937",
+      "related": [
+        [
+          "thin-agent-thick-harness",
+          0.406
+        ],
+        [
+          "harness-engineering",
+          0.401
+        ],
+        [
+          "1brc-in-zig",
+          0.354
+        ],
+        [
+          "gobreaker",
+          0.342
+        ],
+        [
+          "dockertest",
+          0.324
+        ]
+      ]
+    },
+    "thin-agent-thick-harness": {
+      "hash": "b042e1b9518658022b7868e2890070d71b79080a9a2df5705edeeb44a6bed7f0",
+      "related": [
+        [
+          "harness-engineering",
+          0.604
+        ],
+        [
+          "semantic-view-sql-traps",
+          0.406
+        ],
+        [
+          "thinking-vs-research",
+          0.36
+        ],
+        [
+          "gobreaker",
+          0.332
+        ],
+        [
+          "1brc-in-zig",
+          0.305
+        ]
+      ]
+    },
+    "thinking-vs-research": {
+      "hash": "e45885dbf7ab8bb3300dc2648034b73eda45d087af49c948cc70a5a2c1cf2cf9",
+      "related": [
+        [
+          "thin-agent-thick-harness",
+          0.36
+        ],
+        [
+          "harness-engineering",
+          0.318
+        ],
+        [
+          "semantic-view-sql-traps",
+          0.317
+        ],
+        [
+          "2023-review",
+          0.259
+        ],
+        [
+          "1brc-in-zig",
+          0.246
+        ]
+      ]
+    }
+  }
+}

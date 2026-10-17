@@ -405,3 +405,41 @@ test('site checker rejects share-card renderer code in the Worker bundle', async
     result.stderr,
   )
 })
+
+test('site checker allows WebAssembly only on the search page', async () => {
+  const fixture = await checkerFixture()
+  const headers = await readFile(path.join(fixture, 'dist/_headers'), 'utf8')
+  const policy = headers.match(/script-src[^;]+/)[0]
+  const meta = `<meta http-equiv="content-security-policy" content="${policy} 'wasm-unsafe-eval'">`
+  await write(fixture, 'dist/about/index.html', meta)
+  // The search page inherits the global policy, which lacks the source.
+  await write(fixture, 'dist/search/index.html', '<main id="main"></main>')
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /about\/index\.html CSP script-src must not allow 'wasm-unsafe-eval'/)
+  assert.match(result.stderr, /search\/index\.html CSP script-src must allow 'wasm-unsafe-eval'/)
+})
+
+test('site checker requires every article in the search index and the embeddings', async () => {
+  const fixture = await checkerFixture()
+  await writeArticle(fixture, 'indexed', '<h1>Indexed</h1><div class="prose">Text.</div>')
+  await writeArticle(fixture, 'missing', '<h1>Missing</h1><div class="prose">Text.</div>')
+  await write(fixture, 'dist/search/index.html', '<main id="main"></main>')
+  await write(
+    fixture,
+    'dist/pagefind/pagefind-entry.json',
+    JSON.stringify({ languages: { zh: { page_count: 1 } } }),
+  )
+  await write(
+    fixture,
+    'src/data/related-posts.json',
+    JSON.stringify({ posts: { indexed: { hash: 'old', related: [] } } }),
+  )
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /Pagefind indexed 1 pages; the build has 2 articles/)
+  assert.match(result.stderr, /Article missing has no entry in src\/data\/related-posts\.json/)
+  assert.doesNotMatch(result.stderr, /Article indexed has no entry/)
+  // A changed article only warns: its old embedding still serves until the next run.
+  assert.match(result.stderr, /articles changed since their embedding \(indexed\)/)
+})

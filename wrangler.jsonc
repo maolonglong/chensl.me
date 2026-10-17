@@ -36,6 +36,11 @@
         "simple": { "limit": 120, "period": 60 },
       },
     ],
+    // Search: query embeddings and the AI News index write call Workers AI, and the vectors live
+    // in a Preview-only index. Production has neither binding yet, so /api/search answers with
+    // keyword results only there.
+    "ai": { "binding": "AI" },
+    "vectorize": [{ "binding": "SEARCH_INDEX", "index_name": "blog-search-preview" }],
   },
   "observability": {
     "enabled": true,
