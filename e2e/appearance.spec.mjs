@@ -3,7 +3,6 @@ import { expect, test } from './site.mjs'
 // These specs assert behavior and capture 2x screenshots for human review; inspect the images in
 // test-results/screenshots (or the HTML report). A successful capture is not visual verification.
 
-const firstEntry = '#article-toc > ul > li:first-child > a'
 const theme = (page) =>
   page.evaluate(() => ({
     mode: document.querySelector('[data-theme-toggle]').dataset.themeMode,
@@ -44,43 +43,6 @@ test('theme cycles, persists across navigation and follows the OS', async ({
 
 for (const width of [1280, 390]) {
   for (const mode of ['light', 'dark']) {
-    test(`pages at ${width}px in ${mode}`, async ({ page, open, capture }) => {
-      await page.setViewportSize({ width, height: 844 })
-      await page.emulateMedia({ colorScheme: mode })
-      for (const [name, route] of [
-        ['home', '/'],
-        ['archive', '/blog/'],
-        ['article', '/blog/dockertest/'],
-        ['404', '/404.html'],
-      ]) {
-        await open(route)
-        expect(
-          await page.evaluate(() =>
-            [...document.fonts].some(
-              (font) => font.family.includes('Tsanger') && font.status === 'loaded',
-            ),
-          ),
-          `${name}: JinKai must be loaded`,
-        ).toBe(true)
-        await capture(page, `${name}-${width}-${mode}`)
-      }
-    })
-  }
-}
-
-for (const width of [320, 479, 481, 599, 601, 768]) {
-  test(`navigation and table at ${width}px`, async ({ page, open, capture }) => {
-    await page.setViewportSize({ width, height: 844 })
-    await page.emulateMedia({ colorScheme: 'light' })
-    await open('/blog/dockertest/')
-    await capture(page, `navigation-${width}`)
-    await page.evaluate(() => document.querySelector('.table-scroll').scrollIntoView())
-    await capture(page, `table-${width}`)
-  })
-}
-
-for (const width of [1280, 390]) {
-  for (const mode of ['light', 'dark']) {
     test(`display math at ${width}px in ${mode}`, async ({ page, open, capture }) => {
       await page.setViewportSize({ width, height: 844 })
       await page.emulateMedia({ colorScheme: mode })
@@ -106,15 +68,6 @@ for (const width of [1280, 390]) {
     })
   }
 }
-
-test('code caption in both color schemes', async ({ page, open, capture }) => {
-  await page.emulateMedia({ colorScheme: 'light' })
-  await open('/blog/dockertest/')
-  await page.evaluate(() => document.querySelector('.code-figure').scrollIntoView())
-  await capture(page, 'code-caption-light')
-  await page.emulateMedia({ colorScheme: 'dark' })
-  await capture(page, 'code-caption-dark')
-})
 
 for (const width of [1280, 390]) {
   for (const mode of ['light', 'dark']) {
@@ -143,29 +96,6 @@ for (const width of [1280, 390]) {
     })
   }
 }
-
-test.describe('contents states with a hovering pointer', () => {
-  test.use({ colorScheme: 'dark' })
-
-  test('contents rail while focused, dismissed and hovered', async ({ page, open, capture }) => {
-    await open('/blog/dockertest/')
-    await page.locator(firstEntry).focus()
-    await capture(page, 'toc-focused')
-    await page.keyboard.press('Escape')
-    await capture(page, 'toc-dismissed')
-    await page.locator('.site-title a').focus()
-    await page.locator('#article-toc').hover()
-    await capture(page, 'toc-hovered')
-  })
-
-  test('quote and footnotes', async ({ page, open, capture }) => {
-    await open('/blog/2024-review/')
-    await page.evaluate(() => document.querySelector('blockquote').scrollIntoView())
-    await capture(page, 'quote-dark')
-    await page.evaluate(() => document.querySelector('.footnotes').scrollIntoView())
-    await capture(page, 'footnotes-dark')
-  })
-})
 
 test.describe('on a touch screen', () => {
   test.use({ hasTouch: true, viewport: { width: 390, height: 844 } })

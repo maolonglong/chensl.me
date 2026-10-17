@@ -42,7 +42,7 @@ Before each commit, `prek.toml` runs the document checks and `git diff --cached 
 
 ## Screenshots
 
-`capture()` in `e2e/site.mjs` writes screenshots to `test-results/screenshots`. A screenshot is evidence only after someone looks at it. Inspect each affected state: light and dark, narrow and wide, open and closed. When a spec does not reach an affected state, add a targeted check. Viewport emulation is not a real device.
+`capture()` in `e2e/site.mjs` writes screenshots beside an assertion. A screenshot alone is not a test ([decision](../.agents/notes/implemented/testing/2026-10-17-drop-capture-only-specs.md)). Inspect each affected state: light and dark, narrow and wide, open and closed. When a spec misses a state, add a check. Viewport emulation is not a real device.
 
 ## Browser specs
 

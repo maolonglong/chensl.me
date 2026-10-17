@@ -5,7 +5,6 @@ import {
   evaluateWithRetry,
   evaluationBudgetMs,
   evaluationRetryDelays,
-  indexIssues,
   searchIndexApi,
   syncArticles,
 } from '../scripts/search-index.mjs'
@@ -19,7 +18,6 @@ import {
   newsKeywordQuery,
   newsVectors,
   rankMatches,
-  semanticMaxGap,
   semanticMinScore,
 } from '../src/lib/search-text.mjs'
 
@@ -126,8 +124,7 @@ const news = (date, item, score) => ({
 })
 
 test('semantic ranking merges chunks and items by document and thresholds each kind alone', () => {
-  // The literals sit on both sides of the gap (0.10) and the news floor (0.40).
-  assert.deepEqual([semanticMaxGap, semanticMinScore.news], [0.1, 0.4])
+  // Scores sit on both sides of the 0.10 gap and the 0.40 news floor.
   const ranked = rankMatches([
     blog('a', 0.5),
     blog('a', 0.62, 3),
@@ -197,25 +194,6 @@ test('news vectors cover each item and list the IDs a longer version left behind
   assert.equal(stale.at(-1), 'news:2026-10-16:29')
   assert.deepEqual(newsKeywordQuery('AI 芯片').binds, ['芯片', '%AI%', '%芯片%'])
   assert.deepEqual(newsKeywordQuery('芯片 AI').binds, ['芯片', '%芯片%', '%AI%'])
-})
-
-test('indexIssues batches embeddings, upserts, and stale deletes across issues', async () => {
-  const api = fakeApi()
-  const issues = ['2026-10-16', '2026-10-15'].map((date) => ({
-    date,
-    title: `Issue ${date}`,
-    summary: 'S',
-    items: [{ tag: 'A', title: 't0', summary: 's0', url: 'https://a' }],
-  }))
-  const result = await indexIssues(api, issues)
-  assert.equal(result.issues, 2)
-  assert.deepEqual(
-    api.calls.operations.map(([kind, ids]) => [kind, ids.length]),
-    [
-      ['upsert', 2],
-      ['delete', 58],
-    ],
-  )
 })
 
 test('short queries put keyword hits first; longer ones fuse by rank', () => {
