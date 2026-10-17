@@ -231,18 +231,6 @@ test.describe('search page', () => {
       expect(response.headers()['cache-control']).toBe('private, no-store')
     }
   })
-
-  test('the navigation links the search page and marks it current', async ({ open, page }) => {
-    await open('/search/')
-    await expect(page.getByRole('link', { name: '搜索', exact: true })).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
-    await open('/')
-    const link = page.getByRole('link', { name: '搜索', exact: true })
-    await expect(link).toHaveAttribute('href', '/search/')
-    await expect(link).not.toHaveAttribute('aria-current', /.+/)
-  })
 })
 
 test.describe('related articles', () => {

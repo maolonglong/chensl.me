@@ -7,7 +7,7 @@ Read this before you change layout, styles, fonts, or browser interactions. It s
 - A warm neutral page with ink-blue links, JinKai type, an introductory home, a year-grouped archive, and single-column articles.
 - Header, main, and footer share one reading column. Short pages keep the footer at the bottom.
 - Ink-blue means a link. Emphasis, list markers, and headings use other means.
-- Every interactive control works with a keyboard, has a visible focus ring and an accessible name, and has a touch target of at least 44 px (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`). Header links and archive rows keep their text spacing: padding them up to 44 px was rejected.
+- Every interactive control works with a keyboard, has a visible focus ring and an accessible name, and has a touch target of at least 44 px (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`, `e2e/navigation.spec.mjs`). Header links and archive rows keep their text spacing: padding them up to 44 px was rejected.
 
 ## Kami as the reference
 
@@ -44,6 +44,7 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - **Search** is one input and a result list: title, type and date, excerpt. No filters or suggestions.
 - **Related articles** are one line of plain links after the text, in muted small type.
 - **Icons** are inline SVG, not font glyphs or an icon library.
+- **Header icons.** Search and theme share one style: an icon in the heading color, because each is a tool and not a section link. The search icon shows the current page with the underline of a current text link, drawn under the glyph. Each icon has a 44 px target that does not grow the header row (`e2e/navigation.spec.mjs`).
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
 - **Links** in article text and the footer are underlined. Archive links show a visited color.
 - **Share cards** are 1200×630 PNGs (`scripts/check-site.mjs`). They use the light theme's page, border, and text tokens, with no gradient or shadow. `~chensl` sits at the top left, the title in the middle, and the date or section label with `chensl.me` at the bottom. A title longer than two lines ends with an ellipsis (`tests/og.test.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md).
