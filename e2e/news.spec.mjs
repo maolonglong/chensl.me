@@ -240,7 +240,7 @@ test.describe('news pages', () => {
     expect((await page.goto(`/news/${old}/`)).status()).toBe(200)
   })
 
-  test('news pages advertise only the news feed; blog pages keep the blog feed', async ({
+  test('news pages advertise and link only the news feed; blog pages keep the blog feed', async ({
     post,
     page,
     date,
@@ -262,9 +262,10 @@ test.describe('news pages', () => {
       expect(await feeds(), path).toEqual([
         { href: 'https://chensl.me/news/index.xml', title: '~chensl AI News' },
       ])
-      await expect(page.locator('nav[aria-label="主导航"] a[href="/index.xml"]'), path).toHaveCount(
-        1,
-      )
+      const footerFeeds = page.locator('body > footer a[type="application/rss+xml"]')
+      await expect(footerFeeds, path).toHaveCount(1)
+      await expect(footerFeeds, path).toHaveAttribute('href', '/news/index.xml')
+      expect(await footerFeeds.textContent(), path).toBe('AI News RSS')
     }
     for (const path of ['/', '/blog/', '/blog/dockertest/']) {
       await page.goto(path)

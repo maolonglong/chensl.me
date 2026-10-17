@@ -443,3 +443,25 @@ test('site checker requires every article in the search index and the embeddings
   // A changed article only warns: its old embedding still serves until the next run.
   assert.match(result.stderr, /articles changed since their embedding \(indexed\)/)
 })
+
+test('site checker requires the article feed link in every page footer', async () => {
+  const fixture = await checkerFixture()
+  const page = (footer) =>
+    `<header class="site-header"></header><main id="main"></main><footer class="site-footer">${footer}</footer>`
+  const feed = (href) => `<a href="${href}" type="application/rss+xml">RSS</a>`
+  await write(fixture, 'dist/blog/index.html', page(feed('/index.xml')))
+  const valid = run(process.execPath, [checker], fixture)
+  assert.equal(valid.status, 0, valid.stderr)
+
+  await write(fixture, 'dist/blog/index.html', page(feed('/news/index.xml')))
+  await write(fixture, 'dist/404.html', page(''))
+  await write(fixture, 'dist/search/index.html', '<header class="site-header"></header>')
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  for (const file of ['blog/index.html', '404.html', 'search/index.html']) {
+    assert.ok(
+      result.stderr.includes(`${file} footer must link the article feed /index.xml once`),
+      result.stderr,
+    )
+  }
+})

@@ -61,6 +61,9 @@ if (article)
 const newsCurrent = path === '/news/' ? 'page' : path.startsWith('/news/') ? 'location' : undefined
 const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'location' : undefined
 const searchCurrent = path === '/search/' ? 'page' : undefined
+const feed = isNews
+  ? { href: '/news/index.xml', label: 'AI News RSS' }
+  : { href: '/index.xml', label: 'RSS' }
 ---
 
 <!doctype html>
@@ -114,7 +117,7 @@ const searchCurrent = path === '/search/' ? 'page' : undefined
     <Font cssVariable="--font-jinkai" preload={false} />
     <Font cssVariable="--font-jetbrains" preload={false} />
     {
-      // News pages advertise the news feed in place of the blog feed; the nav link stays.
+      // News pages advertise the news feed in place of the blog feed, in the head and the footer.
       isNews ? (
         <link
           rel="alternate"
@@ -142,9 +145,6 @@ const searchCurrent = path === '/search/' ? 'page' : undefined
         <a href="/">{siteTitle}</a>
       </p>
       <nav aria-label="主导航">
-        <a href="/" aria-current={isHome ? 'page' : undefined}>
-          首页
-        </a>
         <a href="/blog/" aria-current={blogCurrent}>
           博客
         </a>
@@ -154,9 +154,6 @@ const searchCurrent = path === '/search/' ? 'page' : undefined
         <a href="/search/" aria-current={searchCurrent}>
           搜索
         </a>
-        <a href="/index.xml" type="application/rss+xml">
-          RSS
-        </a>
         <ThemeToggle />
       </nav>
     </header>
@@ -165,7 +162,8 @@ const searchCurrent = path === '/search/' ? 'page' : undefined
     </main>
     <footer class="site-footer">
       <p>
-        基于 <a href="https://astro.build">Astro</a> 构建 / 排版灵感来自{' '}
+        <a href={feed.href} type="application/rss+xml" set:text={feed.label} /> / 基于{' '}
+        <a href="https://astro.build">Astro</a> 构建 / 排版灵感来自{' '}
         <a href="https://github.com/tw93/Kami">Kami</a>
       </p>
     </footer>

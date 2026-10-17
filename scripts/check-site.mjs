@@ -278,6 +278,22 @@ for (const [file, tree] of treeByFile) {
   }
 }
 
+// The footer is where readers find the article feed, so every prerendered page with the site
+// header links it there. AI News pages render in the Worker and link their own feed instead
+// (e2e/news.spec.mjs).
+const hasClass = (name) => (node) => node.properties.className?.includes(name)
+for (const [file, tree] of treeByFile) {
+  if (!elements(tree, ['header']).some(hasClass('site-header'))) continue
+  const footer = elements(tree, ['footer']).find(hasClass('site-footer'))
+  const feeds = (footer ? elements(footer, ['a']) : []).filter(
+    ({ properties }) => properties.type === 'application/rss+xml',
+  )
+  if (feeds.length !== 1 || feeds[0].properties.href !== '/index.xml') {
+    const relative = path.relative(outputDir, file).split(path.sep).join('/')
+    errors.push(`${relative} footer must link the article feed /index.xml once`)
+  }
+}
+
 // Every article shares its own build-time card. Crawlers read the size from the meta tags, so the
 // PNG header must match them, and both must be 1200x630.
 const cardWidth = 1200
