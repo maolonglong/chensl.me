@@ -5,6 +5,7 @@ Read this before you change what readers see or rely on. Each section states a p
 ## Pages
 
 - **Home** introduces the author. **Archive** (`/blog/`) lists published articles, grouped by year, newest first.
+- **Navigation.** The site title links home. The header links the archive, AI News, and search ([decision](../.agents/notes/implemented/simplification/2026-10-17-lean-header-navigation.md), `e2e/navigation.spec.mjs`).
 - **Article pages** use one reading column. An article with at least three H2 or H3 headings gets a contents list (`tests/markdown.test.mjs`, `e2e/contents.spec.mjs`).
 - **Stale notice.** An article whose last modification (`updatedDate`, else `pubDate`) is more than two calendar years old shows a notice under its header. The browser checks the current date on each visit, so the notice appears when the article crosses two years, with no rebuild. The build also marks articles that were already stale, so a visitor whose clock is behind the build time still sees the notice (`tests/stale.test.mjs`, `e2e/page-shell.spec.mjs`).
 - **Search** (`/search/`) finds articles and AI News by keyword and meaning, and omits weak matches. Article keyword hits survive a server failure (`e2e/search.spec.mjs`).
@@ -31,6 +32,7 @@ The page, the RSS item, and the Markdown export show the same declaration, and t
 
 - `/index.xml` is the only article feed. It lists the 20 newest published articles, and each item carries the rendered article with absolute URLs (`tests/content.test.mjs`, `tests/markdown.test.mjs`).
 - `/news/index.xml` lists the 20 newest AI News issues, with their tags as categories, and no articles (`e2e/news.spec.mjs`).
+- The footer of every page links `/index.xml`. AI News pages link `/news/index.xml` there instead (`scripts/check-site.mjs`, `e2e/news.spec.mjs`).
 - Each published article has a Markdown export at `/blog/<id>/index.md`: a metadata header, then the original body. Its local images are published at their original paths, so relative links resolve (`tests/content.test.mjs`).
 - `/llms.txt` lists the exports for readers and agents (`tests/content.test.mjs`).
 - The exports and `/llms.txt` are UTF-8, and `public/_headers` must say so: browsers on a Chinese-locale system read text without a charset as GBK (`tests/check-site.test.mjs`).
