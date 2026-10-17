@@ -152,10 +152,19 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   }
 
   let timer: ReturnType<typeof setTimeout> | undefined
-  input.addEventListener('input', () => {
+  const schedule = () => {
     clearTimeout(timer)
     timer = setTimeout(() => search(input.value), 300)
+  }
+  // An input method sends an input event for each pinyin keystroke (n, ni, ni hao) before the
+  // reader picks the characters. Searching those would query the API and Pagefind for text the
+  // reader never meant, so the search waits for compositionend. Browsers differ in whether an
+  // input event follows compositionend; the debounce turns either order into one search.
+  input.addEventListener('input', (event) => {
+    if ((event as InputEvent).isComposing) clearTimeout(timer)
+    else schedule()
   })
+  input.addEventListener('compositionend', schedule)
   form.addEventListener('submit', (event) => {
     event.preventDefault()
     clearTimeout(timer)
