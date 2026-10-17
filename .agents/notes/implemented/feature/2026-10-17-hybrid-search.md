@@ -42,6 +42,8 @@ On 2026-10-17 the preview index held 17 articles (52 chunks) and one issue (15 i
 
 ## Alternatives considered
 
+**Run the index job on every change.** Hash checks avoid embedding unchanged articles, but unrelated test, document, and skill edits still build the site and embed the evaluation queries. Path filters in `.github/workflows/search-index.yml` avoid that work. The source filter stays broad because shared components and Markdown rendering can change the text extracted from article HTML. This trades some extra runs on source changes for protection against a stale index. Dependency and build configuration changes also need that protection. A skipped workflow must not be a required PR check, because GitHub can leave its check pending.
+
 **A manual embed run after each article.** It needs no CI token, but the author must remember the run, and an article that was deleted or renamed stayed in the index. The owner chose CI.
 
 **Wrangler's platform proxy in CI.** It needs a Wrangler login with wide rights; the REST API takes a token that can only run models and edit Vectorize.
