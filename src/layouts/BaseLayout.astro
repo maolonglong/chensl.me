@@ -60,6 +60,7 @@ if (article)
   })
 const newsCurrent = path === '/news/' ? 'page' : path.startsWith('/news/') ? 'location' : undefined
 const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'location' : undefined
+const searchCurrent = path === '/search/' ? 'page' : undefined
 ---
 
 <!doctype html>
@@ -149,6 +150,9 @@ const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'lo
         </a>
         <a href="/news/" aria-current={newsCurrent}>
           AI News
+        </a>
+        <a href="/search/" aria-current={searchCurrent}>
+          搜索
         </a>
         <a href="/index.xml" type="application/rss+xml">
           RSS

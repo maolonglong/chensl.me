@@ -7,22 +7,32 @@ import FloatingToc from '../../components/FloatingToc.astro'
 import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
 import Upvote from '../../components/Upvote.astro'
-import { creationLabels, publishedPosts, displayDate } from '../../lib/posts'
+import { creationLabels, publishedPosts, displayDate, postUrl } from '../../lib/posts'
+import { relatedPosts } from '../../lib/related'
 import { isStaleSince } from '../../lib/stale'
 export async function getStaticPaths() {
-  return (await publishedPosts()).map((post) => ({ params: { id: post.id }, props: { post } }))
+  const posts = await publishedPosts()
+  return posts.map((post) => ({
+    params: { id: post.id },
+    props: { post, related: relatedPosts(post.id, posts) },
+  }))
 }
 interface Props {
   post: CollectionEntry<'blog'>
+  related: CollectionEntry<'blog'>[]
 }
-const { post } = Astro.props
+const { post, related } = Astro.props
 const { Content, headings } = await render(post)
 const lastModified = post.data.updatedDate ?? post.data.pubDate
 const { creation } = post.data
 ---
 
 <BaseLayout {...post.data} updatedDate={lastModified} article>
-  <article class="post">
+  <article
+    class="post"
+    data-pagefind-body
+    data-pagefind-meta={`date:${displayDate(post.data.pubDate)}`}
+  >
     <header class="post-header">
       <h1>{post.data.title}</h1>
       <p class="post-meta">
@@ -50,6 +60,17 @@ const { creation } = post.data
     <div class="prose">
       <Content />
     </div>
+    {related.length > 0 && (
+      <p class="post-related">
+        <span>相关文章：</span>
+        {related.map((other, index) => (
+          <>
+            {index > 0 && <span aria-hidden="true">/</span>}
+            <a href={postUrl(other)}>{other.data.title}</a>
+          </>
+        ))}
+      </p>
+    )}
     <CodeCopy />
   </article>
   <Upvote postId={post.id} />
@@ -90,6 +111,18 @@ const { creation } = post.data
   }
   .post-creation-note {
     overflow-wrap: anywhere;
+  }
+  /* Flex drops the whitespace between the label, the links, and the separators. */
+  .post-related {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 0.5em;
+    margin: 48px 0 0;
+    font-size: 0.875rem;
+    color: var(--muted-color);
+  }
+  .post-related a {
+    text-decoration-line: underline;
   }
   /* Markdown descendants do not carry this component's scope attribute. */
   .prose :global(.astro-code),

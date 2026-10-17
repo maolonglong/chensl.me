@@ -1,5 +1,7 @@
 import { defineConfig } from 'astro/config'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import * as pagefind from 'pagefind'
 import sitemap from '@astrojs/sitemap'
 import cloudflare from '@astrojs/cloudflare'
 import { unified } from '@astrojs/markdown-remark'
@@ -18,7 +20,8 @@ export default defineConfig({
     build: { assetsInlineLimit: (file) => (file.endsWith('.woff2') ? false : undefined) },
   },
   integrations: [
-    sitemap(),
+    // /search/ is an empty form until a visitor types a query, so crawlers get nothing from it.
+    sitemap({ filter: (page) => new URL(page).pathname !== '/search/' }),
     {
       name: 'theme-bootstrap',
       hooks: {
@@ -27,6 +30,30 @@ export default defineConfig({
             'head-inline',
             readFileSync(new URL('./src/scripts/theme-bootstrap.js', import.meta.url), 'utf8'),
           )
+        },
+      },
+    },
+    {
+      // Article keyword search for /search/. Only elements marked data-pagefind-body are indexed,
+      // which are the article pages; the selectors drop article chrome that is not the article's
+      // own text. Pagefind's extended binary segments Chinese text.
+      name: 'pagefind',
+      hooks: {
+        async 'astro:build:done'({ dir, logger }) {
+          const { index } = await pagefind.createIndex({
+            excludeSelectors: [
+              '.post-meta',
+              '.post-creation-note',
+              '.post-notice',
+              '.toc',
+              '.post-related',
+            ],
+          })
+          const { errors, page_count } = await index.addDirectory({ path: fileURLToPath(dir) })
+          if (errors.length) throw new Error(`Pagefind failed: ${errors.join('; ')}`)
+          await index.writeFiles({ outputPath: fileURLToPath(new URL('pagefind/', dir)) })
+          await pagefind.close()
+          logger.info(`Pagefind indexed ${page_count} pages.`)
         },
       },
     },

@@ -1,0 +1,212 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { maxQueryLength } from '../lib/search'
+
+// Pagefind compiles its WebAssembly in the page. Only this page allows it.
+Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
+---
+
+<BaseLayout title="搜索" description="搜索陈劭珑的技术文章和 AI News">
+  <h1 class="visually-hidden">搜索</h1>
+  <form class="search-form" role="search" action="/search/" method="get">
+    <label class="visually-hidden" for="search-input">
+      搜索文章和 AI News
+    </label>
+    <input
+      id="search-input"
+      class="search-input"
+      type="search"
+      name="q"
+      maxlength={maxQueryLength}
+      autocomplete="off"
+      enterkeyhint="search"
+      placeholder="搜索文章和 AI News"
+      data-max-length={maxQueryLength}
+    />
+  </form>
+  <p class="search-status" role="status" aria-live="polite"></p>
+  <ol class="search-results"></ol>
+  <noscript>
+    <p class="search-status">搜索需要 JavaScript。</p>
+  </noscript>
+</BaseLayout>
+
+<script>
+  import { fuse } from '../lib/search-fuse'
+  import type { SearchHit } from '../lib/search'
+
+  interface ServerResults {
+    semantic: SearchHit[]
+    news: SearchHit[]
+    partial?: boolean
+  }
+  interface PagefindResult {
+    id: string
+    data: () => Promise<{ url: string; excerpt: string; meta: Record<string, string> }>
+  }
+  interface Pagefind {
+    search: (term: string) => Promise<{ results: PagefindResult[] }>
+  }
+
+  const form = document.querySelector<HTMLFormElement>('.search-form')!
+  const input = document.querySelector<HTMLInputElement>('.search-input')!
+  const status = document.querySelector<HTMLElement>('.search-status')!
+  const list = document.querySelector<HTMLOListElement>('.search-results')!
+  const typeLabels = { blog: '文章', news: 'AI News' }
+  const resultLimit = 10
+
+  // The same normalization as the server, so the URL is also the edge cache key.
+  const normalize = (value: string) => value.replace(/\s+/g, ' ').trim()
+
+  // A path in a variable keeps the bundler from resolving the file, which exists only after
+  // the build writes the Pagefind index.
+  const pagefindPath = '/pagefind/pagefind.js'
+  let pagefind: Promise<Pagefind> | undefined
+  const loadPagefind = () =>
+    (pagefind ??= import(/* @vite-ignore */ pagefindPath) as Promise<Pagefind>)
+
+  const plainText = (html: string) =>
+    new DOMParser().parseFromString(html, 'text/html').body.textContent ?? ''
+
+  // Pagefind splits Chinese text into words and matches any of them, so 智能体 alone matches an
+  // article that only mentions 智能指针. A query without spaces keeps only the pages that also
+  // contain it as one phrase; the plain search supplies the ranking, which phrase search lacks.
+  // Typing spaces searches the separate words.
+  async function articleHits(query: string): Promise<SearchHit[]> {
+    const index = await loadPagefind()
+    let { results } = await index.search(query)
+    if (!/\s/.test(query)) {
+      const phrase = new Set((await index.search(`"${query}"`)).results.map((result) => result.id))
+      results = results.filter((result) => phrase.has(result.id))
+    }
+    const pages = await Promise.all(results.slice(0, resultLimit).map((result) => result.data()))
+    return pages.map((page) => ({
+      type: 'blog',
+      url: page.url,
+      title: page.meta.title ?? page.url,
+      date: page.meta.date ?? '',
+      snippet: plainText(page.excerpt),
+    }))
+  }
+
+  async function serverHits(query: string): Promise<ServerResults> {
+    const response = await fetch(`/api/search/?q=${encodeURIComponent(query)}`)
+    if (!response.ok) throw new Error(`/api/search/ answered ${response.status}`)
+    return response.json()
+  }
+
+  function render(hits: SearchHit[]) {
+    list.replaceChildren(
+      ...hits.map((hit) => {
+        const item = document.createElement('li')
+        const link = document.createElement('a')
+        link.href = hit.url
+        link.textContent = hit.title
+        const meta = document.createElement('p')
+        meta.className = 'search-meta'
+        meta.textContent = [typeLabels[hit.type], hit.date].filter(Boolean).join(' · ')
+        item.append(link, meta)
+        if (hit.snippet) {
+          const snippet = document.createElement('p')
+          snippet.className = 'search-snippet'
+          snippet.textContent = hit.snippet
+          item.append(snippet)
+        }
+        return item
+      }),
+    )
+  }
+
+  let latest = 0
+  async function run(query: string) {
+    const id = ++latest
+    if (!query) {
+      list.replaceChildren()
+      status.textContent = ''
+      return
+    }
+    status.textContent = '正在搜索…'
+    const [articles, server] = await Promise.allSettled([articleHits(query), serverHits(query)])
+    // A slower answer to an earlier query must not replace the current results.
+    if (id !== latest) return
+    const lists: SearchHit[][] = []
+    if (articles.status === 'fulfilled') lists.push(articles.value)
+    if (server.status === 'fulfilled') lists.push(server.value.semantic, server.value.news)
+    const hits = fuse(lists).slice(0, resultLimit * 2)
+    render(hits)
+    const degraded =
+      articles.status === 'rejected' || server.status === 'rejected' || server.value.partial
+    status.textContent =
+      (hits.length ? `找到 ${hits.length} 条结果` : '没有找到相关内容') +
+      (degraded ? '（部分搜索暂时不可用）' : '')
+  }
+
+  function search(value: string) {
+    const query = normalize(value).slice(0, Number(input.dataset.maxLength))
+    const url = new URL(location.href)
+    if (query) url.searchParams.set('q', query)
+    else url.searchParams.delete('q')
+    history.replaceState(null, '', url)
+    void run(query)
+  }
+
+  let timer: ReturnType<typeof setTimeout> | undefined
+  input.addEventListener('input', () => {
+    clearTimeout(timer)
+    timer = setTimeout(() => search(input.value), 300)
+  })
+  form.addEventListener('submit', (event) => {
+    event.preventDefault()
+    clearTimeout(timer)
+    search(input.value)
+  })
+  input.addEventListener('focus', () => void loadPagefind(), { once: true })
+
+  const initial = new URLSearchParams(location.search).get('q')
+  if (initial) {
+    input.value = initial
+    search(initial)
+  }
+</script>
+
+<style>
+  .search-input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    font: inherit;
+    color: var(--heading-color);
+    background-color: var(--code-block-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+  }
+  .search-input::placeholder {
+    color: var(--muted-color);
+  }
+  .search-status {
+    margin: 16px 0 0;
+    font-size: 0.875rem;
+    color: var(--muted-color);
+  }
+  .search-status:empty {
+    display: none;
+  }
+  .search-results {
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .search-results :global(li + li) {
+    margin-top: 20px;
+  }
+  .search-results :global(.search-meta),
+  .search-results :global(.search-snippet) {
+    margin: 4px 0 0;
+    font-size: 0.875rem;
+  }
+  .search-results :global(.search-meta) {
+    color: var(--muted-color);
+    font-variant-numeric: tabular-nums;
+  }
+</style>
