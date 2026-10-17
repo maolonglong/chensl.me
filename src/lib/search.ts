@@ -32,9 +32,12 @@ export function normalizeQuery(raw: string | null) {
   return query && [...query].length <= maxQueryLength ? query : null
 }
 
-type SearchEnv = Pick<Cloudflare.Env, 'AI' | 'SEARCH_INDEX' | 'NEWS'>
+type SearchEnv = Pick<Cloudflare.Env, 'AI' | 'SEARCH_INDEX' | 'NEWS' | 'SEMANTIC_SEARCH'>
 
-export const semanticEnabled = (env: SearchEnv) => Boolean(env.AI && env.SEARCH_INDEX)
+// Local runs have the AI and Vectorize bindings without a remote session, so every call would
+// fail; the browser specs start the Worker with SEMANTIC_SEARCH=off to get keyword-only search.
+export const semanticEnabled = (env: SearchEnv) =>
+  Boolean(env.AI && env.SEARCH_INDEX) && env.SEMANTIC_SEARCH !== 'off'
 
 interface BlogMetadata {
   url: string
@@ -50,7 +53,7 @@ interface NewsMetadata {
 }
 
 export async function semanticSearch(env: SearchEnv, query: string): Promise<SearchHit[]> {
-  if (!env.AI || !env.SEARCH_INDEX) return []
+  if (!env.AI || !env.SEARCH_INDEX || !semanticEnabled(env)) return []
   const { data } = await env.AI.run(embeddingModel, {
     queries: query,
     instruction: queryInstruction,
@@ -146,7 +149,9 @@ export async function purgeSearchCache() {
   try {
     // Imported at request time: the search page imports this module while it prerenders in Node.
     const { cache } = await import('cloudflare:workers')
-    const result = await cache?.purge({ pathPrefixes: ['/api/search/'] })
+    // Local runs have a cache export without purge.
+    if (typeof cache?.purge !== 'function') return
+    const result = await cache.purge({ pathPrefixes: ['/api/search/'] })
     if (result && !result.success) console.error('search cache purge failed', result.errors)
   } catch (error) {
     console.error('search cache purge failed', error)
@@ -158,7 +163,7 @@ export async function purgeSearchCache() {
 // failure is logged and reported to the bot but never fails the write: the issue is already
 // published, and the next write of that date retries.
 export async function indexIssue(env: SearchEnv, issue: NewsIssue): Promise<IndexResult> {
-  if (!env.AI || !env.SEARCH_INDEX) return 'disabled'
+  if (!env.AI || !env.SEARCH_INDEX || !semanticEnabled(env)) return 'disabled'
   try {
     const { data } = await env.AI.run(embeddingModel, {
       documents: issue.items.map(newsItemEmbeddingText),
@@ -177,7 +182,7 @@ export async function indexIssue(env: SearchEnv, issue: NewsIssue): Promise<Inde
 
 // Called when an issue is retracted: its items leave semantic search at once.
 export async function removeIssue(env: SearchEnv, date: string): Promise<IndexResult> {
-  if (!env.SEARCH_INDEX) return 'disabled'
+  if (!env.SEARCH_INDEX || !semanticEnabled(env)) return 'disabled'
   try {
     await env.SEARCH_INDEX.deleteByIds(allNewsVectorIds(date))
     return 'removed'
