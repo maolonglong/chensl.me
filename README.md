@@ -30,6 +30,8 @@ Articles live in `src/content/blog/`, as `<name>.md` or `<name>/index.md`. The n
 
 Keep local images next to the Markdown, link them with relative paths, and give them descriptive alt text; Astro optimizes them. Put files for download in `public/downloads/`. A remote image needs its origin in both CSP policies ([Architecture](docs/architecture.md#csp)).
 
+After you add or change an article, run `pnpm build && node scripts/embed-posts.mjs --index <name>` with a Wrangler login, and commit `src/data/related-posts.json`. It updates the related links and semantic search; `pnpm check` fails when an article has no entry ([decision](.agents/notes/implemented/feature/2026-10-17-hybrid-search.md)).
+
 Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, TeX math (`$…$` inline, `$$…$$` display), and code captions (`title="db/user.go"` on the fence).
 
 JinKai font subsets are built from the source text, and slices cover the rest of the font for runtime text, so new text needs no font step; restart `pnpm dev` to refresh them. Font licensing is in [NOTICE.md](public/fonts/tsanger-jinkai02/NOTICE.md).
