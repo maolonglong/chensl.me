@@ -16,6 +16,8 @@ declare namespace Cloudflare {
 
 declare module 'cloudflare:workers' {
   export const env: Cloudflare.Env
+  // Workers Cache purge from code; absent in runtimes without Workers Cache.
+  export const cache: import('@cloudflare/workers-types').CacheContext | undefined
 }
 
 // Workers' non-standard Web Crypto extension; the DOM lib that Astro pages use lacks it.
