@@ -2,7 +2,8 @@ name: Search index
 
 # Keeps the Vectorize article vectors in line with the articles, and checks that the committed
 # src/data/related-posts.json matches them. Pull requests write the Preview index; main writes the
-# production index after a reviewer approves the search-production Environment. Setup steps:
+# production index through the search-production Environment, which only main can use and which
+# needs no approval. Setup steps:
 # .agents/notes/implemented/feature/2026-10-17-hybrid-search.md#setting-up-the-index-jobs.
 on:
   pull_request:
