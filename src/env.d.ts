@@ -3,14 +3,13 @@ type D1Database = import('@cloudflare/workers-types').D1Database
 type RateLimit = import('@cloudflare/workers-types').RateLimit
 type Fetcher = import('@cloudflare/workers-types').Fetcher
 type Ai = import('@cloudflare/workers-types').Ai
-type Vectorize = import('@cloudflare/workers-types').Vectorize
+// `wrangler types` names the Vectorize binding VectorizeIndex; the V2 API is Vectorize.
+type VectorizeIndex = import('@cloudflare/workers-types').Vectorize
 
-// `wrangler types` reads only the top-level bindings. The search bindings exist only in Workers
-// Previews (`previews` in wrangler.jsonc), so they are optional and the code checks for them.
+// Set only by local runs (`wrangler dev --var SEMANTIC_SEARCH:off`); see semanticEnabled.
 declare namespace Cloudflare {
   interface Env {
-    AI?: Ai
-    SEARCH_INDEX?: Vectorize
+    SEMANTIC_SEARCH?: string
   }
 }
 

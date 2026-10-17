@@ -11,7 +11,14 @@ import { siteFonts } from './src/lib/fonts.mjs'
 
 export default defineConfig({
   site: 'https://chensl.me',
-  adapter: cloudflare({ imageService: 'compile', prerenderEnvironment: 'node' }),
+  // remoteBindings: false keeps `astro dev` from opening a session for the AI and Vectorize
+  // bindings, which have no local simulation and need a Cloudflare login; search then answers
+  // with keyword results only.
+  adapter: cloudflare({
+    imageService: 'compile',
+    prerenderEnvironment: 'node',
+    remoteBindings: false,
+  }),
   session: false,
   fonts: await siteFonts(),
   vite: {

@@ -36,9 +36,8 @@
         "simple": { "limit": 120, "period": 60 },
       },
     ],
-    // Search: query embeddings and the AI News index write call Workers AI, and the vectors live
-    // in a Preview-only index. Production has neither binding yet, so /api/search answers with
-    // keyword results only there.
+    // Search: query embeddings and the AI News index write call Workers AI. Previews use their
+    // own index, so Preview news writes never reach the production vectors.
     "ai": { "binding": "AI" },
     "vectorize": [{ "binding": "SEARCH_INDEX", "index_name": "blog-search-preview" }],
   },
@@ -74,7 +73,8 @@
   "secrets": {
     "required": ["NEWS_TOKEN"],
   },
-  // Caches the on-demand /news/ responses for their s-maxage; Actions are POST and private.
+  // Caches the on-demand /news/ and /api/search/ responses for their s-maxage; Actions are POST
+  // and private.
   "cache": {
     "enabled": true,
   },
@@ -90,6 +90,10 @@
       "simple": { "limit": 120, "period": 60 },
     },
   ],
+  // Search: Workers AI embeds queries and AI News items; blog-search holds the article chunks and
+  // news items (.github/workflows/search-index.yml writes the articles).
+  "ai": { "binding": "AI" },
+  "vectorize": [{ "binding": "SEARCH_INDEX", "index_name": "blog-search" }],
   "routes": [
     {
       "pattern": "chensl.me",
