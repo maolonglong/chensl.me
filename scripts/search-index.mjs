@@ -10,6 +10,7 @@ import {
   newsItemEmbeddingText,
   newsVectors,
   queryInstruction,
+  rankMatches,
   relatedFromVectors,
   relatedNamespace,
   relatedVectorId,
@@ -236,3 +237,45 @@ export async function indexIssues(api, issues) {
 }
 
 export const removeIssueVectors = (api, date) => api.deleteByIds(allNewsVectorIds(date))
+
+// Runs each labeled query through the semantic ranking that /api/search uses. A query passes
+// when its expected documents are in the top three; an off-topic query passes with no hit.
+// Only gated queries decide the outcome, and a news hit is never a false positive of an article
+// query: news content differs between indexes.
+export async function evaluate(api, fixture) {
+  const results = []
+  for (const entry of fixture.queries) {
+    const ranked = rankMatches(await api.query(await api.embedQuery(entry.query)))
+    const urls = ranked.map((match) =>
+      match.type === 'news' ? `/news/${match.metadata.date}/` : match.metadata.url,
+    )
+    const top3 = urls.slice(0, 3)
+    const expected = entry.expect ?? []
+    const found = expected.filter((url) => top3.includes(url))
+    const allowed = new Set([...expected, ...(entry.allow ?? [])])
+    const falsePositives = urls.filter((url) => url.startsWith('/blog/') && !allowed.has(url))
+    results.push({
+      query: entry.query,
+      gate: entry.gate !== false,
+      recall: expected.length ? found.length / expected.length : null,
+      falsePositives,
+      hits: ranked.map((match, index) => [urls[index], Math.round(match.score * 1000) / 1000]),
+    })
+  }
+  const gated = results.filter((result) => result.gate)
+  const withExpected = gated.filter((result) => result.recall !== null)
+  const recall = withExpected.reduce((sum, result) => sum + result.recall, 0) / withExpected.length
+  const offTopicHits = gated.filter((result) => result.recall === null && result.hits.length)
+  const falsePositives = gated.reduce((sum, result) => sum + result.falsePositives.length, 0)
+  return {
+    recall,
+    falsePositives,
+    offTopicHits: offTopicHits.length,
+    passed:
+      recall >= fixture.minRecall &&
+      offTopicHits.length === 0 &&
+      falsePositives <= fixture.maxFalsePositives,
+    results,
+    neurons: api.neurons,
+  }
+}

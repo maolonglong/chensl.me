@@ -1,0 +1,63 @@
+name: Search index
+
+# Keeps the Vectorize article vectors in line with the articles, and checks that the committed
+# src/data/related-posts.json matches them. Pull requests write the Preview index; main writes the
+# production index after a reviewer approves the search-production Environment. Setup steps:
+# .agents/notes/implemented/feature/2026-10-17-hybrid-search.md#setting-up-the-index-jobs.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  index:
+    # The repository variable SEARCH_INDEX_ENABLED turns the jobs on once the Environments and
+    # their secrets exist. Without it they are skipped, so CI stays green and no Environment is
+    # created by accident. Pull requests from forks never run: they get no secrets, and Workers
+    # Previews build only branches of this repository.
+    if: >-
+      vars.SEARCH_INDEX_ENABLED == 'true' && (
+        (github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository) ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: ${{ github.event_name == 'push' && 'search-production' || 'search-preview' }}
+    # One writer per index at a time; a queued run waits instead of cancelling a half-done write.
+    concurrency:
+      group: search-index-${{ github.event_name == 'push' && 'production' || 'preview' }}
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_EMBED_TOKEN: ${{ secrets.CLOUDFLARE_EMBED_TOKEN }}
+      SEARCH_INDEX: ${{ github.event_name == 'push' && 'blog-search' || 'blog-search-preview' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - run: npm install --global pnpm@11.20.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # Embeds changed articles, deletes vectors of articles that left the build, waits until
+      # Vectorize has applied the writes, and fails when the committed related-posts.json is
+      # stale; the new file is in the related-posts artifact.
+      - run: node scripts/embed-posts.mjs --index "$SEARCH_INDEX" --prune --out related-posts.json
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: related-posts
+          path: related-posts.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - run: node scripts/search-eval.mjs --index "$SEARCH_INDEX" --json search-eval.json
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: search-eval
+          path: search-eval.json
+          if-no-files-found: ignore
+          retention-days: 30

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { syncArticles } from '../scripts/search-index.mjs'
+import { evaluate, syncArticles } from '../scripts/search-index.mjs'
 import { merge } from '../src/lib/search-fuse.ts'
 import {
   articleChunks,
@@ -213,4 +213,27 @@ test('the index sync embeds only changed articles and removes chunks and article
   assert.deepEqual(api.calls.embedded, ['c whole h1', 'c chunk 0 h1'])
   assert.deepEqual(Object.keys(third.data.posts), ['a', 'c'])
   assert.equal(third.data.posts.a.related[0][0], 'c')
+})
+
+test('the evaluation reports top-3 recall and false positives of gated queries', async () => {
+  const api = fakeApi()
+  api.answers = {
+    hit: [blog('a', 0.6), blog('b', 0.58)],
+    noise: [blog('z', 0.37)],
+    news: [news('2026-10-16', 0, 0.5)],
+  }
+  const report = await evaluate(api, {
+    minRecall: 0.5,
+    maxFalsePositives: 0,
+    queries: [
+      { query: 'hit', expect: ['/blog/a/'], allow: ['/blog/b/'] },
+      { query: 'noise', expect: [] },
+      { query: 'news', expect: ['/news/2026-10-16/'], gate: false },
+    ],
+  })
+  assert.equal(report.recall, 1)
+  assert.equal(report.offTopicHits, 1)
+  assert.equal(report.falsePositives, 1)
+  assert.equal(report.passed, false)
+  assert.deepEqual(report.results[2].hits, [['/news/2026-10-16/', 0.5]])
 })
