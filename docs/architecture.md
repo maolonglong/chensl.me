@@ -4,7 +4,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 
 ## Principles
 
-- Pages are prerendered Astro components with scoped CSS and native browser scripts. The Worker runs two features: the upvote Actions and the AI News (`/news/`) ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). Add a client framework or more server-rendered behavior only for a concrete requirement.
+- Pages are prerendered Astro components with scoped CSS and native browser scripts. The Worker runs three features: the upvote Actions, the AI News (`/news/`) ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)), and the search endpoint ([decision](../.agents/notes/implemented/feature/2026-10-17-hybrid-search.md)). Add a client framework or more server-rendered behavior only for a concrete requirement.
 - Keep pages light. Use a native HTML or CSS feature, such as a popover, before a script; keep each script small and owned by its component. Scripts enhance the page; they are not required to read it. When scripts do not run, the contents list still opens natively, script-only controls are hidden, and a notice that was stale at build time still shows (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
 - Use Astro's native features and official integrations first. For an Astro API or configuration change, read the Astro docs (the Astro Docs MCP when available) and confirm that the installed version supports it.
 - One Markdown pipeline renders every view of an article: the page, the RSS item, and the Markdown export metadata come from the same collection entry.
@@ -25,7 +25,8 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
                          ├─ static assets, with public/_headers
                          ├─ Worker: src/middleware.ts + src/actions/ ──► D1 (VOTES), rate limiters
                          │                           └── ASSETS binding: is this a built article page?
-                         └─ Worker: src/live.config.ts, src/pages/api/news* ──► D1 (NEWS), Workers Cache
+                         ├─ Worker: src/live.config.ts, src/pages/api/news* ──► D1 (NEWS), Workers Cache
+                         └─ Worker: src/pages/api/search.ts ──► Workers AI, Vectorize, D1 (NEWS)
   browser: theme bootstrap (inline, hashed) + compiled component scripts + giscus iframe
 ```
 
@@ -38,6 +39,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 - **Routes.** `src/pages/` holds the home, the archive, article pages, the Markdown exports (`/blog/<id>/index.md`), `/index.xml`, `/llms.txt`, and the giscus theme stylesheets (`src/pages/css/`, built from `src/styles/giscus*.css` by `src/lib/assets.ts`). `src/lib/markdown-images.ts` publishes the original article images next to the exports.
 - **RSS.** `src/pages/index.xml.ts` renders each entry through the Astro container, so feed items use the same HTML and optimized images as pages, then makes every URL absolute.
 - **Share cards.** The prerendered route `src/pages/og/[...card].png.ts` renders a PNG for each article and four fixed cards with `src/lib/og-card.mjs` ([decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md)). Prerendered routes stay out of the Worker, and `scripts/check-site.mjs` fails a Worker bundle that contains the renderer.
+- **Search.** `astro.config.mjs` runs Pagefind on the article pages. `scripts/embed-posts.mjs`, run by hand, writes `src/data/related-posts.json` and the article vectors ([decision](../.agents/notes/implemented/feature/2026-10-17-hybrid-search.md)).
 - **Fonts.** `src/lib/fonts.mjs` builds JinKai subsets from the source text before Astro resolves fonts ([decision](../.agents/notes/implemented/simplification/2026-10-06-subset-fonts-from-source-text.md)), and slices of the rest for runtime text ([decision](../.agents/notes/implemented/feature/2026-10-16-jinkai-unicode-range-slices.md)).
 
 ## Runtime
@@ -47,8 +49,9 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 - **Static assets.** Workers Static Assets serves the prerendered files. `public/_headers` sets the response headers: the HTTP CSP, cache rules, and the text charsets that production does not add.
 - **Actions.** `src/actions/index.ts` defines `getVotes` and `upvote`. `src/middleware.ts` rejects cross-origin Action requests and makes Action responses private. The Actions use D1 (`VOTES`), two rate limiters, and the `ASSETS` binding to confirm that an ID is a published article ([decision](../.agents/notes/implemented/architecture/2026-09-29-validate-articles-through-built-pages.md)). Schema changes are files in `migrations/`.
 - **News.** `src/pages/api/news.ts` and `src/pages/api/news/retract.ts` check the `NEWS_TOKEN` secret. Writes append to `issue_versions` and refresh the latest row in `issues`; retraction sets `hidden_at`. `src/lib/news.ts` holds the schema and all SQL. The pages and the feed read through the live collections in `src/live.config.ts` with bounded queries on the `date` primary key; this bundles the content store, capped by `scripts/check-site.mjs`, and Workers Cache serves them for their `s-maxage`. Schema changes are files in `migrations/news/`.
+- **Search.** `src/pages/api/search.ts` returns Vectorize hits and AI News keyword hits from FTS5, which triggers in `migrations/news/0003_search.sql` keep current; `src/lib/search.ts` holds the queries. The browser merges them with the Pagefind hits.
 - **Routing.** `assets.run_worker_first` in `wrangler.jsonc` lists every Worker path. Any other missing path gets the 404 page from assets, also for a POST.
-- **Bindings.** Production and Workers Previews use separate D1 databases.
+- **Bindings.** Production and Workers Previews use separate D1 databases. Without the `AI` and `SEARCH_INDEX` bindings, `/api/search` returns keyword hits only.
 
 ## Browser
 
@@ -63,7 +66,7 @@ Two policies apply independently ([decision](../.agents/notes/implemented/archit
 - The meta policy from `astro.config.mjs` carries the script hashes and the external script sources.
 - The HTTP policy in `public/_headers` carries `frame-ancestors` and the other response protections.
 
-`public/_headers` defines no `script-src`. Add any other third-party source to each policy that defines its directive, and to `scripts/check-site.mjs`.
+`public/_headers` defines no `script-src`. Only `/search/` adds `'wasm-unsafe-eval'` for Pagefind. Add any other third-party source to each policy that defines its directive, and to `scripts/check-site.mjs`.
 
 ## Delivery
 
