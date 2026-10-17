@@ -26,7 +26,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
                          ├─ Worker: src/middleware.ts + src/actions/ ──► D1 (VOTES), rate limiters
                          │                           └── ASSETS binding: is this a built article page?
                          ├─ Worker: src/live.config.ts, src/pages/api/news* ──► D1 (NEWS), Workers Cache
-                         └─ Worker: src/pages/api/search.ts ──► Workers AI, Vectorize, D1 (NEWS)
+                         └─ Worker: src/worker.ts ─ /api/search ──► Workers AI, Vectorize, D1 (NEWS)
   browser: theme bootstrap (inline, hashed) + compiled component scripts + giscus iframe
 ```
 
@@ -49,7 +49,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 - **Static assets.** Workers Static Assets serves the prerendered files. `public/_headers` sets the response headers: the HTTP CSP, cache rules, and the text charsets that production does not add.
 - **Actions.** `src/actions/index.ts` defines `getVotes` and `upvote`. `src/middleware.ts` rejects cross-origin Action requests and makes Action responses private. The Actions use D1 (`VOTES`), two rate limiters, and the `ASSETS` binding to confirm that an ID is a published article ([decision](../.agents/notes/implemented/architecture/2026-09-29-validate-articles-through-built-pages.md)). Schema changes are files in `migrations/`.
 - **News.** `src/pages/api/news.ts` and `src/pages/api/news/retract.ts` check the `NEWS_TOKEN` secret. Writes append to `issue_versions` and refresh the latest row in `issues`; retraction sets `hidden_at`. `src/lib/news.ts` holds the schema and all SQL. The pages and the feed read through the live collections in `src/live.config.ts` with bounded queries on the `date` primary key; this bundles the content store, capped by `scripts/check-site.mjs`, and Workers Cache serves them for their `s-maxage`. Schema changes are files in `migrations/news/`.
-- **Search.** `src/pages/api/search.ts` returns Vectorize hits and AI News keyword hits from FTS5, which triggers in `migrations/news/0003_search.sql` keep current; `src/lib/search.ts` holds the queries. The browser merges them with the Pagefind hits.
+- **Search.** `src/worker.ts`, the Worker entry, sends `/api/search` to `src/lib/search-endpoint.ts` before the Astro handler. It returns Vectorize hits and AI News keyword hits from FTS5, which triggers in `migrations/news/0003_search.sql` keep current; `src/lib/search.ts` holds the queries. The browser merges them with the Pagefind hits.
 - **Routing.** `assets.run_worker_first` in `wrangler.jsonc` lists every Worker path. Any other missing path gets the 404 page from assets, also for a POST.
 - **Bindings.** Production and Workers Previews use separate D1 databases. Without the `AI` and `SEARCH_INDEX` bindings, `/api/search` returns keyword hits only.
 

@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { queryIssue, retraction, setHidden } from '../../../lib/news'
 import { invalid, readAuthorizedJson, reply } from '../../../lib/news-api'
-import { indexIssue, removeIssue } from '../../../lib/search'
+import { indexIssue, purgeSearchCache, removeIssue } from '../../../lib/search'
 
 export const prerender = false
 
@@ -23,5 +23,6 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     const issue = await queryIssue(env.NEWS, date)
     search = issue ? await indexIssue(env, issue) : 'failed'
   }
+  await purgeSearchCache()
   return reply(200, { status: hidden ? 'hidden' : 'visible', date, search })
 }

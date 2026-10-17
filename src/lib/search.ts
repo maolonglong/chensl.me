@@ -142,6 +142,17 @@ export type IndexResult = 'indexed' | 'removed' | 'disabled' | 'failed'
 // Every news write and retraction changes what /api/search returns, keyword hits included, so
 // the news endpoints drop the cached answers. Workers Cache
 // is absent in Previews and local Wrangler; a failed purge only delays new results by the TTL.
+export async function purgeSearchCache() {
+  try {
+    // Imported at request time: the search page imports this module while it prerenders in Node.
+    const { cache } = await import('cloudflare:workers')
+    const result = await cache?.purge({ pathPrefixes: ['/api/search/'] })
+    if (result && !result.success) console.error('search cache purge failed', result.errors)
+  } catch (error) {
+    console.error('search cache purge failed', error)
+  }
+}
+
 // Called after each accepted news write, and when a retracted issue is shown again. Each item
 // gets its own vector; the vectors of items that a longer earlier version had are deleted. A
 // failure is logged and reported to the bot but never fails the write: the issue is already

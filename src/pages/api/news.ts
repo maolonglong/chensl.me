@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { newsIssue, saveIssue } from '../../lib/news'
 import { invalid, readAuthorizedJson, reply } from '../../lib/news-api'
-import { indexIssue } from '../../lib/search'
+import { indexIssue, purgeSearchCache } from '../../lib/search'
 
 export const prerender = false
 
@@ -18,6 +18,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   // index write that failed before. FTS5 follows through triggers (migrations/news/0003_search.sql).
   // A write to a retracted issue also writes vectors; /api/search drops them through D1.
   const search = await indexIssue(env, parsed.data)
+  await purgeSearchCache()
   return reply(status === 'created' ? 201 : 200, {
     status,
     version,
