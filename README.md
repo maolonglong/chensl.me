@@ -1,6 +1,6 @@
 # chensl.me
 
-Source for [chensl.me](https://chensl.me), a personal site and technical blog. Astro prerenders the pages to static assets on Cloudflare Workers, and a small Worker runs the article upvotes and the public, bot-written AI News section (`/news/`). There is no client UI framework.
+Source for [chensl.me](https://chensl.me), a personal site and technical blog. Astro prerenders the pages to static assets on Cloudflare Workers, and a small Worker runs the article upvotes, the public, bot-written AI News section (`/news/`), and `/api/search/`. There is no client UI framework.
 
 ## Setup
 

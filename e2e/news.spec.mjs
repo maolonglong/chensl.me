@@ -97,6 +97,9 @@ test.describe('news API', () => {
       (await post(Buffer.from(JSON.stringify(issueFor(date))), { contentType: 'text/plain' }))
         .status,
     ).toBe(415)
+    expect(
+      (await post(Buffer.alloc(65 * 1024, 0x20), { contentType: 'application/json' })).status,
+    ).toBe(413)
   })
 
   test('writes append versions, a retry adds none, and the newest version is shown', async ({

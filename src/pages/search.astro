@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { maxQueryLength } from '../lib/search'
+import { maxQueryLength } from '../lib/search-fuse'
 
 // Pagefind compiles its WebAssembly in the page. Only this page allows it.
 Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
@@ -32,8 +32,7 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
 </BaseLayout>
 
 <script>
-  import { merge } from '../lib/search-fuse'
-  import type { SearchHit } from '../lib/search'
+  import { cleanQuery, merge, type SearchHit } from '../lib/search-fuse'
 
   interface ServerResults {
     semantic: SearchHit[]
@@ -55,9 +54,6 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   const typeLabels = { blog: '文章', news: 'AI News' }
   const resultLimit = 10
 
-  // The same normalization as the server, so the URL is also the edge cache key.
-  const normalize = (value: string) => value.replace(/\s+/g, ' ').trim()
-
   // A path in a variable keeps the bundler from resolving the file, which exists only after
   // the build writes the Pagefind index.
   const pagefindPath = '/pagefind/pagefind.js'
@@ -75,8 +71,11 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   async function articleHits(query: string): Promise<SearchHit[]> {
     const index = await loadPagefind()
     let { results } = await index.search(query)
-    if (!/\s/.test(query)) {
-      const phrase = new Set((await index.search(`"${query}"`)).results.map((result) => result.id))
+    const phraseTerm = query.replaceAll('"', '').trim()
+    if (phraseTerm && !/\s/.test(phraseTerm)) {
+      const phrase = new Set(
+        (await index.search(`"${phraseTerm}"`)).results.map((result) => result.id),
+      )
       results = results.filter((result) => phrase.has(result.id))
     }
     const pages = await Promise.all(results.slice(0, resultLimit).map((result) => result.data()))
@@ -143,7 +142,7 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   }
 
   function search(value: string) {
-    const query = normalize(value).slice(0, Number(input.dataset.maxLength))
+    const query = [...cleanQuery(value)].slice(0, Number(input.dataset.maxLength)).join('')
     const url = new URL(location.href)
     if (query) url.searchParams.set('q', query)
     else url.searchParams.delete('q')

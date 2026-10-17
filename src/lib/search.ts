@@ -9,28 +9,14 @@ import {
   searchNamespace,
   semanticTopK,
 } from './search-text.mjs'
+import { cleanQuery, maxQueryLength, normalizeQuery, type SearchHit } from './search-fuse'
 import { newsUrl, type NewsIssue } from './news'
 
 // Server side of /search/: semantic hits from Vectorize and AI News keyword hits from D1 FTS5.
 // The browser merges both with its Pagefind article hits; see src/pages/search.astro.
 // src/worker.ts routes GET /api/search/ here before the Astro handler.
 
-export interface SearchHit {
-  type: 'blog' | 'news'
-  url: string
-  title: string
-  date: string
-  snippet: string
-  score?: number
-}
-
-export const maxQueryLength = 64
-
-// Collapses whitespace and rejects empty or oversized input, so equal queries share one cache key.
-export function normalizeQuery(raw: string | null) {
-  const query = (raw ?? '').replace(/\s+/g, ' ').trim()
-  return query && [...query].length <= maxQueryLength ? query : null
-}
+export { cleanQuery, maxQueryLength, normalizeQuery, type SearchHit }
 
 type SearchEnv = Pick<Cloudflare.Env, 'AI' | 'SEARCH_INDEX' | 'NEWS' | 'SEMANTIC_SEARCH'>
 
@@ -65,11 +51,15 @@ export async function semanticSearch(env: SearchEnv, query: string): Promise<Sea
     returnMetadata: 'all',
     namespace: searchNamespace,
   })
-  const ranked = rankMatches(matches)
-  // A retraction deletes the issue's vectors; D1 still decides, in case that delete failed.
-  const newsDates = ranked
-    .filter((match) => match.type === 'news')
-    .map((match) => (match.metadata as unknown as NewsMetadata).date)
+  // A retraction deletes the issue's vectors; D1 still decides before ranking, in case that
+  // delete failed or is still applying, so a hidden issue never sets the news score gap.
+  const newsDates = [
+    ...new Set(
+      matches
+        .filter((match) => match.metadata?.type === 'news')
+        .map((match) => (match.metadata as unknown as NewsMetadata).date),
+    ),
+  ]
   const visible = new Set<string>()
   if (newsDates.length) {
     const { results } = await env.NEWS.prepare(
@@ -79,19 +69,15 @@ export async function semanticSearch(env: SearchEnv, query: string): Promise<Sea
       .all<{ date: string }>()
     for (const row of results) visible.add(row.date)
   }
-  const hits: SearchHit[] = []
-  for (const match of ranked) {
+  return rankMatches(matches, visible).map((match) => {
     const score = Math.round(match.score * 1000) / 1000
     if (match.type === 'news') {
       const { date, title, snippet } = match.metadata as unknown as NewsMetadata
-      if (visible.has(date))
-        hits.push({ type: 'news', url: newsUrl(date), title, date, snippet, score })
-    } else {
-      const { url, title, date, description } = match.metadata as unknown as BlogMetadata
-      hits.push({ type: 'blog', url, title, date, snippet: clipSnippet(description), score })
+      return { type: 'news', url: newsUrl(date), title, date, snippet, score }
     }
-  }
-  return hits
+    const { url, title, date, description } = match.metadata as unknown as BlogMetadata
+    return { type: 'blog', url, title, date, snippet: clipSnippet(description), score }
+  })
 }
 
 const newsKeywordLimit = 10

@@ -1,3 +1,23 @@
+export interface SearchHit {
+  type: 'blog' | 'news'
+  url: string
+  title: string
+  date: string
+  snippet: string
+  score?: number
+}
+
+export const maxQueryLength = 64
+
+export const cleanQuery = (raw: string | null) => (raw ?? '').replace(/[\p{Cc}\s]+/gu, ' ').trim()
+
+// Collapses whitespace and control characters and rejects empty or oversized input, so equal
+// queries share one cache key and FTS5 never sees a NUL byte.
+export function normalizeQuery(raw: string | null) {
+  const query = cleanQuery(raw)
+  return query && [...query].length <= maxQueryLength ? query : null
+}
+
 // Reciprocal rank fusion: each list adds 1 / (k + rank) to a hit, by URL, so a page that
 // several searches rank high comes first without comparing their incompatible scores.
 export const rrfK = 60

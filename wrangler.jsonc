@@ -17,7 +17,6 @@
       {
         "binding": "NEWS",
         "database_name": "blog-news-preview",
-        // Placeholder: replace with the ID that `wrangler d1 create blog-news-preview` prints.
         "database_id": "51c7df6e-e404-439f-a690-c26452f57e2d",
         "migrations_dir": "migrations/news",
       },
@@ -63,7 +62,6 @@
     {
       "binding": "NEWS",
       "database_name": "blog-news",
-      // Placeholder: replace with the ID that `wrangler d1 create blog-news` prints.
       "database_id": "9044b4b0-25f7-47cd-aa59-ebad8c64e502",
       "preview_database_id": "51c7df6e-e404-439f-a690-c26452f57e2d",
       "migrations_dir": "migrations/news",

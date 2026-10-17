@@ -28,7 +28,13 @@ const issues = rows.map(({ date, title, summary, items_json }) => ({
   items: JSON.parse(items_json),
 }))
 const { accountId, request } = cloudflareFromEnv()
-const result = await indexIssues(searchIndexApi(request, accountId, values.index), issues)
+const api = searchIndexApi(request, accountId, values.index)
+const result = await indexIssues(api, issues)
+await api.waitForWrites()
 console.log(
   `${values.index}: indexed ${result.issues} issues, ${result.neurons.toFixed(2)} neurons.`,
+)
+const { upserted, deleted, lastMutation } = api.writes
+console.log(
+  `${values.index}: upserted ${upserted} vectors, deleted ${deleted}${lastMutation ? `, applied up to mutation ${lastMutation}` : ', no write'}.`,
 )

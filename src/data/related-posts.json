@@ -2,7 +2,7 @@
   "model": "@cf/qwen/qwen3-embedding-0.6b",
   "posts": {
     "1brc-in-zig": {
-      "hash": "94332a925b5a51f81290c15a558aa3014ebaa8d80a5a5d325e8736b7f7fe5ab7",
+      "hash": "a1458118ecfe6f28b30cefde82f14a7bff4da3a06066df030889bc0abcdfbef6",
       "related": [
         [
           "bfjit-x86-64",
@@ -27,7 +27,7 @@
       ]
     },
     "2023-review": {
-      "hash": "c8e6e997529684efa6b6c63977ec97015dcf1cb11f4f822d7cffa22bd060eb79",
+      "hash": "0232401e93760ec2b8d378587fb249956ada6726c33def4fac8adb3343b7fef6",
       "related": [
         [
           "2024-review",
@@ -52,7 +52,7 @@
       ]
     },
     "2024-review": {
-      "hash": "bbd952d9d65729bde1d03bce8fbbc55371e40c1b247fe37c3e3590e8b08a4113",
+      "hash": "b77ad19991da42bb6e2137348d09d2cf4c31a5a3f0c0b03444bfeea29cab5583",
       "related": [
         [
           "2023-review",
@@ -77,7 +77,7 @@
       ]
     },
     "bfjit-x86-64": {
-      "hash": "c2e998288289fd314327eb5a640f930ee87c0fe792675f72e34bb6b209d456a5",
+      "hash": "d9970d48eff214cfe6fca32103a1045443cf89ee9360b32b2f3935852e1c3a77",
       "related": [
         [
           "1brc-in-zig",
@@ -102,7 +102,7 @@
       ]
     },
     "buddy": {
-      "hash": "a34175b91c506a5b73f4b13e322d10f996764d4bd30d432277c76d4d8259c87f",
+      "hash": "4eb431d3ead9db1ce2f9c648766566fd1fc0e3f7666893e214abdeafe84abc65",
       "related": [
         [
           "1brc-in-zig",
@@ -127,7 +127,7 @@
       ]
     },
     "bytebufferpool": {
-      "hash": "32a3cc0be9354e539247005b8bfab3e8ae62604339a24a853b7f038581f92efb",
+      "hash": "77d2806df3149d77648040de75698b383f119654448f89acff1a1567bc0a7fc8",
       "related": [
         [
           "manual-memory-management",
@@ -152,7 +152,7 @@
       ]
     },
     "dockertest": {
-      "hash": "10c8aa1b6b6ff48c80bc54106675ed80ceb40897e7ee17b41155dcadb8c85d30",
+      "hash": "1e51f455178244e92721f60753c52e6574abd53308f120fabed37ead241b4b34",
       "related": [
         [
           "overlayfs",
@@ -177,7 +177,7 @@
       ]
     },
     "functional-programming": {
-      "hash": "3f5611131b1145be66b8065ea3afc9358e653a4d132e72a6e6a2eb396d86531b",
+      "hash": "899e11e110858282b2fdcb937172734ecfd817a18050ed50f00c18db08550d46",
       "related": [
         [
           "2023-review",
@@ -202,7 +202,7 @@
       ]
     },
     "gat": {
-      "hash": "b7b6169bcfe5b77c69c049a10c91b4d6bffbd883446a72b62d99ea8eb548468a",
+      "hash": "3cd6e803c9352d1528c6e00e4738d4b8a86dfbddd1589add28a0e90d44244abd",
       "related": [
         [
           "functional-programming",
@@ -227,7 +227,7 @@
       ]
     },
     "gobreaker": {
-      "hash": "1b175f1cb703400a103fc23fc5386970c68f157b1296084efe0b60c4a3237c12",
+      "hash": "bfa6b95df96cf23487cbc305bd0c753aa9fbb42079b9493b2c7e7f0ca58aab4e",
       "related": [
         [
           "semantic-view-sql-traps",
@@ -252,7 +252,7 @@
       ]
     },
     "harness-engineering": {
-      "hash": "c7b411c34c8e268a85bcda1c7a39db098a6bd6cc583e87f63caa810418818e54",
+      "hash": "c02331d167a4caa62a85b9cc655ace3e04fb40663d7807234d908b27e109763f",
       "related": [
         [
           "thin-agent-thick-harness",
@@ -277,7 +277,7 @@
       ]
     },
     "lock-free-queue": {
-      "hash": "f06bd6a747977ba4c11f1b1e219f62dea92d305a6f52d65cb889a8c25c1e2e49",
+      "hash": "e49cdc4eabde1bacee70ab1db1039fad3bbc53e2cee73d70529dcac609304791",
       "related": [
         [
           "1brc-in-zig",
@@ -302,7 +302,7 @@
       ]
     },
     "manual-memory-management": {
-      "hash": "68d52afec52bf27b7753542a823cdc7dd90aeb59d4d8d6ae65df3db1d14893a1",
+      "hash": "4a6a940f7a8de90b6cd20210d115d7dd4e5d09a56ca52a2d2e59a3f152634286",
       "related": [
         [
           "buddy",
@@ -327,7 +327,7 @@
       ]
     },
     "overlayfs": {
-      "hash": "23bd509f59298afbe798864c253a6f66c1ba19e955e673bd551ffbd122874ebb",
+      "hash": "4f59375475d473ece01df184a71bc8b2d03e31ffafa4b0267e7353b45e737f87",
       "related": [
         [
           "dockertest",
@@ -352,7 +352,7 @@
       ]
     },
     "semantic-view-sql-traps": {
-      "hash": "2aec8d78078b71ce1114e5ca5bce090c7ff15f39e82d58443e69d85be2e50f0e",
+      "hash": "5b9f4211ee7750581fca6c14e7c430d3b98572e4a00183e8df8a7d4e4270c734",
       "related": [
         [
           "thin-agent-thick-harness",
@@ -377,7 +377,7 @@
       ]
     },
     "thin-agent-thick-harness": {
-      "hash": "7cbc0281b244a41addba5367c38f440e57315e0aedfff79f4eb5418e4d2eeff4",
+      "hash": "dc9a459f616ad184a6821f80388a9d4f27b20acaf9d8b53e4012a07bff01abf2",
       "related": [
         [
           "harness-engineering",
@@ -402,7 +402,7 @@
       ]
     },
     "thinking-vs-research": {
-      "hash": "e417a3b613e2764468842fe5af2f450711b0103fcaa0990187b265589796986c",
+      "hash": "abbb30a3cc5e72212da2b0fed5a8f8584098b8b123425f2e85c763a9728a6000",
       "related": [
         [
           "thin-agent-thick-harness",

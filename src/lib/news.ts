@@ -125,7 +125,7 @@ export type SaveResult = 'created' | 'updated' | 'unchanged'
 export async function saveIssue(
   db: D1Database,
   issue: NewsIssue,
-): Promise<{ status: SaveResult; version: number }> {
+): Promise<{ status: SaveResult; version: number; hidden: boolean }> {
   const itemsJson = JSON.stringify(issue.items)
   const now = new Date().toISOString()
   const [existing, inserted, , current] = await db.batch([
@@ -149,11 +149,15 @@ export async function saveIssue(
            updated_at = excluded.updated_at`,
       )
       .bind(issue.date),
-    db.prepare('SELECT version FROM issues WHERE date = ?').bind(issue.date),
+    db.prepare('SELECT version, hidden_at FROM issues WHERE date = ?').bind(issue.date),
   ])
-  const version = (current.results[0] as { version: number }).version
-  if (!existing.results.length) return { status: 'created', version }
-  return { status: inserted.meta.changes ? 'updated' : 'unchanged', version }
+  const { version, hidden_at } = current.results[0] as {
+    version: number
+    hidden_at: string | null
+  }
+  const hidden = hidden_at !== null
+  if (!existing.results.length) return { status: 'created', version, hidden }
+  return { status: inserted.meta.changes ? 'updated' : 'unchanged', version, hidden }
 }
 
 // Retraction only flips hidden_at; content and versions stay. Returns false for an unknown date.

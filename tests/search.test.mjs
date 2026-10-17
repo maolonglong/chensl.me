@@ -9,10 +9,12 @@ import {
   syncArticles,
 } from '../scripts/search-index.mjs'
 import { merge } from '../src/lib/search-fuse.ts'
+import * as searchFuse from '../src/lib/search-fuse.ts'
 import {
   articleChunks,
   chunkMaxChars,
   chunkOverlapChars,
+  clipSnippet,
   newsVectors,
   rankMatches,
   semanticMaxGap,
@@ -62,6 +64,45 @@ test('a short last section joins the previous chunk', () => {
   assert.ok(chunks[0].text.endsWith('B\nend'))
 })
 
+test('consecutive short sections keep page order and take the longest section heading', () => {
+  const chunks = articleChunks({
+    title: 'T',
+    sections: [
+      { heading: 'H1', text: 'first' },
+      { heading: 'H2', text: 'second' },
+      { heading: 'H3', text: paragraph('third', 400) },
+      { heading: 'Lead', text: paragraph('lead', 290) },
+      { heading: 'Tiny', text: paragraph('note', 20) },
+    ],
+  })
+  assert.equal(chunks.length, 2)
+  assert.equal(chunks[0].section, 'H3')
+  assert.ok(chunks[0].text.startsWith('T › H3\nH1\nfirst\nH2\nsecond\nthird'))
+  assert.equal(chunks[1].section, 'Lead')
+  assert.ok(chunks[1].text.startsWith('T › Lead\nlead'))
+  assert.ok(chunks[1].text.endsWith(`\nTiny\n${paragraph('note', 20)}`))
+})
+
+test('a single paragraph over chunkMaxChars splits with one overlap per boundary', () => {
+  const longParagraph = Array.from({ length: 250 }, (_, index) =>
+    String(index).padStart(10, '0'),
+  ).join('')
+  const chunks = articleChunks({
+    title: 'T',
+    sections: [{ heading: 'S', text: longParagraph }],
+  })
+  assert.equal(chunks.length, 3)
+  for (const chunk of chunks) {
+    const body = chunk.text.slice('T › S\n'.length)
+    assert.ok(body.length <= chunkMaxChars, `body length ${body.length} exceeds ${chunkMaxChars}`)
+  }
+  const firstBody = chunks[0].text.slice('T › S\n'.length)
+  const secondBody = chunks[1].text.slice('T › S\n'.length)
+  const overlap = firstBody.slice(-chunkOverlapChars)
+  assert.ok(secondBody.startsWith(overlap))
+  assert.ok(!secondBody.slice(chunkOverlapChars).startsWith(overlap))
+})
+
 const blog = (id, score, chunk = 0) => ({
   id: `blog:${id}#${chunk}`,
   score,
@@ -98,6 +139,29 @@ test('semantic ranking merges chunks and items by document and thresholds each k
   )
   // A kind whose best document is below its floor contributes nothing.
   assert.deepEqual(rankMatches([blog('z', semanticMinScore.blog - 0.01)]), [])
+})
+
+test('rankMatches drops retracted news before thresholding so hidden issues never suppress visible ones', () => {
+  const ranked = rankMatches(
+    [news('2026-10-16', 0, 0.65), news('2026-10-15', 0, 0.5)],
+    new Set(['2026-10-15']),
+  )
+  assert.deepEqual(
+    ranked.map((match) => [match.id, match.score]),
+    [['news:2026-10-15:0', 0.5]],
+  )
+})
+
+test('query normalization strips control characters and snippet clipping preserves surrogate pairs', () => {
+  assert.equal(searchFuse.normalizeQuery('abc\0def\tghi'), 'abc def ghi')
+  assert.equal(searchFuse.normalizeQuery('\0\x1f'), null)
+  assert.equal(searchFuse.cleanQuery('  a\0b  '), 'a b')
+  const exact120 = `${'a'.repeat(118)}𠀀b`
+  assert.equal(clipSnippet(exact120), exact120)
+  assert.doesNotThrow(() => encodeURIComponent(clipSnippet(exact120)))
+  const over120 = `${'a'.repeat(118)}𠀀bc`
+  assert.equal(clipSnippet(over120), `${'a'.repeat(118)}𠀀…`)
+  assert.doesNotThrow(() => encodeURIComponent(clipSnippet(over120)))
 })
 
 test('news vectors cover each item and list the IDs a longer version left behind', () => {
@@ -151,7 +215,7 @@ test('short queries put keyword hits first; longer ones fuse by rank', () => {
 // An in-memory index: vectors by ID, and an embedding that encodes the text length.
 function fakeApi(initial = []) {
   const vectors = new Map(initial.map((vector) => [vector.id, vector]))
-  const calls = { embedded: [], deleted: [] }
+  const calls = { embedded: [], deleted: [], operations: [] }
   return {
     vectors,
     calls,
@@ -167,9 +231,11 @@ function fakeApi(initial = []) {
       return ids.filter((id) => vectors.has(id)).map((id) => vectors.get(id))
     },
     async upsert(list) {
+      calls.operations.push(['upsert', list.map((vector) => vector.id)])
       for (const vector of list) vectors.set(vector.id, vector)
     },
     async deleteByIds(ids) {
+      calls.operations.push(['delete', [...ids]])
       calls.deleted.push(...ids)
       for (const id of ids) vectors.delete(id)
     },
@@ -203,15 +269,23 @@ test('the index sync embeds only changed articles and removes chunks and article
   assert.equal(api.vectors.get('post:a').namespace, 'related')
   assert.equal(api.vectors.get('blog:a#0').namespace, 'search')
 
-  // A legacy whole-article ID and a deleted article stay until a pruning run.
+  // Legacy whole-article IDs, deleted articles, and orphaned high chunk indices are pruned,
+  // and post:<id> checkpoints are written only after chunk upserts and stale chunk deletes.
   api.vectors.set('blog:a', { id: 'blog:a' })
+  api.vectors.set('blog:a#9', { id: 'blog:a#9' })
   api.vectors.set('news:2026-10-16:0', { id: 'news:2026-10-16:0' })
   api.calls.embedded.length = 0
+  api.calls.operations.length = 0
   const second = await syncArticles(api, [article('a', 'h2', 1)], { prune: true })
   assert.deepEqual(second.changed, ['a'])
   assert.deepEqual(api.calls.embedded, ['a whole h2', 'a chunk 0 h2'])
+  assert.deepEqual(api.calls.operations.slice(0, 3), [
+    ['upsert', ['blog:a#0']],
+    ['delete', ['blog:a#1', 'blog:a#2']],
+    ['upsert', ['post:a']],
+  ])
   assert.deepEqual([...api.vectors.keys()].sort(), ['blog:a#0', 'news:2026-10-16:0', 'post:a'])
-  assert.deepEqual(second.pruned.sort(), ['blog:a', 'blog:b#0', 'post:b'])
+  assert.deepEqual(second.pruned.sort(), ['blog:a', 'blog:a#9', 'blog:b#0', 'post:b'])
 
   // An unchanged article reuses its stored vector for the related-article data.
   api.calls.embedded.length = 0
@@ -222,11 +296,18 @@ test('the index sync embeds only changed articles and removes chunks and article
   assert.equal(third.data.posts.a.related[0][0], 'c')
 })
 
-test('the evaluation reports top-3 recall and false positives of gated queries', async () => {
+test('the evaluation reports top-3 recall and false positives of gated queries without news crowding', async () => {
   const api = fakeApi()
   api.answers = {
-    hit: [blog('a', 0.6), blog('b', 0.58)],
+    hit: [
+      news('2026-10-16', 0, 0.72),
+      news('2026-10-15', 0, 0.7),
+      news('2026-10-14', 0, 0.68),
+      blog('a', 0.6),
+      blog('b', 0.58),
+    ],
     noise: [blog('z', 0.37)],
+    offTopicWithNews: [news('2026-10-16', 0, 0.5)],
     news: [news('2026-10-16', 0, 0.5)],
   }
   const report = await evaluate(api, {
@@ -235,6 +316,7 @@ test('the evaluation reports top-3 recall and false positives of gated queries',
     queries: [
       { query: 'hit', expect: ['/blog/a/'], allow: ['/blog/b/'] },
       { query: 'noise', expect: [] },
+      { query: 'offTopicWithNews', expect: [] },
       { query: 'news', expect: ['/news/2026-10-16/'], gate: false },
     ],
   })
@@ -242,7 +324,7 @@ test('the evaluation reports top-3 recall and false positives of gated queries',
   assert.equal(report.offTopicHits, 1)
   assert.equal(report.falsePositives, 1)
   assert.equal(report.passed, false)
-  assert.deepEqual(report.results[2].hits, [['/news/2026-10-16/', 0.5]])
+  assert.deepEqual(report.results[3].hits, [['/news/2026-10-16/', 0.5]])
 })
 
 test('the index client counts its writes and waits for the last mutation', async () => {

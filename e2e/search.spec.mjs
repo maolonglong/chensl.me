@@ -224,12 +224,28 @@ test.describe('search page', () => {
     expect(await urls()).toEqual([])
   })
 
-  test('rejects empty and overlong queries', async ({ api }) => {
-    for (const q of ['', '%20', 'x'.repeat(65)]) {
+  test('rejects empty and overlong queries and normalizes control characters and astral code points', async ({
+    api,
+    open,
+    page,
+  }) => {
+    for (const q of ['', '%20', '%00', 'x'.repeat(65)]) {
       const response = await api.get(`/api/search/?q=${q}`)
       expect(response.status(), JSON.stringify(q)).toBe(400)
       expect(response.headers()['cache-control']).toBe('private, no-store')
     }
+    // Both /api/search and /api/search/ reach the Worker handler, and NUL bytes never break FTS5.
+    for (const path of ['/api/search?q=abc%00def', '/api/search/?q=abc%00def']) {
+      const response = await api.get(path)
+      expect(response.status(), path).toBe(200)
+      const body = await response.json()
+      expect(body.query, path).toBe('abc def')
+      expect(body.partial, path).toBeUndefined()
+    }
+    // 64 Unicode code points (65 UTF-16 code units) must not split the surrogate pair in the page.
+    const astral64 = `${'a'.repeat(63)}𠀀`
+    await open(`/search/?q=${encodeURIComponent(astral64)}`)
+    await expect(page.getByRole('status')).toHaveText('没有找到相关内容')
   })
 })
 

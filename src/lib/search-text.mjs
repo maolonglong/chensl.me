@@ -7,7 +7,7 @@ export const embeddingDimensions = 1024
 
 // Bump when the text, the chunking, or the vector layout changes: every article hash changes, so
 // the next index run re-embeds every article.
-export const indexVersion = 2
+export const indexVersion = 3
 
 // Search vectors (article chunks and news items) live in one namespace; whole-article vectors,
 // used only for related articles, live in another, so queries never return them.
@@ -23,7 +23,7 @@ export const queryInstruction = '给定一个搜索查询，检索能回答该�
 // more Neurons without better matches.
 const maxInputChars = 3000
 
-const clip = (text) => text.slice(0, maxInputChars)
+const clip = (text) => [...text].slice(0, maxInputChars).join('')
 
 export const articleEmbeddingText = ({ title, description, text }) =>
   clip([title, description, text].filter(Boolean).join('\n'))
@@ -60,12 +60,20 @@ function packSection(text) {
     const joined = current ? `${current}\n${paragraph}` : paragraph
     if (current.length >= chunkMinChars || (current && joined.length > chunkMaxChars)) {
       chunks.push(current)
-      // Start the next chunk with the tail of this one, cut at a line break when there is one.
-      const tail = current.slice(-chunkOverlapChars)
-      const lineStart = tail.indexOf('\n')
-      const overlap =
-        lineStart >= 0 && lineStart < tail.length - 1 ? tail.slice(lineStart + 1) : tail
-      current = `${overlap}\n${paragraph}`
+      // splitLong pieces already begin with the previous piece's tail; other paragraphs get
+      // the tail of the flushed chunk, cut at a line break when there is one.
+      const alreadyOverlapped =
+        paragraph.length >= chunkOverlapChars &&
+        current.endsWith(paragraph.slice(0, chunkOverlapChars))
+      if (alreadyOverlapped) {
+        current = paragraph
+      } else {
+        const tail = current.slice(-chunkOverlapChars)
+        const lineStart = tail.indexOf('\n')
+        const overlap =
+          lineStart >= 0 && lineStart < tail.length - 1 ? tail.slice(lineStart + 1) : tail
+        current = `${overlap}\n${paragraph}`
+      }
     } else {
       current = joined
     }
@@ -74,35 +82,50 @@ function packSection(text) {
   return chunks
 }
 
+const groupChars = (group) => group.reduce((sum, section) => sum + section.text.length, 0)
+
 // sections: [{ heading, text }] in page order; the first may have an empty heading.
 // Returns [{ section, text }], where text starts with "title › section" (or the title alone).
 export function articleChunks({ title, sections }) {
-  const merged = []
+  const groups = []
   for (const section of sections) {
     const text = section.text.trim()
-    const previous = merged.at(-1)
-    if (previous && previous.text.length < shortSectionChars) {
-      // The chunk is named after the section that brings most of the text.
-      previous.text = [previous.heading, previous.text, text].filter(Boolean).join('\n')
-      previous.heading = section.heading
-    } else if (text || section.heading) {
-      merged.push({ heading: section.heading, text })
+    if (!text && !section.heading) continue
+    const previous = groups.at(-1)
+    if (previous && groupChars(previous) < shortSectionChars) {
+      previous.push({ heading: section.heading, text })
+    } else {
+      groups.push([{ heading: section.heading, text }])
     }
   }
-  const last = merged.at(-1)
-  if (merged.length > 1 && last.text.length < shortSectionChars) {
-    merged.pop()
-    merged.at(-1).text += `\n${last.heading}\n${last.text}`
+  if (groups.length > 1 && groupChars(groups.at(-1)) < shortSectionChars) {
+    const last = groups.pop()
+    groups.at(-1).push(...last)
   }
-  return merged.flatMap(({ heading, text }) =>
-    packSection(text).map((body) => ({
-      section: heading,
-      text: `${heading ? `${title} › ${heading}` : title}\n${body}`,
-    })),
-  )
+  return groups.flatMap((group) => {
+    // The chunk is named after the section that brings most of the text.
+    const lead = group.reduce((best, section) =>
+      section.text.length >= best.text.length ? section : best,
+    )
+    const text = group
+      .map((section) =>
+        section === lead
+          ? section.text
+          : [section.heading, section.text].filter(Boolean).join('\n'),
+      )
+      .filter(Boolean)
+      .join('\n')
+    return packSection(text).map((body) => ({
+      section: lead.heading,
+      text: `${lead.heading ? `${title} › ${lead.heading}` : title}\n${body}`,
+    }))
+  })
 }
 
-export const clipSnippet = (text) => (text.length > 120 ? `${text.slice(0, 119)}…` : text)
+export const clipSnippet = (text) => {
+  const chars = [...text]
+  return chars.length > 120 ? `${chars.slice(0, 119).join('')}…` : text
+}
 
 // Vector IDs. An article has one whole-article vector and its chunks; an issue has one vector
 // for each item. Vectorize limits an ID to 64 bytes; article IDs and dates stay far below it.
@@ -153,11 +176,12 @@ const documentKey = (match) =>
     ? `news:${match.metadata.date}`
     : `blog:${articleOfVectorId(match.id) ?? match.id}`
 
-export function rankMatches(matches) {
+export function rankMatches(matches, visibleNews) {
   const best = new Map()
   for (const match of matches) {
     const type = match.metadata?.type
     if (type !== 'blog' && type !== 'news') continue
+    if (type === 'news' && visibleNews && !visibleNews.has(match.metadata.date)) continue
     const key = documentKey(match)
     if (!best.has(key) || best.get(key).score < match.score) best.set(key, { ...match, type })
   }
