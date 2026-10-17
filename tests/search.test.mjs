@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { evaluate, syncArticles } from '../scripts/search-index.mjs'
+import { evaluate, searchIndexApi, syncArticles } from '../scripts/search-index.mjs'
 import { merge } from '../src/lib/search-fuse.ts'
 import {
   articleChunks,
@@ -236,4 +236,27 @@ test('the evaluation reports top-3 recall and false positives of gated queries',
   assert.equal(report.falsePositives, 1)
   assert.equal(report.passed, false)
   assert.deepEqual(report.results[2].hits, [['/news/2026-10-16/', 0.5]])
+})
+
+test('the index client counts its writes and waits for the last mutation', async () => {
+  let mutation = 0
+  let processed = 0
+  const request = async ({ path }) => {
+    if (path.endsWith('/info')) {
+      processed = Math.min(processed + 1, mutation)
+      return { success: true, result: { processedUpToMutation: `m${processed}` } }
+    }
+    mutation += 1
+    return { success: true, result: { mutationId: `m${mutation}` } }
+  }
+  const api = searchIndexApi(request, 'account', 'index')
+  assert.deepEqual(api.writes, { upserted: 0, deleted: 0, lastMutation: undefined })
+  await api.upsert([
+    { id: 'a', values: [1] },
+    { id: 'b', values: [1] },
+  ])
+  await api.deleteByIds(['c'])
+  await api.waitForWrites(1000)
+  assert.deepEqual(api.writes, { upserted: 2, deleted: 1, lastMutation: 'm2' })
+  assert.equal(processed, 2)
 })
