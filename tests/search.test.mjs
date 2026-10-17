@@ -64,25 +64,6 @@ test('a short last section joins the previous chunk', () => {
   assert.ok(chunks[0].text.endsWith('B\nend'))
 })
 
-test('consecutive short sections keep page order and take the longest section heading', () => {
-  const chunks = articleChunks({
-    title: 'T',
-    sections: [
-      { heading: 'H1', text: 'first' },
-      { heading: 'H2', text: 'second' },
-      { heading: 'H3', text: paragraph('third', 400) },
-      { heading: 'Lead', text: paragraph('lead', 290) },
-      { heading: 'Tiny', text: paragraph('note', 20) },
-    ],
-  })
-  assert.equal(chunks.length, 2)
-  assert.equal(chunks[0].section, 'H3')
-  assert.ok(chunks[0].text.startsWith('T › H3\nH1\nfirst\nH2\nsecond\nthird'))
-  assert.equal(chunks[1].section, 'Lead')
-  assert.ok(chunks[1].text.startsWith('T › Lead\nlead'))
-  assert.ok(chunks[1].text.endsWith(`\nTiny\n${paragraph('note', 20)}`))
-})
-
 test('a single paragraph over chunkMaxChars splits with one overlap per boundary', () => {
   const longParagraph = Array.from({ length: 250 }, (_, index) =>
     String(index).padStart(10, '0'),

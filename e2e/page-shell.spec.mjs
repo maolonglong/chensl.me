@@ -3,13 +3,6 @@ import { expect, expectAll, test } from './site.mjs'
 // Home, archive, a long article with code, tables, and a TOC, and the shared 404.
 const pages = ['/', '/blog/', '/blog/dockertest/', '/404.html']
 
-test('old articles show a stale notice after the date', async ({ page, open }) => {
-  await open('/blog/overlayfs/')
-  const notice = page.locator('.post-header > .post-meta + .post-notice')
-  await expect(notice).toHaveText('这篇文章写于两年多以前，部分内容可能已经过时。')
-  await expect(notice).toBeVisible()
-})
-
 test('articles become stale in the browser without a rebuild', async ({ page, open }) => {
   // semantic-view-sql-traps was published on 2026-09-23.
   await page.clock.setFixedTime(new Date('2028-09-01T00:00:00Z'))
@@ -33,7 +26,7 @@ test.describe('stale notices without page scripts', () => {
 
   test('old articles retain their build-time notice', async ({ page, open }) => {
     await open('/blog/overlayfs/')
-    const notice = page.locator('.post-notice')
+    const notice = page.locator('.post-header > .post-meta + .post-notice')
     await expect(notice).toHaveText('这篇文章写于两年多以前，部分内容可能已经过时。')
     await expect(notice).toBeVisible()
   })

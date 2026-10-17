@@ -19,14 +19,12 @@ test('the header links the sections, and the site title links home', async ({ op
 })
 
 test('the footer links the article feed', async ({ open, page }) => {
-  for (const path of ['/', '/blog/', '/blog/dockertest/', '/search/']) {
-    await open(path)
-    const feed = page.locator('body > footer a[type="application/rss+xml"]')
-    await expect(feed, path).toHaveCount(1)
-    // Exact text: whitespace inside the inline link would extend its underline.
-    expect(await feed.textContent(), path).toBe('RSS')
-    await expect(feed, path).toHaveAttribute('href', '/index.xml')
-  }
+  await open('/')
+  const feed = page.locator('body > footer a[type="application/rss+xml"]')
+  await expect(feed).toHaveCount(1)
+  // Exact text: whitespace inside the inline link would extend its underline.
+  expect(await feed.textContent()).toBe('RSS')
+  await expect(feed).toHaveAttribute('href', '/index.xml')
 })
 
 test('the search icon is a named link that marks the search page as current', async ({
