@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { readFile, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
@@ -268,6 +268,52 @@ for (const [file, tree] of treeByFile) {
   }
 }
 
+// Every article shares its own build-time card. Crawlers read the size from the meta tags, so the
+// PNG header must match them, and both must be 1200x630.
+const cardWidth = 1200
+const cardHeight = 630
+const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+function pngSize(file) {
+  const bytes = readFileSync(file)
+  if (bytes.length < 24 || !bytes.subarray(0, 8).equals(pngSignature)) return null
+  return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)]
+}
+const articleCards = new Map()
+for (const [file, tree] of treeByFile) {
+  const relative = path.relative(outputDir, file).split(path.sep).join('/')
+  if (!/^blog\/[^/]+\/index\.html$/.test(relative)) continue
+  const meta = Object.fromEntries(
+    elements(tree, ['meta']).map(({ properties }) => [
+      (properties.property ?? properties.name ?? '').toLowerCase(),
+      properties.content,
+    ]),
+  )
+  const image = meta['og:image'] && resolveUrl(meta['og:image'], file)
+  const target = image && image.origin === siteOrigin && decodeURIComponent(image.pathname).slice(1)
+  if (!target || !outputFiles.has(target)) {
+    errors.push(`${relative} needs an og:image that is a built file`)
+    continue
+  }
+  const size = pngSize(path.join(outputDir, target))
+  if (!size || size[0] !== cardWidth || size[1] !== cardHeight) {
+    errors.push(
+      `${relative} og:image ${target} must be a ${cardWidth}x${cardHeight} PNG, not ${size?.join('x') ?? 'another format'}`,
+    )
+  }
+  if (
+    meta['og:image:width'] !== String(cardWidth) ||
+    meta['og:image:height'] !== String(cardHeight)
+  ) {
+    errors.push(
+      `${relative} must declare og:image:width ${cardWidth} and og:image:height ${cardHeight}`,
+    )
+  }
+  if (articleCards.has(target)) {
+    errors.push(`${relative} shares its og:image ${target} with ${articleCards.get(target)}`)
+  }
+  articleCards.set(target, relative)
+}
+
 const markdownFiles = new Set([...outputFiles].filter((file) => /^blog\/.+\/index\.md$/.test(file)))
 // Local Wrangler adds UTF-8 to text/* automatically, masking missing production headers.
 for (const [route, type] of [
@@ -339,6 +385,19 @@ if (existsSync(serverDir)) {
     errors.push(
       `Worker content store is ${contentStoreBytes} bytes, over the ${contentStoreLimitBytes}-byte limit: ${contentStoreFiles.join(', ')}`,
     )
+  }
+}
+
+// Share cards render at build time in Node. The Worker never renders an image, so no renderer
+// code may reach its bundle.
+if (existsSync(serverDir)) {
+  for (const file of await walk(serverDir)) {
+    if (
+      /\.(?:m?js|wasm|node)$/.test(file) &&
+      /@takumi-rs|takumi_wasm|subset-font/.test(await readFile(file, 'utf8'))
+    ) {
+      errors.push(`Worker bundle includes the share-card renderer: ${path.relative(root, file)}`)
+    }
   }
 }
 

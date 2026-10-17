@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { test } from 'node:test'
+import sharp from 'sharp'
 import { root, run, temporaryDirectory, write } from './support.mjs'
 
 const checker = path.join(root, 'scripts/check-site.mjs')
@@ -32,6 +33,20 @@ async function checkerFixture() {
   return fixture
 }
 
+const png = (width, height) =>
+  sharp({ create: { width, height, channels: 3, background: '#f5f4ed' } })
+    .png()
+    .toBuffer()
+
+const cardMeta = (card, width = 1200, height = 630) =>
+  `<meta property="og:image" content="https://chensl.me${card}"><meta property="og:image:width" content="${width}"><meta property="og:image:height" content="${height}">`
+
+// An article page with its own valid share card, as the build emits it.
+async function writeArticle(fixture, id, body = '<article>Article</article>') {
+  await write(fixture, `dist/og/blog/${id}.png`, await png(1200, 630))
+  await write(fixture, `dist/blog/${id}/index.html`, `${cardMeta(`/og/blog/${id}.png`)}${body}`)
+}
+
 for (const type of ['text/plain', 'text/markdown']) {
   test(`site checker requires a UTF-8 charset rule for ${type} exports`, async () => {
     const fixture = await checkerFixture()
@@ -57,7 +72,7 @@ for (const type of ['text/plain', 'text/markdown']) {
 
 test('site checker rejects broken Markdown images', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'dist/blog/article/index.html', '<article>Article</article>')
+  await writeArticle(fixture, 'article')
   await write(
     fixture,
     'dist/blog/article/index.md',
@@ -79,7 +94,7 @@ test('site checker rejects broken Markdown images', async () => {
 
 test('site checker accepts real Markdown images and ignores image syntax in code', async () => {
   const fixture = await checkerFixture()
-  await write(fixture, 'dist/blog/article/index.html', '<article>Article</article>')
+  await writeArticle(fixture, 'article')
   await write(
     fixture,
     'dist/blog/article/index.md',
@@ -341,4 +356,52 @@ test('site checker validates same-origin social images', async () => {
   assert.equal(result.status, 1, result.stdout)
   assert.match(result.stderr, /missing internal URL "\/missing-card\.png"/)
   assert.match(result.stderr, /missing internal URL "https:\/\/chensl\.me\/missing-twitter\.png"/)
+})
+
+test('site checker requires each article to have its own 1200x630 PNG share card', async () => {
+  const fixture = await checkerFixture()
+  await writeArticle(fixture, 'first')
+  await writeArticle(fixture, 'second')
+  const valid = run(process.execPath, [checker], fixture)
+  assert.equal(valid.status, 0, valid.stderr)
+
+  await write(fixture, 'dist/blog/missing/index.html', '<article>No card</article>')
+  await write(fixture, 'dist/og/blog/small.png', await png(1200, 1200))
+  await write(fixture, 'dist/blog/small/index.html', cardMeta('/og/blog/small.png'))
+  await write(fixture, 'dist/og/blog/text.png', 'not a png')
+  await write(fixture, 'dist/blog/text/index.html', cardMeta('/og/blog/text.png'))
+  await write(fixture, 'dist/og/blog/undeclared.png', await png(1200, 630))
+  await write(
+    fixture,
+    'dist/blog/undeclared/index.html',
+    '<meta property="og:image" content="/og/blog/undeclared.png">',
+  )
+  await write(fixture, 'dist/blog/copy/index.html', cardMeta('/og/blog/first.png'))
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /blog\/missing\/index\.html needs an og:image that is a built file/)
+  assert.match(result.stderr, /og\/blog\/small\.png must be a 1200x630 PNG, not 1200x1200/)
+  assert.match(result.stderr, /og\/blog\/text\.png must be a 1200x630 PNG, not another format/)
+  assert.match(result.stderr, /blog\/undeclared\/index\.html must declare og:image:width 1200/)
+  assert.match(
+    result.stderr,
+    /blog\/(?:copy|first)\/index\.html shares its og:image og\/blog\/first\.png/,
+  )
+})
+
+test('site checker rejects share-card renderer code in the Worker bundle', async () => {
+  const fixture = await checkerFixture()
+  await write(fixture, 'server/chunks/worker.mjs', 'export {}')
+  const valid = run(process.execPath, [checker], fixture)
+  assert.equal(valid.status, 0, valid.stderr)
+
+  await write(fixture, 'server/chunks/og.mjs', "import { Renderer } from '@takumi-rs/core'")
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.ok(
+    result.stderr.includes(
+      `Worker bundle includes the share-card renderer: ${path.join('server', 'chunks', 'og.mjs')}`,
+    ),
+    result.stderr,
+  )
 })

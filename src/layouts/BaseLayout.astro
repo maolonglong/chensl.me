@@ -6,6 +6,7 @@ import '../../.astro/site-fonts/slices.css'
 import Theme from '../components/Theme.astro'
 import ThemeToggle from '../components/ThemeToggle.astro'
 import { Font } from 'astro:assets'
+import { cardFor, cardHeight, cardPath, cardWidth, fixedCards } from '../lib/og.mjs'
 
 export interface Props {
   title?: string
@@ -31,7 +32,9 @@ const isNews = path === '/news' || path.startsWith('/news/')
 const documentTitle = isHome ? siteTitle : `${title} | ${siteTitle}`
 const metadataTitle = isHome ? siteTitle : title
 const canonical = new URL(path, Astro.site!)
-const image = new URL('/og-image.png', Astro.site!)
+const card = cardFor(path, article)
+const image = new URL(cardPath(card), Astro.site!)
+const imageAlt = article ? title : fixedCards[card as keyof typeof fixedCards].title
 const schema: Record<string, unknown> = {
   '@context': 'https://schema.org',
   '@type': isHome
@@ -80,16 +83,21 @@ const blogCurrent = path === '/blog/' ? 'page' : path.startsWith('/blog/') ? 'lo
         <meta property="og:url" content={canonical} />
         <meta property="og:description" content={description} />
         <meta property="og:image" content={image} />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content={String(cardWidth)} />
+        <meta property="og:image:height" content={String(cardHeight)} />
+        <meta property="og:image:alt" content={imageAlt} />
         {article && pubDate && (
           <meta property="article:published_time" content={pubDate.toISOString()} />
         )}
         {article && updatedDate && (
           <meta property="article:modified_time" content={updatedDate.toISOString()} />
         )}
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={metadataTitle} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={image} />
+        <meta name="twitter:image:alt" content={imageAlt} />
         <script
           type="application/ld+json"
           set:html={JSON.stringify(schema).replaceAll('<', '\\u003c')}

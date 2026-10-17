@@ -7,6 +7,7 @@ Read this before you change what readers see or rely on. Each section states a p
 - **Home** introduces the author. **Archive** (`/blog/`) lists published articles, grouped by year, newest first.
 - **Article pages** use one reading column. An article with at least three H2 or H3 headings gets a contents list (`tests/markdown.test.mjs`, `e2e/contents.spec.mjs`).
 - **Stale notice.** An article whose last modification (`updatedDate`, else `pubDate`) is more than two calendar years old shows a notice under its header. The browser checks the current date on each visit, so the notice appears when the article crosses two years, with no rebuild. The build also marks articles that were already stale, so a visitor whose clock is behind the build time still sees the notice (`tests/stale.test.mjs`, `e2e/page-shell.spec.mjs`).
+- **Share previews.** A shared article link shows a large card with the article title. The home page and the archive have fixed cards. AI News issues share one card, and the news archive pages share another (`tests/document.test.mjs`, `e2e/news.spec.mjs`).
 
 ## Articles and publication
 
