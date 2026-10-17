@@ -148,7 +148,7 @@ test.describe('news retraction', () => {
     expect((await post(issueFor(date))).status).toBe(201)
     const hidden = await retract(post, { date })
     expect(hidden.status).toBe(200)
-    expect(hidden.body).toEqual({ status: 'hidden', date })
+    expect(hidden.body).toEqual({ status: 'hidden', date, search: 'disabled' })
 
     const response = await page.goto(`/news/${date}/`)
     expect(response.status()).toBe(404)
@@ -160,7 +160,7 @@ test.describe('news retraction', () => {
     expect((await post(issueFor(date, { title: '改过' }))).body.status).toBe('updated')
     expect((await page.goto(`/news/${date}/`)).status()).toBe(404)
     const restored = await retract(post, { date, hidden: false })
-    expect(restored.body).toEqual({ status: 'visible', date })
+    expect(restored.body).toEqual({ status: 'visible', date, search: 'disabled' })
     expect((await page.goto(`/news/${date}/`)).status()).toBe(200)
     await expect(page.locator('h1')).toHaveText('改过')
   })

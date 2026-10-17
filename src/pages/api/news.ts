@@ -16,6 +16,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const { status, version } = await saveIssue(env.NEWS, parsed.data)
   // Every accepted write re-embeds the issue, also an unchanged one, so a resend repairs an
   // index write that failed before. FTS5 follows through triggers (migrations/news/0003_search.sql).
+  // A write to a retracted issue also writes vectors; /api/search drops them through D1.
   const search = await indexIssue(env, parsed.data)
   return reply(status === 'created' ? 201 : 200, {
     status,

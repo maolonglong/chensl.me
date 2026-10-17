@@ -32,7 +32,7 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
 </BaseLayout>
 
 <script>
-  import { fuse } from '../lib/search-fuse'
+  import { merge } from '../lib/search-fuse'
   import type { SearchHit } from '../lib/search'
 
   interface ServerResults {
@@ -129,10 +129,11 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
     const [articles, server] = await Promise.allSettled([articleHits(query), serverHits(query)])
     // A slower answer to an earlier query must not replace the current results.
     if (id !== latest) return
-    const lists: SearchHit[][] = []
-    if (articles.status === 'fulfilled') lists.push(articles.value)
-    if (server.status === 'fulfilled') lists.push(server.value.semantic, server.value.news)
-    const hits = fuse(lists).slice(0, resultLimit * 2)
+    const keyword: SearchHit[][] = []
+    if (articles.status === 'fulfilled') keyword.push(articles.value)
+    if (server.status === 'fulfilled') keyword.push(server.value.news)
+    const semantic = server.status === 'fulfilled' ? server.value.semantic : []
+    const hits = merge(query, keyword, semantic).slice(0, resultLimit * 2)
     render(hits)
     const degraded =
       articles.status === 'rejected' || server.status === 'rejected' || server.value.partial
