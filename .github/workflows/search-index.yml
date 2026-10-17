@@ -54,6 +54,7 @@ jobs:
           path: related-posts.json
           if-no-files-found: ignore
           retention-days: 7
+      # Retries a failed evaluation for up to five minutes: queries see a fresh write late.
       - run: node scripts/search-eval.mjs --index "$SEARCH_INDEX" --json search-eval.json
       - uses: actions/upload-artifact@v7
         if: always()

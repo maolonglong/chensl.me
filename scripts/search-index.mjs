@@ -286,3 +286,37 @@ export async function evaluate(api, fixture) {
     neurons: api.neurons,
   }
 }
+
+// Vectorize marks a write as applied (processedUpToMutation, which embed-posts.mjs waits for)
+// before its queries see all of it: on 2026-10-17 a new production index answered 4 of 16
+// labeled queries with no hits right after the first write, and every query three minutes
+// later. A failed evaluation therefore runs again after growing delays until it passes or the
+// time budget ends; a real regression still fails, only later.
+export const evaluationRetryDelays = [15_000, 30_000, 60_000, 90_000, 120_000]
+export const evaluationBudgetMs = 300_000
+
+export async function evaluateWithRetry(
+  api,
+  fixture,
+  {
+    delays = evaluationRetryDelays,
+    budgetMs = evaluationBudgetMs,
+    sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    now = Date.now,
+    onRetry = () => {},
+  } = {},
+) {
+  const start = now()
+  let report = await evaluate(api, fixture)
+  let attempts = 1
+  for (const delay of delays) {
+    const remaining = budgetMs - (now() - start)
+    if (report.passed || remaining <= 0) break
+    const wait = Math.min(delay, remaining)
+    onRetry({ attempts, report, wait })
+    await sleep(wait)
+    report = await evaluate(api, fixture)
+    attempts += 1
+  }
+  return { ...report, attempts }
+}

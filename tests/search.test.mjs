@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { evaluate, searchIndexApi, syncArticles } from '../scripts/search-index.mjs'
+import {
+  evaluate,
+  evaluateWithRetry,
+  evaluationBudgetMs,
+  evaluationRetryDelays,
+  searchIndexApi,
+  syncArticles,
+} from '../scripts/search-index.mjs'
 import { merge } from '../src/lib/search-fuse.ts'
 import {
   articleChunks,
@@ -259,4 +266,74 @@ test('the index client counts its writes and waits for the last mutation', async
   await api.waitForWrites(1000)
   assert.deepEqual(api.writes, { upserted: 2, deleted: 1, lastMutation: 'm2' })
   assert.equal(processed, 2)
+})
+
+// A clock that only moves when the code under test sleeps, so the retry schedule is exact.
+function fakeClock() {
+  const clock = { time: 0, waits: [] }
+  clock.now = () => clock.time
+  clock.sleep = async (ms) => {
+    clock.waits.push(ms)
+    clock.time += ms
+  }
+  return clock
+}
+
+const retryFixture = {
+  minRecall: 1,
+  maxFalsePositives: 0,
+  queries: [{ query: 'hit', expect: ['/blog/a/'] }],
+}
+
+test('a failed evaluation retries with growing delays until the index answers', async () => {
+  const api = fakeApi()
+  let calls = 0
+  // The index answers the third run, as a fresh write that queries see late.
+  api.query = async () => (++calls >= 3 ? [blog('a', 0.6)] : [])
+  const clock = fakeClock()
+  const report = await evaluateWithRetry(api, retryFixture, {
+    delays: [10, 20, 40],
+    budgetMs: 1000,
+    ...clock,
+  })
+  assert.equal(report.passed, true)
+  assert.equal(report.attempts, 3)
+  assert.deepEqual(clock.waits, [10, 20])
+})
+
+test('an evaluation that keeps failing stops at the time budget and reports the failure', async () => {
+  const api = fakeApi()
+  api.query = async () => []
+  const clock = fakeClock()
+  const retries = []
+  const report = await evaluateWithRetry(api, retryFixture, {
+    delays: [100, 200, 400, 800],
+    budgetMs: 500,
+    onRetry: ({ attempts, wait }) => retries.push([attempts, wait]),
+    ...clock,
+  })
+  assert.equal(report.passed, false)
+  // The third wait is cut to the 200 ms left of the budget; no run starts after the budget.
+  assert.deepEqual(clock.waits, [100, 200, 200])
+  assert.deepEqual(retries, [
+    [1, 100],
+    [2, 200],
+    [3, 200],
+  ])
+  assert.equal(report.attempts, 4)
+  assert.equal(clock.time, 500)
+})
+
+test('a passing evaluation runs once and does not wait', async () => {
+  const api = fakeApi()
+  api.answers = { hit: [blog('a', 0.6)] }
+  const clock = fakeClock()
+  const report = await evaluateWithRetry(api, retryFixture, { ...clock })
+  assert.equal(report.attempts, 1)
+  assert.deepEqual(clock.waits, [])
+})
+
+test('the default retry schedule stays within about five minutes', () => {
+  assert.equal(evaluationBudgetMs, 300_000)
+  assert.ok(evaluationRetryDelays.every((delay, index, all) => !index || delay > all[index - 1]))
 })
