@@ -44,3 +44,4 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - **Icons** are inline SVG, not font glyphs or an icon library.
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
 - **Links** in article text and the footer are underlined. Archive links show a visited color.
+- **Share cards** are 1200×630 PNGs (`scripts/check-site.mjs`). They use the light theme's page, border, and text tokens, with no gradient or shadow. `~chensl` sits at the top left, the title in the middle, and the date or section label with `chensl.me` at the bottom. A title longer than two lines ends with an ellipsis (`tests/og.test.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md).

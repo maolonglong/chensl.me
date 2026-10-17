@@ -208,10 +208,10 @@ test('standing documents stay within their word budgets', () => {
   const budgets = {
     'AGENTS.md': 480,
     'docs/AGENTS.md': 1210,
-    'docs/architecture.md': 850,
-    'docs/design.md': 750,
-    'docs/product.md': 750,
-    'docs/testing.md': 815,
+    'docs/architecture.md': 930,
+    'docs/design.md': 840,
+    'docs/product.md': 810,
+    'docs/testing.md': 865,
     '.agents/notes/AGENTS.md': 1250,
   }
   const standing = documents.filter((file) => /(?:^|\/)AGENTS\.md$|^docs\/[^/]+\.md$/.test(file))

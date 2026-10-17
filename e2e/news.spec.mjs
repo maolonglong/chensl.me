@@ -274,6 +274,39 @@ test.describe('news pages', () => {
     }
   })
 
+  test('news pages share the fixed AI News cards, which assets serve as PNG', async ({
+    post,
+    page,
+    request,
+    date,
+  }) => {
+    expect((await post(issueFor(date))).status).toBe(201)
+    const card = (property) =>
+      page.locator(`head meta[property="${property}"]`).getAttribute('content')
+    for (const [path, image] of [
+      ['/news/', 'news'],
+      [`/news/${date}/`, 'news'],
+      ['/news/archive/', 'news-archive'],
+      [`/news/archive/${date.slice(0, 7)}/`, 'news-archive'],
+    ]) {
+      expect((await page.goto(path)).status(), path).toBe(200)
+      expect(await card('og:image'), path).toBe(`https://chensl.me/og/${image}.png`)
+      expect(await card('og:image:width'), path).toBe('1200')
+      expect(await card('og:image:height'), path).toBe('630')
+      await expect(page.locator('head meta[name="twitter:card"]'), path).toHaveAttribute(
+        'content',
+        'summary_large_image',
+      )
+    }
+    for (const image of ['news', 'news-archive']) {
+      const response = await request.get(`/og/${image}.png`)
+      expect(response.status(), image).toBe(200)
+      expect(response.headers()['content-type'], image).toBe('image/png')
+    }
+    expect((await page.goto('/news/1899-01-01/')).status()).toBe(404)
+    await expect(page.locator('head meta[property="og:image"]')).toHaveCount(0)
+  })
+
   test('a missing or malformed date is a 404 that is not cached', async ({ page }) => {
     for (const path of [
       '/news/1899-01-01/',

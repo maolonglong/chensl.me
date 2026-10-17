@@ -37,6 +37,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 - **Markdown.** `src/lib/markdown.mjs` adds alerts, scroll wrappers for code, tables, and display math, code captions, and the Shiki code themes. Temml renders TeX to MathML at build time.
 - **Routes.** `src/pages/` holds the home, the archive, article pages, the Markdown exports (`/blog/<id>/index.md`), `/index.xml`, `/llms.txt`, and the giscus theme stylesheets (`src/pages/css/`, built from `src/styles/giscus*.css` by `src/lib/assets.ts`). `src/lib/markdown-images.ts` publishes the original article images next to the exports.
 - **RSS.** `src/pages/index.xml.ts` renders each entry through the Astro container, so feed items use the same HTML and optimized images as pages, then makes every URL absolute.
+- **Share cards.** The prerendered route `src/pages/og/[...card].png.ts` renders a PNG for each article and four fixed cards with `src/lib/og-card.mjs` ([decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md)). Prerendered routes stay out of the Worker, and `scripts/check-site.mjs` fails a Worker bundle that contains the renderer.
 - **Fonts.** `src/lib/fonts.mjs` builds JinKai subsets from the source text before Astro resolves fonts ([decision](../.agents/notes/implemented/simplification/2026-10-06-subset-fonts-from-source-text.md)), and slices of the rest for runtime text ([decision](../.agents/notes/implemented/feature/2026-10-16-jinkai-unicode-range-slices.md)).
 
 ## Runtime
