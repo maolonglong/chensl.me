@@ -151,8 +151,22 @@ const feed = isNews
         <a href="/news/" aria-current={newsCurrent}>
           AI News
         </a>
-        <a href="/search/" aria-current={searchCurrent}>
-          搜索
+        <a class="search-link" href="/search/" aria-label="搜索" aria-current={searchCurrent}>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-4-4" />
+          </svg>
         </a>
         <ThemeToggle />
       </nav>
@@ -217,6 +231,7 @@ const feed = isNews
     color: var(--heading-color);
     text-decoration-line: none;
   }
+  /* At every width, a 20 px gap keeps the 44 px targets of the two icons from overlapping. */
   .site-header nav {
     display: flex;
     flex-wrap: wrap;
@@ -230,6 +245,37 @@ const feed = isNews
   .site-header nav a[aria-current] {
     text-decoration-line: underline;
     text-underline-offset: 0.25em;
+  }
+  /* The search icon matches ThemeToggle: a 24 px box in the heading color, with a 44 px target
+     that does not grow the header row. */
+  .site-header nav .search-link {
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    color: var(--heading-color);
+    touch-action: manipulation;
+    transition: opacity 100ms ease-out;
+  }
+  .site-header nav .search-link::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+  }
+  /* An icon has no text to underline, so the current page draws the same line under the glyph. */
+  .site-header nav .search-link[aria-current]::after {
+    content: '';
+    position: absolute;
+    right: 4px;
+    bottom: -0.25em;
+    left: 4px;
+    height: 0.08em;
+    background: currentColor;
+  }
+  .site-header nav .search-link:active {
+    opacity: 0.65;
   }
   .site-footer {
     margin-top: 72px;
@@ -251,8 +297,10 @@ const feed = isNews
     .site-header {
       margin-bottom: 48px;
     }
-    .site-header nav {
-      gap: 12px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .site-header nav .search-link {
+      transition: none;
     }
   }
 </style>
