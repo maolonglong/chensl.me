@@ -14,7 +14,7 @@ The [documentation standard](../../../docs/AGENTS.md) holds the rules: the homes
 3. **Write.** Apply the writing rules, and the [prose coverage](#prose-coverage) for the kind of text. Before you shorten or restructure text, read the [calibration examples](references/examples.md). Done when the text passes the admission rule sentence by sentence, and each shortened passage keeps all of its propositions.
 4. **Fact-check.** Follow [Fact-check](#fact-check). Done when every command, path, default, and value is observed or traced, or deleted.
 5. **Agent Notes.** For a new note, run the [supersession check](#supersession-check). For a note that a change touches, keep its paths, names, and mechanisms current. Done when no two active notes own the same decision without links both ways.
-6. **Audit.** Run the slop checklist over every document that you touched, not only the lines you changed, then the [newcomer test](#newcomer-test). Done when each item is fixed or is a deliberate keep that you can name.
+6. **Audit.** Run the slop checklist over every document that you touched, not only the lines you changed, then the [newcomer test](#newcomer-test). A change that touches two or more standing documents touches the set: audit every standing document, not only the changed ones. Done when each item is fixed or is a deliberate keep that you can name.
 7. **Validate.** Run `node --test tests/docs*.test.mjs` and `git diff --check`. When the change also reaches site output, run the checks in [Evidence for each change](../../../docs/testing.md#evidence-for-each-change). Read the complete diff once for correctness, then once for brevity. Done when the checks pass and both reads find nothing to fix.
 8. **Report.** List the documents changed, the deliberate keeps, the claims that you could not verify, and each check that ran with its result. Done when each item in the list names a file or a command.
 
@@ -74,6 +74,7 @@ These cases set the bar:
 - **Keep** [TypeScript 6 for astro check](../../notes/implemented/process/2026-09-27-typescript-6-for-astro-check.md): it is short, but its reopen condition stops a TypeScript 7 upgrade that would break `pnpm check`.
 - **Keep** [delete the archived W05 font](../../notes/rejected/simplification/2026-10-04-delete-archived-w05-font.md): removing an unused 19 MB file stays tempting, and the note says why it loses.
 - **Delete** a note that only records a new color for a hover state, or a renamed helper: nothing in it can guide a later change.
+- **Reopen.** A note whose decision depends on an external fact, such as a version, an upstream behavior, or a limit, and that has no `## Reopen when` condition is a finding. A note whose premise is internal stands on its alternatives and consequences.
 
 ## Archive a note
 
