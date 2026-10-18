@@ -44,6 +44,7 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - **Search** is one input and a result list: title, type and date, excerpt. No filters or suggestions.
 - **Related articles** are one line of plain links after the text, in muted small type.
 - **Icons** are inline SVG, not font glyphs or an icon library.
+- **Site icon.** A sleeping cat, hand-drawn in `scripts/icons/` (`tests/icons.test.mjs`).
 - **Header icons.** Search and theme share one style: an icon in the heading color, because each is a tool and not a section link. The search icon shows the current page with the underline of a current text link, drawn under the glyph. Header items keep their text spacing (20 px, 12 px on phones); a wider gap was rejected. Each icon's target is 44 px tall and reaches halfway into the gap, so it is 36 px wide on phones and never overlaps its neighbor (`e2e/navigation.spec.mjs`).
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
 - **Links** in article text and the footer are underlined. Archive links show a visited color.
