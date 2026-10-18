@@ -21,7 +21,6 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
       autocomplete="off"
       enterkeyhint="search"
       placeholder="搜索文章和 AI News"
-      data-max-length={maxQueryLength}
     />
   </form>
   <p class="search-status" role="status" aria-live="polite"></p>
@@ -32,7 +31,7 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
 </BaseLayout>
 
 <script>
-  import { cleanQuery, merge, type SearchHit } from '../lib/search-fuse'
+  import { cleanQuery, maxQueryLength, merge, type SearchHit } from '../lib/search-fuse'
 
   interface ServerResults {
     semantic: SearchHit[]
@@ -142,7 +141,7 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   }
 
   function search(value: string) {
-    const query = [...cleanQuery(value)].slice(0, Number(input.dataset.maxLength)).join('')
+    const query = [...cleanQuery(value)].slice(0, maxQueryLength).join('')
     const url = new URL(location.href)
     if (query) url.searchParams.set('q', query)
     else url.searchParams.delete('q')

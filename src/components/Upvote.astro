@@ -29,16 +29,11 @@ const { postId } = Astro.props
     const announce = root.querySelector<HTMLElement>('[data-announce]')!
     const postId = root.dataset.postId!
     let votedOnThisPage = false
+    let loadedVotes: number | null = null
 
     function showCount(votes: number) {
       count.textContent = String(votes)
       button.setAttribute('aria-label', `${button.disabled ? '已点赞' : '点赞'}，${votes} 票`)
-    }
-
-    // The placeholder is one nbsp, and Number("\u00a0") is 0, so only digits are a loaded count.
-    function loadedCount() {
-      const text = count.textContent ?? ''
-      return /^\d+$/.test(text) ? Number(text) : null
     }
 
     void actions
@@ -47,6 +42,7 @@ const { postId } = Astro.props
         // An in-flight read can predate a vote cast while it was running.
         if (error || votedOnThisPage) return
         if (data.voted) button.disabled = true
+        loadedVotes = data.count
         showCount(data.count)
       })
       .catch(() => {})
@@ -57,9 +53,8 @@ const { postId } = Astro.props
       // Like Bear Blog, feedback is immediate and independent of the submission result.
       void actions.upvote({ postId }).catch(() => {})
       button.disabled = true
-      const votes = loadedCount()
-      if (votes === null) button.setAttribute('aria-label', '已点赞')
-      else showCount(votes + 1)
+      if (loadedVotes === null) button.setAttribute('aria-label', '已点赞')
+      else showCount(loadedVotes + 1)
       announce.textContent = '已点赞'
     })
   }

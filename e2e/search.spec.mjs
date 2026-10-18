@@ -81,7 +81,7 @@ test.describe('search page', () => {
     await page.route('**/api/search/**', (route) => {
       apiQueries.push(new URL(route.request().url()).searchParams.get('q'))
       return route.fulfill({
-        json: { query: '', semantic: [], news: [], semanticEnabled: true },
+        json: { query: '', semantic: [], news: [] },
       })
     })
     await open('/search/')
@@ -122,7 +122,7 @@ test.describe('search page', () => {
   }) => {
     // 智能体 appears in no article as a phrase; the characters 智, 能 and 体 appear in many.
     await page.route('**/api/search/**', (route) =>
-      route.fulfill({ json: { query: '智能体', semantic: [], news: [], semanticEnabled: true } }),
+      route.fulfill({ json: { query: '智能体', semantic: [], news: [] } }),
     )
     await open('/search/?q=智能体')
     await expect(page.getByRole('status')).toHaveText('没有找到相关内容')
@@ -147,7 +147,7 @@ test.describe('search page', () => {
       },
     ]
     await page.route('**/api/search/**', (route) =>
-      route.fulfill({ json: { query: '无锁队列', semantic, news: [], semanticEnabled: true } }),
+      route.fulfill({ json: { query: '无锁队列', semantic, news: [] } }),
     )
     await open('/search/?q=无锁队列')
     // The article that both lists return ranks above the one only the semantic list returns.
@@ -174,7 +174,7 @@ test.describe('search page', () => {
     }
     await page.route('**/api/search/**', (route) =>
       route.fulfill({
-        json: { query: '智谱', semantic: [article, issue], news: [issue], semanticEnabled: true },
+        json: { query: '智谱', semantic: [article, issue], news: [issue] },
       }),
     )
     await open('/search/?q=智谱')

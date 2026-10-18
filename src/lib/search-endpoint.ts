@@ -1,4 +1,5 @@
-import { newsKeywordSearch, normalizeQuery, semanticEnabled, semanticSearch } from './search'
+import { newsKeywordSearch, semanticSearch } from './search'
+import { normalizeQuery } from './search-fuse'
 
 // GET /api/search/?q=… returns semantic hits (articles and AI News) and AI News keyword hits.
 // Article keyword search runs in the browser with Pagefind. src/worker.ts calls this before the
@@ -35,7 +36,6 @@ export async function handleSearch(request: Request, env: Cloudflare.Env) {
       query,
       semantic: semantic ?? [],
       news: news ?? [],
-      semanticEnabled: semanticEnabled(env),
       ...(partial && { partial }),
     },
     partial ? 'private, no-store' : 'public, max-age=60, s-maxage=3600',
