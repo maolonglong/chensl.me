@@ -1,4 +1,4 @@
-import { newsKeywordSearch, semanticSearch } from './search'
+import { newsKeywordSearch, semanticEnabled, semanticSearch } from './search'
 import { normalizeQuery } from './search-fuse'
 
 // GET /api/search/?q=… returns semantic hits (articles and AI News) and AI News keyword hits.
@@ -39,6 +39,10 @@ export async function handleSearch(request: Request, env: Cloudflare.Env) {
       ...(partial && { partial }),
     },
     partial ? 'private, no-store' : 'public, max-age=60, s-maxage=3600',
+    // Shows whether the AI and Vectorize bindings are present. A cache hit carries the value
+    // that its Worker version wrote, and the version is part of the cache key, so the value
+    // matches the deployed bindings. A failed call shows as `partial`, not here.
+    { 'X-Semantic-Search': semanticEnabled(env) ? 'on' : 'off' },
   )
 }
 

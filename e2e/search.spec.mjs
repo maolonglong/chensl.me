@@ -224,6 +224,15 @@ test.describe('search page', () => {
     expect(await urls()).toEqual([])
   })
 
+  test('the response header reports the semantic search state', async ({ api }) => {
+    // The local Worker runs with SEMANTIC_SEARCH=off (playwright.config.mjs); production has the
+    // AI and Vectorize bindings and reports on.
+    const response = await api.get('/api/search/?q=docker')
+    expect(response.status()).toBe(200)
+    expect(response.headers()['x-semantic-search']).toBe('off')
+    expect((await response.json()).semantic).toEqual([])
+  })
+
   test('rejects empty and overlong queries and normalizes control characters and astral code points', async ({
     api,
     open,
