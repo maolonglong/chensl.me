@@ -12,8 +12,8 @@ An inline script runs only when Astro hashes it, and an external script runs onl
 
 Two policies apply independently, and a browser enforces both:
 
-- The meta CSP from `astro.config.mjs` holds the script hashes, which only the build knows.
-- The HTTP header in `public/_headers` holds `frame-ancestors`, which a meta policy cannot enforce, and the other response protections.
+- The meta CSP from `astro.config.mjs` holds the script hashes, which only the build knows. On-demand pages under `/news/` get the same policy as an HTTP header.
+- The HTTP header in `public/_headers` holds `frame-ancestors`, which a meta policy cannot enforce, and the other response protections. It reaches static assets only. Worker responses get the other protections from `src/lib/security-headers.mjs` and `X-Frame-Options: DENY` instead of a second policy, which the browser would also enforce on on-demand pages.
 
 `public/_headers` defines no `script-src`, so a script source goes only in the meta policy. A frame, style, image, or connection source goes in each policy that defines its directive. Inline styles stay allowed for Shiki, table alignment, and the no-script fallback.
 

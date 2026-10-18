@@ -46,7 +46,7 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 
 `wrangler.jsonc` defines the Worker, its bindings, and the static assets in `dist/client`.
 
-- **Static assets.** Workers Static Assets serves the prerendered files. `public/_headers` sets the response headers: the HTTP CSP, cache rules, and the text charsets that production does not add.
+- **Static assets.** Workers Static Assets serves the prerendered files. `public/_headers` sets their response headers: the HTTP CSP, cache rules, and the text charsets that production does not add.
 - **Actions.** `src/actions/index.ts` defines `getVotes` and `upvote`. `src/middleware.ts` rejects cross-origin Action requests and makes Action responses private. The Actions use D1 (`VOTES`), two rate limiters, and the `ASSETS` binding to confirm that an ID is a published article ([decision](../.agents/notes/implemented/architecture/2026-09-29-validate-articles-through-built-pages.md)). Schema changes are files in `migrations/`.
 - **News.** `src/pages/api/news.ts` and `src/pages/api/news/retract.ts` check the `NEWS_TOKEN` secret. Writes append to `issue_versions` and refresh the latest row in `issues`; retraction sets `hidden_at`. `src/lib/news.ts` holds the schema and all SQL. The pages and the feed read through the live collections in `src/live.config.ts` with bounded queries on the `date` primary key; this bundles the content store, capped by `scripts/check-site.mjs`, and Workers Cache serves them for their `s-maxage`. Schema changes are files in `migrations/news/`.
 - **Search.** `src/worker.ts`, the Worker entry, sends `/api/search` to `src/lib/search-endpoint.ts` before the Astro handler. It returns Vectorize hits and AI News keyword hits from FTS5, which triggers in `migrations/news/0003_search.sql` keep current; `src/lib/search.ts` holds the queries. The browser merges them with the Pagefind hits.
@@ -59,12 +59,16 @@ Read this before you change how the site builds, serves, or runs scripts. It is 
 - Each component in `src/components/` owns its compiled script and scoped styles. `src/styles/global.css` holds the design tokens and the Markdown typography.
 - Comments are a giscus iframe that `src/components/Comments.astro` loads.
 
+## Response headers
+
+`src/lib/security-headers.mjs` holds the response protections except the CSP. `public/_headers` sets them on static assets and `src/worker.ts` on Worker responses; `tests/security-headers.test.mjs` keeps them equal. Both add `X-Robots-Tag: noindex` on `workers.dev` hosts.
+
 ## CSP
 
 Two policies apply independently ([decision](../.agents/notes/implemented/architecture/2026-09-28-hash-based-script-csp.md)):
 
-- The meta policy from `astro.config.mjs` carries the script hashes and the external script sources.
-- The HTTP policy in `public/_headers` carries `frame-ancestors` and the other response protections.
+- The policy from `astro.config.mjs` carries the script hashes and the external script sources: a meta tag on prerendered pages, an HTTP header on `/news/` pages.
+- The HTTP policy in `public/_headers` carries `frame-ancestors` and the other response protections. It reaches static assets only; Worker responses use `X-Frame-Options: DENY` instead.
 
 `public/_headers` defines no `script-src`. Only `/search/` adds `'wasm-unsafe-eval'` for Pagefind. Add any other third-party source to each policy that defines its directive, and to `scripts/check-site.mjs`.
 
