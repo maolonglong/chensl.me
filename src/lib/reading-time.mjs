@@ -1,10 +1,10 @@
 import { visit } from 'unist-util-visit'
 
-// Brysbaert (2019), https://doi.org/10.1016/j.jml.2019.104047: adults read English non-fiction
-// silently at 238 words a minute, and Chinese at 260 words a minute. The paper converts Chinese
-// characters to words at 1.5 characters a word, so 260 words are 390 characters.
+// English: Brysbaert (2019), https://doi.org/10.1016/j.jml.2019.104047, the silent reading rate
+// of adults for non-fiction. Chinese: the common estimate of 300 characters a minute, which the
+// owner chose over the paper's converted 390 (260 words at 1.5 characters a word).
 export const wordsPerMinute = 238
-export const charactersPerMinute = 390
+export const charactersPerMinute = 300
 
 const han = /\p{Script=Han}/gu
 // Letters or digits, joined by an apostrophe, hyphen or decimal point: isn't, well-known, 6.7.
