@@ -5,7 +5,9 @@ import path from 'node:path'
 import { Renderer } from '@takumi-rs/core'
 import subsetFont from 'subset-font'
 import { cardHeight, cardWidth } from './og.mjs'
-import { siteHost, siteTitle } from './site.mjs'
+import { siteTitle, siteUrl } from './site.mjs'
+
+const siteHost = new URL(siteUrl).host
 
 const ellipsis = '…'
 

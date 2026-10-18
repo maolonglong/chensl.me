@@ -8,9 +8,10 @@ import { unified } from '@astrojs/markdown-remark'
 import remarkMath from 'remark-math'
 import { remarkSite, rehypeSite, codeThemes, codeCaption } from './src/lib/markdown.mjs'
 import { siteFonts } from './src/lib/fonts.mjs'
+import { siteUrl } from './src/lib/site.mjs'
 
 export default defineConfig({
-  site: 'https://chensl.me',
+  site: siteUrl,
   // remoteBindings: false keeps `astro dev` from opening a session for the AI and Vectorize
   // bindings, which have no local simulation and need a Cloudflare login; search then answers
   // with keyword results only.
