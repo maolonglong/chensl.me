@@ -7,7 +7,7 @@ name: Search index
 # .agents/notes/implemented/feature/2026-10-17-hybrid-search.md#setting-up-the-index-jobs.
 on:
   pull_request:
-    paths:
+    paths: &index-inputs
       - 'src/**'
       - 'astro.config.mjs'
       - 'wrangler.jsonc'
@@ -23,20 +23,7 @@ on:
       - '.github/workflows/search-index.yml'
   push:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'astro.config.mjs'
-      - 'wrangler.jsonc'
-      - 'tsconfig.json'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'scripts/embed-posts.mjs'
-      - 'scripts/search-inputs.mjs'
-      - 'scripts/search-index.mjs'
-      - 'scripts/search-eval.mjs'
-      - 'scripts/cloudflare-api.mjs'
-      - 'tests/fixtures/search-queries.json'
-      - '.github/workflows/search-index.yml'
+    paths: *index-inputs
 
 permissions:
   contents: read
