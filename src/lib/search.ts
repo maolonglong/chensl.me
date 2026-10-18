@@ -26,6 +26,20 @@ export const semanticEnabled = (
 ): env is SearchEnv & { AI: Ai; SEARCH_INDEX: VectorizeIndex } =>
   Boolean(env.AI && env.SEARCH_INDEX) && env.SEMANTIC_SEARCH !== 'off'
 
+// Milliseconds spent waiting on each service during one search, summed per service. Workers
+// clocks only advance across I/O, so these are wait times; they overlap because the keyword
+// half runs alongside the semantic half.
+export type SearchTiming = Partial<Record<'ai' | 'vec' | 'd1', number>>
+
+async function timed<T>(timing: SearchTiming, name: keyof SearchTiming, work: Promise<T>) {
+  const start = performance.now()
+  try {
+    return await work
+  } finally {
+    timing[name] = (timing[name] ?? 0) + performance.now() - start
+  }
+}
+
 interface BlogMetadata {
   url: string
   title: string
@@ -40,19 +54,28 @@ interface NewsMetadata {
   snippet: string
 }
 
-export async function semanticSearch(env: SearchEnv, query: string): Promise<SearchHit[]> {
+export async function semanticSearch(
+  env: SearchEnv,
+  query: string,
+  timing: SearchTiming = {},
+): Promise<SearchHit[]> {
   if (!semanticEnabled(env)) return []
-  const { data } = await env.AI.run(embeddingModel, {
-    queries: query,
-    instruction: queryInstruction,
-  })
+  const { data } = await timed(
+    timing,
+    'ai',
+    env.AI.run(embeddingModel, { queries: query, instruction: queryInstruction }),
+  )
   const vector = data?.[0]
   if (!vector) throw new Error('Workers AI returned no query embedding')
-  const { matches } = await env.SEARCH_INDEX.query(vector, {
-    topK: semanticTopK,
-    returnMetadata: 'all',
-    namespace: searchNamespace,
-  })
+  const { matches } = await timed(
+    timing,
+    'vec',
+    env.SEARCH_INDEX.query(vector, {
+      topK: semanticTopK,
+      returnMetadata: 'all',
+      namespace: searchNamespace,
+    }),
+  )
   // Filter before ranking: an obsolete issue must not set the news score gap.
   const newsDates = [
     ...new Set(
@@ -61,7 +84,7 @@ export async function semanticSearch(env: SearchEnv, query: string): Promise<Sea
         .map((match) => (match.metadata as unknown as NewsMetadata).date),
     ),
   ]
-  const versions = await visibleIssueVersions(env.NEWS, newsDates)
+  const versions = await timed(timing, 'd1', visibleIssueVersions(env.NEWS, newsDates))
   const current = matches.filter((match) => {
     if (match.metadata?.type !== 'news') return true
     const { date, version } = match.metadata as unknown as NewsMetadata
@@ -78,12 +101,20 @@ export async function semanticSearch(env: SearchEnv, query: string): Promise<Sea
   })
 }
 
-export async function newsKeywordSearch(db: D1Database, query: string): Promise<SearchHit[]> {
+export async function newsKeywordSearch(
+  db: D1Database,
+  query: string,
+  timing: SearchTiming = {},
+): Promise<SearchHit[]> {
   const { sql, binds } = newsKeywordQuery(query)
-  const { results } = await db
-    .prepare(sql)
-    .bind(...binds)
-    .all<{ date: string; title: string; snippet: string }>()
+  const { results } = await timed(
+    timing,
+    'd1',
+    db
+      .prepare(sql)
+      .bind(...binds)
+      .all<{ date: string; title: string; snippet: string }>(),
+  )
   return results.map((row) => ({
     type: 'news',
     url: newsUrl(row.date),
