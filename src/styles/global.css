@@ -320,6 +320,64 @@ pre code {
     margin-block: 0;
 }
 
+/* --------------------------------------------------------- repository cards */
+
+/* A paragraph that is only a repository link, in the code block frame: no image, icon, or color
+   beyond the tokens. src/lib/markdown.mjs renders it; src/components/GitHubCards.astro refreshes
+   the text. */
+.prose .repo-card a {
+    display: block;
+    padding: 14px 18px;
+    text-decoration-line: none;
+    background-color: var(--code-block-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+
+.repo-card-head,
+.repo-card-description,
+.repo-card-stats {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.repo-card-archived {
+    margin-left: 0.5em;
+    font-size: 0.875rem;
+    color: var(--muted-color);
+    white-space: nowrap;
+}
+
+.repo-card-description,
+.repo-card-stats {
+    margin-top: 4px;
+    font-size: 0.875rem;
+    color: var(--muted-color);
+}
+
+.repo-card-description {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+/* A refreshed count keeps the width of its digits. */
+.repo-card-stats {
+    font-variant-numeric: tabular-nums;
+}
+
+@media (hover: hover) {
+    .prose .repo-card a:hover {
+        text-decoration-line: none;
+    }
+
+    .prose .repo-card a:hover .repo-card-name {
+        text-decoration-line: underline;
+    }
+}
+
 /* -------------------------------------------------------------------- math */
 
 /* Firefox and Safari ignore Temml's inline `display: block math`. */

@@ -4,6 +4,7 @@ import { defineCollection } from 'astro:content'
 import { glob } from 'astro/loaders'
 import { z } from 'astro/zod'
 import { parsePostDate, rewriteUnzonedFrontMatter } from './lib/post-date'
+import githubRepos from './data/github-repos.json'
 
 // A quoted timestamp is a string, so the file rewrite never sees it as a bare time.
 const postDate = z.preprocess(
@@ -16,9 +17,10 @@ const loadBlog = blogLoader.load
 blogLoader.load = (context) =>
   loadBlog({
     ...context,
-    // Entries cached before date normalization must pass through parseData again.
+    // Entries cached before date normalization must pass through parseData again. The rendered
+    // repository cards depend on the snapshot file, so a refresh of it renders the entries again.
     generateDigest: (contents) =>
-      context.generateDigest({ contents, postDateTimezone: 'Asia/Shanghai' }),
+      context.generateDigest({ contents, postDateTimezone: 'Asia/Shanghai', githubRepos }),
     parseData: async (entry) => {
       // glob supplies filePath on initial sync, changes and additions.
       const source = await readFile(entry.filePath!, 'utf8')

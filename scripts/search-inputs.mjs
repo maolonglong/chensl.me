@@ -28,6 +28,8 @@ function walkText(node, onText, onHeading) {
   visit(node, (child) => {
     if (child.type === 'element') {
       if (skippedTags.has(child.tagName) || hasClass(child, 'visually-hidden')) return SKIP
+      // Text that Pagefind skips, such as the stats line of a repository card, stays out here too.
+      if (child.properties?.dataPagefindIgnore !== undefined) return SKIP
       if (child.properties?.dataFootnoteBackref !== undefined) return SKIP
       if (onHeading && /^h[23]$/.test(child.tagName)) {
         onHeading(textOf(child))

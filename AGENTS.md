@@ -1,6 +1,6 @@
 # AGENTS.md
 
-chensl.me is a personal site and blog. Astro prerenders the pages to static assets on Cloudflare Workers. The Worker runs the upvote Actions, the bot-written AI News (`/news/`), and `/api/search/`. This file holds the standing orders and the map. Facts live in the documents it links.
+chensl.me is a personal site and blog. Astro prerenders the pages to static assets on Cloudflare Workers. The Worker runs the upvote Actions, the bot-written AI News (`/news/`), `/api/search/`, and `/api/github/repos/`. This file holds the standing orders and the map. Facts live in the documents it links.
 
 ## Standing orders
 

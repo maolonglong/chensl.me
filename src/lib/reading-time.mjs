@@ -1,4 +1,4 @@
-import { visit } from 'unist-util-visit'
+import { SKIP, visit } from 'unist-util-visit'
 
 // English: Brysbaert (2019), https://doi.org/10.1016/j.jml.2019.104047, the silent reading rate
 // of adults for non-fiction. Chinese: the common estimate of 300 characters a minute, which the
@@ -11,11 +11,14 @@ const han = /\p{Script=Han}/gu
 const word = /[\p{L}\p{M}\p{N}]+(?:['’.-][\p{L}\p{M}\p{N}]+)*/gu
 
 // Only text and inline code reach the count. Fenced and indented code, display and inline math,
-// and raw HTML are separate node types, so they never do.
+// and raw HTML are separate node types, so they never do. Text marked data-pagefind-ignore, such
+// as a repository card's stats line, is page furniture and stays out, as it does in search.
 export function readingStats(tree) {
   let characters = 0
   let words = 0
-  visit(tree, ['text', 'inlineCode'], (node) => {
+  visit(tree, (node) => {
+    if (node.data?.hProperties?.dataPagefindIgnore !== undefined) return SKIP
+    if (node.type !== 'text' && node.type !== 'inlineCode') return
     characters += node.value.match(han)?.length ?? 0
     words += node.value.replace(han, ' ').match(word)?.length ?? 0
   })

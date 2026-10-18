@@ -6,15 +6,15 @@
       "related": [
         [
           "bfjit-x86-64",
-          0.494
+          0.476
         ],
         [
           "buddy",
-          0.452
+          0.454
         ],
         [
           "2023-review",
-          0.448
+          0.447
         ],
         [
           "semantic-view-sql-traps",
@@ -27,11 +27,11 @@
       ]
     },
     "2023-review": {
-      "hash": "0232401e93760ec2b8d378587fb249956ada6726c33def4fac8adb3343b7fef6",
+      "hash": "8b11c575058d38a26a822fb3b95130d04b7e0869fca3b586426d6fcbf8d42e10",
       "related": [
         [
           "2024-review",
-          0.585
+          0.589
         ],
         [
           "functional-programming",
@@ -39,11 +39,11 @@
         ],
         [
           "1brc-in-zig",
-          0.448
+          0.447
         ],
         [
           "bfjit-x86-64",
-          0.42
+          0.4
         ],
         [
           "buddy",
@@ -52,73 +52,73 @@
       ]
     },
     "2024-review": {
-      "hash": "b77ad19991da42bb6e2137348d09d2cf4c31a5a3f0c0b03444bfeea29cab5583",
+      "hash": "32f3c890346492e197122ed06d5720fe8bd4d04075533381762bfa180ed9c8c3",
       "related": [
         [
           "2023-review",
-          0.585
+          0.589
         ],
         [
           "1brc-in-zig",
-          0.313
+          0.318
         ],
         [
           "functional-programming",
-          0.302
+          0.305
         ],
         [
           "semantic-view-sql-traps",
-          0.301
+          0.3
         ],
         [
           "thin-agent-thick-harness",
-          0.293
+          0.299
         ]
       ]
     },
     "bfjit-x86-64": {
-      "hash": "d9970d48eff214cfe6fca32103a1045443cf89ee9360b32b2f3935852e1c3a77",
+      "hash": "6d1db2419afdd8c9781a8f68bcb037a7462744692c58d8c495167a83067df5d5",
       "related": [
         [
           "1brc-in-zig",
-          0.494
+          0.476
         ],
         [
           "buddy",
-          0.448
+          0.433
         ],
         [
           "2023-review",
-          0.42
+          0.4
         ],
         [
           "manual-memory-management",
-          0.346
+          0.336
         ],
         [
           "functional-programming",
-          0.321
+          0.308
         ]
       ]
     },
     "buddy": {
-      "hash": "4eb431d3ead9db1ce2f9c648766566fd1fc0e3f7666893e214abdeafe84abc65",
+      "hash": "ebc58e3372ae50c2be59294f2d9d635d463debd726f60fe79a0d0bf053448103",
       "related": [
         [
-          "1brc-in-zig",
-          0.452
+          "manual-memory-management",
+          0.457
         ],
         [
-          "manual-memory-management",
-          0.449
+          "1brc-in-zig",
+          0.454
         ],
         [
           "bfjit-x86-64",
-          0.448
+          0.433
         ],
         [
           "bytebufferpool",
-          0.369
+          0.374
         ],
         [
           "2023-review",
@@ -135,7 +135,7 @@
         ],
         [
           "buddy",
-          0.369
+          0.374
         ],
         [
           "1brc-in-zig",
@@ -143,10 +143,10 @@
         ],
         [
           "gobreaker",
-          0.341
+          0.342
         ],
         [
-          "bfjit-x86-64",
+          "lock-free-queue",
           0.308
         ]
       ]
@@ -172,12 +172,12 @@
         ],
         [
           "2023-review",
-          0.273
+          0.272
         ]
       ]
     },
     "functional-programming": {
-      "hash": "899e11e110858282b2fdcb937172734ecfd817a18050ed50f00c18db08550d46",
+      "hash": "8fc2d736c38d7ecf34226a1d86675a70329c9def3b70040481566ad799d71377",
       "related": [
         [
           "2023-review",
@@ -188,16 +188,16 @@
           0.344
         ],
         [
-          "bfjit-x86-64",
-          0.321
-        ],
-        [
           "semantic-view-sql-traps",
-          0.316
+          0.315
         ],
         [
-          "gat",
-          0.306
+          "bfjit-x86-64",
+          0.308
+        ],
+        [
+          "2024-review",
+          0.305
         ]
       ]
     },
@@ -206,7 +206,7 @@
       "related": [
         [
           "functional-programming",
-          0.306
+          0.305
         ],
         [
           "manual-memory-management",
@@ -222,32 +222,32 @@
         ],
         [
           "buddy",
-          0.243
+          0.247
         ]
       ]
     },
     "gobreaker": {
-      "hash": "bfa6b95df96cf23487cbc305bd0c753aa9fbb42079b9493b2c7e7f0ca58aab4e",
+      "hash": "87d9cfac634ab01c7b0016668108fadc377be654d86b030d7c8a7932451dc4ce",
       "related": [
         [
           "semantic-view-sql-traps",
-          0.342
-        ],
-        [
-          "bytebufferpool",
-          0.341
+          0.344
         ],
         [
           "manual-memory-management",
-          0.339
+          0.343
+        ],
+        [
+          "bytebufferpool",
+          0.342
         ],
         [
           "thin-agent-thick-harness",
-          0.332
+          0.335
         ],
         [
           "harness-engineering",
-          0.317
+          0.322
         ]
       ]
     },
@@ -264,15 +264,15 @@
         ],
         [
           "2023-review",
-          0.336
+          0.34
+        ],
+        [
+          "gobreaker",
+          0.322
         ],
         [
           "thinking-vs-research",
           0.318
-        ],
-        [
-          "gobreaker",
-          0.317
         ]
       ]
     },
@@ -280,24 +280,24 @@
       "hash": "e49cdc4eabde1bacee70ab1db1039fad3bbc53e2cee73d70529dcac609304791",
       "related": [
         [
-          "1brc-in-zig",
-          0.335
+          "buddy",
+          0.336
         ],
         [
-          "buddy",
-          0.333
+          "1brc-in-zig",
+          0.335
         ],
         [
           "bytebufferpool",
           0.308
         ],
         [
-          "bfjit-x86-64",
-          0.299
+          "2023-review",
+          0.291
         ],
         [
-          "2023-review",
-          0.29
+          "bfjit-x86-64",
+          0.286
         ]
       ]
     },
@@ -306,7 +306,7 @@
       "related": [
         [
           "buddy",
-          0.449
+          0.457
         ],
         [
           "bytebufferpool",
@@ -317,12 +317,12 @@
           0.349
         ],
         [
-          "bfjit-x86-64",
-          0.346
-        ],
-        [
           "dockertest",
           0.344
+        ],
+        [
+          "gobreaker",
+          0.343
         ]
       ]
     },
@@ -339,7 +339,7 @@
         ],
         [
           "buddy",
-          0.242
+          0.246
         ],
         [
           "1brc-in-zig",
@@ -347,7 +347,7 @@
         ],
         [
           "2024-review",
-          0.229
+          0.225
         ]
       ]
     },
@@ -368,7 +368,7 @@
         ],
         [
           "gobreaker",
-          0.342
+          0.344
         ],
         [
           "dockertest",
@@ -393,7 +393,7 @@
         ],
         [
           "gobreaker",
-          0.332
+          0.335
         ],
         [
           "1brc-in-zig",
@@ -418,7 +418,7 @@
         ],
         [
           "2023-review",
-          0.259
+          0.261
         ],
         [
           "1brc-in-zig",

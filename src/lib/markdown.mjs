@@ -1,5 +1,7 @@
 import { visit, SKIP } from 'unist-util-visit'
 import temml from 'temml'
+import githubRepos from '../data/github-repos.json' with { type: 'json' }
+import { archivedLabel, repositoryUrl, statsLine } from './github-repo.mjs'
 
 const element = (tagName, properties, children) => ({
   type: 'element',
@@ -9,8 +11,62 @@ const element = (tagName, properties, children) => ({
 })
 const text = (value) => ({ type: 'text', value })
 
+// Yields each top-level paragraph that holds only a link to a repository root, with the
+// lowercase owner/repo key. scripts/github-repos.mjs reads the same list to refresh the snapshot.
+export function* standaloneRepositoryLinks(tree) {
+  for (const paragraph of tree.children) {
+    if (paragraph.type !== 'paragraph') continue
+    const children = paragraph.children.filter(
+      (child) => child.type !== 'text' || child.value.trim(),
+    )
+    const [link] = children
+    const key = children.length === 1 && link.type === 'link' && link.url.match(repositoryUrl)?.[1]
+    if (key) yield { paragraph, link, key: key.toLowerCase() }
+  }
+}
+
+const span = (className, value, properties = {}) => ({
+  type: 'repoCardText',
+  data: { hName: 'span', hProperties: { className: [className], ...properties } },
+  children: [text(value)],
+})
+
+// The card shows the build snapshot in src/data/github-repos.json, which only
+// scripts/github-repos.mjs writes, so a build never calls the GitHub API and the card is complete
+// without scripts, in RSS, and when the refresh fails. src/components/GitHubCards.astro replaces
+// the stats line, the description, and the archived label from /api/github/repos/<key>/.
+// The label and the stats line stay out of search (data-pagefind-ignore, scripts/search-inputs.mjs):
+// they change with every snapshot and say nothing about the article.
+function githubCards(tree) {
+  let cards = 0
+  for (const { paragraph, link, key } of standaloneRepositoryLinks(tree)) {
+    const repo = githubRepos[key]
+    if (!repo) continue
+    cards++
+    paragraph.data = { hProperties: { className: ['repo-card'], dataRepo: key } }
+    const ignore = { dataPagefindIgnore: '' }
+    link.children = [
+      {
+        type: 'repoCardText',
+        data: { hName: 'span', hProperties: { className: ['repo-card-head'] } },
+        children: [
+          span('repo-card-name', repo.name),
+          ...(repo.archived ? [text(' '), span('repo-card-archived', archivedLabel, ignore)] : []),
+        ],
+      },
+      ...(repo.description ? [text(' '), span('repo-card-description', repo.description)] : []),
+      text(' '),
+      span('repo-card-stats', statsLine(repo), ignore),
+    ]
+  }
+  return cards
+}
+
 export function remarkSite() {
-  return (tree) => {
+  return (tree, file) => {
+    // The article page loads the refresh script only when the article has a card.
+    if (githubCards(tree) && file?.data?.astro?.frontmatter)
+      file.data.astro.frontmatter.githubCards = true
     visit(tree, 'blockquote', (node) => {
       const first = node.children[0]?.children?.[0]
       const match =

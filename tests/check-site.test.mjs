@@ -465,3 +465,22 @@ test('site checker requires the article feed link in every page footer', async (
     )
   }
 })
+
+test('site checker requires each repository in the card snapshot to appear as a card', async () => {
+  const fixture = await checkerFixture()
+  await writeArticle(
+    fixture,
+    'cards',
+    '<div class="prose"><p class="repo-card" data-repo="owner/used"><a href="https://github.com/owner/used">owner/used</a></p></div>',
+  )
+  const repo = { name: 'x', description: '', stars: 0, forks: 0, language: null, archived: false }
+  await write(
+    fixture,
+    'src/data/github-repos.json',
+    JSON.stringify({ 'owner/used': repo, 'owner/stale': repo }),
+  )
+  const result = run(process.execPath, [checker], fixture)
+  assert.equal(result.status, 1, result.stdout)
+  assert.match(result.stderr, /owner\/stale is in src\/data\/github-repos\.json but no article/)
+  assert.doesNotMatch(result.stderr, /owner\/used/)
+})
