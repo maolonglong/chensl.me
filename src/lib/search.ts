@@ -11,7 +11,7 @@ import {
   semanticTopK,
 } from './search-text.mjs'
 import type { SearchHit } from './search-fuse'
-import { newsUrl, visibleIssueDates, type NewsIssue } from './news'
+import { newsUrl, queryIssue, visibleIssueVersions } from './news'
 
 // Server side of /search/: semantic hits from Vectorize and AI News keyword hits from D1 FTS5.
 // The browser merges both with its Pagefind article hits; see src/pages/search.astro.
@@ -35,6 +35,7 @@ interface BlogMetadata {
 
 interface NewsMetadata {
   date: string
+  version: number
   title: string
   snippet: string
 }
@@ -52,8 +53,7 @@ export async function semanticSearch(env: SearchEnv, query: string): Promise<Sea
     returnMetadata: 'all',
     namespace: searchNamespace,
   })
-  // A retraction deletes the issue's vectors; D1 still decides before ranking, in case that
-  // delete failed or is still applying, so a hidden issue never sets the news score gap.
+  // Filter before ranking: an obsolete issue must not set the news score gap.
   const newsDates = [
     ...new Set(
       matches
@@ -61,8 +61,13 @@ export async function semanticSearch(env: SearchEnv, query: string): Promise<Sea
         .map((match) => (match.metadata as unknown as NewsMetadata).date),
     ),
   ]
-  const visible = await visibleIssueDates(env.NEWS, newsDates)
-  return rankMatches(matches, visible).map((match) => {
+  const versions = await visibleIssueVersions(env.NEWS, newsDates)
+  const current = matches.filter((match) => {
+    if (match.metadata?.type !== 'news') return true
+    const { date, version } = match.metadata as unknown as NewsMetadata
+    return versions.has(date) && versions.get(date) === version
+  })
+  return rankMatches(current).map((match) => {
     const score = Math.round(match.score * 1000) / 1000
     if (match.type === 'news') {
       const { date, title, snippet } = match.metadata as unknown as NewsMetadata
@@ -90,52 +95,32 @@ export async function newsKeywordSearch(db: D1Database, query: string): Promise<
 
 export type IndexResult = 'indexed' | 'removed' | 'disabled' | 'failed'
 
-// Every news write and retraction changes what /api/search returns, keyword hits included, so
-// the news endpoints drop the cached answers. Workers Cache
-// is absent in Previews and local Wrangler; a failed purge only delays new results by the TTL.
-export async function purgeSearchCache() {
-  try {
-    // Imported at request time: the search page imports this module while it prerenders in Node.
-    const { cache } = await import('cloudflare:workers')
-    // Local runs have a cache export without purge.
-    if (typeof cache?.purge !== 'function') return
-    const result = await cache.purge({ pathPrefixes: ['/api/search/'] })
-    if (result && !result.success) console.error('search cache purge failed', result.errors)
-  } catch (error) {
-    console.error('search cache purge failed', error)
-  }
-}
-
-// Called after each accepted news write, and when a retracted issue is shown again. Each item
-// gets its own vector; the vectors of items that a longer earlier version had are deleted. A
-// failure is logged and reported to the bot but never fails the write: the issue is already
-// published, and the next write of that date retries.
-export async function indexIssue(env: SearchEnv, issue: NewsIssue): Promise<IndexResult> {
+// Mutation acceptance is not query visibility. Re-read after all mutations so a slow older
+// request repairs its own overwrite with the latest D1 state. A resend retries failures.
+export async function syncIssue(env: SearchEnv, date: string): Promise<IndexResult> {
   if (!semanticEnabled(env)) return 'disabled'
   try {
-    const { data } = await env.AI.run(embeddingModel, {
-      documents: issue.items.map(newsItemEmbeddingText),
-    })
-    if (data?.length !== issue.items.length)
-      throw new Error('Workers AI returned too few embeddings')
-    const { upserts, stale } = newsVectors(issue, data)
-    await env.SEARCH_INDEX.upsert(upserts)
-    await env.SEARCH_INDEX.deleteByIds(stale)
-    return 'indexed'
+    let issue = await queryIssue(env.NEWS, date)
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (issue) {
+        const { data } = await env.AI.run(embeddingModel, {
+          documents: issue.items.map(newsItemEmbeddingText),
+        })
+        if (data?.length !== issue.items.length)
+          throw new Error('Workers AI returned too few embeddings')
+        const { upserts, stale } = newsVectors(issue, data)
+        await env.SEARCH_INDEX.upsert(upserts)
+        await env.SEARCH_INDEX.deleteByIds(stale)
+      } else {
+        await env.SEARCH_INDEX.deleteByIds(allNewsVectorIds(date))
+      }
+      const current = await queryIssue(env.NEWS, date)
+      if (current?.version === issue?.version) return issue ? 'indexed' : 'removed'
+      issue = current
+    }
+    throw new Error('News changed during every indexing attempt')
   } catch (error) {
-    console.error('news search indexing failed', issue.date, error)
-    return 'failed'
-  }
-}
-
-// Called when an issue is retracted: its items leave semantic search at once.
-export async function removeIssue(env: SearchEnv, date: string): Promise<IndexResult> {
-  if (!semanticEnabled(env)) return 'disabled'
-  try {
-    await env.SEARCH_INDEX.deleteByIds(allNewsVectorIds(date))
-    return 'removed'
-  } catch (error) {
-    console.error('news search removal failed', date, error)
+    console.error('news search indexing failed', date, error)
     return 'failed'
   }
 }

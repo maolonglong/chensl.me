@@ -133,17 +133,6 @@ test('semantic ranking merges chunks and items by document and thresholds each k
   assert.deepEqual(rankMatches([blog('z', 0.35)]), [])
 })
 
-test('rankMatches drops retracted news before thresholding so hidden issues never suppress visible ones', () => {
-  const ranked = rankMatches(
-    [news('2026-10-16', 0, 0.65), news('2026-10-15', 0, 0.5)],
-    new Set(['2026-10-15']),
-  )
-  assert.deepEqual(
-    ranked.map((match) => [match.id, match.score]),
-    [['news:2026-10-15:0', 0.5]],
-  )
-})
-
 test('query normalization strips control characters and snippet clipping preserves surrogate pairs', () => {
   assert.equal(searchFuse.normalizeQuery('abc\0def\tghi'), 'abc def ghi')
   assert.equal(searchFuse.normalizeQuery('\0\x1f'), null)
@@ -159,6 +148,7 @@ test('query normalization strips control characters and snippet clipping preserv
 test('news vectors cover each item and list the IDs a longer version left behind', () => {
   const issue = {
     date: '2026-10-16',
+    version: 4,
     title: 'Issue',
     summary: 'S',
     items: [
@@ -176,6 +166,7 @@ test('news vectors cover each item and list the IDs a longer version left behind
   )
   assert.equal(stale[0], 'news:2026-10-16:2')
   assert.equal(stale.at(-1), 'news:2026-10-16:29')
+  assert.equal(upserts[0].metadata.version, 4)
   assert.deepEqual(newsKeywordQuery('AI 芯片').binds, ['芯片', '%AI%', '%芯片%'])
   assert.deepEqual(newsKeywordQuery('芯片 AI').binds, ['芯片', '%芯片%', '%AI%'])
 })

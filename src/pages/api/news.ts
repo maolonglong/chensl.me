@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { newsIssue, newsUrl, saveIssue } from '../../lib/news'
 import { authorizedJson, reply } from '../../lib/news-api'
-import { indexIssue, purgeSearchCache, removeIssue } from '../../lib/search'
+import { syncIssue } from '../../lib/search'
 
 export const prerender = false
 
@@ -12,12 +12,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   if ('response' in input) return input.response
   const { data } = input
 
-  const { status, version, hidden } = await saveIssue(env.NEWS, data)
-  // Every accepted write to a visible issue re-embeds it, also an unchanged one, so a resend
-  // repairs an index write that failed before. A retracted issue stays out of Vectorize until
-  // POST /api/news/retract/ restores it. FTS5 follows through triggers (0003_search.sql).
-  const search = hidden ? await removeIssue(env, data.date) : await indexIssue(env, data)
-  await purgeSearchCache()
+  const { status, version } = await saveIssue(env.NEWS, data)
+  // An unchanged resend also repairs a failed index write. D1, not this request's payload,
+  // decides the version and visibility to index after concurrent writes.
+  const search = await syncIssue(env, data.date)
   return reply(status === 'created' ? 201 : 200, {
     status,
     version,

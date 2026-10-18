@@ -4,18 +4,16 @@ import { normalizeQuery } from './search-fuse'
 // GET /api/search/?q=… returns semantic hits (articles and AI News) and AI News keyword hits.
 // Article keyword search runs in the browser with Pagefind. src/worker.ts calls this before the
 // Astro handler, which would add several milliseconds of CPU to every request. Each half fails
-// on its own: the response then carries an empty list and `partial: true`, and is not cached.
-// Workers Cache serves a repeated query for an hour without running the Worker; each news write
-// purges it (purgeSearchCache).
+// on its own: the response then carries an empty list and `partial: true`.
+// Search is not cached: Vectorize acceptance does not mean queries can see the new vectors.
 export async function handleSearch(request: Request, env: Cloudflare.Env) {
   if (request.method !== 'GET' && request.method !== 'HEAD')
-    return reply(405, { error: 'method_not_allowed' }, 'private, no-store', { Allow: 'GET, HEAD' })
+    return reply(405, { error: 'method_not_allowed' }, { Allow: 'GET, HEAD' })
   const query = normalizeQuery(new URL(request.url).searchParams.get('q'))
-  if (!query) return reply(400, { error: 'invalid_query' }, 'private, no-store')
-  // Workers Cache answers repeated queries before this code runs, so the limiter counts misses.
+  if (!query) return reply(400, { error: 'invalid_query' })
   const clientAddress = request.headers.get('cf-connecting-ip') ?? 'unknown'
   const { success } = await env.READ_LIMITER.limit({ key: `search:${clientAddress}` })
-  if (!success) return reply(429, { error: 'rate_limited' }, 'private, no-store')
+  if (!success) return reply(429, { error: 'rate_limited' })
 
   const settle = async <T>(work: Promise<T>, label: string) => {
     try {
@@ -38,10 +36,7 @@ export async function handleSearch(request: Request, env: Cloudflare.Env) {
       news: news ?? [],
       ...(partial && { partial }),
     },
-    partial ? 'private, no-store' : 'public, max-age=60, s-maxage=3600',
-    // Shows whether the AI and Vectorize bindings are present. A cache hit carries the value
-    // that its Worker version wrote, and the version is part of the cache key, so the value
-    // matches the deployed bindings. A failed call shows as `partial`, not here.
+    // A failed AI or Vectorize call shows as partial; this header reports binding availability.
     { 'X-Semantic-Search': semanticEnabled(env) ? 'on' : 'off' },
   )
 }
@@ -49,6 +44,5 @@ export async function handleSearch(request: Request, env: Cloudflare.Env) {
 const reply = (
   status: number,
   body: Record<string, unknown>,
-  cacheControl: string,
   headers: Record<string, string> = {},
-) => Response.json(body, { status, headers: { 'Cache-Control': cacheControl, ...headers } })
+) => Response.json(body, { status, headers: { 'Cache-Control': 'private, no-store', ...headers } })

@@ -108,17 +108,16 @@ export async function queryIssue(db: D1Database, date: string) {
   return row ? fromRow(row) : null
 }
 
-// The dates among the given ones that are not retracted. Semantic search keeps its own
-// visibility check because Vectorize may still hold a retracted issue's vectors.
-export async function visibleIssueDates(db: D1Database, dates: string[]) {
-  if (!dates.length) return new Set<string>()
+// D1 decides which semantic versions are current while Vectorize mutations are pending.
+export async function visibleIssueVersions(db: D1Database, dates: string[]) {
+  if (!dates.length) return new Map<string, number>()
   const { results } = await db
     .prepare(
-      `SELECT date FROM issues WHERE ${visible} AND date IN (${dates.map(() => '?').join(', ')})`,
+      `SELECT date, version FROM issues WHERE ${visible} AND date IN (${dates.map(() => '?').join(', ')})`,
     )
     .bind(...dates)
-    .all<{ date: string }>()
-  return new Set(results.map(({ date }) => date))
+    .all<{ date: string; version: number }>()
+  return new Map(results.map(({ date, version }) => [date, version]))
 }
 
 export async function queryMonths(db: D1Database) {

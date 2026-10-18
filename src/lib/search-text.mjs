@@ -150,6 +150,7 @@ export function newsVectors(issue, embeddings) {
     metadata: {
       type: 'news',
       date: issue.date,
+      version: issue.version,
       item: index,
       title: issue.title,
       snippet: clipSnippet(`${item.title}：${item.summary}`),
@@ -179,12 +180,11 @@ const documentKey = (match) =>
     ? `news:${match.metadata.date}`
     : `blog:${articleOfVectorId(match.id) ?? match.id}`
 
-export function rankMatches(matches, visibleNews) {
+export function rankMatches(matches) {
   const best = new Map()
   for (const match of matches) {
     const type = match.metadata?.type
     if (type !== 'blog' && type !== 'news') continue
-    if (type === 'news' && visibleNews && !visibleNews.has(match.metadata.date)) continue
     const key = documentKey(match)
     if (!best.has(key) || best.get(key).score < match.score) best.set(key, { ...match, type })
   }
