@@ -9,7 +9,7 @@
 // file to the --out path, so a person commits it; CI never pushes. Needs CLOUDFLARE_ACCOUNT_ID
 // and CLOUDFLARE_EMBED_TOKEN (scripts/cloudflare-api.mjs).
 import { execFileSync } from 'node:child_process'
-import { readFile, writeFile } from 'node:fs/promises'
+import { appendFile, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 import { cloudflareFromEnv } from './cloudflare-api.mjs'
@@ -41,6 +41,9 @@ const { upserted, deleted, lastMutation } = api.writes
 console.log(
   `${values.index}: submitted ${upserted} upserts and ${deleted} deletes${lastMutation ? `, last accepted mutation ${lastMutation}` : ', no write'}. Written checkpoints are readable; query visibility is checked by search-eval.mjs.`,
 )
+// The search index job evaluates after any write (scripts/search-eval-scope.mjs).
+if (process.env.GITHUB_OUTPUT)
+  await appendFile(process.env.GITHUB_OUTPUT, `wrote=${Boolean(lastMutation)}\n`)
 
 const next = `${JSON.stringify(result.data, null, 2)}\n`
 if (values.write) {

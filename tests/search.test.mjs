@@ -464,3 +464,29 @@ test('the default retry schedules stay within the 15-minute job budget', () => {
   assert.ok(checkpointRetryDelays.every((delay, index, all) => !index || delay >= all[index - 1]))
   assert.ok(evaluationRetryDelays.every((delay, index, all) => !index || delay > all[index - 1]))
 })
+
+test('the index job evaluates only changes that can move search results', async () => {
+  const { needsEvaluation } = await import('../scripts/search-eval-scope.mjs')
+  for (const file of [
+    'src/content/blog/dockertest.md',
+    'src/lib/search-text.mjs',
+    'scripts/search-index.mjs',
+    'tests/fixtures/search-queries.json',
+    '.github/workflows/search-index.yml',
+  ])
+    assert.ok(needsEvaluation([file]), file)
+  for (const file of [
+    'docs/architecture.md',
+    'src/pages/news/index.astro',
+    'src/lib/search-endpoint.ts',
+    'e2e/search.spec.mjs',
+    '.github/workflows/ci.yml',
+  ])
+    assert.ok(!needsEvaluation([file]), file)
+  const { execFileSync } = await import('node:child_process')
+  const run = (base) =>
+    execFileSync('node', ['scripts/search-eval-scope.mjs', base], { encoding: 'utf8' }).trim()
+  // A first or force push has no usable base.
+  assert.equal(run('0000000000000000000000000000000000000000'), 'eval=true')
+  assert.equal(run('HEAD'), 'eval=false')
+})

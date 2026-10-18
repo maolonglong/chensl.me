@@ -177,3 +177,44 @@ test('a restore that loses to a concurrent retraction reports the hidden state',
   })
   assert.equal(state.vectors.size, 0)
 })
+
+test('search reports Workers AI, Vectorize and D1 time in Server-Timing', async () => {
+  const { state, env } = fixture(issue('NEW', 2))
+  for (const vector of newsVectors(state.current, [[1, 0]]).upserts)
+    state.vectors.set(vector.id, vector)
+  const slow =
+    (work, ms) =>
+    async (...args) => {
+      await new Promise((resolve) => setTimeout(resolve, ms))
+      return work(...args)
+    }
+  env.AI.run = slow(env.AI.run, 40)
+  env.SEARCH_INDEX.query = slow(env.SEARCH_INDEX.query, 20)
+  const prepare = env.NEWS.prepare
+  env.NEWS.prepare = (sql) => {
+    const statement = prepare(sql)
+    return {
+      bind: (...binds) => ({
+        ...statement.bind(...binds),
+        all: slow(statement.bind(...binds).all, 10),
+      }),
+    }
+  }
+  const timing = async () => {
+    const response = await handleSearch(new Request('https://example.com/api/search?q=Test'), env)
+    const header = response.headers.get('server-timing') ?? ''
+    return Object.fromEntries(
+      header.split(', ').map((entry) => {
+        const [name, dur] = entry.split(';dur=')
+        return [name, Number(dur)]
+      }),
+    )
+  }
+  const on = await timing()
+  assert.deepEqual(Object.keys(on), ['ai', 'vec', 'd1'])
+  assert.ok(on.ai >= 35 && on.vec >= 15, JSON.stringify(on))
+  // Two D1 queries: the keyword search and the visible-version check.
+  assert.ok(on.d1 >= 15, JSON.stringify(on))
+  env.SEMANTIC_SEARCH = 'off'
+  assert.deepEqual(Object.keys(await timing()), ['d1'])
+})

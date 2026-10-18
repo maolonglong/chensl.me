@@ -18,6 +18,7 @@ on:
       - 'scripts/search-inputs.mjs'
       - 'scripts/search-index.mjs'
       - 'scripts/search-eval.mjs'
+      - 'scripts/search-eval-scope.mjs'
       - 'scripts/cloudflare-api.mjs'
       - 'tests/fixtures/search-queries.json'
       - '.github/workflows/search-index.yml'
@@ -54,6 +55,8 @@ jobs:
         with:
           # A rerun must not restore a historical article set to the production index.
           ref: ${{ github.event_name == 'push' && 'main' || github.ref }}
+          # The evaluation scope below diffs against the previous main or the pull request base.
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 26
@@ -68,7 +71,12 @@ jobs:
             echo 'main advanced during the build; refusing an obsolete production sync.' >&2
             exit 1
           fi
+      - id: scope
+        env:
+          BASE: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
+        run: node scripts/search-eval-scope.mjs "$BASE" | tee -a "$GITHUB_OUTPUT"
       # Mutation acceptance is not query visibility; the evaluation below checks real queries.
+      # The sync runs on every push, so the index always follows the build.
       - id: sync
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
@@ -83,9 +91,12 @@ jobs:
           path: related-posts.json
           if-no-files-found: ignore
           retention-days: 7
-      # Retries a failed evaluation for up to five minutes: queries see a fresh write late. It also
-      # runs after a failed sync, such as a stale related-posts.json, but not after a skipped one.
-      - if: success() || steps.sync.outcome == 'failure'
+      # Retries a failed evaluation for up to five minutes: queries see a fresh write late. It runs
+      # when a search path changed or the sync wrote, and after a failed sync, such as a stale
+      # related-posts.json, but not after a skipped one.
+      - if: >-
+          steps.sync.outcome == 'failure' ||
+          (success() && (steps.scope.outputs.eval == 'true' || steps.sync.outputs.wrote == 'true'))
         run: node scripts/search-eval.mjs --index "$SEARCH_INDEX" --json search-eval.json
       - uses: actions/upload-artifact@v7
         if: always()

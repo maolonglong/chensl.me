@@ -1,4 +1,4 @@
-import { newsKeywordSearch, semanticEnabled, semanticSearch } from './search'
+import { newsKeywordSearch, semanticEnabled, semanticSearch, type SearchTiming } from './search'
 import { normalizeQuery } from './search-fuse'
 
 // GET /api/search/?q=… returns semantic hits (articles and AI News) and AI News keyword hits.
@@ -23,9 +23,10 @@ export async function handleSearch(request: Request, env: Cloudflare.Env) {
       return null
     }
   }
+  const timing: SearchTiming = {}
   const [semantic, news] = await Promise.all([
-    settle(semanticSearch(env, query), 'semantic'),
-    settle(newsKeywordSearch(env.NEWS, query), 'news keyword'),
+    settle(semanticSearch(env, query, timing), 'semantic'),
+    settle(newsKeywordSearch(env.NEWS, query, timing), 'news keyword'),
   ])
   const partial = semantic === null || news === null
   return reply(
@@ -36,8 +37,12 @@ export async function handleSearch(request: Request, env: Cloudflare.Env) {
       news: news ?? [],
       ...(partial && { partial }),
     },
-    // A failed AI or Vectorize call shows as partial; this header reports binding availability.
-    { 'X-Semantic-Search': semanticEnabled(env) ? 'on' : 'off' },
+    {
+      // A failed AI or Vectorize call shows as partial; this header reports binding availability.
+      'X-Semantic-Search': semanticEnabled(env) ? 'on' : 'off',
+      // Only services that were called appear.
+      'Server-Timing': serverTiming(timing),
+    },
   )
 }
 
@@ -46,3 +51,9 @@ const reply = (
   body: Record<string, unknown>,
   headers: Record<string, string> = {},
 ) => Response.json(body, { status, headers: { 'Cache-Control': 'private, no-store', ...headers } })
+
+const serverTiming = (timing: SearchTiming) =>
+  (['ai', 'vec', 'd1'] as const)
+    .filter((name) => timing[name] !== undefined)
+    .map((name) => `${name};dur=${Math.round(timing[name]!)}`)
+    .join(', ')

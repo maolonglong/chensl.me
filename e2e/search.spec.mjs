@@ -229,6 +229,8 @@ test.describe('search page', () => {
     const response = await api.get('/api/search/?q=docker')
     expect(response.status()).toBe(200)
     expect(response.headers()['x-semantic-search']).toBe('off')
+    // Keyword-only search waits on D1 alone.
+    expect(response.headers()['server-timing']).toMatch(/^d1;dur=\d+$/)
     expect((await response.json()).semantic).toEqual([])
   })
 
