@@ -139,12 +139,54 @@ export function searchIndexApi(request, accountId, indexName) {
   }
 }
 
-// Brings the article vectors in line with the build: re-embeds articles whose hash changed,
-// removes chunks that a shorter version left behind, and, with prune, removes every article
-// vector whose article is no longer in the build (deleted, renamed, or back to draft). Returns
-// the related-article data for src/data/related-posts.json, computed from all whole-article
-// vectors, and what changed.
-export async function syncArticles(api, articles, { prune = false } = {}) {
+// get_by_ids reads the applied index, which trails accepted writes by a minute or more. A sync
+// that returns before its checkpoints are readable lets the next sync compare against old values
+// and skip a change, such as a date correction that is reverted right away. The sync therefore
+// reads back each checkpoint it wrote until hash and date match, and fails at the budget, so the
+// job goes red instead of leaving a wrong index.
+export const checkpointRetryDelays = [5_000, 10_000, 20_000, 30_000, 60_000, 60_000, 60_000, 60_000]
+export const checkpointBudgetMs = 300_000
+
+async function confirmCheckpoints(api, written, { delays, budgetMs, sleep, now }) {
+  const start = now()
+  let pending = written
+  for (let attempt = 0; ; attempt++) {
+    const stored = new Map(
+      (await api.getByIds(pending.map(({ id }) => relatedVectorId(id)))).map((vector) => [
+        articleOfVectorId(vector.id),
+        vector.metadata,
+      ]),
+    )
+    pending = pending.filter(
+      ({ id, hash, date }) => stored.get(id)?.hash !== hash || stored.get(id)?.date !== date,
+    )
+    const remaining = budgetMs - (now() - start)
+    if (!pending.length) return
+    if (attempt >= delays.length || remaining <= 0)
+      throw new Error(
+        `Checkpoints not readable after ${Math.round((now() - start) / 1000)} s: ${pending.map(({ id }) => relatedVectorId(id)).join(', ')}`,
+      )
+    await sleep(Math.min(delays[attempt], remaining))
+  }
+}
+
+// Brings the article vectors in line with the build: re-embeds articles whose hash or date
+// changed, removes chunks that a shorter version left behind, and, with prune, removes every
+// article vector whose article is no longer in the build (deleted, renamed, or back to draft).
+// Returns the related-article data for src/data/related-posts.json, computed from all
+// whole-article vectors, and what changed. It returns only after the post:<id> checkpoints it
+// wrote are readable; deletes and query visibility are not confirmed here.
+export async function syncArticles(
+  api,
+  articles,
+  {
+    prune = false,
+    delays = checkpointRetryDelays,
+    budgetMs = checkpointBudgetMs,
+    sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    now = Date.now,
+  } = {},
+) {
   const stored = new Map(
     (await api.getByIds(articles.map(({ id }) => relatedVectorId(id)))).map((vector) => [
       articleOfVectorId(vector.id),
@@ -212,6 +254,7 @@ export async function syncArticles(api, articles, { prune = false } = {}) {
     })
     if (pruned.length) await api.deleteByIds(pruned)
   }
+  if (changed.length) await confirmCheckpoints(api, changed, { delays, budgetMs, sleep, now })
   const related = relatedFromVectors(
     articles.map(({ id }) => ({ id, vector: wholeVectors.get(id) })),
   )
