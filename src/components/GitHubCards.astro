@@ -1,0 +1,42 @@
+<script>
+  import { archivedLabel, statsLine } from '../lib/github-repo.mjs'
+
+  // Refreshes the repository cards that src/lib/markdown.mjs renders from the build snapshot.
+  // The card keeps the snapshot when this script does not run, when the request fails, and when
+  // the Worker answers with the snapshot itself (`stale`). Only text changes, so the card keeps
+  // its size apart from a changed description or archived label.
+  type Repo = { description: string; archived: boolean; stars: number; stale?: boolean }
+
+  const requests = new Map<string, Promise<Repo | null>>()
+  const load = (key: string) =>
+    fetch(`/api/github/repos/${key}/`)
+      .then((response) => (response.ok ? response.json() : null))
+      .catch(() => null)
+
+  function update(card: HTMLElement, repo: Repo) {
+    const stats = card.querySelector('.repo-card-stats')
+    if (stats) stats.textContent = statsLine(repo)
+    const description = card.querySelector('.repo-card-description')
+    if (description && repo.description) description.textContent = repo.description
+    const head = card.querySelector('.repo-card-head')
+    const label = card.querySelector('.repo-card-archived')
+    if (repo.archived && head && !label) {
+      const added = document.createElement('span')
+      added.className = 'repo-card-archived'
+      added.dataset.pagefindIgnore = ''
+      added.textContent = archivedLabel
+      head.append(' ', added)
+    } else if (!repo.archived && label) {
+      label.previousSibling?.remove()
+      label.remove()
+    }
+  }
+
+  for (const card of document.querySelectorAll<HTMLElement>('.repo-card[data-repo]')) {
+    const key = card.dataset.repo!
+    if (!requests.has(key)) requests.set(key, load(key))
+    requests.get(key)!.then((repo) => {
+      if (repo && !repo.stale && typeof repo.stars === 'number') update(card, repo)
+    })
+  }
+</script>

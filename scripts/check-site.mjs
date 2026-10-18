@@ -438,6 +438,26 @@ if (outputFiles.has('search/index.html')) {
   }
 }
 
+// The Worker serves fresh data only for repositories in the card snapshot
+// (src/lib/github-endpoint.ts). An entry that no article shows as a card would keep an unused
+// repository open to the endpoint.
+const githubReposFile = path.join(root, 'src/data/github-repos.json')
+if (existsSync(githubReposFile)) {
+  const shown = new Set()
+  for (const tree of treeByFile.values()) {
+    visit(tree, 'element', (node) => {
+      if (hasClass(node, 'repo-card') && node.properties.dataRepo)
+        shown.add(node.properties.dataRepo)
+    })
+  }
+  for (const key of Object.keys(JSON.parse(await readFile(githubReposFile, 'utf8')))) {
+    if (!shown.has(key))
+      errors.push(
+        `${key} is in src/data/github-repos.json but no article shows it as a card: run node scripts/github-repos.mjs`,
+      )
+  }
+}
+
 // Upvote Actions only accept slug-shaped article IDs, so every article URL must match.
 for (const file of outputFiles) {
   const id = file.match(/^blog\/([^/]+)\/index\.html$/)?.[1]

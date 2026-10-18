@@ -67,11 +67,13 @@
       "migrations_dir": "migrations/news",
     },
   ],
-  // The bot that writes /api/news/ authenticates with this token.
+  // The bot that writes /api/news/ authenticates with NEWS_TOKEN. GITHUB_TOKEN, a read-only
+  // token for public repositories, raises the GitHub quota of /api/github/repos/.
   "secrets": {
-    "required": ["NEWS_TOKEN"],
+    "required": ["NEWS_TOKEN", "GITHUB_TOKEN"],
   },
-  // News pages opt into caching with s-maxage; search and Actions remain private.
+  // News pages opt into caching with s-maxage, and /api/github/repos/ with CDN-Cache-Control;
+  // search and Actions remain private.
   "cache": {
     "enabled": true,
   },

@@ -6,6 +6,7 @@ import BackToTop from '../../components/BackToTop.astro'
 import FloatingToc from '../../components/FloatingToc.astro'
 import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
+import GitHubCards from '../../components/GitHubCards.astro'
 import Upvote from '../../components/Upvote.astro'
 import { creationLabels, publishedPosts, displayDate, postUrl } from '../../lib/posts'
 import { relatedPosts } from '../../lib/related'
@@ -78,6 +79,7 @@ const { creation } = post.data
       </p>
     )}
     <CodeCopy />
+    {remarkPluginFrontmatter.githubCards && <GitHubCards />}
   </article>
   <Upvote postId={post.id} />
   {post.data.comments && <Comments />}
