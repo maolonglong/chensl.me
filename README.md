@@ -34,6 +34,8 @@ After you add or change an article, the search index job in GitHub Actions embed
 
 Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, TeX math (`$…$` inline, `$$…$$` display), and code captions (`title="db/user.go"` on the fence).
 
+A paragraph that is only a link to a GitHub repository, such as `<https://github.com/owner/repo>`, renders as a card with the repository description. After you add one, run `node scripts/github-repos.mjs` and commit `src/data/github-repos.json`; until then the link stays plain ([decision](.agents/notes/implemented/feature/2026-10-18-build-time-github-cards.md)).
+
 JinKai font subsets are built from the source text, and slices cover the rest of the font for runtime text, so new text needs no font step; restart `pnpm dev` to refresh them. Font licensing is in [NOTICE.md](public/fonts/tsanger-jinkai02/NOTICE.md).
 
 ## Deployment

@@ -320,6 +320,40 @@ pre code {
     margin-block: 0;
 }
 
+/* --------------------------------------------------------- repository cards */
+
+/* A paragraph that is only a repository link, in the code block frame: no image, icon, or script. */
+.prose .repo-card a {
+    display: block;
+    padding: 14px 18px;
+    text-decoration-line: none;
+    background-color: var(--code-block-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+
+.repo-card-name,
+.repo-card-description {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.repo-card-description {
+    margin-top: 4px;
+    font-size: 0.875rem;
+    color: var(--muted-color);
+}
+
+@media (hover: hover) {
+    .prose .repo-card a:hover {
+        text-decoration-line: none;
+    }
+
+    .prose .repo-card a:hover .repo-card-name {
+        text-decoration-line: underline;
+    }
+}
+
 /* -------------------------------------------------------------------- math */
 
 /* Firefox and Safari ignore Temml's inline `display: block math`. */

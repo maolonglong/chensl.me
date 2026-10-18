@@ -1,0 +1,22 @@
+{
+  "maolonglong/bfjit-x86_64": {
+    "name": "maolonglong/bfjit-x86_64",
+    "description": "A Just-In-Time Compiler for Brainfuck."
+  },
+  "maolonglong/bogoscheme": {
+    "name": "maolonglong/bogoscheme",
+    "description": "A subset of Scheme"
+  },
+  "maolonglong/hugo-simple": {
+    "name": "maolonglong/hugo-simple",
+    "description": "A Hugo-theme based on Simple.css and Bear Blog"
+  },
+  "maolonglong/zig-buddy2": {
+    "name": "maolonglong/zig-buddy2",
+    "description": "🧿 A simple buddy memory allocation library."
+  },
+  "sony/gobreaker": {
+    "name": "sony/gobreaker",
+    "description": "Circuit Breaker implemented in Go"
+  }
+}

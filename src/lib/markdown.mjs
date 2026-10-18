@@ -1,5 +1,6 @@
 import { visit, SKIP } from 'unist-util-visit'
 import temml from 'temml'
+import githubRepos from '../data/github-repos.json' with { type: 'json' }
 
 const element = (tagName, properties, children) => ({
   type: 'element',
@@ -9,8 +10,45 @@ const element = (tagName, properties, children) => ({
 })
 const text = (value) => ({ type: 'text', value })
 
+const repositoryUrl = /^https:\/\/github\.com\/([\w-]+\/[\w.-]+)\/?$/i
+
+// Yields each top-level paragraph that holds only a link to a repository root, with the
+// lowercase owner/repo key. scripts/github-repos.mjs reads the same list to refresh the metadata.
+export function* standaloneRepositoryLinks(tree) {
+  for (const paragraph of tree.children) {
+    if (paragraph.type !== 'paragraph') continue
+    const children = paragraph.children.filter(
+      (child) => child.type !== 'text' || child.value.trim(),
+    )
+    const [link] = children
+    const key = children.length === 1 && link.type === 'link' && link.url.match(repositoryUrl)?.[1]
+    if (key) yield { paragraph, link, key: key.toLowerCase() }
+  }
+}
+
+const span = (className, value) => ({
+  type: 'repoCardText',
+  data: { hName: 'span', hProperties: { className: [className] } },
+  children: [text(value)],
+})
+
+// The card text comes from src/data/github-repos.json, which only scripts/github-repos.mjs
+// writes, so a build never calls the GitHub API. A link without an entry stays a plain link.
+function githubCards(tree) {
+  for (const { paragraph, link, key } of standaloneRepositoryLinks(tree)) {
+    const repo = githubRepos[key]
+    if (!repo) continue
+    paragraph.data = { hProperties: { className: ['repo-card'] } }
+    link.children = [
+      span('repo-card-name', repo.name),
+      ...(repo.description ? [text(' '), span('repo-card-description', repo.description)] : []),
+    ]
+  }
+}
+
 export function remarkSite() {
   return (tree) => {
+    githubCards(tree)
     visit(tree, 'blockquote', (node) => {
       const first = node.children[0]?.children?.[0]
       const match =
