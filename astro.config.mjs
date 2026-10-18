@@ -7,6 +7,7 @@ import cloudflare from '@astrojs/cloudflare'
 import { unified } from '@astrojs/markdown-remark'
 import remarkMath from 'remark-math'
 import { remarkSite, rehypeSite, codeThemes, codeCaption } from './src/lib/markdown.mjs'
+import { remarkReadingStats } from './src/lib/reading-time.mjs'
 import { siteFonts } from './src/lib/fonts.mjs'
 import { siteUrl } from './src/lib/site.mjs'
 
@@ -112,7 +113,7 @@ export default defineConfig({
   markdown: {
     processor: unified({
       smartypants: false,
-      remarkPlugins: [remarkSite, remarkMath],
+      remarkPlugins: [remarkSite, remarkMath, remarkReadingStats],
       rehypePlugins: [rehypeSite],
       remarkRehype: {
         footnoteLabel: '脚注',

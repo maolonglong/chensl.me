@@ -15,6 +15,7 @@ export interface Props {
   pubDate?: Date
   updatedDate?: Date
   article?: boolean
+  wordCount?: number
   notFound?: boolean
 }
 
@@ -24,6 +25,7 @@ const {
   pubDate,
   updatedDate,
   article = false,
+  wordCount,
   notFound = false,
 } = Astro.props
 const path = Astro.url.pathname
@@ -79,6 +81,7 @@ if (article)
     image: image.href,
     ...(pubDate && { datePublished: pubDate.toISOString() }),
     ...(updatedDate && { dateModified: updatedDate.toISOString() }),
+    ...(wordCount !== undefined && { wordCount }),
     mainEntityOfPage: canonical.href,
   })
 const blogCurrent = kind === 'blog' ? 'page' : kind === 'article' ? 'location' : undefined
