@@ -219,7 +219,10 @@ test.describe('news pages', () => {
     await expect(page.locator('nav a[href="/news/"]')).toHaveText('AI News')
   })
 
-  test('the index shows the seven newest issues by tag, newest first', async ({ post, page }) => {
+  test('the index shows only the latest issue by tag and links the archive', async ({
+    post,
+    page,
+  }) => {
     // The latest valid date stays newest, whatever else the database holds.
     const newest = '9999-12-31'
     expect([200, 201]).toContain((await post(issueFor(newest))).status)
@@ -230,27 +233,37 @@ test.describe('news pages', () => {
     )
     await expect(page.locator('nav a[href="/news/"]')).toHaveAttribute('aria-current', 'page')
     const days = page.locator('main .day')
-    expect(await days.count()).toBeLessThanOrEqual(7)
-    await expect(days.first().locator('h2 a')).toHaveAttribute('href', `/news/${newest}/`)
-    await expect(days.first().locator('.group-tag')).toHaveText(['OpenAI', 'Google', 'pi'])
-    const dates = await days.locator('time').allTextContents()
-    expect(dates).toEqual([...dates].sort().reverse())
+    await expect(days).toHaveCount(1)
+    await expect(days.locator('h2 a')).toHaveAttribute('href', `/news/${newest}/`)
+    await expect(days.locator('.group-tag')).toHaveText(['OpenAI', 'Google', 'pi'])
+    // Older issues are one click away: in the introduction and after the issue.
+    const archive = page.locator('main a[href="/news/archive/"]')
+    await expect(archive).toHaveCount(2)
+    await expect(archive.last()).toHaveText('查看往期日报')
+    await archive.last().click()
+    await expect(page).toHaveURL(/\/news\/archive\/$/)
   })
 
   test('older issues stay reachable through the monthly archive', async ({ post, page, date }) => {
-    // Seven later issues push this one off the index, whatever else the database holds.
+    // A later issue pushes this one off the index, whatever else the database holds.
     const old = `19${date.slice(2)}`
     const month = old.slice(0, 7)
     expect((await post(issueFor(old))).status).toBe(201)
-    for (let day = 1; day <= 7; day++) {
-      const later = `9999-12-${String(day).padStart(2, '0')}`
-      expect([200, 201]).toContain((await post(issueFor(later))).status)
-    }
+    expect([200, 201]).toContain((await post(issueFor('9999-12-01'))).status)
     await page.goto('/news/')
     await expect(page.locator(`main a[href="/news/${old}/"]`)).toHaveCount(0)
 
-    await page.goto('/news/archive/')
-    await page.locator(`main a[href="/news/archive/${month}/"]`).click()
+    // Archive pages carry the news tag, so a write or retraction purges them too.
+    const archive = await page.goto('/news/archive/')
+    expect(archive.headers()['cache-tag'].split(',')).toContain('news')
+    await expect(page.locator('nav a[href="/news/"]')).toHaveAttribute('aria-current', 'location')
+    const [monthResponse] = await Promise.all([
+      page.waitForResponse((response) => response.url().endsWith(`/news/archive/${month}/`)),
+      page.locator(`main a[href="/news/archive/${month}/"]`).click(),
+    ])
+    expect(monthResponse.headers()['cache-tag'].split(',')).toEqual(
+      expect.arrayContaining(['news', `news-${old}`]),
+    )
     const entry = page.locator('main .issues > li', {
       has: page.locator(`a[href="/news/${old}/"]`),
     })

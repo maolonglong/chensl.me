@@ -43,7 +43,8 @@ export const isIssueDate = (value: string | undefined): value is string =>
 export const isMonth = (value: string | undefined): value is string =>
   /^\d{4}-(?:0[1-9]|1[0-2])$/.test(value ?? '')
 
-export const recentIssueCount = 7
+// /news/ shows only the latest visible issue; older ones are in /news/archive/.
+export const recentIssueCount = 1
 export const feedIssueCount = 20
 
 export const retraction = z.strictObject({
