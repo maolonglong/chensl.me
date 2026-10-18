@@ -27,6 +27,8 @@ on:
 
 permissions:
   contents: read
+  # The evaluation scope reads this workflow's past runs on main.
+  actions: read
 
 jobs:
   index:
@@ -71,10 +73,20 @@ jobs:
             echo 'main advanced during the build; refusing an obsolete production sync.' >&2
             exit 1
           fi
+      # Main diffs against its last successful run, so changes of a run that failed or was
+      # refused above are still evaluated; pull requests diff against their base.
       - id: scope
         env:
-          BASE: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
-        run: node scripts/search-eval-scope.mjs "$BASE" | tee -a "$GITHUB_OUTPUT"
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            gh run list --repo "$GITHUB_REPOSITORY" --workflow search-index.yml --branch main \
+              --event push --status success --limit 50 --json headSha > runs.json || echo '[]' > runs.json
+            node scripts/search-eval-scope.mjs --runs runs.json | tee -a "$GITHUB_OUTPUT"
+          else
+            node scripts/search-eval-scope.mjs "$BASE" | tee -a "$GITHUB_OUTPUT"
+          fi
       # Mutation acceptance is not query visibility; the evaluation below checks real queries.
       # The sync runs on every push, so the index always follows the build.
       - id: sync

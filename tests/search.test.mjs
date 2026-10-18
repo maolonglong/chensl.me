@@ -490,3 +490,45 @@ test('the index job evaluates only changes that can move search results', async 
   assert.equal(run('0000000000000000000000000000000000000000'), 'eval=true')
   assert.equal(run('HEAD'), 'eval=false')
 })
+
+test('a production run evaluates every change since the last successful run, even skipped ones', async (t) => {
+  const { execFileSync } = await import('node:child_process')
+  const { mkdtemp, mkdir, rm, writeFile } = await import('node:fs/promises')
+  const os = await import('node:os')
+  const path = await import('node:path')
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'eval-scope-'))
+  t.after(() => rm(repo, { recursive: true, force: true }))
+  const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim()
+  git('init', '-q')
+  git('config', 'user.email', 'test@example.com')
+  git('config', 'user.name', 'test')
+  const commit = async (file) => {
+    await mkdir(path.dirname(path.join(repo, file)), { recursive: true })
+    await writeFile(path.join(repo, file), `${Math.random()}\n`)
+    git('add', '-A')
+    git('commit', '-qm', file)
+    return git('rev-parse', 'HEAD')
+  }
+  const passed = await commit('docs/a.md')
+  // The run for this push failed its head check because main advanced during its build.
+  const skipped = await commit('src/lib/search-text.mjs')
+  await commit('docs/b.md')
+  const script = path.resolve('scripts/search-eval-scope.mjs')
+  const scope = async (runs) => {
+    const file = path.join(repo, 'runs.json')
+    await writeFile(file, JSON.stringify(runs))
+    return execFileSync('node', [script, '--runs', file], { cwd: repo, encoding: 'utf8' }).trim()
+  }
+  // Diffing against the previous push alone would miss the skipped search change.
+  assert.equal(
+    execFileSync('node', [script, skipped], { cwd: repo, encoding: 'utf8' }).trim(),
+    'eval=false',
+  )
+  assert.equal(await scope([{ headSha: passed }]), 'eval=true')
+  // Successful runs that are not ancestors of HEAD, such as before a force push, are passed over.
+  assert.equal(await scope([{ headSha: 'f'.repeat(40) }, { headSha: passed }]), 'eval=true')
+  assert.equal(await scope([{ headSha: git('rev-parse', 'HEAD') }]), 'eval=false')
+  // Without a usable successful run the job evaluates.
+  assert.equal(await scope([]), 'eval=true')
+  assert.equal(await scope([{ headSha: 'f'.repeat(40) }]), 'eval=true')
+})
