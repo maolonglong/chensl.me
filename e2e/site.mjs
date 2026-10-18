@@ -58,7 +58,8 @@ export const test = base.extend({
                 ),
             ),
           )
-        : page.waitForTimeout(300),
+        : // Page scripts are off, so wait for the browser's own font loading instead.
+          page.waitForFunction(() => document.fonts.status === 'loaded'),
     )
   },
   // Navigate, settle, and confirm the browser really has the pointer capability the test

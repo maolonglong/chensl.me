@@ -106,6 +106,8 @@ for (const hasTouch of [false, true]) {
       open,
     }) => {
       await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+      // Fake timers keep running in real time; runFor below moves the copy feedback timer.
+      await page.clock.install()
       await open('/blog/dockertest/')
       const copy = await page.evaluate(() => {
         const blocks = [...document.querySelectorAll('.highlight')]
@@ -152,33 +154,40 @@ for (const hasTouch of [false, true]) {
       await expect(button).toHaveAttribute('data-state', 'done')
       await expect(button.locator('[data-copy-icon=done]')).toBeVisible()
       await expect(button.locator('[data-copy-icon=idle]')).toBeHidden()
-      // A second success restarts the 1.5s feedback window.
-      await page.waitForTimeout(1000)
+      // A second success restarts the 1.5s feedback window: 1.8 s after the first success and
+      // 0.8 s after the second, the button still shows it; 1.5 s after the second, it is gone.
+      await page.clock.runFor(1000)
       await button.click()
-      await page.waitForTimeout(800)
+      await expect(page.locator('.code-copy-status')).toHaveText('已复制')
+      await page.clock.runFor(800)
       await expect(button).toHaveAttribute('data-state', 'done')
-      await expect(button).not.toHaveAttribute('data-state', { timeout: 1200 })
+      await page.clock.runFor(700)
+      await expect(button).not.toHaveAttribute('data-state')
       await expect(page.locator('.code-copy-status')).toBeEmpty()
 
-      const failure = await page.evaluate(async () => {
-        const write = navigator.clipboard.writeText
+      const before = await page.evaluate(() => {
+        globalThis.realWriteText = navigator.clipboard.writeText
         navigator.clipboard.writeText = () =>
           Promise.reject(new DOMException('Denied', 'NotAllowedError'))
         const button = document.querySelector('.code-copy')
-        const block = button.parentElement
-        const before = block.getBoundingClientRect().height
+        const height = button.parentElement.getBoundingClientRect().height
         button.click()
-        await new Promise((resolve) => setTimeout(resolve, 50))
-        const result = {
+        return height
+      })
+      // The failure is announced after the rejected write settles.
+      await expect(page.locator('.code-copy-status')).not.toBeEmpty()
+      const failure = await page.evaluate((before) => {
+        const button = document.querySelector('.code-copy')
+        const block = button.parentElement
+        navigator.clipboard.writeText = globalThis.realWriteText
+        return {
           state: button.dataset.state ?? null,
           height: block.getBoundingClientRect().height,
           before,
           visibleText: block.innerText,
           announcement: document.querySelector('.code-copy-status').textContent.trim(),
         }
-        navigator.clipboard.writeText = write
-        return result
-      })
+      }, before)
       expect(failure.state).toBeNull()
       expect(failure.height).toBe(failure.before)
       expect(failure.visibleText.trim()).toBe(copy.expected)

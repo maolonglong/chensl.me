@@ -11,8 +11,8 @@ export const maxQueryLength = 64
 
 export const cleanQuery = (raw: string | null) => (raw ?? '').replace(/[\p{Cc}\s]+/gu, ' ').trim()
 
-// Collapses whitespace and control characters and rejects empty or oversized input, so equal
-// queries share one cache key and FTS5 never sees a NUL byte.
+// Collapses whitespace and control characters and rejects empty or oversized input, so the
+// semantic and keyword halves search the same text and FTS5 never sees a NUL byte.
 export function normalizeQuery(raw: string | null) {
   const query = cleanQuery(raw)
   return query && [...query].length <= maxQueryLength ? query : null
