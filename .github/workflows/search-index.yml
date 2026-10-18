@@ -7,7 +7,7 @@ name: Search index
 # .agents/notes/implemented/feature/2026-10-17-hybrid-search.md#setting-up-the-index-jobs.
 on:
   pull_request:
-    paths: &index-inputs
+    paths:
       - 'src/**'
       - 'astro.config.mjs'
       - 'wrangler.jsonc'
@@ -23,7 +23,6 @@ on:
       - '.github/workflows/search-index.yml'
   push:
     branches: [main]
-    paths: *index-inputs
 
 permissions:
   contents: read
@@ -52,18 +51,23 @@ jobs:
       SEARCH_INDEX: ${{ github.event_name == 'push' && 'blog-search' || 'blog-search-preview' }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # A rerun must not restore a historical article set to the production index.
+          ref: ${{ github.event_name == 'push' && 'main' || github.ref }}
       - uses: actions/setup-node@v7
         with:
           node-version: 26
       - run: npm install --global pnpm@11.20.0
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      # Embeds changed articles, deletes vectors of articles that left the build on main, waits
-      # until Vectorize has applied the writes, and fails when the committed related-posts.json is
-      # stale; the new file is in the related-posts artifact.
+      # Mutation acceptance is not query visibility; the evaluation below checks real queries.
       - id: sync
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
+            if [ "$(git rev-parse HEAD)" != "$(git ls-remote origin refs/heads/main | cut -f1)" ]; then
+              echo 'main advanced during the build; refusing an obsolete production sync.' >&2
+              exit 1
+            fi
             node scripts/embed-posts.mjs --index "$SEARCH_INDEX" --prune --out related-posts.json
           else
             node scripts/embed-posts.mjs --index "$SEARCH_INDEX" --out related-posts.json
