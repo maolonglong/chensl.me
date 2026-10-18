@@ -14,7 +14,7 @@ This note partly supersedes the write, cache, and production job decisions in [h
 
 **Search responses are private and not stored.** The write path has no query-visibility receipt that can safely precede a purge. Removing response caching prevents a transient index state from becoming a long-lived answer, for both endpoint spellings. News page caching is separate and unchanged.
 
-**Scripts report acceptance, not completion.** The global `processedUpToMutation` can advance past this client's mutation. Equality polling can miss it; ordering opaque IDs is not valid. Article CI uses the existing query evaluation and its retry budget. This evaluation proves the labeled queries, not every changed vector or deletion. The offline news backfill reports visibility as unverified.
+**Article syncs confirm their own checkpoints; other writes report acceptance.** `get_by_ids` reads the applied index, which trails accepted writes. A sync that returns before its `post:<id>` checkpoints are readable lets the next sync compare against old values; a date correction that is reverted within a minute then stays in the index. `syncArticles` reads back each checkpoint that it wrote until the hash and the date match, within a fixed budget, and fails at the budget. This is a check of named vectors, not a shared watermark. It does not confirm deletes or query visibility. The global `processedUpToMutation` can advance past this client's mutation. Equality polling can miss it; ordering opaque IDs is not valid. Article CI uses the existing query evaluation and its retry budget for query visibility. This evaluation proves the labeled queries, not every changed vector or deletion. The offline news backfill reports visibility as unverified.
 
 **Production jobs build current main on every push.** Publication depends on the clock as well as changed paths. A checkout of current `main` prevents a rerun of this workflow from replaying its event's old article set. A pre-write head check rejects builds overtaken before indexing. Per-index concurrency remains necessary for writers that have already started. Pull requests keep path filters and do not prune.
 
@@ -27,6 +27,8 @@ This note partly supersedes the write, cache, and production job decisions in [h
 **Versioned vector IDs or a queue.** Versioned IDs need cleanup and extra storage. A durable queue adds infrastructure and still needs a stale-version check. Reconciliation keeps fixed IDs and repairs successful overlapping requests. It does not promise durable recovery after a process interruption or a failed index call.
 
 **Keep mutation polling as a completion gate.** A shared watermark is not a per-operation receipt and does not prove query results. Query evaluation is the observable check already available.
+
+**Rely on the query evaluation alone for article syncs.** The labeled queries do not read the checkpoints. They pass while a stale checkpoint makes the next sync skip a change.
 
 **Filter production runs by source paths.** A documentation-only push can publish a scheduled article. Rechecking hashes costs a build and query embeddings, but avoids silently skipping that publication.
 

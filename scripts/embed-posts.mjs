@@ -39,7 +39,7 @@ console.log(
 // Lets a reader of the CI log check the write against the index (`wrangler vectorize info`).
 const { upserted, deleted, lastMutation } = api.writes
 console.log(
-  `${values.index}: submitted ${upserted} upserts and ${deleted} deletes${lastMutation ? `, last accepted mutation ${lastMutation}` : ', no write'}. Query visibility is checked by search-eval.mjs.`,
+  `${values.index}: submitted ${upserted} upserts and ${deleted} deletes${lastMutation ? `, last accepted mutation ${lastMutation}` : ', no write'}. Written checkpoints are readable; query visibility is checked by search-eval.mjs.`,
 )
 
 const next = `${JSON.stringify(result.data, null, 2)}\n`

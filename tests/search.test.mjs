@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
+  checkpointBudgetMs,
+  checkpointRetryDelays,
   evaluate,
   evaluateWithRetry,
   evaluationBudgetMs,
@@ -292,6 +294,57 @@ test('a publication date correction updates search metadata without changing rel
   assert.deepEqual((await syncArticles(api, [after])).changed, [])
 })
 
+// Vectorize applies accepted writes later, and get_by_ids answers from the applied index: each
+// upsert becomes readable only `lagMs` after it was accepted, on the fake clock.
+function laggingApi(clock, lagMs) {
+  const api = fakeApi()
+  const pending = []
+  const apply = () => {
+    while (pending.length && pending[0].at <= clock.now()) {
+      for (const vector of pending.shift().list) api.vectors.set(vector.id, vector)
+    }
+  }
+  api.upsert = async (list) => {
+    pending.push({ at: clock.now() + lagMs, list })
+  }
+  const read = api.getByIds
+  api.getByIds = async (ids) => {
+    apply()
+    return read(ids)
+  }
+  return api
+}
+
+test('a date correction that is reverted right away leaves the reverted date in the index', async () => {
+  const clock = fakeClock()
+  const api = laggingApi(clock, 60_000)
+  const original = article('a', 'same-text', 1)
+  const corrected = { ...original, date: '2026-09-12' }
+  await syncArticles(api, [original], clock)
+  clock.time += 60_000
+  await syncArticles(api, [corrected], clock)
+  // The next push comes before the corrected checkpoint is readable without the wait.
+  const reverted = await syncArticles(api, [original], clock)
+  assert.deepEqual(reverted.changed, ['a'])
+  clock.time += 60_000
+  assert.equal((await api.getByIds(['blog:a#0']))[0].metadata.date, original.date)
+  assert.equal((await api.getByIds(['post:a']))[0].metadata.date, original.date)
+})
+
+test('a sync whose checkpoints never become readable fails at the time budget', async () => {
+  const clock = fakeClock()
+  const api = laggingApi(clock, Infinity)
+  await assert.rejects(
+    syncArticles(api, [article('a', 'h1', 1), article('b', 'h1', 1)], {
+      ...clock,
+      delays: [100, 200, 400],
+      budgetMs: 500,
+    }),
+    /post:a, post:b/,
+  )
+  assert.deepEqual(clock.waits, [100, 200, 200])
+})
+
 test('the evaluation reports top-3 recall and false positives of gated queries without news crowding', async () => {
   const api = fakeApi()
   api.answers = {
@@ -404,8 +457,10 @@ test('a passing evaluation runs once and does not wait', async () => {
   assert.deepEqual(clock.waits, [])
 })
 
-test('the default retry schedule stays within the five-minute job budget', () => {
-  // The search-index job allows 15 minutes; the evaluation gets five of them.
+test('the default retry schedules stay within the 15-minute job budget', () => {
+  // The search-index job allows 15 minutes; the checkpoint wait and the evaluation get five each.
   assert.ok(evaluationBudgetMs <= 5 * 60_000, `${evaluationBudgetMs} ms exceeds five minutes`)
+  assert.ok(checkpointBudgetMs <= 5 * 60_000, `${checkpointBudgetMs} ms exceeds five minutes`)
+  assert.ok(checkpointRetryDelays.every((delay, index, all) => !index || delay >= all[index - 1]))
   assert.ok(evaluationRetryDelays.every((delay, index, all) => !index || delay > all[index - 1]))
 })
