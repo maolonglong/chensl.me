@@ -40,7 +40,7 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - **Contents.** One prerendered list: a hover rail beside the column where a pointer can hover and the column leaves room, a native popover elsewhere (`e2e/contents.spec.mjs`).
 - **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails (`e2e/appearance.spec.mjs`).
 - **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
-- **Creation label.** It follows the article date in the date's neutral typography, with no icon, badge, or interaction. Its note sits before the stale notice. Home and archive lists omit it.
+- **Creation label.** It follows the article date, length, and reading time in the date's neutral typography, with no icon, badge, or interaction. Its note sits before the stale notice. Home and archive lists omit it.
 - **Search** is one input and a result list: title, type and date, excerpt. No filters or suggestions.
 - **Related articles** are one line of plain links after the text, in muted small type.
 - **Icons** are inline SVG, not font glyphs or an icon library.

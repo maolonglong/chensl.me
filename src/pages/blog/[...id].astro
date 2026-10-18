@@ -10,6 +10,7 @@ import Upvote from '../../components/Upvote.astro'
 import { creationLabels, publishedPosts, displayDate, postUrl } from '../../lib/posts'
 import { relatedPosts } from '../../lib/related'
 import { isStaleSince } from '../../lib/stale'
+import { readingLength } from '../../lib/reading-time.mjs'
 export async function getStaticPaths() {
   const posts = await publishedPosts()
   const byId = new Map(posts.map((post) => [post.id, post]))
@@ -23,12 +24,13 @@ interface Props {
   related: CollectionEntry<'blog'>[]
 }
 const { post, related } = Astro.props
-const { Content, headings } = await render(post)
+const { Content, headings, remarkPluginFrontmatter } = await render(post)
+const { wordCount, minutes } = remarkPluginFrontmatter.readingStats
 const lastModified = post.data.updatedDate ?? post.data.pubDate
 const { creation } = post.data
 ---
 
-<BaseLayout {...post.data} updatedDate={lastModified} article>
+<BaseLayout {...post.data} updatedDate={lastModified} wordCount={wordCount} article>
   <article
     class="post"
     data-pagefind-body
@@ -37,7 +39,10 @@ const { creation } = post.data
     <header class="post-header">
       <h1>{post.data.title}</h1>
       <p class="post-meta">
-        <time datetime={post.data.pubDate.toISOString()}>{displayDate(post.data.pubDate)}</time>
+        <time datetime={post.data.pubDate.toISOString()}>{displayDate(post.data.pubDate)}</time>{' '}
+        <span aria-hidden="true">·</span>{' '}
+        <span class="post-length">{readingLength(wordCount)}</span>{' '}
+        <span aria-hidden="true">·</span> <span class="post-reading-time">{minutes} 分钟</span>
         {creation && (
           <>
             {' '}
@@ -107,7 +112,9 @@ const { creation } = post.data
   .post-notice {
     margin-top: 8px;
   }
-  .post-creation {
+  .post-creation,
+  .post-length,
+  .post-reading-time {
     white-space: nowrap;
   }
   .post-creation-note {
