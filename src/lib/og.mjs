@@ -4,7 +4,7 @@
 export const cardWidth = 1200
 export const cardHeight = 630
 
-// The fixed cards. /news/<date>/ shares the AI News card, so the Worker never renders an image.
+// The fixed cards. src/layouts/BaseLayout.astro picks one from the page kind.
 export const fixedCards = {
   home: { title: '陈劭珑的个人网站与技术博客', label: '首页' },
   blog: { title: '技术文章：系统性能、Go/Zig/Rust 与 Agent 工程实践', label: '博客' },
@@ -14,12 +14,3 @@ export const fixedCards = {
 
 export const articleCard = (id) => `blog/${id}`
 export const cardPath = (card) => `/og/${card}.png`
-
-// Pages without their own card, such as a future standalone page, use the home card.
-export function cardFor(pathname, article) {
-  if (article) return articleCard(pathname.replace(/^\/blog\/|\/$/g, ''))
-  if (pathname === '/blog/') return 'blog'
-  if (pathname.startsWith('/news/archive/')) return 'news-archive'
-  if (pathname.startsWith('/news/')) return 'news'
-  return 'home'
-}
