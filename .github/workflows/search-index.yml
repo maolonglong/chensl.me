@@ -60,14 +60,18 @@ jobs:
       - run: npm install --global pnpm@11.20.0
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      # A separate step, so an overtaken build skips the sync and the evaluation below; the run
+      # for the newer main writes and evaluates the index.
+      - if: github.event_name == 'push'
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$(git ls-remote origin refs/heads/main | cut -f1)" ]; then
+            echo 'main advanced during the build; refusing an obsolete production sync.' >&2
+            exit 1
+          fi
       # Mutation acceptance is not query visibility; the evaluation below checks real queries.
       - id: sync
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            if [ "$(git rev-parse HEAD)" != "$(git ls-remote origin refs/heads/main | cut -f1)" ]; then
-              echo 'main advanced during the build; refusing an obsolete production sync.' >&2
-              exit 1
-            fi
             node scripts/embed-posts.mjs --index "$SEARCH_INDEX" --prune --out related-posts.json
           else
             node scripts/embed-posts.mjs --index "$SEARCH_INDEX" --out related-posts.json
@@ -79,7 +83,8 @@ jobs:
           path: related-posts.json
           if-no-files-found: ignore
           retention-days: 7
-      # Retries a failed evaluation for up to five minutes: queries see a fresh write late.
+      # Retries a failed evaluation for up to five minutes: queries see a fresh write late. It also
+      # runs after a failed sync, such as a stale related-posts.json, but not after a skipped one.
       - if: success() || steps.sync.outcome == 'failure'
         run: node scripts/search-eval.mjs --index "$SEARCH_INDEX" --json search-eval.json
       - uses: actions/upload-artifact@v7
