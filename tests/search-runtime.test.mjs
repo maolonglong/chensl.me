@@ -4,8 +4,10 @@ import { existsSync } from 'node:fs'
 import { registerHooks } from 'node:module'
 import { test } from 'node:test'
 
-// Routes read their bindings from cloudflare:workers; the stub forwards to globalThis.workerEnv.
-const workersStub = `export const env = new Proxy({}, { get: (_, key) => globalThis.workerEnv?.[key] })`
+// Routes read their bindings from cloudflare:workers; the stub forwards to globalThis.workerEnv
+// and accepts every cache purge.
+const workersStub = `export const env = new Proxy({}, { get: (_, key) => globalThis.workerEnv?.[key] })
+export const cache = { purge: async () => ({ success: true }) }`
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier === 'cloudflare:workers')
@@ -174,6 +176,7 @@ test('a restore that loses to a concurrent retraction reports the hidden state',
     status: 'hidden',
     date: '2026-10-17',
     search: 'removed',
+    cache: 'purged',
   })
   assert.equal(state.vectors.size, 0)
 })

@@ -185,7 +185,12 @@ export async function setHidden(db: D1Database, date: string, hidden: boolean) {
   return result.meta.changes > 0
 }
 
-export const newsCacheControl = 'public, max-age=60, s-maxage=300'
+// Workers Cache keeps a news response for a day; the news API purges its tags after each write
+// or retraction (src/lib/news-cache.ts). Browsers recheck after a minute.
+export const newsCacheControl = 'public, max-age=60, s-maxage=86400'
+
+// Cache tags of one issue: `news` is on every news response, the date tag on its own page.
+export const issueCacheTags = (date: string) => ['news', `news-${date}`]
 
 // Groups keep the order in which each tag first appears in the issue.
 export function groupByTag(items: NewsItem[]) {

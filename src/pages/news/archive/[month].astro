@@ -7,7 +7,7 @@ import { loadIssues } from '../../../lib/news-pages'
 export const prerender = false
 
 const { month } = Astro.params
-const issues = isMonth(month) ? await loadIssues({ month }) : []
+const issues = isMonth(month) ? await loadIssues({ month }, Astro.response.headers) : []
 Astro.response.headers.set('Cache-Control', issues.length ? newsCacheControl : 'no-store')
 if (!issues.length) Astro.response.status = 404
 ---

@@ -33,7 +33,8 @@ function itemHtml(issue: StoredIssue) {
 }
 
 export async function GET(context: APIContext) {
-  const issues = await loadIssues({ limit: feedIssueCount })
+  const headers = new Headers({ 'Cache-Control': newsCacheControl })
+  const issues = await loadIssues({ limit: feedIssueCount }, headers)
   const response = await rss({
     title: newsFeedTitle,
     description: newsDescription,
@@ -48,6 +49,6 @@ export async function GET(context: APIContext) {
       content: itemHtml(issue),
     })),
   })
-  response.headers.set('Cache-Control', newsCacheControl)
+  for (const [name, value] of headers) response.headers.set(name, value)
   return response
 }

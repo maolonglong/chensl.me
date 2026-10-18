@@ -1,6 +1,7 @@
 import { defineLiveCollection } from 'astro:content'
 import type { LiveLoader } from 'astro/loaders'
 import {
+  issueCacheTags,
   queryIssue,
   queryIssues,
   queryMonths,
@@ -16,7 +17,7 @@ import {
 const db = async () => (await import('cloudflare:workers')).env.NEWS
 
 const hint = (issue: StoredIssue) => ({
-  tags: ['news', `news-${issue.date}`],
+  tags: issueCacheTags(issue.date),
   lastModified: new Date(issue.updatedAt),
 })
 

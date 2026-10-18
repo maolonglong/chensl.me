@@ -151,7 +151,13 @@ test.describe('news retraction', () => {
     expect((await post(issueFor(date))).status).toBe(201)
     const hidden = await retract(post, { date })
     expect(hidden.status).toBe(200)
-    expect(hidden.body).toEqual({ status: 'hidden', date, search: 'disabled' })
+    // Local Wrangler has no Workers Cache to purge.
+    expect(hidden.body).toEqual({
+      status: 'hidden',
+      date,
+      search: 'disabled',
+      cache: 'unavailable',
+    })
 
     const response = await page.goto(`/news/${date}/`)
     expect(response.status()).toBe(404)
@@ -163,7 +169,12 @@ test.describe('news retraction', () => {
     expect((await post(issueFor(date, { title: '改过' }))).body.status).toBe('updated')
     expect((await page.goto(`/news/${date}/`)).status()).toBe(404)
     const restored = await retract(post, { date, hidden: false })
-    expect(restored.body).toEqual({ status: 'visible', date, search: 'disabled' })
+    expect(restored.body).toEqual({
+      status: 'visible',
+      date,
+      search: 'disabled',
+      cache: 'unavailable',
+    })
     expect((await page.goto(`/news/${date}/`)).status()).toBe(200)
     await expect(page.locator('h1')).toHaveText('改过')
   })
@@ -189,7 +200,9 @@ test.describe('news pages', () => {
 
     const response = await page.goto(`/news/${date}/`)
     expect(response.status()).toBe(200)
-    expect(response.headers()['cache-control']).toMatch(/\bs-maxage=\d+/)
+    // Workers Cache keeps the page for a day; a write or retraction purges these tags.
+    expect(response.headers()['cache-control']).toMatch(/\bs-maxage=86400\b/)
+    expect(response.headers()['cache-tag']).toBe(`news,news-${date}`)
     await expect(page.locator('h1')).toHaveText('<b>今日</b> AI News')
     const link = page.locator('main .items a').first()
     await expect(link).toHaveText('<img src=x onerror=alert(1)>新模型发布')
@@ -211,7 +224,10 @@ test.describe('news pages', () => {
     const newest = '9999-12-31'
     expect([200, 201]).toContain((await post(issueFor(newest))).status)
     const response = await page.goto('/news/')
-    expect(response.headers()['cache-control']).toMatch(/\bs-maxage=\d+/)
+    expect(response.headers()['cache-control']).toMatch(/\bs-maxage=86400\b/)
+    expect(response.headers()['cache-tag'].split(',')).toEqual(
+      expect.arrayContaining(['news', `news-${newest}`]),
+    )
     await expect(page.locator('nav a[href="/news/"]')).toHaveAttribute('aria-current', 'page')
     const days = page.locator('main .day')
     expect(await days.count()).toBeLessThanOrEqual(7)
@@ -330,7 +346,10 @@ test.describe('news pages', () => {
     expect([200, 201]).toContain((await post(issueFor(newest))).status)
     const response = await request.get('/news/index.xml')
     expect(response.status()).toBe(200)
-    expect(response.headers()['cache-control']).toMatch(/\bs-maxage=\d+/)
+    expect(response.headers()['cache-control']).toMatch(/\bs-maxage=86400\b/)
+    expect(response.headers()['cache-tag'].split(',')).toEqual(
+      expect.arrayContaining(['news', `news-${newest}`]),
+    )
     const xml = await response.text()
     expect(xml).toContain(`<link>https://chensl.me/news/${newest}/</link>`)
     // The item HTML is escaped once for XML; the stored markup is escaped once more as text.
