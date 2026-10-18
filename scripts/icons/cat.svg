@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" stroke="#1b365d" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Body and head: one outline with two ears and a notch where the cheek meets the body. -->
+  <path d="M386 212C383 180 369 155 350 140L346 78L303 110C278 101 250 101 225 113L185 78L181 128A164 164 0 1 0 418 246C415 230 404 216 386 212"/>
+  <!-- Closed eye. -->
+  <path d="M228 191Q256 216 284 191"/>
+  <!-- Tail: runs along the bottom of the body and curls once. -->
+  <path d="M232 436C320 442 366 400 362 330C360 302 342 290 320 290C298 290 282 308 282 328C282 348 298 362 314 360C326 358 332 348 328 340"/>
+</svg>
