@@ -67,8 +67,8 @@ test('links, lists, quotes and footnotes count their text', async () => {
   assert.deepEqual(await stats(markdown), { characters: 13, words: 1, wordCount: 14, minutes: 1 })
 })
 
-test('reading time adds 390 Chinese characters and 238 English words a minute', async () => {
-  const chinese = '字'.repeat(1950)
+test('reading time adds 300 Chinese characters and 238 English words a minute', async () => {
+  const chinese = '字'.repeat(1500)
   const english = Array.from({ length: 476 }, () => 'word').join(' ')
   assert.equal((await stats(`${chinese}\n\n${english}`)).minutes, 7)
   assert.equal((await stats('字')).minutes, 1)

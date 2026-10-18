@@ -5,15 +5,15 @@ import { astroProject, buildAstro, frontmatter, write } from '../tests/support.m
 import { expect, test } from './site.mjs'
 
 // Fixture articles with a known amount of text pin the shown length, the reading time, and the
-// JSON-LD wordCount. The rates are 390 Chinese characters and 238 English words a minute.
+// JSON-LD wordCount. The rates are 300 Chinese characters and 238 English words a minute.
 const code = `\`\`\`text\n${'code '.repeat(500)}\n\`\`\``
 const cases = [
   {
     id: 'mixed',
     extra: 'creation: { mode: handmade }\n',
-    body: `${'读'.repeat(390)}。\n\n${'word '.repeat(238)}\n\n${code}`,
-    meta: '2000-01-01 · 约 600 字 · 2 分钟 · 手作',
-    wordCount: 628,
+    body: `${'读'.repeat(900)}。\n\n${'word '.repeat(238)}\n\n${code}`,
+    meta: '2000-01-01 · 约 1100 字 · 4 分钟 · 手作',
+    wordCount: 1138,
   },
   {
     id: 'short',
