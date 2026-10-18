@@ -33,8 +33,9 @@ export async function authorizedJson<T>(
   clientAddress: string,
   schema: BodySchema<T>,
 ): Promise<{ data: T } | { response: Response }> {
-  // Drain up to maxBodyBytes before any early response: local Wrangler dropped the connection
-  // when a response left a small request body unread.
+  // Read the body before any early response: local Wrangler dropped the connection when a
+  // response left a small request body unread. readBoundedBytes cancels a body over 1 MB, which
+  // can still cost local Wrangler the next request; real issues stay under maxBodyBytes.
   const bytes = await readBoundedBytes(request, maxBodyBytes)
   // The limiter runs before authentication, so it also slows token guessing.
   const { success } = await env.VOTE_LIMITER.limit({ key: `news:${clientAddress}` })

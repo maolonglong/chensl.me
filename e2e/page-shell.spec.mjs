@@ -72,7 +72,12 @@ test('CSP blocks untrusted inline scripts and event handlers', async ({ page, op
   await open('/')
   const injection = await page.evaluate(async () => {
     const violations = []
-    const onViolation = (event) => violations.push(event.effectiveDirective)
+    let reported
+    const bothReported = new Promise((resolve) => (reported = resolve))
+    const onViolation = (event) => {
+      violations.push(event.effectiveDirective)
+      if (violations.length === 2) reported()
+    }
     document.addEventListener('securitypolicyviolation', onViolation)
     const script = document.createElement('script')
     script.textContent = 'window.cspInjectedScript = true'
@@ -81,7 +86,8 @@ test('CSP blocks untrusted inline scripts and event handlers', async ({ page, op
     button.setAttribute('onclick', 'window.cspInjectedHandler = true')
     document.body.append(button)
     button.click()
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    // A violation is reported asynchronously; a missing report fails the test by its timeout.
+    await bothReported
     script.remove()
     button.remove()
     document.removeEventListener('securitypolicyviolation', onViolation)

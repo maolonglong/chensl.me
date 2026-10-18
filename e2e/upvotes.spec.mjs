@@ -409,6 +409,7 @@ test('a first vote while the initial read is pending keeps its cookie and displa
 test('a failed submission leaves the immediate vote feedback unchanged', async ({
   page,
   open,
+  settle,
   action,
   capture,
 }) => {
@@ -439,8 +440,9 @@ test('a failed submission leaves the immediate vote feedback unchanged', async (
   await captureStates(page, capture, 'pending')
   release()
   await finished
-  // Give the client time to process rejection; no rollback or retry UI should appear.
-  await page.waitForTimeout(300)
+  // The rejection settles in a microtask after requestfailed. A rendered frame after it is where
+  // a rollback or retry UI would show.
+  await settle(page)
   expect(submissions).toBe(1)
   await expect(button).toBeDisabled()
   await expect(count).toHaveText(String(baseline + 1))

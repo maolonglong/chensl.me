@@ -48,6 +48,7 @@ Before each commit, `prek.toml` runs the document checks and `git diff --cached 
 
 `pnpm test:e2e` builds the site, then Playwright starts its own Wrangler preview with local D1 and runs `e2e/`; `playwright.config.mjs` holds the port, the browser discovery, and the report folders. Run one suite at a time: two runs, or a build during a run, share `dist/` and the port and fail with misleading errors.
 
+- Wait for a state or a `page.clock` step, not a fixed time (`tests/e2e-waits.test.mjs`).
 - `e2e/site.mjs` holds the shared fixtures. `test.use({ hasTouch: true })` selects a touch screen, and `open()` fails when the browser's hover capability differs from what the test asked for. Viewport width alone does not reproduce hover or touch states.
 - The upvote specs write to D1, so the config accepts only a loopback `SITE_URL`. Each test sends its own client address, so the rate limits do not depend on suite speed. Each run adds votes to the `dockertest` article; the specs compare counts with a baseline read at the start of each test.
 - To reuse your own preview, set `SITE_URL`, apply the local migrations (`pnpm exec wrangler d1 migrations apply VOTES --local`, then `NEWS`), and start it with the `NEWS_TOKEN` from `playwright.config.mjs`.

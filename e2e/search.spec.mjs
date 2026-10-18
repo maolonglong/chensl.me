@@ -84,6 +84,8 @@ test.describe('search page', () => {
         json: { query: '', semantic: [], news: [] },
       })
     })
+    // Fake timers keep running in real time; runFor below fires any pending debounce at once.
+    await page.clock.install()
     await open('/search/')
     const box = page.getByRole('searchbox')
     await box.focus()
@@ -106,8 +108,8 @@ test.describe('search page', () => {
       input.dispatchEvent(new CompositionEvent('compositionend', { data: '你好' }))
     })
     await expect(page.getByRole('status')).toHaveText('没有找到相关内容')
-    // Give a second, late search the time it would need to start.
-    await page.waitForTimeout(600)
+    // Fire every timer a second, late search would wait on: the 300 ms debounce, twice over.
+    await page.clock.runFor(600)
     // Pagefind runs the plain and the phrase search once for the final text.
     expect({
       api: apiQueries,
