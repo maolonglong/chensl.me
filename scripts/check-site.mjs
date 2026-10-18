@@ -121,6 +121,30 @@ const htmlFiles = files.filter((file) => file.endsWith('.html'))
 const treeByFile = new Map(
   await Promise.all(htmlFiles.map(async (file) => [file, parseHtml(await readFile(file, 'utf8'))])),
 )
+// One pass per page collects what the checks below read, so each tree is walked once.
+const hasClass = (node, name) => node.properties.className?.includes(name)
+const pages = new Map()
+const anchorsByFile = new Map()
+for (const [file, tree] of treeByFile) {
+  const page = { references: [], metas: [], hasHeader: false, footer: null }
+  const anchors = new Set()
+  visit(tree, 'element', (node) => {
+    const { tagName, properties } = node
+    if (properties.id) anchors.add(properties.id)
+    if (tagName === 'a' && properties.name) anchors.add(properties.name)
+    if (tagName === 'a' || tagName === 'img' || tagName === 'link' || tagName === 'script') {
+      page.references.push(node)
+    } else if (tagName === 'meta') {
+      page.metas.push(node)
+    } else if (tagName === 'header' && hasClass(node, 'site-header')) {
+      page.hasHeader = true
+    } else if (tagName === 'footer' && hasClass(node, 'site-footer')) {
+      page.footer = node
+    }
+  })
+  pages.set(file, page)
+  anchorsByFile.set(path.relative(outputDir, file).split(path.sep).join('/'), anchors)
+}
 const homeTree = treeByFile.get(path.join(outputDir, 'index.html'))
 const canonicalUrl = (homeTree ? elements(homeTree, ['link']) : []).find((link) =>
   link.properties.rel?.some((value) => value.toLowerCase() === 'canonical'),
@@ -159,9 +183,9 @@ for (const [directive, source] of [
   }
 }
 // Header and meta policies are enforced independently, not merged as allowlists.
-for (const [file, tree] of treeByFile) {
+for (const [file, page] of pages) {
   const policies = [csp]
-  for (const meta of elements(tree, ['meta'])) {
+  for (const meta of page.metas) {
     if (meta.properties.httpEquiv?.join(' ').toLowerCase() === 'content-security-policy') {
       policies.push(meta.properties.content ?? '')
     }
@@ -218,19 +242,9 @@ for (const pathname of ['/_astro/fonts/font.woff2', '/css/style.css']) {
 if (!/^\s*Access-Control-Allow-Origin:\s*\*\s*$/im.test(headerRule('/css/*'))) {
   errors.push('dist/_headers must allow cross-origin CSS so giscus can load its custom themes')
 }
-const anchorsByFile = new Map()
-for (const [file, tree] of treeByFile) {
-  const anchors = new Set()
-  visit(tree, 'element', ({ tagName, properties }) => {
-    if (properties.id) anchors.add(properties.id)
-    if (tagName === 'a' && properties.name) anchors.add(properties.name)
-  })
-  anchorsByFile.set(path.relative(outputDir, file).split(path.sep).join('/'), anchors)
-}
-
-for (const [file, tree] of treeByFile) {
+for (const [file, page] of pages) {
   const relative = path.relative(root, file)
-  for (const { tagName, properties } of elements(tree, ['a', 'img', 'link', 'script'])) {
+  for (const { tagName, properties } of page.references) {
     const url = tagName === 'a' || tagName === 'link' ? properties.href : properties.src
     if (url && isInternalUrl(url, file)) {
       const error = internalReferenceError(url, file)
@@ -270,7 +284,7 @@ for (const [file, tree] of treeByFile) {
     }
   }
 
-  for (const meta of elements(tree, ['meta'])) {
+  for (const meta of page.metas) {
     const key = (meta.properties.property ?? meta.properties.name ?? '').toLowerCase()
     const value = meta.properties.content
     if ((key === 'og:image' || key === 'twitter:image') && value && isInternalUrl(value, file)) {
@@ -283,11 +297,9 @@ for (const [file, tree] of treeByFile) {
 // The footer is where readers find the article feed, so every prerendered page with the site
 // header links it there. AI News pages render in the Worker and link their own feed instead
 // (e2e/news.spec.mjs).
-const hasClass = (name) => (node) => node.properties.className?.includes(name)
-for (const [file, tree] of treeByFile) {
-  if (!elements(tree, ['header']).some(hasClass('site-header'))) continue
-  const footer = elements(tree, ['footer']).find(hasClass('site-footer'))
-  const feeds = (footer ? elements(footer, ['a']) : []).filter(
+for (const [file, page] of pages) {
+  if (!page.hasHeader) continue
+  const feeds = (page.footer ? elements(page.footer, ['a']) : []).filter(
     ({ properties }) => properties.type === 'application/rss+xml',
   )
   if (feeds.length !== 1 || feeds[0].properties.href !== '/index.xml') {
@@ -305,11 +317,11 @@ function pngSize(file) {
   return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)]
 }
 const articleCards = new Map()
-for (const [file, tree] of treeByFile) {
+for (const [file, page] of pages) {
   const relative = path.relative(outputDir, file).split(path.sep).join('/')
   if (!/^blog\/[^/]+\/index\.html$/.test(relative)) continue
   const meta = Object.fromEntries(
-    elements(tree, ['meta']).map(({ properties }) => [
+    page.metas.map(({ properties }) => [
       (properties.property ?? properties.name ?? '').toLowerCase(),
       properties.content,
     ]),

@@ -27,23 +27,28 @@ const {
   notFound = false,
 } = Astro.props
 const path = Astro.url.pathname
-const isHome = path === '/'
-const isNews = path === '/news' || path.startsWith('/news/')
+type PageKind = 'home' | 'article' | 'blog' | 'news' | 'news-archive' | 'search' | 'page'
+function pageKind(pathname: string): PageKind {
+  if (pathname === '/') return 'home'
+  if (pathname === '/blog/') return 'blog'
+  if (pathname.startsWith('/news/archive/')) return 'news-archive'
+  if (pathname === '/news' || pathname.startsWith('/news/')) return 'news'
+  if (pathname === '/search/') return 'search'
+  return 'page'
+}
+const kind: PageKind = article ? 'article' : pageKind(path)
+const isHome = kind === 'home'
+const isNews = kind === 'news' || kind === 'news-archive'
 const documentTitle = isHome ? siteTitle : `${title} | ${siteTitle}`
 const metadataTitle = isHome ? siteTitle : title
 const canonical = new URL(path, Astro.site!)
 const card = cardFor(path, article)
 const image = new URL(cardPath(card), Astro.site!)
 const imageAlt = article ? title : fixedCards[card as keyof typeof fixedCards].title
+const schemaTypes = { home: 'WebSite', article: 'BlogPosting', blog: 'CollectionPage' } as const
 const schema: Record<string, unknown> = {
   '@context': 'https://schema.org',
-  '@type': isHome
-    ? 'WebSite'
-    : article
-      ? 'BlogPosting'
-      : path === '/blog/'
-        ? 'CollectionPage'
-        : 'WebPage',
+  '@type': schemaTypes[kind as keyof typeof schemaTypes] ?? 'WebPage',
   name: metadataTitle,
   url: canonical.href,
   description,
