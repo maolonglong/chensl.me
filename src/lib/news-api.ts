@@ -44,12 +44,21 @@ async function readBoundedBytes(request: Request, maxBytes: number): Promise<Uin
   return result
 }
 
+interface BodySchema<T> {
+  safeParse(
+    input: unknown,
+  ):
+    | { success: true; data: T }
+    | { success: false; error: { issues: { path: PropertyKey[]; message: string }[] } }
+}
+
 // Shared gate for the bot's write endpoints: rate limit, NEWS_TOKEN bearer auth, JSON only,
-// 64 KB at most. Returns the parsed JSON body, or the error Response to send.
-export async function readAuthorizedJson(
+// 64 KB at most. Returns the validated body, or the error Response to send.
+export async function authorizedJson<T>(
   request: Request,
   clientAddress: string,
-): Promise<{ json: unknown } | { response: Response }> {
+  schema: BodySchema<T>,
+): Promise<{ data: T } | { response: Response }> {
   // Drain up to maxBodyBytes before any early response: local Wrangler dropped the connection
   // when a response left a small request body unread.
   const bytes = await readBoundedBytes(request, maxBodyBytes)
@@ -76,11 +85,15 @@ export async function readAuthorizedJson(
   if (!bytes) {
     return { response: reply(413, { error: 'payload_too_large' }) }
   }
+  let json: unknown
   try {
-    return { json: JSON.parse(new TextDecoder().decode(bytes)) }
+    json = JSON.parse(new TextDecoder().decode(bytes))
   } catch {
     return { response: reply(400, { error: 'invalid_json' }) }
   }
+  const parsed = schema.safeParse(json)
+  if (!parsed.success) return { response: invalid(parsed.error.issues) }
+  return { data: parsed.data }
 }
 
 export const invalid = (issues: { path: PropertyKey[]; message: string }[]) =>

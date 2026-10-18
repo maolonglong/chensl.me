@@ -11,7 +11,7 @@ import {
   semanticTopK,
 } from './search-text.mjs'
 import type { SearchHit } from './search-fuse'
-import { newsUrl, type NewsIssue } from './news'
+import { newsUrl, visibleIssueDates, type NewsIssue } from './news'
 
 // Server side of /search/: semantic hits from Vectorize and AI News keyword hits from D1 FTS5.
 // The browser merges both with its Pagefind article hits; see src/pages/search.astro.
@@ -61,15 +61,7 @@ export async function semanticSearch(env: SearchEnv, query: string): Promise<Sea
         .map((match) => (match.metadata as unknown as NewsMetadata).date),
     ),
   ]
-  const visible = new Set<string>()
-  if (newsDates.length) {
-    const { results } = await env.NEWS.prepare(
-      `SELECT date FROM issues WHERE hidden_at IS NULL AND date IN (${newsDates.map(() => '?').join(', ')})`,
-    )
-      .bind(...newsDates)
-      .all<{ date: string }>()
-    for (const row of results) visible.add(row.date)
-  }
+  const visible = await visibleIssueDates(env.NEWS, newsDates)
   return rankMatches(matches, visible).map((match) => {
     const score = Math.round(match.score * 1000) / 1000
     if (match.type === 'news') {

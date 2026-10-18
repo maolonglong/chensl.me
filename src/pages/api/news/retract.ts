@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { queryIssue, retraction, setHidden } from '../../../lib/news'
-import { invalid, readAuthorizedJson, reply } from '../../../lib/news-api'
+import { authorizedJson, reply } from '../../../lib/news-api'
 import { indexIssue, purgeSearchCache, removeIssue } from '../../../lib/search'
 
 export const prerender = false
@@ -10,12 +10,9 @@ export const prerender = false
 // again with "hidden": false. Nothing is deleted from D1; the issue's search vectors are deleted
 // on retraction and written again on restore.
 export const POST: APIRoute = async ({ request, clientAddress }) => {
-  const input = await readAuthorizedJson(request, clientAddress)
+  const input = await authorizedJson(request, clientAddress, retraction)
   if ('response' in input) return input.response
-  const parsed = retraction.safeParse(input.json)
-  if (!parsed.success) return invalid(parsed.error.issues)
-
-  const { date, hidden } = parsed.data
+  const { date, hidden } = input.data
   if (!(await setHidden(env.NEWS, date, hidden))) return reply(404, { error: 'not_found', date })
   let search
   if (hidden) search = await removeIssue(env, date)

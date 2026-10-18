@@ -108,6 +108,19 @@ export async function queryIssue(db: D1Database, date: string) {
   return row ? fromRow(row) : null
 }
 
+// The dates among the given ones that are not retracted. Semantic search keeps its own
+// visibility check because Vectorize may still hold a retracted issue's vectors.
+export async function visibleIssueDates(db: D1Database, dates: string[]) {
+  if (!dates.length) return new Set<string>()
+  const { results } = await db
+    .prepare(
+      `SELECT date FROM issues WHERE ${visible} AND date IN (${dates.map(() => '?').join(', ')})`,
+    )
+    .bind(...dates)
+    .all<{ date: string }>()
+  return new Set(results.map(({ date }) => date))
+}
+
 export async function queryMonths(db: D1Database) {
   const { results } = await db
     .prepare(

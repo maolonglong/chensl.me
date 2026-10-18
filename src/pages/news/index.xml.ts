@@ -1,6 +1,5 @@
 import rss from '@astrojs/rss'
 import type { APIContext } from 'astro'
-import { getLiveCollection } from 'astro:content'
 import {
   feedIssueCount,
   isWebUrl,
@@ -9,6 +8,7 @@ import {
   newsUrl,
   type StoredIssue,
 } from '../../lib/news'
+import { loadIssues } from '../../lib/news-pages'
 import { newsDescription, newsFeedTitle } from '../../lib/site.mjs'
 
 export const prerender = false
@@ -33,9 +33,7 @@ function itemHtml(issue: StoredIssue) {
 }
 
 export async function GET(context: APIContext) {
-  const { entries, error } = await getLiveCollection('news', { limit: feedIssueCount })
-  if (!entries) throw error
-  const issues = entries.map((entry) => entry.data)
+  const issues = await loadIssues({ limit: feedIssueCount })
   const response = await rss({
     title: newsFeedTitle,
     description: newsDescription,
