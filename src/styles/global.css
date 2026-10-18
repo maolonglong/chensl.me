@@ -412,6 +412,46 @@ details > summary {
     margin-bottom: 0;
 }
 
+/* A jump between a reference and its note lands below the top edge and flashes the target, so the reader sees where they arrived. :target keeps it free of page scripts. */
+.footnotes li,
+[data-footnote-ref] {
+    scroll-margin-top: 20vh;
+}
+
+.footnotes li:target,
+[data-footnote-ref]:target {
+    --target-ring: 6px;
+    border-radius: var(--radius);
+    animation: footnote-target 2s ease-out;
+}
+
+[data-footnote-ref]:target {
+    --target-ring: 2px;
+}
+
+/* The ring is a shadow, so the mark reaches past the text without moving it. */
+@keyframes footnote-target {
+    from,
+    40% {
+        background-color: var(--mark-background-color);
+        box-shadow: 0 0 0 var(--target-ring) var(--mark-background-color);
+    }
+
+    to {
+        background-color: transparent;
+        box-shadow: 0 0 0 var(--target-ring) transparent;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .footnotes li:target,
+    [data-footnote-ref]:target {
+        animation: none;
+        background-color: var(--mark-background-color);
+        box-shadow: 0 0 0 var(--target-ring) var(--mark-background-color);
+    }
+}
+
 /* ------------------------------------------------------------------ narrow */
 
 @media (max-width: 600px) {
