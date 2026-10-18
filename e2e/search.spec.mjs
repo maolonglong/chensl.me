@@ -220,7 +220,6 @@ test.describe('search page', () => {
       data: { date },
     })
     expect(retract.status()).toBe(200)
-    // The local Worker has no edge cache, so the second answer reflects the retraction.
     expect(await urls()).toEqual([])
   })
 
@@ -247,6 +246,7 @@ test.describe('search page', () => {
     for (const path of ['/api/search?q=abc%00def', '/api/search/?q=abc%00def']) {
       const response = await api.get(path)
       expect(response.status(), path).toBe(200)
+      expect(response.headers()['cache-control'], path).toBe('private, no-store')
       const body = await response.json()
       expect(body.query, path).toBe('abc def')
       expect(body.partial, path).toBeUndefined()

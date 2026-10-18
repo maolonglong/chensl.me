@@ -71,8 +71,7 @@
   "secrets": {
     "required": ["NEWS_TOKEN"],
   },
-  // Caches the on-demand /news/ and /api/search/ responses for their s-maxage; Actions are POST
-  // and private.
+  // News pages opt into caching with s-maxage; search and Actions remain private.
   "cache": {
     "enabled": true,
   },
