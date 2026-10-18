@@ -39,12 +39,7 @@ const batches = (items, size) =>
     items.slice(index * size, (index + 1) * size),
   )
 
-export function searchIndexApi(
-  request,
-  accountId,
-  indexName,
-  { sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {},
-) {
+export function searchIndexApi(request, accountId, indexName) {
   const account = `/accounts/${accountId}`
   const index = `${account}/vectorize/v2/indexes/${indexName}`
   let neurons = 0
@@ -61,18 +56,6 @@ export function searchIndexApi(
     },
     get writes() {
       return { ...writes, lastMutation }
-    },
-    // Vectorize applies writes asynchronously. Waits until the index has processed the last
-    // write of this client, so a query right after a sync sees it.
-    async waitForWrites(timeoutMs = 180_000) {
-      const deadline = Date.now() + timeoutMs
-      while (lastMutation) {
-        const info = await call(request, { method: 'GET', path: `${index}/info` })
-        if (info.processedUpToMutation === lastMutation) return
-        if (Date.now() > deadline)
-          throw new Error(`Vectorize has not applied mutation ${lastMutation}`)
-        await sleep(3000)
-      }
     },
     async embedDocuments(texts) {
       const vectors = []
@@ -168,7 +151,10 @@ export async function syncArticles(api, articles, { prune = false } = {}) {
       vector,
     ]),
   )
-  const changed = articles.filter(({ id, hash }) => stored.get(id)?.metadata?.hash !== hash)
+  const changed = articles.filter(
+    ({ id, hash, date }) =>
+      stored.get(id)?.metadata?.hash !== hash || stored.get(id)?.metadata?.date !== date,
+  )
   const changedIds = new Set(changed.map(({ id }) => id))
   const wholeVectors = new Map(
     [...stored].filter(([id]) => !changedIds.has(id)).map(([id, vector]) => [id, vector.values]),
@@ -191,7 +177,7 @@ export async function syncArticles(api, articles, { prune = false } = {}) {
         id: relatedVectorId(id),
         values: vectors[offset],
         namespace: relatedNamespace,
-        metadata: { type: 'post', hash, chunks: chunks.length },
+        metadata: { type: 'post', hash, date, chunks: chunks.length },
       })
       chunks.forEach((chunk, index) =>
         chunkUpserts.push({
@@ -326,8 +312,8 @@ export async function evaluate(api, fixture) {
   }
 }
 
-// Vectorize marks a write as applied (processedUpToMutation, which embed-posts.mjs waits for)
-// before its queries see all of it: on 2026-10-17 a new production index answered 4 of 16
+// Mutation acceptance and the global processed watermark do not prove query visibility:
+// on 2026-10-17 a new production index answered 4 of 16
 // labeled queries with no hits right after the first write, and every query three minutes
 // later. A failed evaluation therefore runs again after growing delays until it passes or the
 // time budget ends; a real regression still fails, only later.

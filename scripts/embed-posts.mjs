@@ -33,14 +33,13 @@ const { accountId, request } = cloudflareFromEnv()
 const api = searchIndexApi(request, accountId, values.index)
 const articles = await articleInputs(path.join(root, 'dist/client'))
 const result = await syncArticles(api, articles, { prune: values.prune })
-await api.waitForWrites()
 console.log(
   `${values.index}: ${articles.length} articles, ${result.changed.length} embedded (${result.changed.join(', ') || 'none'}), ${result.pruned.length} vectors pruned, ${result.neurons.toFixed(2)} neurons.`,
 )
 // Lets a reader of the CI log check the write against the index (`wrangler vectorize info`).
 const { upserted, deleted, lastMutation } = api.writes
 console.log(
-  `${values.index}: upserted ${upserted} vectors, deleted ${deleted}${lastMutation ? `, applied up to mutation ${lastMutation}` : ', no write'}.`,
+  `${values.index}: submitted ${upserted} upserts and ${deleted} deletes${lastMutation ? `, last accepted mutation ${lastMutation}` : ', no write'}. Query visibility is checked by search-eval.mjs.`,
 )
 
 const next = `${JSON.stringify(result.data, null, 2)}\n`

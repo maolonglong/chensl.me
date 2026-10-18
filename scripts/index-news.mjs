@@ -1,7 +1,7 @@
 // Writes the item vectors of AI News issues that were published before search existed, or after
 // a failed index write. The Worker indexes every later write itself.
 // Pause and drain news writers before exporting, and keep them paused through the backfill:
-// this snapshot can overwrite newer versions.
+// this snapshot can overwrite newer versions. The script reports acceptance, not visibility.
 //
 //   pnpm exec wrangler d1 execute NEWS --remote --json \
 //     --command "SELECT date, version, title, summary, items_json FROM issues WHERE hidden_at IS NULL" > issues.json
@@ -39,11 +39,10 @@ const issues = rows.map(({ date, version, title, summary, items_json }) => {
 const { accountId, request } = cloudflareFromEnv()
 const api = searchIndexApi(request, accountId, values.index)
 const result = await indexIssues(api, issues)
-await api.waitForWrites()
 console.log(
-  `${values.index}: indexed ${result.issues} issues, ${result.neurons.toFixed(2)} neurons.`,
+  `${values.index}: submitted ${result.issues} issues, ${result.neurons.toFixed(2)} neurons.`,
 )
 const { upserted, deleted, lastMutation } = api.writes
 console.log(
-  `${values.index}: upserted ${upserted} vectors, deleted ${deleted}${lastMutation ? `, applied up to mutation ${lastMutation}` : ', no write'}.`,
+  `${values.index}: submitted ${upserted} upserts and ${deleted} deletes${lastMutation ? `, last accepted mutation ${lastMutation}` : ', no write'}. Query visibility is not verified.`,
 )
