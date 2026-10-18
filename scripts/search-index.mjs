@@ -169,10 +169,9 @@ export async function syncArticles(api, articles, { prune = false } = {}) {
     ]),
   )
   const changed = articles.filter(({ id, hash }) => stored.get(id)?.metadata?.hash !== hash)
+  const changedIds = new Set(changed.map(({ id }) => id))
   const wholeVectors = new Map(
-    [...stored]
-      .filter(([id]) => !changed.some((article) => article.id === id))
-      .map(([id, vector]) => [id, vector.values]),
+    [...stored].filter(([id]) => !changedIds.has(id)).map(([id, vector]) => [id, vector.values]),
   )
   if (changed.length) {
     const texts = changed.flatMap(({ text, chunks }) => [
@@ -268,9 +267,26 @@ export const removeIssueVectors = (api, date) => api.deleteByIds(allNewsVectorId
 // when its expected documents are in the top three; an off-topic query passes with no hit.
 // Only gated queries decide the outcome, and a news hit is never a false positive of an article
 // query: news content differs between indexes.
+const evaluationConcurrency = 4
+
+// Runs independent work with a small, fixed number of concurrent calls: each query touches the
+// embedding and query endpoints, and a burst would meet their rate limits.
+async function mapPool(items, limit, run) {
+  const results = Array.from({ length: items.length })
+  let next = 0
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (next < items.length) {
+        const index = next++
+        results[index] = await run(items[index])
+      }
+    }),
+  )
+  return results
+}
+
 export async function evaluate(api, fixture) {
-  const results = []
-  for (const entry of fixture.queries) {
+  const results = await mapPool(fixture.queries, evaluationConcurrency, async (entry) => {
     const gate = entry.gate !== false
     const ranked = rankMatches(await api.query(await api.embedQuery(entry.query)))
     const urls = ranked.map((match) =>
@@ -282,14 +298,14 @@ export async function evaluate(api, fixture) {
     const found = expected.filter((url) => top3.includes(url))
     const allowed = new Set([...expected, ...(entry.allow ?? [])])
     const falsePositives = blogUrls.filter((url) => !allowed.has(url))
-    results.push({
+    return {
       query: entry.query,
       gate,
       recall: expected.length ? found.length / expected.length : null,
       falsePositives,
       hits: ranked.map((match, index) => [urls[index], Math.round(match.score * 1000) / 1000]),
-    })
-  }
+    }
+  })
   const gated = results.filter((result) => result.gate)
   const withExpected = gated.filter((result) => result.recall !== null)
   const recall = withExpected.reduce((sum, result) => sum + result.recall, 0) / withExpected.length

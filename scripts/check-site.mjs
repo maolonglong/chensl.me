@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs'
-import { readFile, readdir, stat } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { open, readFile, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import rehypeParse from 'rehype-parse'
@@ -311,10 +311,16 @@ for (const [file, page] of pages) {
 // Every article shares its own build-time card. Crawlers read the size from the meta tags, so the
 // PNG header must match them.
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
-function pngSize(file) {
-  const bytes = readFileSync(file)
-  if (bytes.length < 24 || !bytes.subarray(0, 8).equals(pngSignature)) return null
-  return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)]
+async function pngSize(file) {
+  const handle = await open(file, 'r')
+  try {
+    const bytes = Buffer.alloc(24)
+    const { bytesRead } = await handle.read(bytes, 0, 24, 0)
+    if (bytesRead < 24 || !bytes.subarray(0, 8).equals(pngSignature)) return null
+    return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)]
+  } finally {
+    await handle.close()
+  }
 }
 const articleCards = new Map()
 for (const [file, page] of pages) {
@@ -332,7 +338,7 @@ for (const [file, page] of pages) {
     errors.push(`${relative} needs an og:image that is a built file`)
     continue
   }
-  const size = pngSize(path.join(outputDir, target))
+  const size = await pngSize(path.join(outputDir, target))
   if (!size || size[0] !== cardWidth || size[1] !== cardHeight) {
     errors.push(
       `${relative} og:image ${target} must be a ${cardWidth}x${cardHeight} PNG, not ${size?.join('x') ?? 'another format'}`,

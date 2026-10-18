@@ -12,9 +12,10 @@ import { relatedPosts } from '../../lib/related'
 import { isStaleSince } from '../../lib/stale'
 export async function getStaticPaths() {
   const posts = await publishedPosts()
+  const byId = new Map(posts.map((post) => [post.id, post]))
   return posts.map((post) => ({
     params: { id: post.id },
-    props: { post, related: relatedPosts(post.id, posts) },
+    props: { post, related: relatedPosts(post.id, byId) },
   }))
 }
 interface Props {

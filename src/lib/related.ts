@@ -14,8 +14,7 @@ const maxRelated = 3
 type Index = { posts: Record<string, { hash: string; related: [string, number][] }> }
 const { posts: entries } = index as unknown as Index
 
-export function relatedPosts(id: string, posts: CollectionEntry<'blog'>[]) {
-  const byId = new Map(posts.map((post) => [post.id, post]))
+export function relatedPosts(id: string, byId: Map<string, CollectionEntry<'blog'>>) {
   return (entries[id]?.related ?? [])
     .filter(([other, score]) => other !== id && score >= relatedMinScore && byId.has(other))
     .slice(0, maxRelated)

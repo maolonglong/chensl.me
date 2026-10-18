@@ -69,13 +69,15 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   // Typing spaces searches the separate words.
   async function articleHits(query: string): Promise<SearchHit[]> {
     const index = await loadPagefind()
-    let { results } = await index.search(query)
     const phraseTerm = query.replaceAll('"', '').trim()
-    if (phraseTerm && !/\s/.test(phraseTerm)) {
-      const phrase = new Set(
-        (await index.search(`"${phraseTerm}"`)).results.map((result) => result.id),
-      )
-      results = results.filter((result) => phrase.has(result.id))
+    const plainSearch = index.search(query)
+    const phraseSearch =
+      phraseTerm && !/\s/.test(phraseTerm) ? index.search(`"${phraseTerm}"`) : null
+    const [plain, phrase] = await Promise.all([plainSearch, phraseSearch])
+    let { results } = plain
+    if (phrase) {
+      const phraseIds = new Set(phrase.results.map((result) => result.id))
+      results = results.filter((result) => phraseIds.has(result.id))
     }
     const pages = await Promise.all(results.slice(0, resultLimit).map((result) => result.data()))
     return pages.map((page) => ({

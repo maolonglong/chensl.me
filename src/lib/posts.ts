@@ -10,7 +10,7 @@ export const creationLabels = {
 export const escapeMarkdownText = (value: string) =>
   value.replace(/\s*\n\s*/g, ' ').replace(/[\\`*_[\]<>]/g, '\\$&')
 
-export async function publishedPosts() {
+async function readPublishedPosts() {
   const now = Date.now()
   const posts = await getCollection('blog', ({ data }) =>
     isPublishedPost(data, now, import.meta.env.DEV),
@@ -22,6 +22,15 @@ export async function publishedPosts() {
   return posts.sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf() || a.id.localeCompare(b.id),
   )
+}
+
+let buildingPosts: Promise<CollectionEntry<'blog'>[]> | undefined
+
+export function publishedPosts() {
+  // Every page route reads the collection during a build, and the content cannot change under
+  // it. The dev server must see edits, so it reads again.
+  if (import.meta.env.DEV) return readPublishedPosts()
+  return (buildingPosts ??= readPublishedPosts())
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-CA', {
