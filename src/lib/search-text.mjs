@@ -1,6 +1,7 @@
 // Search embeddings: the model, the text each document sends to it, the vector IDs, and the
 // ranking of semantic matches. Shared by the build, the scripts that write and evaluate the
 // index, and the Worker, so this module must stay free of Node APIs.
+import { maxNewsItems } from './news-limits.mjs'
 
 export const embeddingModel = '@cf/qwen/qwen3-embedding-0.6b'
 export const embeddingDimensions = 1024
@@ -135,7 +136,6 @@ export const clipSnippet = (text) => {
 export const relatedVectorId = (id) => `post:${id}`
 export const chunkVectorId = (id, index) => `blog:${id}#${index}`
 export const newsVectorId = (date, index) => `news:${date}:${index}`
-export const maxNewsItems = 30
 
 export const articleOfVectorId = (vectorId) => vectorId.match(/^(?:post|blog):([^#]+)/)?.[1]
 

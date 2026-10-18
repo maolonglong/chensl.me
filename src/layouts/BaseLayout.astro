@@ -7,6 +7,7 @@ import Theme from '../components/Theme.astro'
 import ThemeToggle from '../components/ThemeToggle.astro'
 import { Font } from 'astro:assets'
 import { cardFor, cardHeight, cardPath, cardWidth, fixedCards } from '../lib/og.mjs'
+import { newsFeedTitle, siteDescription, siteTitle } from '../lib/site.mjs'
 
 export interface Props {
   title?: string
@@ -18,14 +19,13 @@ export interface Props {
 }
 
 const {
-  title = '~chensl',
-  description = '陈劭珑的个人网站与技术博客',
+  title = siteTitle,
+  description = siteDescription,
   pubDate,
   updatedDate,
   article = false,
   notFound = false,
 } = Astro.props
-const siteTitle = '~chensl'
 const path = Astro.url.pathname
 const isHome = path === '/'
 const isNews = path === '/news' || path.startsWith('/news/')
@@ -122,8 +122,8 @@ const feed = isNews
         <link
           rel="alternate"
           type="application/rss+xml"
-          href="https://chensl.me/news/index.xml"
-          title="~chensl AI News"
+          href={new URL('/news/index.xml', Astro.site!)}
+          title={newsFeedTitle}
         />
       ) : (
         <link

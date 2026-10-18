@@ -5,9 +5,8 @@ import path from 'node:path'
 import { Renderer } from '@takumi-rs/core'
 import subsetFont from 'subset-font'
 import { cardHeight, cardWidth } from './og.mjs'
+import { siteHost, siteTitle } from './site.mjs'
 
-const siteName = '~chensl'
-const host = 'chensl.me'
 const ellipsis = '…'
 
 let shared
@@ -49,7 +48,7 @@ const container = (style, children) => ({ type: 'container', style, children })
 export async function cardLayout({ title, label }) {
   const { font, colors } = await load()
   // Each card embeds only its own glyphs; the full W04 face is about 19 MB.
-  const glyphs = await subsetFont(font, siteName + title + label + host + ellipsis, {
+  const glyphs = await subsetFont(font, siteTitle + title + label + siteHost + ellipsis, {
     targetFormat: 'truetype',
   })
   const node = container(
@@ -66,7 +65,7 @@ export async function cardLayout({ title, label }) {
       letterSpacing: '0.02em',
     },
     [
-      text(siteName, { fontSize: 36, color: colors.heading }),
+      text(siteTitle, { fontSize: 36, color: colors.heading }),
       text(title, {
         fontSize: 64,
         lineHeight: 1.3,
@@ -85,7 +84,7 @@ export async function cardLayout({ title, label }) {
           borderTop: `2px solid ${colors.border}`,
           fontSize: 28,
         },
-        [text(label, { color: colors.muted }), text(host, { color: colors.text })],
+        [text(label, { color: colors.muted }), text(siteHost, { color: colors.text })],
       ),
     ],
   )

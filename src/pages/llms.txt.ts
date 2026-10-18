@@ -1,5 +1,6 @@
 import type { APIContext } from 'astro'
 import { escapeMarkdownText, postUrl, publishedPosts } from '../lib/posts'
+import { siteDescription, siteTitle } from '../lib/site.mjs'
 
 export const prerender = true
 
@@ -10,7 +11,7 @@ export async function GET({ site }: APIContext) {
   })
   // Keep dev responses UTF-8; production static assets rely on public/_headers.
   return new Response(
-    ['# ~chensl', '', '> 陈劭珑的个人网站与技术博客', '', '## Articles', '', ...articles, ''].join(
+    [`# ${siteTitle}`, '', `> ${siteDescription}`, '', '## Articles', '', ...articles, ''].join(
       '\n',
     ),
     { headers: { 'Content-Type': 'text/plain; charset=utf-8' } },

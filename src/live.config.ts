@@ -1,6 +1,13 @@
 import { defineLiveCollection } from 'astro:content'
 import type { LiveLoader } from 'astro/loaders'
-import { queryIssue, queryIssues, queryMonths, type IssueQuery, type StoredIssue } from './lib/news'
+import {
+  queryIssue,
+  queryIssues,
+  queryMonths,
+  recentIssueCount,
+  type IssueQuery,
+  type StoredIssue,
+} from './lib/news'
 
 // AI News issues live in D1 (NEWS) and are read on each request. Pages call
 // getLiveCollection('news', { limit } | { month }) and getLiveEntry('news', date); the loader
@@ -19,7 +26,7 @@ function newsLoader(): LiveLoader<StoredIssue, { id: string }, IssueQuery> {
   return {
     name: 'news-d1-loader',
     loadCollection: async ({ filter }) => {
-      const issues = await queryIssues(await db(), filter ?? { limit: 7 })
+      const issues = await queryIssues(await db(), filter ?? { limit: recentIssueCount })
       return { entries: issues.map(toEntry), cacheHint: { tags: ['news'] } }
     },
     loadEntry: async ({ filter }) => {

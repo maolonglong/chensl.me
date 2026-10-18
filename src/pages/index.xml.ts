@@ -7,6 +7,7 @@ import rehypeParse from 'rehype-parse'
 import rehypeStringify from 'rehype-stringify'
 import { visit } from 'unist-util-visit'
 import { creationLabels, publishedPosts, postUrl } from '../lib/posts'
+import { siteDescription, siteTitle } from '../lib/site.mjs'
 
 const processor = unified().use(rehypeParse, { fragment: true }).use(rehypeStringify)
 
@@ -14,8 +15,8 @@ export async function GET(context: APIContext) {
   const posts = (await publishedPosts()).slice(0, 20)
   const container = await AstroContainer.create()
   return rss({
-    title: '~chensl',
-    description: '陈劭珑的个人网站与技术博客',
+    title: siteTitle,
+    description: siteDescription,
     site: context.site!,
     customData: '<language>zh-CN</language>',
     items: await Promise.all(

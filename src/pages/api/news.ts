@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
-import { newsIssue, saveIssue } from '../../lib/news'
+import { newsIssue, newsUrl, saveIssue } from '../../lib/news'
 import { invalid, readAuthorizedJson, reply } from '../../lib/news-api'
 import { indexIssue, purgeSearchCache, removeIssue } from '../../lib/search'
 
@@ -26,6 +26,6 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     version,
     search,
     date: parsed.data.date,
-    url: new URL(`/news/${parsed.data.date}/`, request.url).href,
+    url: new URL(newsUrl(parsed.data.date), request.url).href,
   })
 }

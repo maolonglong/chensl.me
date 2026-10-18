@@ -1,4 +1,5 @@
 import { z } from 'astro/zod'
+import { maxNewsItems } from './news-limits.mjs'
 
 // Calendar dates in Asia/Shanghai, the day the issue covers. The key is also the page URL.
 const isoDate = z
@@ -29,7 +30,7 @@ export const newsIssue = z.strictObject({
   date: isoDate,
   title: text(120),
   summary: text(1000),
-  items: z.array(newsItem).min(1).max(30),
+  items: z.array(newsItem).min(1).max(maxNewsItems),
 })
 
 export type NewsItem = z.infer<typeof newsItem>

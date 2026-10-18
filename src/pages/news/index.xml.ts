@@ -9,6 +9,7 @@ import {
   newsUrl,
   type StoredIssue,
 } from '../../lib/news'
+import { newsDescription, newsFeedTitle } from '../../lib/site.mjs'
 
 export const prerender = false
 
@@ -36,8 +37,8 @@ export async function GET(context: APIContext) {
   if (!entries) throw error
   const issues = entries.map((entry) => entry.data)
   const response = await rss({
-    title: '~chensl AI News',
-    description: '每天 AI 圈发生了什么：模型、产品和工具的动态摘要',
+    title: newsFeedTitle,
+    description: newsDescription,
     site: new URL('/news/', context.site).href,
     customData: '<language>zh-CN</language>',
     items: issues.map((issue) => ({

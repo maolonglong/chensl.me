@@ -5,6 +5,8 @@ import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import rehypeParse from 'rehype-parse'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
+import { cardHeight, cardWidth } from '../src/lib/og.mjs'
+import { isPostId } from '../src/lib/post-id.mjs'
 import { articleInputs } from './search-inputs.mjs'
 
 const root = process.cwd()
@@ -295,9 +297,7 @@ for (const [file, tree] of treeByFile) {
 }
 
 // Every article shares its own build-time card. Crawlers read the size from the meta tags, so the
-// PNG header must match them, and both must be 1200x630.
-const cardWidth = 1200
-const cardHeight = 630
+// PNG header must match them.
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 function pngSize(file) {
   const bytes = readFileSync(file)
@@ -389,9 +389,8 @@ for (const file of files.filter((file) => file.endsWith('.xml'))) {
 // scripts/embed-posts.mjs writes. A changed article keeps its old entry until the next run, so
 // a stale entry is only a warning; a missing one leaves the article out of semantic search.
 if (outputFiles.has('search/index.html')) {
-  const articleCount = [...outputFiles].filter((file) =>
-    /^blog\/[^/]+\/index\.html$/.test(file),
-  ).length
+  const articles = await articleInputs(outputDir)
+  const articleCount = articles.length
   const entry = outputFiles.has('pagefind/pagefind-entry.json')
     ? JSON.parse(await readFile(path.join(outputDir, 'pagefind/pagefind-entry.json'), 'utf8'))
     : null
@@ -407,7 +406,7 @@ if (outputFiles.has('search/index.html')) {
     ? JSON.parse(await readFile(relatedFile, 'utf8'))
     : { posts: {} }
   const changed = []
-  for (const { id, hash } of await articleInputs(outputDir)) {
+  for (const { id, hash } of articles) {
     if (!posts[id]) {
       errors.push(
         `Article ${id} has no entry in src/data/related-posts.json: run scripts/embed-posts.mjs`,
@@ -424,7 +423,7 @@ if (outputFiles.has('search/index.html')) {
 // Upvote Actions only accept slug-shaped article IDs, so every article URL must match.
 for (const file of outputFiles) {
   const id = file.match(/^blog\/([^/]+)\/index\.html$/)?.[1]
-  if (id && !/^[a-z0-9_-]+$/.test(id)) {
+  if (id && !isPostId(id)) {
     errors.push(`Article URL /blog/${id}/ is outside the upvote ID contract [a-z0-9_-]+`)
   }
 }
