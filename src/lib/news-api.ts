@@ -1,7 +1,7 @@
 import { env } from 'cloudflare:workers'
+import { readBoundedBytes } from './request-body'
 
 const maxBodyBytes = 64 * 1024
-const maxDrainBytes = 1024 * 1024
 const headers = { 'Cache-Control': 'private, no-store' }
 
 export const reply = (status: number, body: Record<string, unknown>) =>
@@ -16,32 +16,6 @@ async function tokenMatches(provided: string, expected: string) {
     crypto.subtle.digest('SHA-256', encoder.encode(expected)),
   ])
   return crypto.subtle.timingSafeEqual(a, b)
-}
-
-async function readBoundedBytes(request: Request, maxBytes: number): Promise<Uint8Array | null> {
-  const reader = request.body?.getReader()
-  if (!reader) return new Uint8Array(0)
-  const chunks: Uint8Array[] = []
-  let total = 0
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    total += value.byteLength
-    if (total <= maxBytes) {
-      chunks.push(value)
-    } else if (total > maxDrainBytes) {
-      await reader.cancel()
-      return null
-    }
-  }
-  if (total > maxBytes) return null
-  const result = new Uint8Array(total)
-  let offset = 0
-  for (const chunk of chunks) {
-    result.set(chunk, offset)
-    offset += chunk.byteLength
-  }
-  return result
 }
 
 interface BodySchema<T> {
