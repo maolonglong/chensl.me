@@ -31,7 +31,14 @@ export async function readBoundedBytes(
   return result
 }
 
-// Drains the body so local Wrangler can reuse the connection, without keeping it in memory.
+// Reads the body to its end and keeps none of it, so memory stays at one chunk. It never cancels:
+// a cancelled body leaves bytes unread, and local Wrangler then loses the next request on the
+// connection (e2e/upvotes.spec.mjs).
 export async function drainBody(request: Request) {
-  await readBoundedBytes(request, 0)
+  const reader = request.body?.getReader()
+  if (!reader) return
+  while (true) {
+    const { done } = await reader.read()
+    if (done) return
+  }
 }
