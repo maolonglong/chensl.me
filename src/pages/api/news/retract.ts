@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
 import { queryIssue, retraction, setHidden } from '../../../lib/news'
 import { authorizedJson, reply } from '../../../lib/news-api'
+import { purgeIssue } from '../../../lib/news-cache'
 import { syncIssue, type IndexResult } from '../../../lib/search'
 
 export const prerender = false
@@ -15,7 +16,8 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const { date, hidden } = input.data
   if (!(await setHidden(env.NEWS, date, hidden))) return reply(404, { error: 'not_found', date })
   const search = await syncIssue(env, date)
-  return reply(200, { status: await finalStatus(date, search), date, search })
+  const cache = await purgeIssue(date)
+  return reply(200, { status: await finalStatus(date, search), date, search, cache })
 }
 
 // A concurrent retraction or restore can win after this request's update. Report the D1 state

@@ -5,7 +5,7 @@ import { loadMonths } from '../../../lib/news-pages'
 
 export const prerender = false
 
-const months = await loadMonths()
+const months = await loadMonths(Astro.response.headers)
 Astro.response.headers.set('Cache-Control', newsCacheControl)
 ---
 
