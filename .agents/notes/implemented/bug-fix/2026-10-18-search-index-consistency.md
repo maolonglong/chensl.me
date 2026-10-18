@@ -14,17 +14,25 @@ This note partly supersedes the write and cache decisions in [hybrid search](../
 
 **Search responses are private and not stored.** The write path has no query-visibility receipt that can safely precede a purge. Removing response caching prevents a transient index state from becoming a long-lived answer, for both endpoint spellings. News page caching is separate and unchanged.
 
+**Scripts report acceptance, not completion.** The global `processedUpToMutation` can advance past this client's mutation. Equality polling can miss it; ordering opaque IDs is not valid. Article CI uses the existing query evaluation and its retry budget. This evaluation proves the labeled queries, not every changed vector or deletion. The offline news backfill reports visibility as unverified.
+
+**Article dates have an independent checkpoint.** A date correction invalidates index reuse even when the embedding text hash is unchanged. Related-article hashes stay tied to embedding input, so this does not invent new related scores.
+
 ## Alternatives considered
 
 **Shorten the cache TTL or purge both paths.** Both still cache an old index state after a successful purge. They bound the delay but do not establish an invalidation boundary.
 
 **Versioned vector IDs or a queue.** Versioned IDs need cleanup and extra storage. A durable queue adds infrastructure and still needs a stale-version check. Reconciliation keeps fixed IDs and repairs successful overlapping requests. It does not promise durable recovery after a process interruption or a failed index call.
 
+**Keep mutation polling as a completion gate.** A shared watermark is not a per-operation receipt and does not prove query results. Query evaluation is the observable check already available.
+
 ## Consequences
 
 Search requests reach the Worker and consume query embeddings even for repeated terms. The existing read limiter bounds each client's request rate, not total daily cost. Reconsider caching only with an index-visibility boundary or an explicit accepted staleness contract.
 
 Existing news vectors without a version are excluded until a resend or backfill rewrites them. Keyword search stays available. Run `scripts/index-news.mjs` only in a maintenance window with news writers paused from export through completion; a saved D1 snapshot is not a concurrency-safe writer. Remote backfills and their verification require separate approval.
+
+Article checkpoints without a date are refreshed on the next sync, even when their text hashes match. This one-time embedding work can also produce a related-article diff that needs review before publication.
 
 ## Reopen when
 

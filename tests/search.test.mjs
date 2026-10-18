@@ -281,6 +281,17 @@ test('the index sync embeds only changed articles and removes chunks and article
   assert.equal(third.data.posts.a.related[0][0], 'c')
 })
 
+test('a publication date correction updates search metadata without changing related-article hashes', async () => {
+  const api = fakeApi()
+  const before = article('a', 'same-text', 1)
+  await syncArticles(api, [before])
+  const after = { ...before, date: '2026-09-12' }
+  const result = await syncArticles(api, [after])
+  assert.equal(api.vectors.get('blog:a#0').metadata.date, '2026-09-12')
+  assert.equal(result.data.posts.a.hash, 'same-text')
+  assert.deepEqual((await syncArticles(api, [after])).changed, [])
+})
+
 test('the evaluation reports top-3 recall and false positives of gated queries without news crowding', async () => {
   const api = fakeApi()
   api.answers = {
@@ -312,30 +323,20 @@ test('the evaluation reports top-3 recall and false positives of gated queries w
   assert.deepEqual(report.results[3].hits, [['/news/2026-10-16/', 0.5]])
 })
 
-test('the index client counts its writes and waits for the last mutation', async () => {
+test('the index client reports counts and mutation IDs of accepted writes', async () => {
   let mutation = 0
-  let processed = 0
-  let waits = 0
-  const request = async ({ path }) => {
-    if (path.endsWith('/info')) {
-      processed = Math.min(processed + 1, mutation)
-      return { success: true, result: { processedUpToMutation: `m${processed}` } }
-    }
+  const request = async () => {
     mutation += 1
     return { success: true, result: { mutationId: `m${mutation}` } }
   }
-  // The index catches up on the second poll; the injected sleep keeps the test instant.
-  const api = searchIndexApi(request, 'account', 'index', { sleep: async () => waits++ })
+  const api = searchIndexApi(request, 'account', 'index')
   assert.deepEqual(api.writes, { upserted: 0, deleted: 0, lastMutation: undefined })
   await api.upsert([
     { id: 'a', values: [1] },
     { id: 'b', values: [1] },
   ])
   await api.deleteByIds(['c'])
-  await api.waitForWrites(1000)
   assert.deepEqual(api.writes, { upserted: 2, deleted: 1, lastMutation: 'm2' })
-  assert.equal(processed, 2)
-  assert.equal(waits, 1, 'waitForWrites yields between polls')
 })
 
 // A clock that only moves when the code under test sleeps, so the retry schedule is exact.
