@@ -18,7 +18,6 @@ import {
   newsKeywordQuery,
   newsVectors,
   rankMatches,
-  semanticMinScore,
 } from '../src/lib/search-text.mjs'
 
 // The search index code without Cloudflare: chunking, ranking, merging, and the index sync
@@ -126,8 +125,12 @@ test('semantic ranking merges chunks and items by document and thresholds each k
       ['news:2026-10-15:1', 0.41],
     ],
   )
-  // A kind whose best document is below its floor contributes nothing.
-  assert.deepEqual(rankMatches([blog('z', semanticMinScore.blog - 0.01)]), [])
+  // The article floor is 0.36: a document at the floor stays, and one below it is dropped.
+  assert.deepEqual(
+    rankMatches([blog('z', 0.36)]).map((match) => match.id),
+    ['blog:z#0'],
+  )
+  assert.deepEqual(rankMatches([blog('z', 0.35)]), [])
 })
 
 test('rankMatches drops retracted news before thresholding so hidden issues never suppress visible ones', () => {
