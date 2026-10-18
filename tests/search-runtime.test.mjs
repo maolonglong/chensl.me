@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict'
+import { timingSafeEqual } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { registerHooks } from 'node:module'
 import { test } from 'node:test'
 
+// Routes read their bindings from cloudflare:workers; the stub forwards to globalThis.workerEnv.
+const workersStub = `export const env = new Proxy({}, { get: (_, key) => globalThis.workerEnv?.[key] })`
 registerHooks({
   resolve(specifier, context, nextResolve) {
+    if (specifier === 'cloudflare:workers')
+      return { url: `data:text/javascript,${encodeURIComponent(workersStub)}`, shortCircuit: true }
     if (specifier.startsWith('.') && context.parentURL) {
       const candidate = new URL(`${specifier}.ts`, context.parentURL)
       if (existsSync(candidate)) return nextResolve(candidate.href, context)
@@ -15,6 +20,7 @@ registerHooks({
 const search = await import('../src/lib/search.ts')
 const { handleSearch } = await import('../src/lib/search-endpoint.ts')
 const { newsVectors } = await import('../src/lib/search-text.mjs')
+const retract = await import('../src/pages/api/news/retract.ts')
 
 const issue = (title, version, count = 1) => ({
   date: '2026-10-17',
@@ -44,6 +50,7 @@ function fixture(initial) {
             const row = state.current
             return row && { ...row, items_json: JSON.stringify(row.items) }
           },
+          run: async () => ({ meta: { changes: 1 } }),
           all: async () => ({
             results: state.current ? [{ ...state.current, snippet: state.current.summary }] : [],
           }),
@@ -136,4 +143,37 @@ test('continuous corrections report a failed sync and a stable resend repairs it
   env.AI.run = run
   assert.equal(await search.syncIssue(env, '2026-10-17'), 'indexed')
   assert.equal((await search.semanticSearch(env, 'Test'))[0].title, 'CHANGED')
+})
+
+test('a restore that loses to a concurrent retraction reports the hidden state', async (t) => {
+  // workerd provides crypto.subtle.timingSafeEqual; Node has it only in node:crypto.
+  crypto.subtle.timingSafeEqual ??= (a, b) => timingSafeEqual(new Uint8Array(a), new Uint8Array(b))
+  t.after(() => delete crypto.subtle.timingSafeEqual)
+  const { state, env } = fixture(issue('BACK', 2))
+  globalThis.workerEnv = {
+    ...env,
+    NEWS_TOKEN: 'token',
+    VOTE_LIMITER: { limit: async () => ({ success: true }) },
+  }
+  const run = env.AI.run
+  // The retraction commits to D1 while the restore is embedding the issue.
+  env.AI.run = async (model, input) => {
+    state.current = null
+    return run(model, input)
+  }
+  const response = await retract.POST({
+    request: new Request('https://example.com/api/news/retract/', {
+      method: 'POST',
+      headers: { authorization: 'Bearer token', 'content-type': 'application/json' },
+      body: JSON.stringify({ date: '2026-10-17', hidden: false }),
+    }),
+    clientAddress: '192.0.2.1',
+  })
+  assert.equal(response.status, 200)
+  assert.deepEqual(await response.json(), {
+    status: 'hidden',
+    date: '2026-10-17',
+    search: 'removed',
+  })
+  assert.equal(state.vectors.size, 0)
 })

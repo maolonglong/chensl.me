@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro'
 import { env } from 'cloudflare:workers'
-import { retraction, setHidden } from '../../../lib/news'
+import { queryIssue, retraction, setHidden } from '../../../lib/news'
 import { authorizedJson, reply } from '../../../lib/news-api'
-import { syncIssue } from '../../../lib/search'
+import { syncIssue, type IndexResult } from '../../../lib/search'
 
 export const prerender = false
 
@@ -15,5 +15,13 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const { date, hidden } = input.data
   if (!(await setHidden(env.NEWS, date, hidden))) return reply(404, { error: 'not_found', date })
   const search = await syncIssue(env, date)
-  return reply(200, { status: hidden ? 'hidden' : 'visible', date, search })
+  return reply(200, { status: await finalStatus(date, search), date, search })
+}
+
+// A concurrent retraction or restore can win after this request's update. Report the D1 state
+// that the index sync ended on, not this request's intent.
+async function finalStatus(date: string, search: IndexResult) {
+  if (search === 'indexed') return 'visible'
+  if (search === 'removed') return 'hidden'
+  return (await queryIssue(env.NEWS, date)) ? 'visible' : 'hidden'
 }
