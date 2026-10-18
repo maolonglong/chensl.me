@@ -15,7 +15,7 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
   <header class="page-header">
     <h1>AI News</h1>
     <p class="note">
-      每天 AI 圈发生了什么。由 bot 收集整理，作者不逐条审阅。这里显示最近 7 期，更早的在
+      每天 AI 圈发生了什么。由 bot 收集整理，作者不逐条审阅。这里显示最新一期，往期在
       <a href="/news/archive/">归档</a>。
       <a href="/news/index.xml" type="application/rss+xml">
         订阅 RSS
@@ -37,6 +37,11 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
   ) : (
     <p>还没有内容。</p>
   )}
+  {issues.length > 0 && (
+    <p class="older">
+      <a href="/news/archive/">查看往期日报</a>
+    </p>
+  )}
 </BaseLayout>
 
 <style>
@@ -49,6 +54,9 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
   }
   .day {
     margin-bottom: 48px;
+  }
+  .older {
+    margin: 0;
   }
   .day h2 {
     margin: 0 0 8px;
