@@ -8,7 +8,9 @@ creation:
 
 ## 简介
 
-今天的主角是 [bytebufferpool](https://github.com/valyala/bytebufferpool) ，仓库的 README 文件是这么描述 bytebufferpool 的：
+今天的主角是 bytebufferpool ，仓库的 README 文件是这么描述 bytebufferpool 的：
+
+[valyala/bytebufferpool](https://github.com/valyala/bytebufferpool)
 
 > Currently bytebufferpool is fastest and most effective buffer pool written in Go.
 

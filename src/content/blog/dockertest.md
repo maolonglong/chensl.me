@@ -61,7 +61,9 @@ func TestShouldUpdateStats(t *testing.T) {
 
 ## Dockertest
 
-[Dockertest](https://github.com/ory/dockertest) 是一个简易的 Docker 客户端，提供了更便捷的方式管理单元测试的外部依赖。
+Dockertest 是一个简易的 Docker 客户端，提供了更便捷的方式管理单元测试的外部依赖。
+
+[ory/dockertest](https://github.com/ory/dockertest)
 
 ### 创建示例项目
 

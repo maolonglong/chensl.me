@@ -348,7 +348,7 @@ test.describe('GitHub card refresh', () => {
 
   test('articles without a card load no refresh script', async ({ page, open }) => {
     const requests = await answer(page, (route) => route.fulfill({ json: fresh }))
-    await open('/blog/dockertest/')
+    await open('/blog/gat/')
     await expect(card(page)).toHaveCount(0)
     expect(requests).toEqual([])
     expect(await page.content()).not.toContain('/api/github/repos/')

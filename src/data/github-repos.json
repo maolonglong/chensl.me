@@ -1,4 +1,13 @@
 {
+  "gunnarmorling/1brc": {
+    "name": "gunnarmorling/1brc",
+    "description": "1️⃣🐝🏎️ The One Billion Row Challenge -- A fun exploration of how quickly 1B rows from a text file can be aggregated with Java",
+    "stars": 8138,
+    "forks": 2245,
+    "language": "Java",
+    "archived": false,
+    "pushedAt": "2024-08-20T15:15:15Z"
+  },
   "maolonglong/bfjit-x86_64": {
     "name": "maolonglong/bfjit-x86_64",
     "description": "A Just-In-Time Compiler for Brainfuck.",
@@ -26,6 +35,15 @@
     "archived": false,
     "pushedAt": "2026-10-15T08:54:13Z"
   },
+  "maolonglong/nvchad-go": {
+    "name": "maolonglong/nvchad-go",
+    "description": "NvChad's custom files for Go developers",
+    "stars": 34,
+    "forks": 9,
+    "language": "Lua",
+    "archived": true,
+    "pushedAt": "2023-09-14T09:22:20Z"
+  },
   "maolonglong/zig-buddy2": {
     "name": "maolonglong/zig-buddy2",
     "description": "🧿 A simple buddy memory allocation library.",
@@ -35,6 +53,15 @@
     "archived": true,
     "pushedAt": "2025-08-12T09:24:05Z"
   },
+  "ory/dockertest": {
+    "name": "ory/dockertest",
+    "description": "Write better integration tests! Dockertest helps you boot up ephermal docker images for your Go tests with minimal work.",
+    "stars": 4529,
+    "forks": 270,
+    "language": "Go",
+    "archived": false,
+    "pushedAt": "2026-10-16T14:02:46Z"
+  },
   "sony/gobreaker": {
     "name": "sony/gobreaker",
     "description": "Circuit Breaker implemented in Go",
@@ -43,5 +70,14 @@
     "language": "Go",
     "archived": false,
     "pushedAt": "2026-02-07T09:21:38Z"
+  },
+  "valyala/bytebufferpool": {
+    "name": "valyala/bytebufferpool",
+    "description": "Anti-memory-waste byte buffer pool",
+    "stars": 1335,
+    "forks": 144,
+    "language": "Go",
+    "archived": false,
+    "pushedAt": "2024-07-20T20:15:17Z"
   }
 }

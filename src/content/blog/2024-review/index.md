@@ -31,7 +31,9 @@ creation:
 
 ### 学习
 
-「CMU 15-213: CSAPP」 基本看完了，顺便写了个汇编相关的小玩具: <https://github.com/maolonglong/bfjit-x86_64>
+「CMU 15-213: CSAPP」 基本看完了，顺便写了个汇编相关的小玩具：
+
+[maolonglong/bfjit-x86_64](https://github.com/maolonglong/bfjit-x86_64)
 
 「CMU 15-445: Intro to Database Systems」偷懒了 🥲，才做了一个 Project，25 年得继续学起来
 
