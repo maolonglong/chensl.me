@@ -47,19 +47,21 @@ export const test = base.extend({
     await use(context)
   },
   // Fonts loaded and layout stable. Animation frames do not run while page scripts are disabled.
+  // Neither do the timers and frames that page.waitForFunction polls with, so it checks once and
+  // hangs when fonts are still loading. `document.fonts.ready` resolves without page scripts.
   settle: async ({ javaScriptEnabled }, use) => {
     await use((page) =>
-      javaScriptEnabled
-        ? page.evaluate(() =>
-            document.fonts.ready.then(
-              () =>
-                new Promise((resolve) =>
-                  requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))),
-                ),
-            ),
-          )
-        : // Page scripts are off, so wait for the browser's own font loading instead.
-          page.waitForFunction(() => document.fonts.status === 'loaded'),
+      page.evaluate(
+        (frames) =>
+          document.fonts.ready.then(
+            () =>
+              frames &&
+              new Promise((resolve) =>
+                requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))),
+              ),
+          ),
+        javaScriptEnabled,
+      ),
     )
   },
   // Navigate, settle, and confirm the browser really has the pointer capability the test
