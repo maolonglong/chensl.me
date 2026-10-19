@@ -10,9 +10,9 @@ creation:
 
 今天的主角是 bytebufferpool ，仓库的 README 文件是这么描述 bytebufferpool 的：
 
-[valyala/bytebufferpool](https://github.com/valyala/bytebufferpool)
-
 > Currently bytebufferpool is fastest and most effective buffer pool written in Go.
+
+[valyala/bytebufferpool](https://github.com/valyala/bytebufferpool)
 
 bytebufferpool 基本上是目前 Go 实现的最快的字节池，在许多优秀项目中都有被使用（[fasthttp](https://github.com/valyala/fasthttp), [quicktemplate](https://github.com/valyala/quicktemplate), [gnet](https://github.com/panjf2000/gnet)）
 

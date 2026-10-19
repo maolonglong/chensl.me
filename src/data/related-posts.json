@@ -22,7 +22,7 @@
         ],
         [
           "bytebufferpool",
-          0.354
+          0.351
         ]
       ]
     },
@@ -118,7 +118,7 @@
         ],
         [
           "bytebufferpool",
-          0.384
+          0.381
         ],
         [
           "2023-review",
@@ -127,27 +127,27 @@
       ]
     },
     "bytebufferpool": {
-      "hash": "0423ff2ee9a9350252744c78bf1522b3aa1b5081562a1e5145aa79eadbffdb00",
+      "hash": "afd63da177727f61891a2b183cfef11c57cbae2a69c5e7061a0825629d96fbe5",
       "related": [
         [
           "manual-memory-management",
-          0.391
+          0.388
         ],
         [
           "buddy",
-          0.384
+          0.381
         ],
         [
           "1brc-in-zig",
-          0.354
+          0.351
         ],
         [
           "gobreaker",
-          0.343
+          0.341
         ],
         [
           "lock-free-queue",
-          0.308
+          0.306
         ]
       ]
     },
@@ -234,12 +234,12 @@
           0.344
         ],
         [
-          "bytebufferpool",
+          "manual-memory-management",
           0.343
         ],
         [
-          "manual-memory-management",
-          0.343
+          "bytebufferpool",
+          0.341
         ],
         [
           "thin-agent-thick-harness",
@@ -289,7 +289,7 @@
         ],
         [
           "bytebufferpool",
-          0.308
+          0.306
         ],
         [
           "bfjit-x86-64",
@@ -310,7 +310,7 @@
         ],
         [
           "bytebufferpool",
-          0.391
+          0.388
         ],
         [
           "dockertest",
