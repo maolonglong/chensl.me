@@ -21,7 +21,9 @@ creation:
 
 还算绿，但基本都是自己的玩具项目，社区的贡献只有 [nixpkgs](https://github.com/NixOS/nixpkgs)。
 
-今年被 star 最多的项目居然是 [nvchad-go](https://github.com/maolonglong/nvchad-go)，非常意外，随手写的一个 neovim 配置，甚至我自己现在都不怎么用 neovim。
+今年被 star 最多的项目居然是 nvchad-go，非常意外，随手写的一个 neovim 配置，甚至我自己现在都不怎么用 neovim。
+
+[maolonglong/nvchad-go](https://github.com/maolonglong/nvchad-go)
 
 ---
 

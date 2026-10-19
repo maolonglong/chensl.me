@@ -2,77 +2,77 @@
   "model": "@cf/qwen/qwen3-embedding-0.6b",
   "posts": {
     "1brc-in-zig": {
-      "hash": "a1458118ecfe6f28b30cefde82f14a7bff4da3a06066df030889bc0abcdfbef6",
+      "hash": "a3e78ffc665253f1e0fd71345560398848c77dd71463998780c0fe7d9dbca64b",
       "related": [
         [
           "bfjit-x86-64",
-          0.476
+          0.478
         ],
         [
           "buddy",
-          0.454
+          0.434
         ],
         [
           "2023-review",
-          0.447
+          0.429
         ],
         [
           "semantic-view-sql-traps",
-          0.354
+          0.364
         ],
         [
-          "manual-memory-management",
-          0.349
+          "bytebufferpool",
+          0.354
         ]
       ]
     },
     "2023-review": {
-      "hash": "8b11c575058d38a26a822fb3b95130d04b7e0869fca3b586426d6fcbf8d42e10",
+      "hash": "6fbe8a22ba5f0aae977eeb5b001d3cef57b850dfe53a0f0c12196ba5b54a2cb0",
       "related": [
         [
           "2024-review",
-          0.589
+          0.594
         ],
         [
           "functional-programming",
-          0.452
+          0.44
         ],
         [
           "1brc-in-zig",
-          0.447
+          0.429
         ],
         [
           "bfjit-x86-64",
-          0.4
+          0.386
         ],
         [
           "buddy",
-          0.367
+          0.365
         ]
       ]
     },
     "2024-review": {
-      "hash": "32f3c890346492e197122ed06d5720fe8bd4d04075533381762bfa180ed9c8c3",
+      "hash": "bda1660e470f908a943b38371ec10e53bdc837e1fe1e7413673863ec49416293",
       "related": [
         [
           "2023-review",
-          0.589
+          0.594
         ],
         [
           "1brc-in-zig",
-          0.318
+          0.321
         ],
         [
           "functional-programming",
-          0.305
+          0.308
         ],
         [
           "semantic-view-sql-traps",
-          0.3
+          0.308
         ],
         [
           "thin-agent-thick-harness",
-          0.299
+          0.298
         ]
       ]
     },
@@ -81,7 +81,7 @@
       "related": [
         [
           "1brc-in-zig",
-          0.476
+          0.478
         ],
         [
           "buddy",
@@ -89,7 +89,7 @@
         ],
         [
           "2023-review",
-          0.4
+          0.386
         ],
         [
           "manual-memory-management",
@@ -110,7 +110,7 @@
         ],
         [
           "1brc-in-zig",
-          0.454
+          0.434
         ],
         [
           "bfjit-x86-64",
@@ -118,32 +118,32 @@
         ],
         [
           "bytebufferpool",
-          0.374
+          0.384
         ],
         [
           "2023-review",
-          0.367
+          0.365
         ]
       ]
     },
     "bytebufferpool": {
-      "hash": "77d2806df3149d77648040de75698b383f119654448f89acff1a1567bc0a7fc8",
+      "hash": "0423ff2ee9a9350252744c78bf1522b3aa1b5081562a1e5145aa79eadbffdb00",
       "related": [
         [
           "manual-memory-management",
-          0.381
+          0.391
         ],
         [
           "buddy",
-          0.374
+          0.384
         ],
         [
           "1brc-in-zig",
-          0.345
+          0.354
         ],
         [
           "gobreaker",
-          0.342
+          0.343
         ],
         [
           "lock-free-queue",
@@ -152,7 +152,7 @@
       ]
     },
     "dockertest": {
-      "hash": "1e51f455178244e92721f60753c52e6574abd53308f120fabed37ead241b4b34",
+      "hash": "7624f25a609f3ea0a5df4a00fb701c19cb581fb86455f3c117f1ffef93024adb",
       "related": [
         [
           "overlayfs",
@@ -160,19 +160,19 @@
         ],
         [
           "manual-memory-management",
-          0.344
+          0.364
         ],
         [
           "semantic-view-sql-traps",
-          0.324
+          0.315
         ],
         [
           "harness-engineering",
-          0.295
+          0.288
         ],
         [
           "2023-review",
-          0.272
+          0.277
         ]
       ]
     },
@@ -181,23 +181,23 @@
       "related": [
         [
           "2023-review",
-          0.452
+          0.44
         ],
         [
           "1brc-in-zig",
-          0.344
+          0.339
         ],
         [
           "semantic-view-sql-traps",
           0.315
         ],
         [
-          "bfjit-x86-64",
+          "2024-review",
           0.308
         ],
         [
-          "2024-review",
-          0.305
+          "bfjit-x86-64",
+          0.308
         ]
       ]
     },
@@ -234,12 +234,12 @@
           0.344
         ],
         [
-          "manual-memory-management",
+          "bytebufferpool",
           0.343
         ],
         [
-          "bytebufferpool",
-          0.342
+          "manual-memory-management",
+          0.343
         ],
         [
           "thin-agent-thick-harness",
@@ -264,7 +264,7 @@
         ],
         [
           "2023-review",
-          0.34
+          0.331
         ],
         [
           "gobreaker",
@@ -280,24 +280,24 @@
       "hash": "e49cdc4eabde1bacee70ab1db1039fad3bbc53e2cee73d70529dcac609304791",
       "related": [
         [
-          "buddy",
-          0.336
+          "1brc-in-zig",
+          0.34
         ],
         [
-          "1brc-in-zig",
-          0.335
+          "buddy",
+          0.336
         ],
         [
           "bytebufferpool",
           0.308
         ],
         [
-          "2023-review",
-          0.291
-        ],
-        [
           "bfjit-x86-64",
           0.286
+        ],
+        [
+          "2023-review",
+          0.282
         ]
       ]
     },
@@ -310,15 +310,15 @@
         ],
         [
           "bytebufferpool",
-          0.381
-        ],
-        [
-          "1brc-in-zig",
-          0.349
+          0.391
         ],
         [
           "dockertest",
-          0.344
+          0.364
+        ],
+        [
+          "1brc-in-zig",
+          0.35
         ],
         [
           "gobreaker",
@@ -343,11 +343,11 @@
         ],
         [
           "1brc-in-zig",
-          0.238
+          0.233
         ],
         [
           "2024-review",
-          0.225
+          0.232
         ]
       ]
     },
@@ -364,15 +364,15 @@
         ],
         [
           "1brc-in-zig",
-          0.354
+          0.364
         ],
         [
           "gobreaker",
           0.344
         ],
         [
-          "dockertest",
-          0.324
+          "2023-review",
+          0.317
         ]
       ]
     },
@@ -397,7 +397,7 @@
         ],
         [
           "1brc-in-zig",
-          0.305
+          0.298
         ]
       ]
     },
@@ -418,11 +418,11 @@
         ],
         [
           "2023-review",
-          0.261
+          0.256
         ],
         [
           "1brc-in-zig",
-          0.246
+          0.241
         ]
       ]
     }
