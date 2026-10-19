@@ -16,3 +16,16 @@ test('browser specs wait for a state instead of a fixed time', async () => {
   }
   assert.deepEqual(offenders, [])
 })
+
+// Specs that turn page scripts off also stop the timers and animation frames that
+// page.waitForFunction polls with: it checks once, then hangs until the test times out.
+test('browser specs do not poll the page with waitForFunction', async () => {
+  const offenders = []
+  for (const name of await readdir(e2e)) {
+    const lines = (await readFile(new URL(name, e2e), 'utf8')).split('\n')
+    lines.forEach((line, index) => {
+      if (/\bwaitForFunction\(/.test(line)) offenders.push(`e2e/${name}:${index + 1}`)
+    })
+  }
+  assert.deepEqual(offenders, [])
+})
