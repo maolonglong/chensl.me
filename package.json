@@ -25,7 +25,7 @@
     "@cloudflare/workers-types": "^5.20261018.1",
     "@j178/prek": "0.5.5",
     "@playwright/test": "1.64.1",
-    "@takumi-rs/core": "2.16.2",
+    "@takumi-rs/core": "2.16.3",
     "@types/node": "^26.6.5",
     "astro": "7.3.8",
     "fontverter": "2.0.0",
