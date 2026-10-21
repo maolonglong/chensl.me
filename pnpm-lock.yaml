@@ -79,8 +79,8 @@ importers:
         specifier: 2.9.0
         version: 2.9.0
       temml:
-        specifier: 0.13.5
-        version: 0.13.5
+        specifier: 0.14.0
+        version: 0.14.0
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -2647,8 +2647,8 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
-  temml@0.13.5:
-    resolution: {integrity: sha512-aPkDDgunanpLNL0ql32HbolqLep+w8DRcVXRql7rWrMt/PhczdLgL4UBYYVU3BYjCNjkGq4EqwIicu/zWr1iOg==}
+  temml@0.14.0:
+    resolution: {integrity: sha512-tz1LW/5IZpThK8c7ZpdTSH/n56eAj+ThirLieErtKxYC3EKCIiB4sKdRUehAgH+fQmvIKqMfP3gqTLBdLpy9zw==}
     engines: {node: '>=18.13.0'}
 
   tiny-inflate@1.0.3:
@@ -6049,7 +6049,7 @@ snapshots:
       picocolors: 1.1.1
       sax: 1.6.1
 
-  temml@0.13.5: {}
+  temml@0.14.0: {}
 
   tiny-inflate@1.0.3: {}
 
