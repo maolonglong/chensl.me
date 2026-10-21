@@ -35,11 +35,14 @@ jobs:
     # The repository variable SEARCH_INDEX_ENABLED turns the jobs on once the Environments and
     # their secrets exist. Without it they are skipped, so CI stays green and no Environment is
     # created by accident. Pull requests from forks never run: they get no secrets, and Workers
-    # Previews build only branches of this repository.
+    # Previews build only branches of this repository. Runs that Dependabot started are skipped
+    # for the same reason: GitHub treats them like forks and gives them only Dependabot secrets.
+    # github.actor, not github.triggering_actor, decides this, and a re-run keeps its privileges.
     if: >-
       vars.SEARCH_INDEX_ENABLED == 'true' && (
         (github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == github.repository) ||
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]') ||
         (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
