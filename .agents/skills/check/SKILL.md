@@ -62,19 +62,12 @@ Before any mode, run [Project Context Extraction](#project-context-extraction) a
 
 ## Project Context Extraction
 
-This is Waza's public, standalone code-review capability. It should not depend on private machine paths or unpublished project instructions.
+This is Waza's public, standalone code-review capability; it never depends on private machine paths or unpublished instructions. Learn the project from the diff and its public context (manifests, CI workflows, AGENTS/CLAUDE files, release notes) until you know its verification commands, generated or protected files, release artifacts, and domain risks. The shape is in `references/project-context.md`.
 
-Before reviewing, extract project constraints from repository context:
+- Where project context and this skill overlap and both can be met, satisfy the stricter one. An explicit project exception wins and the report names it; stricter is not a licence to overrule a written decision or reorder the host's instruction precedence.
+- Prefer a verification command the project names, and read the workflow rather than the sentence describing it. A doc claiming CI enforces something is a claim; a check that runs on only one side (local or CI) means a green run there predicts nothing about the other.
 
-1. Read the diff and identify changed languages, frameworks, manifests, generated outputs, release files, and CI workflows.
-2. Inspect public project files only as needed: README, AGENTS/CLAUDE instructions when present, package manifests, lockfiles, build configs, test configs, workflow files, and release notes.
-3. Compress the findings into review context: verification commands, protected or generated files, release artifacts, domain risks, and public reply rules.
-4. Where project context and this skill state overlapping requirements that can both be met, satisfy the stricter one. Where the project states an explicit exception, the project wins and the report names it: stricter is not a licence to overrule a decision the project wrote down, and it does not reorder the host's own instruction precedence.
-5. If project docs or CI name a verification command, prefer that over auto-detection, and read the workflow rather than the sentence describing it. A doc claiming CI enforces something is a claim; where no job runs it, trusting the sentence skips the manual check it replaced. A linter, a compiled helper, or a platform tier present locally but not in CI, or the reverse, means a green run on one side predicts nothing about the other.
-
-For the context shape, see `references/project-context.md`.
-
-For release or maintainer work, also fill the Release Gate 2.0 matrix from `references/project-context.md`. It covers review base, dirty/staged/untracked state, latest tag, origin sync, version fields, generated artifacts, package/archive contents, release assets, registry/appcast/CI, and public issue/PR state. Missing matrix evidence is a blocker for a "ready to release" claim.
+For release readiness or publication, also fill the Release Gate 2.0 matrix from `references/project-context.md`. It covers review base, dirty/staged/untracked state, latest tag, origin sync, version fields, generated artifacts, package/archive contents, release assets, registry/appcast/CI, and public issue/PR state. Missing matrix evidence is a blocker for a "ready to release" claim. A commit/push-only task uses the source-delivery checks in `references/mode-ship.md`; unrelated release assets and registry state are out of scope.
 
 ## Plan Execution Mode
 
@@ -131,15 +124,9 @@ When the diff fixes one instance of a class-of-bug, grep the repo for the same s
 
 When the diff contains a recurring or hard-to-observe bug, captured output or asynchronous completion, simplification or deletion, history-sensitive normalization, non-atomic replacement of user files, broad destructive matchers, duplicated derivations, test-surface fidelity, never-shipped migrations, or unknown identifiers, load the matching section of `references/review-patterns.md`. Do not load that catalog for unrelated diffs.
 
-## CLI Command Surface
+## Command And Install Surfaces
 
-When a diff touches a CLI entrypoint, installer, completion, config/env handling, package wrapper, or a mutating command such as cleanup, update, uninstall, migration, or cache removal, load `references/release-surfaces.md` (CLI Command Surface) and work its checklist, then fill the `CLI Command Surface` block of the Recommended Context Shape in `references/project-context.md` before sign-off. The core stance: verify command contract and installed-runtime behavior, not just library tests, and treat every mutating command as a safety sink.
-
-Terminal output is a rendered surface. After changing CLI-facing text, spacing, or layout, re-run the command and read the real output before claiming done; editing the string is not seeing the screen.
-
-## Skill, Plugin, And Packaged Install Surface
-
-When a diff touches a skill, plugin, marketplace entry, installer, package allowlist, package manifest, generated mirror, or published archive, load `references/release-surfaces.md` (Packaged Install Surface) and verify the installed runtime contract through its five steps: real user install path, rebuilt package contents, isolated install smoke, noise filtering, and explicit gaps when the smoke cannot run. Manifest JSON, source tests, or a successful local import never substitute for installed-runtime proof.
+When a diff touches a CLI entrypoint, installer, config/env handling, or a mutating command (cleanup, update, uninstall, migration, cache removal), work the CLI Command Surface section of `references/release-surfaces.md`; when it touches a skill, plugin, marketplace entry, package manifest, generated mirror, or published archive, work its Packaged Install Surface section. The lesson behind both: library tests and manifest JSON never prove installed-runtime behavior, and every mutating command is a safety sink. Terminal output is a rendered surface too; after changing CLI-facing text or layout, re-run the command and read the real output.
 
 ## Hard Rules
 
@@ -169,23 +156,11 @@ Every finding needs the exact file:line, the specific input or state that trigge
 
 ## Knowledge Sync
 
-After reviewing the diff, check whether it introduces invariants not yet captured in project docs:
-
-- New safety gate or path-guard rule goes to AGENTS.md
-- New UI constraint (layout rule, animation, overlay registration) goes to `.claude/rules/*.md`
-- New deploy/release step or artifact goes to AGENTS.md or `docs/`
-- New cross-file sync requirement (enum and HTML anchors, Swift keys and xcstrings) goes to AGENTS.md
-- A review report, scorecard, or diagnostic snapshot in the diff is evidence, not a durable doc: re-read the surface it names, and extract the stable rule into AGENTS/CLAUDE/rules/references instead of committing the snapshot.
-
-If found, either apply the doc update as `safe_auto` (when the invariant is clear from the diff) or flag it in the sign-off as `doc debt`. When no new invariants exist, sign-off says `doc debt: none`.
+If the diff introduces an invariant the project docs do not hold yet (a safety gate, a UI constraint, a release step, a cross-file sync requirement), it belongs in the narrowest tracked guidance every intended runtime reads, usually AGENTS.md. A review report or scorecard in the diff is evidence, not a durable doc: extract its stable rule instead of committing the snapshot. Apply a clear doc update as `safe_auto` or flag it as `doc debt`; with nothing new, sign-off says `doc debt: none`.
 
 ## Specialist Review (Standard and Deep only)
 
-Load `references/persona-catalog.md` to determine which specialists activate. When the environment has an agent or sub-agent facility, launch all activated specialists in parallel, each with the full diff and its own persona brief. If no parallel reviewer facility exists, run the specialist passes sequentially in the same session.
-
-Merge findings: when two specialists flag the same code location, keep the higher severity and note cross-reviewer agreement. Findings on different code locations are never duplicates even if they share a theme.
-
-Every specialist finding is a claim to verify, not a fact to act on. For HIGH and CRITICAL claims, when the agent facility allows it, spawn one independent skeptic per finding whose only brief is to refute it against the actual code; a finding the skeptic refutes on direct read is dropped or downgraded regardless of which persona raised it. Without the facility, run the skeptic pass yourself: re-read the cited code this turn and confirm the claim is real and live, not already handled elsewhere, not consistent-by-design, not a latent-only risk labeled as a live bug. Parallel reviewers over-report from name-based inference and partial context; drop what dissolves on direct read, and cite the verification path before routing anything to Autofix or sign-off.
+Load `references/persona-catalog.md` for activation, parallel or sequential review, and finding verification.
 
 Before a whole-scope verdict, reconcile a completion ledger for every delegated review: assigned scope, returned status, and uncovered remainder. Wait for every active reviewer, or name its scope as unreviewed. Never say "all read", "full audit complete", or "no issues" while any reviewer or required verification is still pending.
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.metadata
+import platform
 import shutil
 import struct
 import subprocess
@@ -28,7 +29,7 @@ _LINUX_NATIVE_LIBS = (
     "(Debian/Ubuntu), or `sudo dnf install cairo pango harfbuzz` (Fedora/RHEL)"
 )
 
-WEASYPRINT_INSTALL_HINT = "pip install weasyprint pypdf --break-system-packages"
+WEASYPRINT_INSTALL_HINT = "pip install weasyprint pypdf pymupdf --break-system-packages"
 if sys.platform.startswith("linux"):
     WEASYPRINT_INSTALL_HINT = f"{WEASYPRINT_INSTALL_HINT}. {_LINUX_NATIVE_LIBS}"
 PYMUPDF_INSTALL_HINT = "pip install pymupdf --break-system-packages"
@@ -306,6 +307,11 @@ def doctor_report() -> dict:
 def run_doctor() -> int:
     report = doctor_report()
     print(f"Kami doctor {report['version']}")
+    if platform.system() == "Windows":
+        print(
+            "NOTE: on Windows, run Kami inside WSL (Ubuntu); the helper scripts are "
+            "Bash, and native WeasyPrint needs the GTK/Pango runtime installed separately"
+        )
     for item in report["dependencies"]:
         label = "OK" if item["status"] == "available" else item["status"].upper()
         version = f" {item['version']}" if item.get("version") else ""

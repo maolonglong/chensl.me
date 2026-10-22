@@ -13,7 +13,8 @@ from pathlib import Path
 from shared import ROOT, TEMPLATES, TOKENS_FILE, iter_template_files
 
 ROOT_BLOCK = re.compile(r":root\s*\{([^}]*)\}", re.DOTALL)
-CSS_VAR = re.compile(r"--([\w-]+)\s*:\s*([^;]+);")
+CSS_VAR = re.compile(r"--([\w-]+)\s*:\s*([^;}]+)(?:;|$)")
+CSS_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
 
 
 def parse_root_vars(text: str) -> dict[str, str]:
@@ -24,7 +25,7 @@ def parse_root_vars(text: str) -> dict[str, str]:
     """
     found: dict[str, str] = {}
     for block in ROOT_BLOCK.finditer(text):
-        for m in CSS_VAR.finditer(block.group(1)):
+        for m in CSS_VAR.finditer(CSS_COMMENT.sub("", block.group(1))):
             found[f"--{m.group(1)}"] = m.group(2).strip()
     return found
 PY_RGB = re.compile(
@@ -151,3 +152,46 @@ def sync_check(verbose: bool = False) -> int:
             print(f"  {issue}")
 
     return 1
+
+
+def dtcg_tokens(canonical: dict[str, str] | None = None) -> dict:
+    """Return tokens.json as W3C Design Tokens (DTCG) JSON under a `color` group."""
+    if canonical is None:
+        canonical = json.loads(TOKENS_FILE.read_text(encoding="utf-8"))
+    return {
+        "color": {
+            name.removeprefix("--"): {"$type": "color", "$value": value.lower()}
+            for name, value in canonical.items()
+        }
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Check token drift, or export references/tokens.json as DTCG JSON."
+    )
+    parser.add_argument("--dtcg", action="store_true", help="print W3C Design Tokens JSON")
+    parser.add_argument("-o", "--output", type=Path, help="write the DTCG JSON to this file")
+    parser.add_argument("-v", "--verbose", action="store_true")
+    args = parser.parse_args(argv)
+    if not args.dtcg:
+        if args.output:
+            parser.error("-o requires --dtcg")
+        return sync_check(args.verbose)
+    try:
+        text = json.dumps(dtcg_tokens(), indent=2) + "\n"
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"ERROR: cannot read tokens.json: {exc}")
+        return 2
+    if args.output:
+        args.output.write_text(text, encoding="utf-8")
+        print(f"OK: wrote {len(json.loads(text)['color'])} color tokens to {args.output}")
+    else:
+        print(text, end="")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

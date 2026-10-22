@@ -9,6 +9,10 @@ Full specification for loading and applying user brand profiles. Referenced from
 
 If found, parse the YAML frontmatter for structured fields and treat the Markdown body below the frontmatter as freeform habit notes. If no profile exists, continue without interruption.
 
+## Draft a profile from a website
+
+`python3 scripts/brand_extract.py https://example.com [-o brand.md]` drafts a profile from a public site. It fetches only that page and up to five of its stylesheets from the same host or a subdomain of it, then ranks color, font, and logo candidates. It fills `company`, `website`, and `brand_color` (one accent only, darkened in HSL lightness steps until it reaches 4.5:1 on parchment `#f5f4ed`), lists site fonts and logo candidates as habit notes, and keeps Kami's serif stacks. The output is a draft in the `brand.example.md` format for the user to review: it goes to stdout or `-o`, never into `~/.config/kami/` automatically. A failed fetch prints one `ERROR:` line and exits 2.
+
 ## Layer A: Placeholder substitution
 
 Apply at template edit time: replace matching `{{...}}` placeholders in the HTML body with profile values before building.
@@ -47,8 +51,8 @@ Apply when the current request is ambiguous. Use profile fields to fill in missi
 
 Apply after template content is filled, before calling `build.py`:
 
-- `brand_color`: edit the `--brand` CSS variable in the template `<style>` block. Warn if the hue departs significantly from ink-blue; the warm palette constraint (parchment + neutrals) remains in force regardless.
-- `logo`: the templates with a logo slot are `one-pager`, `portfolio`, and `slides-weasy` (their `-en` variants too). Each ships a commented-out `<img class="brand-logo">` slot. To apply the profile logo, uncomment that line and set `src` to the resolved path. Rules:
+- `brand_color`: edit the `--brand` CSS variable in the template `<style>` block. For a document, warn if the hue departs significantly from ink-blue. For a landing page or product site, the product's own color is the expected accent and needs no warning (`design.md` Section 11 «Accent on a product site»). The warm palette constraint (parchment + neutrals) remains in force regardless.
+- `logo`: the templates with a logo slot are `one-pager`, `portfolio`, and `slides-weasy` (their `-en` and `-ko` variants too). Each ships a commented-out `<img class="brand-logo">` slot. To apply the profile logo, uncomment that line and set `src` to the resolved path. Rules:
   - **Resolve the path first.** Expand `~` and environment variables (`os.path.expanduser` / `os.path.expandvars`) to an absolute path before inserting it; WeasyPrint does not expand `~` itself. SVG, PNG, and JPG are all fine.
   - **Explicit request wins.** A logo or visual asset named in the current request always takes priority over `profile.logo`; the profile value fills the slot only when the request specifies none.
   - **Fail silently.** If the file does not exist, the path is unreadable, or the active template has no logo slot, leave the slot commented and render without a logo. Never insert a broken-image reference, and never announce the omission.

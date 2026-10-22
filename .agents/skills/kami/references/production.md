@@ -11,13 +11,15 @@ verification and debugging, and the known pitfalls gathered from production use.
 ### Install
 
 ```bash
-pip install weasyprint pypdf --break-system-packages --quiet
+pip install weasyprint pypdf pymupdf --break-system-packages --quiet
 ```
 
 Linux first-time:
 ```bash
 apt install -y libpango-1.0-0 libpangoft2-1.0-0 fonts-noto-cjk
 ```
+
+Windows: use WSL (Ubuntu) and follow the Linux steps; the helper scripts are Bash, and native Windows WeasyPrint needs the GTK/Pango runtime installed separately.
 
 ### Generate
 
@@ -56,8 +58,9 @@ font-family: Charter, Georgia, Palatino,
              "Times New Roman", serif;
 
 /* Chinese */
-font-family: "TsangerJinKai02", "Source Han Serif SC",
-             "Noto Serif CJK SC", "Songti SC", Georgia, serif;
+font-family: "TsangerJinKai02", "Source Han Serif SC", "Source Han Serif CN",
+             "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", "STSong", "SimSun",
+             Georgia, serif;
 
 /* Japanese */
 font-family: "YuMincho", "Yu Mincho", "Hiragino Mincho ProN",
@@ -74,7 +77,7 @@ font-family: "Source Han Serif K", "Source Han Serif KR",
 
 **Claude Desktop skill ZIPs do not bundle large CJK font files**: `TsangerJinKai02-W04.ttf`, `TsangerJinKai02-W05.ttf`, `SourceHanSerifKR-Regular.otf`, and `SourceHanSerifKR-Medium.otf` can make Claude.ai / Desktop skill upload or execution time out. The ZIP you upload must be the `scripts/package-skill.sh` output under the 6MB package ceiling, never a hand-zipped checkout. `package-skill.sh` excludes those large font files. Templates still keep local-first and jsDelivr fallback `@font-face` paths.
 
-When Chinese or Korean fonts are missing (the skill case), `scripts/ensure-fonts.sh` downloads them to the XDG user font dir (`${XDG_DATA_HOME:-~/.local/share}/fonts/kami`, override with `KAMI_FONT_DIR`), **not** into the skill's `assets/fonts`. fontconfig scans that dir by default on macOS and Linux, so WeasyPrint resolves `TsangerJinKai02` and `Source Han Serif K` from there while the installed skill stays small; online renders still use the jsDelivr `@font-face` URL.
+When Chinese or Korean fonts are missing (the skill case), `scripts/ensure-fonts.sh` downloads them to the XDG user font dir (`${XDG_DATA_HOME:-~/.local/share}/fonts/kami`), **not** into the skill's `assets/fonts`. fontconfig scans that default dir on macOS and Linux, so WeasyPrint resolves `TsangerJinKai02` and `Source Han Serif K` from there while the installed skill stays small; online renders still use the jsDelivr `@font-face` URL. `KAMI_FONT_DIR` overrides the target and is meant for tests: fontconfig does not scan an arbitrary directory, so an override outside a scanned font tree downloads fonts that WeasyPrint and `kami_doctor` never see.
 
 **Standalone HTML export** (sending a filled HTML file to someone else): this is not guaranteed to work outside the project tree. If the recipient cannot set up the font environment, use the PDF output instead.
 
@@ -429,17 +432,21 @@ For light verification of the theme and sample deck, prefer the HTML path.
 
 ## Part 3 · Verify & Debug
 
-### The three-step loop (mandatory after every change)
+### The loop (mandatory after every change)
 
 ```bash
-# 1. Generate
-python3 -c "from weasyprint import HTML; HTML('doc.html').write_pdf('out.pdf')"
+# Filled document: every gate, the render, page images, one verdict
+python3 scripts/build.py --deliver doc.html content.json
 
-# 2. Page count
-python3 -c "from pypdf import PdfReader; print(len(PdfReader('out.pdf').pages))"
+# Template work: build one target through render.py
+python3 scripts/build.py one-pager
+```
 
-# 3. Visual inspect (when in doubt)
-pdftoppm -png -r 300 out.pdf inspect
+Both go through `scripts/render.py`, which also renders math, highlights code, and stamps PDF metadata. Call WeasyPrint directly only to isolate a suspected WeasyPrint bug, and never ship that output:
+
+```bash
+# Debug isolation only: raw WeasyPrint, no math, highlighting, or metadata
+python3 -c "from weasyprint import HTML; HTML('doc.html').write_pdf('raw.pdf')"
 ```
 
 **Not verified = not done.**
@@ -969,19 +976,57 @@ separate checks. CI renders all three long-doc variants even without a page ceil
 
 ### 25. Korean text is extractable but absent in a PDF preview
 
-**Symptom**: a Source Han Serif KR PDF contains Korean text and embeds its font,
-but a MuPDF/PyMuPDF preview shows only Latin text and page numbers.
+**Symptom**: a Source Han Serif K PDF contains Korean text and embeds its font,
+but MuPDF/PyMuPDF and macOS Preview (Quartz) show only Latin text and page
+numbers, while Poppler (`pdftoppm`) draws the Korean.
 
-**Root cause**: WeasyPrint's CID-keyed CFF font handling can produce different
-results across PDF readers. This is an [upstream compatibility limitation](https://github.com/Kozea/WeasyPrint/issues/1593),
-not proof of a missing font file. The same PDF can render correctly in Poppler
-while MuPDF omits the Korean glyphs; embedding the full font is not a reliable fix.
+**Root cause**: WeasyPrint subsets a CID-keyed CFF font (the `.otf` build of
+Source Han Serif K) into a PDF font that MuPDF and Quartz draw blank; see the
+[upstream issue](https://github.com/Kozea/WeasyPrint/issues/1593). The same
+glyphs as TrueType outlines subset cleanly for every reader. `full_fonts=True`
+also renders, but embeds about 7 MB per weight.
 
-**Verification**: compare the same page with `pdftoppm -f 2 -l 2 -png output.pdf preview`
-and inspect it in the recipient's PDF reader. Text extraction and embedded font
-names alone do not establish visible glyphs. Do not replace the template's typeface
-or shrink its layout to repair a preview. A successful Poppler render does not
-establish compatibility with MuPDF; keep that limit explicit in the handoff.
+**Fix (in the pipeline)**: `render.render_pdf` runs `scripts/font_compat.py`,
+which rewrites every `@font-face` source that resolves to a local CID-keyed CFF
+file (relative path, `file://`, or a CDN URL whose file is in the skill font
+directory or the `ensure-fonts.sh` directory) to a TrueType copy converted once
+with fontTools and cached under `${XDG_CACHE_HOME:-~/.cache}/kami/fonts`. The first
+Korean render takes about 10 seconds per weight; later ones read the cache.
+A font fontconfig resolves by family name never passes through `@font-face` and is
+not converted, so keep the template's `@font-face` path working
+(`bash scripts/ensure-fonts.sh`).
+
+**Verification**: render the page with MuPDF (`build.py --check-visual`) and open
+the PDF in Preview; Poppler alone proves nothing, because it drew the broken file
+too. Text extraction and embedded font names do not establish visible glyphs.
+
+### 26. Korean breaks inside words
+
+**Symptom**: Korean lines end mid-word ("파이프라 / 인을"), although Korean
+breaks between words (eojeol) and the templates' CSS says so.
+
+**Root cause**: WeasyPrint ignores `word-break: keep-all`.
+
+**Fix (in the pipeline)**: `render.render_pdf` runs `scripts/hangul.py`, which puts
+U+2060 WORD JOINER between the characters of each Hangul-bearing word in the copy
+it renders (never in the source), across inline tags such as
+`<span class="hl">18개 팀</span>이`. The joiner draws nothing and does not reach the
+PDF text layer. Words over 16 characters stay breakable so narrow cells wrap
+instead of overflowing. Do not add joiners or per-word spans to the source HTML.
+Word-level breaking fills lines less tightly than syllable breaking, so a Korean
+document near its page ceiling may need a shorter line or two.
+
+### 27. A grid item set to `grid-column: 1 / -1` stays in one column
+
+**Symptom**: an item meant to span a two-column grid in a PDF stays in the first
+column, so whatever sits at its right edge (a star count, a date) stops mid-page.
+
+**Root cause**: WeasyPrint ignores negative grid line numbers; the declaration is
+dropped without a warning. Browsers honor it, so a landing page looks right.
+
+**Fix**: in PDF templates span by count (`grid-column: span 2`) or with positive
+lines (`1 / 3`). The resume templates use `.os-item:only-child { grid-column: span 2; }`
+so a single open-source project spans the row.
 
 ---
 
