@@ -17,6 +17,8 @@ import {
   chunkMaxChars,
   chunkOverlapChars,
   clipSnippet,
+  newsKeywordFallbackQuery,
+  newsKeywordLimit,
   newsKeywordQuery,
   newsVectors,
   rankMatches,
@@ -171,6 +173,24 @@ test('news vectors cover each item and list the IDs a longer version left behind
   assert.equal(upserts[0].metadata.version, 4)
   assert.deepEqual(newsKeywordQuery('AI 芯片').binds, ['芯片', '%AI%', '%芯片%'])
   assert.deepEqual(newsKeywordQuery('芯片 AI').binds, ['芯片', '%芯片%', '%AI%'])
+})
+
+test('a Han compound of four or more characters falls back to required pairs', () => {
+  const pairs = newsKeywordFallbackQuery('安全漏洞')
+  assert.ok(pairs)
+  assert.equal(pairs.sql.includes('MATCH'), false)
+  assert.deepEqual(pairs.binds, ['安全', '%安全%', '%漏洞%'])
+  // A trailing character is not its own term. Mixed and short queries do not split.
+  assert.deepEqual(newsKeywordFallbackQuery('安全漏洞修')?.binds, ['安全', '%安全%', '%漏洞%'])
+  assert.deepEqual(newsKeywordFallbackQuery('aaa 安全漏洞')?.binds, ['"aaa"', '%安全%', '%漏洞%'])
+  assert.equal(newsKeywordFallbackQuery('docker'), null)
+  assert.equal(newsKeywordFallbackQuery('智谱'), null)
+  assert.equal(newsKeywordFallbackQuery('AI 芯片'), null)
+  assert.equal(newsKeywordFallbackQuery('新模型'), null)
+  // One repeated pair would be a single LIKE. The term limit can also drop the second pair.
+  assert.equal(newsKeywordFallbackQuery('安全安全'), null)
+  assert.equal(newsKeywordFallbackQuery('aaa bbb ccc ddd 安全漏洞'), null)
+  assert.equal(newsKeywordLimit, 10)
 })
 
 test('short queries put keyword hits first; longer ones fuse by rank', () => {

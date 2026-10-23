@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { timingSafeEqual } from 'node:crypto'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
+import { DatabaseSync } from 'node:sqlite'
+import path from 'node:path'
 import { registerHooks } from 'node:module'
 import { test } from 'node:test'
 
@@ -21,7 +23,7 @@ registerHooks({
 })
 const search = await import('../src/lib/search.ts')
 const { handleSearch } = await import('../src/lib/search-endpoint.ts')
-const { newsVectors } = await import('../src/lib/search-text.mjs')
+const { newsKeywordLimit, newsVectors } = await import('../src/lib/search-text.mjs')
 const retract = await import('../src/pages/api/news/retract.ts')
 
 const issue = (title, version, count = 1) => ({
@@ -220,4 +222,133 @@ test('search reports Workers AI, Vectorize and D1 time in Server-Timing', async 
   assert.ok(on.d1 >= 15, JSON.stringify(on))
   env.SEMANTIC_SEARCH = 'off'
   assert.deepEqual(Object.keys(await timing()), ['d1'])
+})
+
+// D1 is SQLite. The migrations are the schema the Worker queries, including the FTS5 triggers.
+function newsDatabase() {
+  const db = new DatabaseSync(':memory:')
+  const root = path.resolve(import.meta.dirname, '..')
+  for (const file of ['0001_issues.sql', '0002_versions_and_retraction.sql', '0003_search.sql'])
+    db.exec(readFileSync(path.join(root, 'migrations/news', file), 'utf8'))
+  return db
+}
+
+const newsItem = (tag, title, summary) => ({ tag, title, summary, url: 'https://example.com/' })
+
+function insertIssue(db, { date, title, summary, items, hidden = false }) {
+  db.prepare(
+    `INSERT INTO issues (date, title, summary, items_json, created_at)
+     VALUES (?, ?, ?, ?, '2026-10-22T00:00:00Z')`,
+  ).run(date, title, summary, JSON.stringify(items))
+  if (hidden)
+    db.prepare('UPDATE issues SET hidden_at = ? WHERE date = ?').run('2026-10-22T00:00:00Z', date)
+}
+
+function d1Of(db) {
+  return {
+    prepare: (sql) => ({
+      bind: (...binds) => ({
+        all: async () => ({ results: db.prepare(sql).all(...binds) }),
+      }),
+    }),
+  }
+}
+
+test('安全漏洞 finds an issue that says 严重漏洞 and 安全, and skips unrelated issues', async () => {
+  const db = newsDatabase()
+  insertIssue(db, {
+    date: '2026-10-23',
+    title: '短语',
+    summary: '正文里有安全漏洞这四个字',
+    items: [newsItem('OpenAI', '其他', '无关')],
+  })
+  insertIssue(db, {
+    date: '2026-10-22',
+    title: 'OpenAI 模型挖出 PHP 严重漏洞',
+    summary: 'OpenAI 牵头修复 PHP 漏洞',
+    items: [
+      newsItem(
+        'OpenAI',
+        'OpenAI 模型帮忙挖出 PHP 严重漏洞',
+        '牵头维护者和安全研究者准备修复，PHP 已发安全版本',
+      ),
+    ],
+  })
+  insertIssue(db, {
+    date: '2026-10-21',
+    title: '只有安全',
+    summary: '安全事件说明',
+    items: [newsItem('Railway', '发布安全事件', '没有另一个词')],
+  })
+  insertIssue(db, {
+    date: '2026-10-20',
+    title: '只有漏洞',
+    summary: '某产品漏洞',
+    items: [newsItem('X', '漏洞公告', '没有另一个词')],
+  })
+  insertIssue(db, {
+    date: '2026-10-18',
+    title: '天气',
+    summary: '今天天气怎么样',
+    items: [newsItem('X', '无关', '做饭')],
+  })
+  insertIssue(db, {
+    date: '2026-10-15',
+    title: '隐藏的安全漏洞',
+    summary: '安全并且漏洞',
+    items: [newsItem('X', '隐藏', '安全漏洞')],
+    hidden: true,
+  })
+  const urls = (await search.newsKeywordSearch(d1Of(db), '安全漏洞')).map((hit) => hit.url)
+  // The contiguous phrase leads. The PHP issue matches by its pairs. One word, or a hidden issue, does not.
+  assert.deepEqual(urls, ['/news/2026-10-23/', '/news/2026-10-22/'])
+})
+
+test('pairs in different items of one issue still match, and a full phrase list does not scan pairs', async () => {
+  const db = newsDatabase()
+  insertIssue(db, {
+    date: '2026-10-22',
+    title: '两条',
+    summary: '分开写',
+    items: [newsItem('A', '安全事件', '只谈安全'), newsItem('B', '严重漏洞', '只谈漏洞')],
+  })
+  const split = await search.newsKeywordSearch(d1Of(db), '安全漏洞')
+  assert.deepEqual(
+    split.map((hit) => hit.url),
+    ['/news/2026-10-22/'],
+  )
+
+  let calls = 0
+  const rows = Array.from({ length: newsKeywordLimit }, (_, index) => ({
+    date: `2026-01-${String(index + 1).padStart(2, '0')}`,
+    title: '短语',
+    snippet: '安全漏洞',
+  }))
+  const full = {
+    prepare: () => ({
+      bind: () => ({
+        all: async () => {
+          calls += 1
+          return { results: rows }
+        },
+      }),
+    }),
+  }
+  const hits = await search.newsKeywordSearch(full, '安全漏洞')
+  assert.equal(calls, 1)
+  assert.equal(hits.length, newsKeywordLimit)
+
+  calls = 0
+  const latin = {
+    prepare: () => ({
+      bind: () => ({
+        all: async () => {
+          calls += 1
+          return { results: [] }
+        },
+      }),
+    }),
+  }
+  assert.deepEqual(await search.newsKeywordSearch(latin, 'docker'), [])
+  assert.equal(calls, 1)
 })

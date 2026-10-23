@@ -3,6 +3,8 @@ import {
   clipSnippet,
   embeddingModel,
   newsItemEmbeddingText,
+  newsKeywordFallbackQuery,
+  newsKeywordLimit,
   newsKeywordQuery,
   newsVectors,
   queryInstruction,
@@ -101,21 +103,45 @@ export async function semanticSearch(
   })
 }
 
-export async function newsKeywordSearch(
-  db: D1Database,
-  query: string,
-  timing: SearchTiming = {},
-): Promise<SearchHit[]> {
-  const { sql, binds } = newsKeywordQuery(query)
+type KeywordRow = { date: string; title: string; snippet: string }
+
+async function keywordRows(db: D1Database, sql: string, binds: string[], timing: SearchTiming) {
   const { results } = await timed(
     timing,
     'd1',
     db
       .prepare(sql)
       .bind(...binds)
-      .all<{ date: string; title: string; snippet: string }>(),
+      .all<KeywordRow>(),
   )
-  return results.map((row) => ({
+  return results
+}
+
+// Phrase hits stay ahead of pair hits. The pair query runs only to fill a short list.
+function mergeKeywordRows(primary: KeywordRow[], extra: KeywordRow[]) {
+  const seen = new Set(primary.map((row) => row.date))
+  const merged = [...primary]
+  for (const row of extra) {
+    if (seen.has(row.date)) continue
+    seen.add(row.date)
+    merged.push(row)
+    if (merged.length >= newsKeywordLimit) break
+  }
+  return merged
+}
+
+export async function newsKeywordSearch(
+  db: D1Database,
+  query: string,
+  timing: SearchTiming = {},
+): Promise<SearchHit[]> {
+  const phrase = newsKeywordQuery(query)
+  const primary = await keywordRows(db, phrase.sql, phrase.binds, timing)
+  const pairs = primary.length >= newsKeywordLimit ? null : newsKeywordFallbackQuery(query)
+  const rows = pairs
+    ? mergeKeywordRows(primary, await keywordRows(db, pairs.sql, pairs.binds, timing))
+    : primary
+  return rows.map((row) => ({
     type: 'news',
     url: newsUrl(row.date),
     title: row.title,
