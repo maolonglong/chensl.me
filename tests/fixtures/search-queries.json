@@ -27,6 +27,7 @@
     { "query": "快速模式", "expect": ["/news/2026-10-16/"], "gate": false },
     { "query": "智谱", "expect": ["/news/2026-10-16/"], "gate": false },
     { "query": "Claude 新模型", "expect": ["/news/2026-10-16/"], "gate": false },
-    { "query": "开源大模型排行", "expect": ["/news/2026-10-16/"], "gate": false }
+    { "query": "开源大模型排行", "expect": ["/news/2026-10-16/"], "gate": false },
+    { "query": "安全漏洞", "expect": ["/news/2026-10-22/"], "gate": false }
   ]
 }

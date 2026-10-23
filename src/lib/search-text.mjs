@@ -220,9 +220,43 @@ export function relatedFromVectors(items) {
   )
 }
 
-const newsKeywordLimit = 10
+export const newsKeywordLimit = 10
 const maxTerms = 5
 const utf8 = new TextEncoder()
+
+// Trigram MATCH needs the characters in order. A Han term of four or more characters also
+// splits into non-overlapping pairs, required together when the phrase query is short of its
+// limit, so 安全漏洞 matches 严重漏洞 together with 安全. A leftover final character is not a
+// pair: one character would match almost every issue. Latin terms stay whole.
+function hanPairs(term) {
+  const chars = [...term]
+  if (chars.length < 4 || chars.some((char) => !/\p{Script=Han}/u.test(char))) return null
+  const pairs = []
+  for (let index = 0; index + 1 < chars.length; index += 2)
+    pairs.push(`${chars[index]}${chars[index + 1]}`)
+  return new Set(pairs).size >= 2 ? pairs : null
+}
+
+// Null when the query has no Han compound to split, or when the term limit would keep fewer
+// than two pairs and the LIKE would collapse to one common word.
+export function newsKeywordFallbackQuery(query) {
+  const terms = [...new Set(query.split(' '))].slice(0, maxTerms)
+  const pairTerms = new Set()
+  const rewritten = []
+  for (const term of terms) {
+    const pairs = hanPairs(term)
+    if (!pairs) {
+      rewritten.push(term)
+      continue
+    }
+    for (const pair of pairs) pairTerms.add(pair)
+    rewritten.push(...pairs)
+  }
+  if (pairTerms.size < 2) return null
+  const limited = [...new Set(rewritten)].slice(0, maxTerms)
+  if ([...pairTerms].filter((term) => limited.includes(term)).length < 2) return null
+  return newsKeywordQuery(limited.join(' '))
+}
 
 // FTS5 trigram needs three characters; a shorter term, such as a two-character Chinese word,
 // becomes a LIKE condition on the same rows. Quoting makes every term a literal string. D1 cuts
