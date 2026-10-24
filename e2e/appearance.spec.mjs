@@ -18,12 +18,14 @@ test('theme cycles, persists across navigation and follows the OS', async ({
   await page.emulateMedia({ colorScheme: 'light' })
   await open('/')
   expect((await theme(page)).mode).toBe('auto')
+  await expect(page.locator('[data-theme-toggle]')).not.toHaveAttribute('data-theme-switched')
   for (const [mode, scheme] of [
     ['light', 'light'],
     ['dark', 'dark'],
     ['auto', 'light dark'],
   ]) {
     await page.locator('[data-theme-toggle]').click()
+    await expect(page.locator('[data-theme-toggle]')).toHaveAttribute('data-theme-switched', '')
     expect((await theme(page)).mode).toBe(mode)
     expect((await theme(page)).scheme).toBe(scheme)
   }

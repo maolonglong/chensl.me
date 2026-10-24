@@ -51,6 +51,7 @@
   applyTheme()
   toggle.addEventListener('click', () => {
     mode = nextMode()
+    toggle.dataset.themeSwitched = ''
     try {
       if (mode === 'auto') localStorage.removeItem(storageKey)
       else localStorage.setItem(storageKey, mode)
@@ -81,7 +82,9 @@
     border: 0;
     visibility: hidden;
     touch-action: manipulation;
-    transition: opacity 100ms ease-out;
+    transition:
+      opacity 100ms ease-out,
+      transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   :global(:root[data-theme-ready]) .theme-toggle {
     visibility: visible;
@@ -102,6 +105,25 @@
   }
   .theme-toggle:active {
     opacity: 0.65;
+    transform: scale(0.92);
+  }
+  @keyframes theme-icon-in {
+    from {
+      opacity: 0;
+      transform: scale(0.75) rotate(-20deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .theme-toggle[data-theme-switched][data-theme-mode='auto'] [data-theme-icon='auto'],
+    .theme-toggle[data-theme-switched][data-theme-mode='light'] [data-theme-icon='light'],
+    .theme-toggle[data-theme-switched][data-theme-mode='dark'] [data-theme-icon='dark'] {
+      transform-origin: 12px 12px;
+      animation: theme-icon-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .theme-toggle {

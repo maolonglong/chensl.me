@@ -383,6 +383,13 @@ pre code {
     background-color: var(--code-block-background-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
+    transition:
+        border-color 150ms ease-out,
+        transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.prose .repo-card a:active {
+    transform: scale(0.992);
 }
 
 .repo-card-head,
@@ -422,10 +429,21 @@ pre code {
 @media (hover: hover) {
     .prose .repo-card a:hover {
         text-decoration-line: none;
+        border-color: color-mix(in srgb, var(--heading-color) 22%, var(--border-color));
     }
 
     .prose .repo-card a:hover .repo-card-name {
         text-decoration-line: underline;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .prose .repo-card a {
+        transition: none;
+    }
+
+    .prose .repo-card a:active {
+        transform: none;
     }
 }
 

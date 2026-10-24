@@ -39,7 +39,7 @@
     visibility: hidden;
     opacity: 0;
     transition:
-        opacity 150ms ease-out,
+        opacity 160ms ease-out,
         color 150ms ease-out,
         border-color 150ms ease-out,
         transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -51,7 +51,12 @@
 }
 
 .back-to-top-icon {
-    transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateY(4px) scale(0.92);
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.back-to-top[data-visible] .back-to-top-icon {
+    transform: translateY(0) scale(1);
 }
 
 body:has(.toc-button) .back-to-top {
@@ -81,7 +86,7 @@ body:has(#article-toc:popover-open) .toc-button {
         border-color: color-mix(in srgb, var(--heading-color) 24%, var(--border-color));
     }
 
-    .back-to-top:hover .back-to-top-icon {
+    .back-to-top[data-visible]:hover .back-to-top-icon {
         transform: translateY(-1.5px);
     }
 }
@@ -91,6 +96,10 @@ body:has(#article-toc:popover-open) .toc-button {
     .toc-button,
     .back-to-top-icon {
         transition: none;
+    }
+
+    .back-to-top-icon {
+        transform: none;
     }
 }
 
@@ -130,6 +139,36 @@ body:has(.toc-button) {
     margin: 0;
     padding: 0;
     list-style: none;
+}
+
+@keyframes toc-popover-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes toc-card-in {
+    from {
+        opacity: 0;
+        transform: translateX(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .toc:popover-open > ul {
+        animation: toc-popover-in 160ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
 }
 
 /* 12px above and below a 21px line make each entry a 45px touch target. */
@@ -249,6 +288,16 @@ body:has(.toc-button) {
         background-color: var(--code-block-background-color);
         border: 1px solid var(--border-color);
         box-shadow: 0 8px 24px light-dark(rgb(20 20 19 / 8%), rgb(0 0 0 / 36%));
+        transition:
+            background-color 140ms ease-out,
+            border-color 140ms ease-out,
+            box-shadow 140ms ease-out;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) > ul {
+            animation: toc-card-in 160ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
     }
 
     .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) a {
@@ -286,6 +335,8 @@ body:has(.toc-button) {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .toc,
+    .toc a,
     .toc a::before {
         transition: none;
     }
