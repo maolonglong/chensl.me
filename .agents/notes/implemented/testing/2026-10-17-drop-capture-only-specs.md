@@ -26,7 +26,7 @@ The same cut removed search assertions in `tests/search.test.mjs` that restated 
 
 ## Consequences
 
-CI no longer writes the dropped screenshots, so a layout regression in an unasserted state (the six header widths, the quote, the footnotes, the caption colors, copy feedback at 390 px and 1280 px) is invisible until someone looks. `pnpm test:e2e` skips those browser loads.
+CI does not write the dropped screenshots, so a layout regression in an unasserted state (the six header widths, the quote, the footnotes, the caption colors, copy feedback at 390 px and 1280 px) is invisible until someone looks. `pnpm test:e2e` skips those browser loads.
 
 ## Reopen when
 

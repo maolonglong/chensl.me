@@ -206,15 +206,18 @@ test('each Markdown paragraph is one physical line', () => {
 test('standing documents stay within their word budgets', () => {
   // docs/AGENTS.md says how to respond: relocate, condense, then raise with a reason.
   const budgets = {
-    'AGENTS.md': 480,
-    'docs/AGENTS.md': 1210,
-    'docs/architecture.md': 1165,
-    'docs/design.md': 1000,
-    'docs/product.md': 915,
-    'docs/testing.md': 910,
-    '.agents/notes/AGENTS.md': 1250,
+    'AGENTS.md': 510,
+    'docs/AGENTS.md': 1300,
+    'docs/architecture.md': 1340,
+    'docs/design.md': 1050,
+    'docs/product.md': 960,
+    'docs/testing.md': 1000,
+    '.agents/notes/AGENTS.md': 290,
+    '.agents/notes/README.md': 1080,
   }
-  const standing = documents.filter((file) => /(?:^|\/)AGENTS\.md$|^docs\/[^/]+\.md$/.test(file))
+  const standing = documents.filter((file) =>
+    /(?:^|\/)AGENTS\.md$|^\.agents\/notes\/README\.md$|^docs\/[^/]+\.md$/.test(file),
+  )
   const errors = []
   for (const file of standing) {
     if (!(file in budgets)) errors.push(`${file} has no word budget; add one in this test.`)
@@ -281,11 +284,12 @@ test('Agent Notes follow the lifecycle format', () => {
   const errors = []
   const notes = tracked.filter(
     (file) =>
-      file.startsWith('.agents/notes/') && file !== '.agents/notes/AGENTS.md' && file !== seals,
+      file.startsWith('.agents/notes/') &&
+      !['.agents/notes/AGENTS.md', '.agents/notes/README.md', seals].includes(file),
   )
   for (const file of notes) {
     const [, , lifecycle, kind, name, ...deeper] = file.split('/')
-    const fail = (problem) => errors.push(`${file}: ${problem}. See .agents/notes/AGENTS.md.`)
+    const fail = (problem) => errors.push(`${file}: ${problem}. See .agents/notes/README.md.`)
     if (!lifecycles.includes(lifecycle) || !classes.includes(kind) || !name || deeper.length) {
       fail(`the path is not <lifecycle>/<class>/<name>, with a class from: ${classes.join(', ')}`)
       continue

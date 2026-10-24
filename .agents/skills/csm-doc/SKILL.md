@@ -5,7 +5,7 @@ description: Document chensl.me. Use when you add or change AGENTS.md, a file in
 
 # Maintain chensl.me documents
 
-The [documentation standard](../../../docs/AGENTS.md) holds the rules: the homes, the admission rule, the writing rules, the budgets, and the checks. The [Agent Note rules](../../notes/AGENTS.md) hold the note lifecycle. This skill is the procedure that applies them; it does not repeat them.
+The [documentation standard](../../../docs/AGENTS.md) holds the rules: the homes, the admission rule, the writing rules, the budgets, and the checks. [`.agents/notes/AGENTS.md`](../../notes/AGENTS.md) and [`.agents/notes/README.md`](../../notes/README.md) hold the note lifecycle. This skill is guidance, not a mechanical checklist: follow the steps and apply judgment to the prose in scope.
 
 ## Steps
 
@@ -43,7 +43,7 @@ Add text where code cannot show a required fact, and remove text that code alrea
 This probe finds candidates for the two slop items on history and session references. It is not the definition: judge each hit, and also read the densest prose without it.
 
 ```sh
-grep -rnEi 'no longer|used to|was changed|\bnow\b|as discussed|in review|this session' AGENTS.md README.md docs .agents/skills/csm-*
+grep -rnEi 'no longer|used to|was changed|\bnow\b|as discussed|in review|this session' AGENTS.md README.md docs .agents/notes/AGENTS.md .agents/notes/README.md .agents/notes/implemented .agents/notes/rejected .agents/skills/csm-*
 ```
 
 Keep these; they are not history:
@@ -60,14 +60,14 @@ A reader with no context reads root `AGENTS.md` and at most three linked pages. 
 ## Supersession check
 
 1. Search the active notes for the same decision, mechanism, or rejected option: `grep -ril --exclude-dir=archived <topic> .agents/notes/`. Search for the names of the files and settings that the decision touches, not only its title.
-2. Read each match. Classify it as fully superseded, partly superseded, an obsolete rejection, or unrelated, by the [Agent Note rules](../../notes/AGENTS.md#retention).
+2. Read each match. Classify it as fully superseded, partly superseded, an obsolete rejection, or unrelated, by the [Agent Note retention rules](../../notes/README.md#retention).
 3. Apply the result in the same commit as the new note: delete or update the old note, add the links both ways, and repair inbound links.
 
 Done when each match has a class and its result is in the commit.
 
 ## Audit the notes
 
-When you review the notes as a set, classify each active note by the [retention rules](../../notes/AGENTS.md#retention) as keep, archive, or delete. Word count and age are not criteria. Inspect every note in scope, and report the borderline cases. Skip `archived/`.
+When you review the notes as a set, classify each active note by the [retention rules](../../notes/README.md#retention) as keep, archive, or delete. Word count and age are not criteria. Inspect every note in scope, and report the borderline cases. Skip `archived/`.
 
 These cases set the bar:
 

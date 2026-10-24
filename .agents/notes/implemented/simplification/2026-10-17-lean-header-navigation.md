@@ -12,8 +12,6 @@ The header holds the site title, which links home, the 博客 and AI News links,
 
 `e2e/navigation.spec.mjs` pins the header links, the current mark and the 44 px target of the search icon, and the footer feed link. `scripts/check-site.mjs` requires the footer feed link on every prerendered page, and `e2e/news.spec.mjs` requires the news feed link on the AI News pages.
 
-The owner asked for this layout as a first version to try.
-
 ## Alternatives considered
 
 **Keep 首页 in the header.** It marks the home page as current, but the home page is the one page that a reader can always reach from the site title.
@@ -26,8 +24,8 @@ The owner asked for this layout as a first version to try.
 
 ## Consequences
 
-No header item is current on the home page. The header first set the icons 20 px apart at every width so their 44 px targets would not overlap; the owner found that too loose on phones, so the gap went back to 12 px there and each icon's target now reaches only halfway into the gap (44 px tall, 36 px wide on phones). A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
+No header item is current on the home page. On phones the header keeps the 12 px text gap rather than a 20 px gap, and each icon's target reaches halfway into the gap (44 px tall, 36 px wide) so adjacent targets never overlap. A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
 
 ## Reopen when
 
-The owner decides after the trial that the header needs 首页 or the feed link back.
+The owner decides that the header needs 首页 or the feed link back.

@@ -17,22 +17,22 @@ Read this before you add or change a test, or when you choose the checks for a c
 | Build regressions | `tests/*.test.mjs` | Most of them build a disposable Astro fixture project and check the output: content rules, Markdown, fonts, CSP order, RSS | `pnpm check`, or `node --test tests/<name>.test.mjs` |
 | Output checks | `scripts/check-site.mjs`, `tests/check-site.test.mjs` | The real build has valid links, images, CSP sources, `_headers` rules, article share cards, a complete search index, and a capped Worker content store without the card renderer | `pnpm check` |
 | Document checks | `tests/docs.test.mjs`, `tests/docs-rejects.test.mjs` | First-party Markdown and skills follow the rules of the [documentation standard](AGENTS.md#checks) that a script can decide | `node --test tests/docs.test.mjs` |
-| Browser specs | `e2e/*.spec.mjs` | Layout, interactions, themes, CSP in a real browser, the upvote Actions, the AI News, and search against local D1 | `pnpm test:e2e` |
+| Browser specs | `e2e/*.spec.mjs` | Layout, interactions, themes, CSP in a real browser, the upvote Actions, the AI News, and search against local D1 | `pnpm test:e2e`, or `pnpm exec playwright test e2e/<name>.spec.mjs` after `pnpm check` |
 | Exploration | agent-browser | A question no spec answers yet | By hand; turn a finding worth keeping into a spec |
 
 Some build regressions run `python3` on purpose: it reads the output with a parser that the site does not use ([decision](../.agents/notes/rejected/simplification/2026-10-04-replace-python-test-reader.md)).
 
 ## Evidence for each change
 
-Run the narrowest check that fails for the regression, plus the checks below for the surfaces the change reaches:
+Run the narrowest check that fails for the regression, plus the checks below for the surfaces the change reaches. Reuse a passing result when the tree has not changed since it ran; CI runs the full suite.
 
 | Change | Run |
 |---|---|
 | Site output, build, content rules | `pnpm check` |
-| Layout, styles, fonts, browser interactions, CSP, upvotes | `pnpm check` and `pnpm test:e2e`, then inspect the screenshots |
+| Layout, styles, fonts, browser interactions, CSP, upvotes | `pnpm check` and the affected `e2e/<name>.spec.mjs` specs (`pnpm exec playwright test` for a cross-cutting change), then inspect the screenshots |
 | Dependencies or `wrangler.jsonc` | `pnpm check`, then `pnpm exec wrangler deploy --dry-run` on the fresh build |
 | Markdown outside `public/` and `src/` | `node --test tests/docs*.test.mjs` and `git diff --check` |
-| Search ranking or indexing | `pnpm check` and `pnpm test:e2e` |
+| Search ranking or indexing | `pnpm check` and `pnpm exec playwright test e2e/search.spec.mjs` |
 | Tooling only | The checks that the tool affects |
 
 `pnpm format` applies Prettier; `pnpm check` fails on unformatted files.
@@ -45,7 +45,7 @@ Before each commit, `prek.toml` runs the document checks and `git diff --cached 
 
 ## Browser specs
 
-`pnpm test:e2e` builds the site, then Playwright starts its own Wrangler preview with local D1 and runs `e2e/`; `playwright.config.mjs` holds the port, the browser discovery, and the report folders. Run one suite at a time: two runs, or a build during a run, share `dist/` and the port and fail with misleading errors.
+`pnpm test:e2e` builds the site, then Playwright starts its own Wrangler preview with local D1 and runs `e2e/`; after `pnpm check` has already built `dist/`, run `pnpm exec playwright test` directly to skip a second build. `playwright.config.mjs` holds the port, the browser discovery, and the report folders. Run one suite at a time: two runs, or a build during a run, share `dist/` and the port and fail with misleading errors.
 
 - Wait for a state or a `page.clock` step, not a fixed time (`tests/e2e-waits.test.mjs`).
 - Do not poll with `page.waitForFunction`: in a spec that turns page scripts off, it checks once and then hangs. Wait with `expect.poll`, a locator assertion, or a promise such as `document.fonts.ready` (`tests/e2e-waits.test.mjs`).

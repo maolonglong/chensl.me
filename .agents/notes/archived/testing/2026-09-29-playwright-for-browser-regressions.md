@@ -1,6 +1,7 @@
 # Agent Note: Playwright for browser regressions, agent-browser for exploration
 
 Status: implemented
+Archived: 2026-10-24
 
 ## Problem
 

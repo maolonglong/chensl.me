@@ -10,11 +10,11 @@ Each fact has one home. Other places link to it.
 |---|---|---|
 | Root [`AGENTS.md`](../AGENTS.md) | Standing orders that every session needs, one to three lines each, and the routing table to the other homes | Procedures, rationale, product and design detail |
 | Subtree `AGENTS.md` ([`docs/`](AGENTS.md), [`.agents/notes/`](../.agents/notes/AGENTS.md)) | Rules for the files in that folder | Rules that the root file already carries |
-| [`docs/architecture.md`](architecture.md) | Core principles, and how the site builds, serves, and runs scripts, with pointers to the owning files | Values and lists that the code holds |
+| [`docs/architecture.md`](architecture.md) | Bird's-eye view, entry points, physical code map with architectural invariants and boundaries, and cross-cutting concerns | Values and lists that the code holds |
 | [`docs/product.md`](product.md) | What readers see and rely on, and the test that guards each promise | How it is built |
 | [`docs/design.md`](design.md) | Visual intent and deliberate differences from Kami | Token values, which live in `src/styles/global.css` |
 | [`docs/testing.md`](testing.md) | Test layers, previews, and the evidence each kind of change needs | Test inventories, which the test titles are |
-| [Agent Notes](../.agents/notes/AGENTS.md) | Decisions: the problem, what was chosen, what was rejected, and the consequences | Current behavior that code and tests show |
+| [Agent Notes](../.agents/notes/AGENTS.md) ([reference](../.agents/notes/README.md)) | Decisions: the problem, what was chosen, what was rejected, and the consequences | Current behavior that code and tests show |
 | Project skills in `.agents/skills/` | Procedures that an agent runs: documents, review, ship, dependency upgrades | Rationale (link the Agent Note) |
 | `README.md` | The human homepage: what the site is, setup, how to write a post, and a short deployment overview | Agent rules and maintenance procedures |
 | Code comment | The local contract or reason for code that looks wrong or surprising | Reasons that span files (write an Agent Note) |
@@ -31,16 +31,16 @@ State a value only when a test pins it, and name that test. A value without a te
 
 ## Promotion
 
-A lesson moves toward enforcement:
+A lesson moves toward pre-edit clarity and mechanical enforcement:
 
 1. The commit body records an incident: what broke, why, and the fix.
-2. A trap in [`csm-review`](../.agents/skills/csm-review/SKILL.md) records a lesson that review must catch again. It cites the commit.
+2. An implementation contract in `docs/` states the rule where an agent reads before coding, and a trap in [`csm-review`](../.agents/skills/csm-review/SKILL.md) cites the commit for review to catch when a check cannot decide it yet.
 3. A test or check enforces the rule when a script can decide it. Then delete the trap. A prose rule that a check enforces keeps only what a writer needs to comply, and names the check.
 
 ## Writing rules
 
 - Write the current state. History belongs to commits and Agent Notes.
-- Write English prose in ASD-STE100 Simplified Technical English: short sentences, active voice, one idea per sentence, one term for each concept.
+- Write direct, specific English prose: short sentences, active voice, one idea per sentence, and one term for each concept. Prefer concrete verbs and nouns over metaphors (`seam`, `shape`, `gate`).
 - Give each paragraph one physical line, including a paragraph that continues a list item (`tests/docs.test.mjs`).
 - State the target behavior. Use a prohibition only for a hard limit, and pair it with the target.
 - When you shorten text, keep each actor, condition, order, modality (must, may, never), exception, and failure. A lower word count alone is not an improvement.
@@ -68,7 +68,7 @@ Find and fix these in every document you touch:
 
 ## Word budgets
 
-`tests/docs.test.mjs` sets a word ceiling for each standing document: root `AGENTS.md`, each subtree `AGENTS.md`, and each file in `docs/`. When the check fails:
+`tests/docs.test.mjs` sets a word ceiling for each standing document: root `AGENTS.md`, each subtree `AGENTS.md`, `.agents/notes/README.md`, and each file in `docs/`. When the check fails:
 
 1. Relocate content that belongs in another home, and leave a link.
 2. Condense content that belongs here but can be shorter.

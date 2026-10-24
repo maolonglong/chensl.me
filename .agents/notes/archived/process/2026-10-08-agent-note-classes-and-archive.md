@@ -1,6 +1,7 @@
 # Agent Note: Class folders and a sealed archive for Agent Notes
 
 Status: implemented
+Archived: 2026-10-24
 
 ## Problem
 

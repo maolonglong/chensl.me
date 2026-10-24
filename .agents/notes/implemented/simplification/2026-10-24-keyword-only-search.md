@@ -43,8 +43,8 @@ This note supersedes and merges the hybrid-search and index-consistency decision
 - Zero Workers AI neurons, zero Vectorize storage or query dimensions, and zero GitHub Actions secrets or Environments are used for search.
 - `astro dev`, `pnpm check`, and `pnpm test:e2e` run identically against local bindings without `remoteBindings: false` or `SEMANTIC_SEARCH=off`.
 - Adding or editing an article needs no post-build embedding step.
-- Concept queries that share no word or phrase with the target article (such as `测试时依赖数据库怎么办` for `/blog/dockertest/`) no longer match unless the reader searches terms that appear in the article (`docker`, `数据库`, `单元测试`).
-- Articles no longer show a related-articles footer below the prose.
+- Concept queries that share no word or phrase with the target article (such as `测试时依赖数据库怎么办` for `/blog/dockertest/`) do not match unless the reader searches terms that appear in the article (`docker`, `数据库`, `单元测试`).
+- Articles show no related-articles footer below the prose.
 
 ## Reopen when
 

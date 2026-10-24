@@ -1,0 +1,88 @@
+# Agent Notes Reference
+
+This file defines the layout, classes, retention rules, archive rules, and format for Agent Notes. Read [`AGENTS.md`](AGENTS.md) first for when to write or search notes, and follow the [documentation standard](../../docs/AGENTS.md) for writing rules.
+
+## Layout
+
+The path encodes the status and the class: `.agents/notes/<lifecycle>/<class>/YYYY-MM-DD-topic.md`. The date is the day the decision was first proposed, from git history.
+
+- `proposed/`: work that is decided in principle but not built.
+- `implemented/`: the decision is in the code. Keep its paths, names, and mechanisms current in the same commit that changes them. Rewrite facts in place; do not append history.
+- `rejected/`: the proposal was declined.
+- `archived/`: frozen history. See [Archive](#archive).
+
+Browse the folders or search. An index file would only copy the paths. Link from one note to another with a relative Markdown link, so the link check follows it when a note moves.
+
+## Classes
+
+The class is the kind of decision. `tests/docs.test.mjs` holds the closed set; add a class only together with that test and this table.
+
+| Class | Covers |
+|---|---|
+| `feature` | A new capability that readers or agents can use. |
+| `bug-fix` | A fix for a defect, when the fix carries a lasting reason. |
+| `simplification` | Removes code, behavior, or output without adding a capability. |
+| `architecture` | How the shipped site is built and served: structure, runtime, and security. |
+| `process` | Tooling, policy, and workflow around the code: documents, dependencies, hooks. |
+| `testing` | Test infrastructure and strategy. |
+
+A proposal to remove something is `simplification`, also when it is rejected.
+
+## Retention
+
+- **Implemented, delete:** the note only describes a small change to how a page looks, or a purely mechanical change. A small implementation is not a reason by itself: a local bug fix or a new capability can still carry a lasting reason.
+- **Implemented, keep:** its rationale, alternatives, negative guarantee, security rule, or reopen condition can still guide a change.
+- **Implemented, archive:** the decision is complete, its rationale is unlikely to guide future work, and the record still has historical value. Only an implemented note can be archived; reject an obsolete proposal instead.
+- **Rejected, keep:** the rejected idea is still a tempting mistake, and the note says why it loses.
+- **Rejected, delete:** the idea is obsolete, superseded, or no longer plausible.
+
+Repair or remove the inbound links when you delete a note.
+
+A note never changes into a different decision. To reverse or replace a decision, write a new note, say which note it supersedes, and link both ways. Delete the old note only when the new note keeps all of its unique rationale, rejected options, and consequences. When the new note replaces only part of the old decision, keep both, link both ways, and correct each fact in the old note that is no longer current.
+
+A note that added a feature may merge into the note that removed it only when nothing of the feature remains: no code, configuration, data, documentation, or test that treats it as supported. The removal note then keeps the original motivation, why it no longer justified the feature, the alternatives to full removal, the capability given up, and the conditions to bring it back.
+
+## Archive
+
+An archived note is a frozen snapshot. Never edit, move, or delete it after the commit that archives it, and never treat it as a current rule; write an active note or a document for that. An active document may link to an archived note to cite history.
+
+The archiving commit may change only this: it moves the note to `archived/<class>/` with the same name, inserts `Archived: YYYY-MM-DD` as line 4 below `Status: implemented`, appends the note's line to `.agents/notes/archived/SEALS.sha256`, and repairs or deletes inbound links. The [`csm-doc`](../skills/csm-doc/SKILL.md#archive-a-note) skill holds the steps.
+
+`tests/docs.test.mjs` compares each archived note with its seal, and rejects a seal file that drops a line that `main` has. The other document checks skip archived notes, so their links and paths may go stale.
+
+## Format
+
+`tests/docs.test.mjs` checks this format. The first three lines are:
+
+```markdown
+# Agent Note: <title>
+
+Status: <status>
+```
+
+The status matches the folder: `Status: proposed`, `Status: implemented`, or `Status: rejected — <the reason, in one line>`. The rejection reason is the fact that readers come for.
+
+The body starts with `## Problem`, written so that it stands without the solution. Then use these sections; add free-form technical sections between them when needed:
+
+| Lifecycle | Sections after Problem |
+|---|---|
+| `proposed/` | `## Proposal`, `## Alternatives considered`, `## Acceptance criteria`, `## Risks` |
+| `implemented/` | `## Decision` (present tense), `## Alternatives considered`, `## Consequences` (what it cost and what it bought) |
+| `rejected/` | `## Proposal`, `## Alternatives considered` |
+| `archived/` | The sections it had when it was sealed, with `Archived: YYYY-MM-DD` as line 4 |
+
+An implemented note has no `## Proposal`, `## Plan`, or `## Acceptance criteria`: it describes what is, not what will be. A `## Reopen when` section is optional in any lifecycle; use it when a known change in the world would make the other option better.
+
+### Alternatives considered
+
+Give each real alternative one bold-led paragraph, or a `### Why not <X>?` subsection for a contested one, that says why it lost. A decision without what it beat invites the same debate again. Record alternatives; do not invent them.
+
+A note dated before 2026-10-07, when this format started, may have no recorded alternatives. When its record (commits, the owner's words) names none, write this exact line in place of the section. The check accepts it only in those notes:
+
+```markdown
+<!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->
+```
+
+## Moving between lifecycles
+
+Move the file, change the `Status:` line, and rewrite the sections in the same commit. `proposed/` to `implemented/` turns the Proposal into a present-tense Decision and folds Acceptance criteria and Risks into Consequences. `proposed/` to `rejected/` adds the reason to the status line and keeps the rest.

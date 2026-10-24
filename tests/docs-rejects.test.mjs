@@ -31,9 +31,10 @@ test('the document checks reject each defect and accept valid cases', (t) => {
     [`# Agent Note: ${title}`, '', `Status: ${status}`, '', ...sections, ''].join('\n')
 
   write('skills-lock.json', '{ "skills": {} }\n')
-  write('AGENTS.md', `# Root\n\n${'word '.repeat(500)}\n`)
+  write('AGENTS.md', `# Root\n\n${'word '.repeat(520)}\n`)
   write('docs/AGENTS.md', '# Standard\n')
   write('.agents/notes/AGENTS.md', '# Notes\n')
+  write('.agents/notes/README.md', '# Notes Reference\n')
   write('src/keep.txt', '\n')
   // Archived notes and their seals on main. Archived notes may keep stale links.
   const archived = (name) => `.agents/notes/archived/${name}`
@@ -188,7 +189,7 @@ test('the document checks reject each defect and accept valid cases', (t) => {
     'docs/guide.md:18 continues the paragraph above',
     'docs/guide.md:21 continues the paragraph above',
     'docs/guide.md has no word budget',
-    'AGENTS.md has 502 words; the budget is',
+    'AGENTS.md has 522 words; the budget is',
     '.claude/skills/bad is not a link',
     '.agents/skills/bad/SKILL.md front matter needs "name: bad"',
     '.agents/skills/plain/SKILL.md front matter needs a description',

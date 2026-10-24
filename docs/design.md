@@ -8,6 +8,7 @@ Read this before you change layout, styles, fonts, or browser interactions. It s
 - Header, main, and footer share one reading column. Short pages keep the footer at the bottom.
 - Ink-blue means a link. Emphasis, list markers, and headings use other means.
 - Every interactive control works with a keyboard, has a visible focus ring and an accessible name, and has a touch target of at least 44 px (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`, `e2e/navigation.spec.mjs`). Header links and archive rows keep their text spacing: padding them up to 44 px was rejected.
+- Hover affordances sit behind `@media (hover: hover)`, touch and keyboard states stay independent, and `@media (prefers-reduced-motion: reduce)` disables non-essential motion (`e2e/contents.spec.mjs`, `e2e/appearance.spec.mjs`).
 
 ## Kami as the reference
 
@@ -42,11 +43,10 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
 - **Creation label.** It follows the article date, length, and reading time in the date's neutral typography, with no icon, badge, or interaction. Its note sits before the stale notice. Home and archive lists omit it.
 - **Search** is one input and a result list: title, type and date, excerpt. No filters or suggestions.
-- **Related articles** are one line of plain links after the text, in muted small type.
 - **Icons** are inline SVG, not font glyphs or an icon library.
 - **Site icon.** A sleeping cat, hand-drawn in `scripts/icons/` (`tests/icons.test.mjs`).
 - **Header icons.** Search and theme share one style: an icon in the heading color, because each is a tool and not a section link. The search icon shows the current page with the underline of a current text link, drawn under the glyph. Header items keep their text spacing (20 px, 12 px on phones); a wider gap was rejected. Each icon's target is 44 px tall and reaches halfway into the gap, so it is 36 px wide on phones and never overlaps its neighbor (`e2e/navigation.spec.mjs`).
 - **Repository cards** use the code block frame and muted text, with no avatar or language color (`e2e/github-cards.spec.mjs`).
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
-- **Links** in article text and the footer are underlined; external prose links add a north-east arrow. Archive links show a visited color.
+- **Links** in article text and the footer are underlined; external prose links add a north-east arrow. Archive links show a visited color. Underline rules set `text-decoration-line` rather than the `text-decoration` shorthand, which resets thickness (`e2e/navigation.spec.mjs`).
 - **Share cards** are 1200×630 PNGs (`scripts/check-site.mjs`). They use the light theme's page, border, and text tokens, with no gradient or shadow. `~chensl` sits at the top left, the title in the middle, and the date or section label with `chensl.me` at the bottom. A title longer than two lines ends with an ellipsis (`tests/og.test.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md).

@@ -5,13 +5,13 @@ description: Review a chensl.me diff, pull request, or commit against the regres
 
 # Review chensl.me
 
-A rubric of traps: lessons from incidents that review must catch again. Each trap cites the commit that hit it; `git show <hash>` gives the full story. The rules themselves live in the documents that each surface links. A trap that a test or check enforces leaves this list ([promotion](../../../docs/AGENTS.md#promotion)). Pair with `check` for general correctness.
+A rubric of traps: lessons from incidents that review must catch again. Each trap cites the commit that hit it; `git show <hash>` gives the full story. The rules themselves live in the documents that each section links. A trap that a test or check enforces leaves this list ([promotion](../../../docs/AGENTS.md#promotion)). This skill is guidance, not a complete checklist: rule on the traps for each touched area, and pair with `check` for general engineering judgment across the diff.
 
 ## Steps
 
-1. **Read the whole diff**: source, tests, documents, and the commit body. Done when every changed file maps to a surface below, or is named "no surface".
-2. **Read the home** of each touched surface (linked in its heading). Skip untouched surfaces. Done when you have read the home of every touched surface.
-3. **Hunt.** Rule on every trap of every touched surface: _hit_, _clear_, or _n/a_. A hit is a finding only with `file:line` and a failure scenario (input → wrong output).
+1. **Read the whole diff**: source, tests, documents, and the commit body. Done when every changed file maps to a row below, or is named "no surface".
+2. **Read the home** of each touched row (linked in its heading). Skip untouched rows. Done when you have read the home of every touched row.
+3. **Hunt.** Rule on every trap of every touched row: _hit_, _clear_, or _n/a_. A hit is a finding only with `file:line` and a failure scenario (input -> wrong output).
 4. **Audit the proof**, always:
    - A fix must go _red_ without its source hunk. Where the test is cheap (`node --test tests/x.test.mjs`), revert the hunk and run it; otherwise the commit body must record that it failed before.
    - The evidence matches [Evidence for each change](../../../docs/testing.md#evidence-for-each-change), and the test follows the [testing principles](../../../docs/testing.md#principles). Visual or interaction changes need screenshots in `test-results/screenshots` that someone looked at, across the affected light/dark, narrow/wide, and open/closed states.
@@ -28,8 +28,8 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 | `src/worker.ts`, `src/lib/search*`, `src/pages/search.astro` | Search |
 | `src/lib/og*`, `src/pages/og/` | Share cards |
 | `src/components/Comments.astro`, `src/styles/giscus*.css`, `src/pages/css/` | Comments |
-| `src/lib/markdown.mjs`, `astro.config.mjs` `markdown`, `src/pages/index.xml.ts`, `src/content.config.ts`, `src/lib/posts.ts`, `src/lib/post-date.ts`, `src/content/` | Content |
-| `src/components/`, `src/styles/`, `src/layouts/BaseLayout.astro`, `src/lib/fonts.mjs`, fonts | UI |
+| `src/lib/markdown.mjs`, `astro.config.mjs` `markdown`, `src/pages/index.xml.ts`, `src/pages/llms.txt.ts`, `src/pages/blog/`, `src/content.config.ts`, `src/lib/posts.ts`, `src/lib/post-date.ts`, `src/content/` | Content |
+| `src/components/`, `src/styles/`, `src/layouts/BaseLayout.astro`, `src/pages/index.astro`, `src/pages/404.astro`, `src/pages/blog/`, `src/lib/fonts.mjs`, fonts | UI |
 | `scripts/`, `tests/`, `e2e/`, `.github/`, `package.json`, `pnpm-*`, `wrangler.jsonc`, `skills-lock.json` | Checks & ship |
 | `*.md` outside `src/content/` and `archived/`, `.agents/notes/`, project skills | Documents |
 
@@ -65,7 +65,7 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 
 - Theme URLs are content-hashed (`/css/giscus-*.css`), served with `Access-Control-Allow-Origin: *`, and synced to `iframe.giscus-frame` on theme change and iframe load (`0202fd0`, `fa2263a`).
 
-### Content — [product](../../../docs/product.md), [architecture](../../../docs/architecture.md#build)
+### Content — [product](../../../docs/product.md), [architecture](../../../docs/architecture.md#code-map)
 
 - The tree you edit is not the HTML the browser gets. Shiki emits lowercase `tabindex`, so `delete node.properties.tabIndex` silently did nothing (`82d1217`). Check every plugin `delete` and regex against emitted HTML from a real build.
 - Plugins leave a clean tree, with no emptied text node after a stripped marker (`dfa3891`).

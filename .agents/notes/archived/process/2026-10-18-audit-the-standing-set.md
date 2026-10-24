@@ -1,6 +1,7 @@
 # Agent Note: Audit the standing set when a change spans documents
 
 Status: implemented
+Archived: 2026-10-24
 
 ## Problem
 

@@ -1,6 +1,7 @@
 # Agent Note: One home for each check
 
 Status: implemented
+Archived: 2026-10-24
 
 ## Problem
 

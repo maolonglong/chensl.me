@@ -1,79 +1,108 @@
 # Architecture
 
-Read this before you change how the site builds, serves, or runs scripts. It is a map: each section names the files that own the details. Decisions and their reasons are in [Agent Notes](../.agents/notes/AGENTS.md).
+Read this before you change how the site builds, serves, or runs scripts. It gives the mental map of the repository: the bird's-eye data flow, the entry points, the physical code map with its architectural invariants and boundaries, and the cross-cutting concerns. Decisions and their reasons live in [Agent Notes](../.agents/notes/AGENTS.md).
 
-## Principles
+## Bird's-eye view
 
-- Pages are prerendered Astro components with scoped CSS and native browser scripts. The Worker runs four features: the upvote Actions, the AI News (`/news/`) ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)), the search endpoint ([decision](../.agents/notes/implemented/simplification/2026-10-24-keyword-only-search.md)), and the GitHub card refresh ([decision](../.agents/notes/implemented/feature/2026-10-18-github-repository-cards.md)). Add a client framework or more server-rendered behavior only for a concrete requirement.
-- Keep pages light. Use a native HTML or CSS feature, such as a popover, before a script; keep each script small and owned by its component. Scripts enhance the page; they are not required to read it. When scripts do not run, the contents list still opens natively, script-only controls are hidden, and a notice that was stale at build time still shows (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
-- Use Astro's native features and official integrations first. For an Astro API or configuration change, read the Astro docs (the Astro Docs MCP when available) and confirm that the installed version supports it.
-- One Markdown pipeline renders every view of an article: the page, the RSS item, and the Markdown export metadata come from the same collection entry.
-- Scripts run only through Astro CSP hashes ([decision](../.agents/notes/implemented/architecture/2026-09-28-hash-based-script-csp.md)).
-- Build output is generated. Edit the source: `src/`, `public/`, the config files, and `vendor/`.
+The site splits state into build-time static inputs and request-time edge databases:
 
-## Map
+- **Build-time ground state.** Markdown articles in `src/content/blog/`, the repository snapshot `src/data/github-repos.json`, and the JinKai font source in `vendor/fonts/` are the only build inputs. The build makes no network requests. Astro prerenders these inputs into static HTML, RSS, Markdown exports, PNG share cards, a Pagefind keyword index, and font subsets in `dist/client`, plus a Cloudflare Worker bundle in `dist/server`.
+- **Runtime ground state.** Two Cloudflare D1 databases hold mutable state: `VOTES` for article upvotes and `NEWS` for bot-written daily AI News issues (`/news/`) and their FTS5 search index. Workers Static Assets serves every prerendered file directly; the Worker runs only on the paths listed in `assets.run_worker_first` (`/_actions/*`, `/api/*`, `/news/*`).
 
 ```text
   src/content/blog/*.md ──► content collection ──► Markdown pipeline ──► pages, RSS, exports
-  (articles, images)        src/content.config.ts   src/lib/markdown.mjs   src/pages/
-                            src/lib/posts.ts                                     │
-  vendor/fonts/ + src/ ──► src/lib/fonts.mjs ──► JinKai subsets ─────────────────┤
-                                                                                 ▼
-                                                          dist/client (static) + dist/server (Worker)
-                                                                                 │
-                         Cloudflare Workers ◄────────────────────────────────────┘
-                         ├─ static assets, with public/_headers
-                         ├─ Worker: src/middleware.ts + src/actions/ ──► D1 (VOTES), rate limiters
-                         │                           └── ASSETS binding: is this a built article page?
-                         ├─ Worker: src/live.config.ts, src/pages/api/news* ──► D1 (NEWS), Workers Cache
-                         ├─ Worker: src/worker.ts ─ /api/search ──► D1 (NEWS)
-                         └─ Worker: src/worker.ts ─ /api/github/repos ──► GitHub REST, Workers Cache
-  browser: theme bootstrap (inline, hashed) + compiled component scripts + giscus iframe
+  src/data/github-repos.json  src/content.config.ts  src/lib/markdown.mjs  src/pages/
+  vendor/fonts/ ──────────► src/lib/fonts.mjs ──► subsets + slices ────────┤
+                                                                           ▼
+                                                    dist/client (static) + dist/server (Worker)
+                                                                           │
+                   Cloudflare Workers ◄────────────────────────────────────┘
+                   ├─ Static Assets + public/_headers (all prerendered routes and 404s)
+                   ├─ Worker: src/worker.ts ─► /api/search (D1 NEWS FTS5) & /api/github/repos
+                   ├─ Worker: src/middleware.ts + src/actions/ ─► D1 (VOTES), rate limiters, ASSETS
+                   └─ Worker: src/live.config.ts + src/pages/api/news* ─► D1 (NEWS), Workers Cache
 ```
 
-## Build
+## Entry points
 
-`astro.config.mjs` wires the build. `output: 'static'` prerenders every page; the Cloudflare adapter prerenders in Node and optimizes images at build time.
+- `astro.config.mjs` wires the build: font generation, Markdown plugins, CSP hashes, the Cloudflare adapter, and the Pagefind post-build index.
+- `src/worker.ts` is the Worker entry point. It intercepts `/api/search` and `/api/github/repos`, passes `/_actions/*`, `/api/news*`, and `/news/*` to the Astro handler, and attaches security headers to every Worker response.
+- `src/layouts/BaseLayout.astro` is the HTML shell for every page. It derives navigation state, the share card, JSON-LD, and feed links from a single `pageKind()` switch.
+- `scripts/check-site.mjs` is the build-output verifier: it inspects `dist/client` and `dist/server` after `astro build` to enforce invariants that unit tests cannot see.
 
-- **Content.** `src/content.config.ts` holds the front matter schema. `isPublishedPost()` in `src/lib/post-date.ts` filters drafts and future posts; `publishedPosts()` in `src/lib/posts.ts` is the only reader of the `blog` collection and stops the build when an entry failed to render.
-- **Markdown.** `src/lib/markdown.mjs` adds alerts, GitHub repository cards from `src/data/github-repos.json`, scroll wrappers for code, tables, and display math, code captions, and the Shiki code themes. Temml renders TeX to MathML at build time.
-- **Routes.** `src/pages/` holds the home, the archive, article pages, the Markdown exports (`/blog/<id>/index.md`), `/index.xml`, `/llms.txt`, and the giscus theme stylesheets (`src/pages/css/`, built from `src/styles/giscus*.css` by `src/lib/assets.ts`). `src/lib/markdown-images.ts` publishes the original article images next to the exports.
-- **RSS.** `src/pages/index.xml.ts` renders each entry through the Astro container, so feed items use the same HTML and optimized images as pages, then makes every URL absolute.
-- **Share cards.** The prerendered route `src/pages/og/[...card].png.ts` renders a PNG for each article and four fixed cards with `src/lib/og-card.mjs` ([decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md)). Prerendered routes stay out of the Worker, and `scripts/check-site.mjs` fails a Worker bundle that contains the renderer.
-- **Search.** `astro.config.mjs` runs Pagefind on the article pages ([decision](../.agents/notes/implemented/simplification/2026-10-24-keyword-only-search.md)).
-- **Fonts.** `src/lib/fonts.mjs` builds JinKai subsets from the source text before Astro resolves fonts ([decision](../.agents/notes/implemented/simplification/2026-10-06-subset-fonts-from-source-text.md)), and slices of the rest for runtime text ([decision](../.agents/notes/implemented/feature/2026-10-16-jinkai-unicode-range-slices.md)).
+## Code map
 
-## Runtime
+Pay attention to the **Architecture Invariant** and **Boundary** notes in each module; they state what is deliberately absent from the code.
 
-`wrangler.jsonc` defines the Worker, its bindings, and the static assets in `dist/client`.
+### `src/content/blog/`, `src/content.config.ts`, `src/lib/posts.ts`, `src/lib/post-date.ts`
 
-- **Static assets.** Workers Static Assets serves the prerendered files. `public/_headers` sets their response headers: the HTTP CSP, cache rules, and the text charsets that production does not add.
-- **Actions.** `src/actions/index.ts` defines `getVotes` and `upvote`. `src/middleware.ts` rejects cross-origin Action requests and makes Action responses private. The Actions use D1 (`VOTES`), two rate limiters, and the `ASSETS` binding to confirm that an ID is a published article ([decision](../.agents/notes/implemented/architecture/2026-09-29-validate-articles-through-built-pages.md)). Schema changes are files in `migrations/`.
-- **News.** `src/pages/api/news.ts` and `src/pages/api/news/retract.ts` check the `NEWS_TOKEN` secret. Writes append to `issue_versions` and refresh the latest row in `issues`; retraction sets `hidden_at`. `src/lib/news.ts` holds the schema and all SQL. The pages and the feed read through the live collections in `src/live.config.ts` with bounded queries on the `date` primary key; this bundles the content store, capped by `scripts/check-site.mjs`, and Workers Cache serves them for a day; a write or retraction purges their cache tags (`src/lib/news-cache.ts`). Schema changes are files in `migrations/news/`.
-- **Search.** `src/worker.ts`, the Worker entry, sends `/api/search` to `src/lib/search-endpoint.ts` before the Astro handler. It returns AI News keyword hits from item-level FTS5 (`issue_items_fts`), which triggers in `migrations/news/0004_item_search.sql` keep current; `src/lib/search.ts` holds the queries. The browser merges them with the Pagefind hits.
-- **GitHub cards.** `src/worker.ts` sends `/api/github/` to `src/lib/github-endpoint.ts` before the Astro handler. It serves only the repositories in `src/data/github-repos.json`, and its cache headers let Workers Cache answer most requests.
-- **Routing.** `assets.run_worker_first` in `wrangler.jsonc` lists every Worker path. Any other missing path gets the 404 page from assets, also for a POST.
-- **Bindings.** Production and Workers Previews use separate D1 databases.
+Articles and their local images live in `src/content/blog/`. `src/content.config.ts` defines the strict front matter schema. `src/lib/posts.ts` and `src/lib/post-date.ts` are the **Boundary** between raw collection files and the rest of the codebase.
 
-## Browser
+- **Architecture Invariant:** `publishedPosts()` in `src/lib/posts.ts` and `isPublishedPost()` in `src/lib/post-date.ts` are the only readers of `src/content/blog/`. No page, feed, or build script reads collection entries without them, so drafts and future-dated posts never leak into pages, RSS, exports, or font subsets.
+- **Architecture Invariant:** `displayDate()` in `src/lib/post-date.ts` formats every date in `Asia/Shanghai`, so builds in UTC and CST emit identical output.
 
-- `src/scripts/theme-bootstrap.js` runs inline in `<head>` before the first paint. `astro.config.mjs` reads it at startup, so restart the dev server after you edit it.
-- Each component in `src/components/` owns its compiled script and scoped styles. `src/styles/global.css` holds the design tokens and the Markdown typography.
-- Comments are a giscus iframe that `src/components/Comments.astro` loads.
+### `src/lib/markdown.mjs`, `src/lib/reading-time.mjs`, `src/lib/markdown-images.ts`
 
-## Response headers
+`src/lib/markdown.mjs` holds the unified remark and rehype pipeline: GitHub alerts, repository cards from `src/data/github-repos.json`, focusable scroll wrappers for code, tables, and display math, code captions, Shiki themes, and build-time Temml MathML.
 
-`src/lib/security-headers.mjs` holds the response protections except the CSP. `public/_headers` sets them on static assets and `src/worker.ts` on Worker responses; `tests/security-headers.test.mjs` keeps them equal. Both add `X-Robots-Tag: noindex` on `workers.dev` hosts.
+- **Architecture Invariant:** One Markdown pipeline renders every view of an article. The article page (`src/pages/blog/[...id].astro`), the RSS feed (`src/pages/index.xml.ts`, via the Astro container), and the Markdown export (`/blog/<id>/index.md`, with original images published by `src/lib/markdown-images.ts`) all read the same collection entry.
 
-## CSP
+### `src/lib/og.mjs`, `src/lib/og-card.mjs`, `src/pages/og/[...card].png.ts`
 
-Two policies apply independently ([decision](../.agents/notes/implemented/architecture/2026-09-28-hash-based-script-csp.md)):
+`src/pages/og/[...card].png.ts` prerenders a PNG share card for each article and four fixed section cards using `@takumi-rs/core` in `src/lib/og-card.mjs` ([decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md)). `src/lib/og.mjs` is the **Boundary** imported by `src/layouts/BaseLayout.astro`.
 
-- The policy from `astro.config.mjs` carries the script hashes and the external script sources: a meta tag on prerendered pages, an HTTP header on `/news/` pages.
-- The HTTP policy in `public/_headers` carries `frame-ancestors` and the other response protections. It reaches static assets only; Worker responses use `X-Frame-Options: DENY` instead.
+- **Architecture Invariant:** `src/lib/og.mjs` contains only pure URL and metadata helpers (`fixedCards`, `articleCard()`, `cardPath()`). It never imports `src/lib/og-card.mjs`, `@takumi-rs/core`, `subset-font`, or Node APIs, so `src/layouts/BaseLayout.astro` can run inside the Worker for `/news/` without bundling the renderer (`scripts/check-site.mjs` fails the build if the renderer enters `dist/server`).
+- **Architecture Invariant:** `src/lib/og-card.mjs` creates a fresh `Renderer` per card so subset font faces do not accumulate across renders.
 
-`public/_headers` defines no `script-src`. Only `/search/` adds `'wasm-unsafe-eval'` for Pagefind. Add any other third-party source to each policy that defines its directive, and to `scripts/check-site.mjs`.
+### `src/actions/index.ts`, `src/middleware.ts`
 
-## Delivery
+`src/actions/index.ts` defines the `getVotes` and `upvote` Actions backed by D1 (`VOTES`) and two rate limiters ([decision](../.agents/notes/implemented/feature/2026-09-28-anonymous-cookie-upvotes.md)). `src/middleware.ts` guards Action requests. Schema migrations live in `migrations/`.
 
-GitHub Actions (`.github/workflows/ci.yml`) runs the checks on pushes and pull requests and publishes nothing. Cloudflare Workers Builds builds and deploys production when `main` changes; the Cloudflare dashboard owns that configuration and the deployment records. Cloudflare does not wait for GitHub CI. The [`csm-ship`](../.agents/skills/csm-ship/SKILL.md) skill holds the release procedure.
+- **Architecture Invariant:** The Actions never import `astro:content`. `requirePost` validates an article ID with a `HEAD` request to `/blog/<id>/` through the `ASSETS` binding (`redirect: 'manual'`, status 200) ([decision](../.agents/notes/implemented/architecture/2026-09-29-validate-articles-through-built-pages.md)).
+- **Architecture Invariant:** A vote write and its read-back execute in a single `env.VOTES.batch` call so the returned count always includes the caller's vote.
+- **Architecture Invariant:** An early 4xx return on a POST request drains the bounded request body first so local `wrangler dev` does not drop the next request on a reused connection.
+
+### `src/live.config.ts`, `src/lib/news.ts`, `src/lib/news-cache.ts`, `src/pages/news/`, `src/pages/api/news*`
+
+Bot-written AI News issues live in the `NEWS` D1 database (`migrations/news/`) ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). `src/pages/api/news.ts` and `src/pages/api/news/retract.ts` verify `NEWS_TOKEN`, write to `issue_versions` and `issues`, and purge Workers Cache tags via `src/lib/news-cache.ts`. `/news/` pages and `/news/index.xml` read through `src/live.config.ts`.
+
+- **Architecture Invariant:** `src/lib/news.ts` is the **Boundary** for all news storage and validation. Issues are plain structured data, never HTML or Markdown; pages escape all text and link only `http` and `https` URLs. Every read query has a hard `LIMIT` on the `date` primary key.
+- **Architecture Invariant:** `src/live.config.ts` imports `cloudflare:workers` lazily at request time so `astro sync` can load the config in Node. Because `astro:content` bundles the article content store into the Worker, `scripts/check-site.mjs` caps the bundled store at 1,200,000 bytes.
+
+### `src/lib/search-endpoint.ts`, `src/lib/search.ts`, `src/lib/search-fuse.ts`, `src/pages/search.astro`
+
+`/search/` merges browser-side Pagefind article hits with `/api/search` AI News hits using reciprocal rank fusion in `src/lib/search-fuse.ts` ([decision](../.agents/notes/implemented/simplification/2026-10-24-keyword-only-search.md)).
+
+- **Architecture Invariant:** Application code never writes to the search index. Pagefind indexes static articles at build time, and SQLite triggers in `migrations/news/0004_item_search.sql` keep the item-level FTS5 table (`issue_items_fts`) synchronized inside every D1 write transaction.
+- **Architecture Invariant:** Article search degrades gracefully: when `/api/search` fails, `/search/` still renders the Pagefind article results.
+
+### `src/lib/github-endpoint.ts`, `src/components/GitHubCards.astro`, `scripts/github-repos.mjs`
+
+`scripts/github-repos.mjs` writes `src/data/github-repos.json`. `src/components/GitHubCards.astro` refreshes card numbers from `/api/github/repos/<owner>/<repo>/`, handled by `src/lib/github-endpoint.ts` ([decision](../.agents/notes/implemented/feature/2026-10-18-github-repository-cards.md)).
+
+- **Architecture Invariant:** The endpoint is a closed set, not an open proxy: it serves only keys present in `src/data/github-repos.json` and returns 404 for any other repository before touching the network.
+
+### `src/components/`, `src/scripts/theme-bootstrap.js`, `src/styles/`
+
+Each component in `src/components/` owns its scoped styles and compiled browser script. `src/styles/global.css` holds design tokens and `.prose` rules; `src/styles/floating-controls.css` holds shared floating-button transitions. `src/scripts/theme-bootstrap.js` runs inline in `<head>` before first paint (`astro.config.mjs` reads it at startup, so restart `pnpm dev` after editing it).
+
+- **Architecture Invariant:** Pages require no JavaScript to read. When scripts do not run, the contents list opens via `<details>`, script-only buttons stay hidden, and build-time stale notices remain visible (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
+
+## Cross-cutting concerns
+
+### CSP
+
+Two CSP policies apply independently ([decision](../.agents/notes/implemented/architecture/2026-09-28-hash-based-script-csp.md)):
+
+- The policy from `astro.config.mjs` carries the script hashes and external script sources: a `<meta>` tag on prerendered pages and an HTTP header on `/news/` pages. Only `/search/` adds `'wasm-unsafe-eval'` for Pagefind.
+- The HTTP policy in `public/_headers` carries `frame-ancestors` and static asset directives, with no `script-src`. Worker responses get non-CSP security headers from `src/lib/security-headers.mjs` (kept in sync with `public/_headers` by `tests/security-headers.test.mjs`) and `X-Frame-Options: DENY`. Both add `X-Robots-Tag: noindex` on `workers.dev` hosts.
+
+Add any new third-party source to every policy that defines its directive, and to `scripts/check-site.mjs`.
+
+### Fonts
+
+`src/lib/fonts.mjs` builds two disjoint JinKai W04 subsets from source text before Astro resolves fonts ([decision](../.agents/notes/implemented/simplification/2026-10-06-subset-fonts-from-source-text.md)), plus cached `unicode-range` slices from `vendor/fonts/google-fonts-noto-sans-sc-slices.json` for runtime D1 text on `/news/` ([decision](../.agents/notes/implemented/feature/2026-10-16-jinkai-unicode-range-slices.md)).
+
+### Delivery
+
+Production and Workers Previews use separate D1 databases. `wrangler.jsonc` `previews` does not inherit top-level bindings, so every new binding goes in both sections. GitHub Actions (`.github/workflows/ci.yml`) runs verification only; Cloudflare Workers Builds deploys production from `main` without waiting for GitHub CI ([`csm-ship`](../.agents/skills/csm-ship/SKILL.md)).

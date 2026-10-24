@@ -1,6 +1,6 @@
 # chensl.me
 
-Source for [chensl.me](https://chensl.me), a personal site and technical blog. Astro prerenders the pages to static assets on Cloudflare Workers, and a small Worker runs the article upvotes, the public, bot-written AI News section (`/news/`), and `/api/search/`. There is no client UI framework.
+Source for [chensl.me](https://chensl.me), a personal site and technical blog. Astro prerenders the pages to static assets on Cloudflare Workers, and a small Worker runs the article upvotes, the public, bot-written AI News section (`/news/`), `/api/search/`, and `/api/github/repos/`. There is no client UI framework.
 
 ## Setup
 
@@ -10,6 +10,7 @@ Use Node.js 26 and the pnpm version pinned in `package.json`. The tests also nee
 pnpm install --frozen-lockfile
 pnpm cf:types   # generate binding types from wrangler.jsonc
 pnpm exec wrangler d1 migrations apply VOTES --local
+pnpm exec wrangler d1 migrations apply NEWS --local
 pnpm exec prek install   # run the document checks before each commit
 ```
 
