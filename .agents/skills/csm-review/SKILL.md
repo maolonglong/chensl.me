@@ -25,7 +25,7 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 | `astro.config.mjs` `security`, `public/_headers`, `src/scripts/theme-bootstrap.js`, `src/components/Theme.astro`, any `<script>` or handler | CSP |
 | `src/actions/`, `src/middleware.ts`, `src/components/Upvote.astro`, `migrations/0001_votes.sql`, `wrangler.jsonc` bindings | Upvotes |
 | `src/live.config.ts`, `src/lib/news*`, `src/pages/news/`, `src/pages/api/`, `src/components/News*`, `migrations/news/` | AI News |
-| `src/worker.ts`, `src/lib/search*`, `src/lib/related.ts`, `src/pages/search.astro`, `src/data/related-posts.json`, `scripts/*search*`, `scripts/embed-posts.mjs`, `scripts/index-news.mjs` | Search |
+| `src/worker.ts`, `src/lib/search*`, `src/pages/search.astro` | Search |
 | `src/lib/og*`, `src/pages/og/` | Share cards |
 | `src/components/Comments.astro`, `src/styles/giscus*.css`, `src/pages/css/` | Comments |
 | `src/lib/markdown.mjs`, `astro.config.mjs` `markdown`, `src/pages/index.xml.ts`, `src/content.config.ts`, `src/lib/posts.ts`, `src/lib/post-date.ts`, `src/content/` | Content |
@@ -49,13 +49,11 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 
 ### AI News — [product](../../../docs/product.md#ai-news), [decision](../../notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)
 
-- `saveIssue` reports whether the issue stays hidden, so `POST /api/news/` removes vectors instead of re-indexing a retracted date (`49b6241`).
 - `wrangler.jsonc` `previews` does not inherit top-level bindings; a binding added at the top level without a preview counterpart is missing on Workers Previews (`7803132`).
 
-### Search — [product](../../../docs/product.md#pages), [decision](../../notes/implemented/feature/2026-10-17-hybrid-search.md)
+### Search — [product](../../../docs/product.md#pages), [decision](../../notes/implemented/simplification/2026-10-24-keyword-only-search.md)
 
-- Slice and chunk text by Unicode code points, not UTF-16 code units: `.slice()` splits a surrogate pair into a lone surrogate that breaks `encodeURIComponent` or embedding (`49b6241`, `66fee1c`).
-- Filter retracted D1 dates before `rankMatches` computes the top news score, or a retracted issue suppresses visible issues below `semanticMaxGap` (`49b6241`).
+- Slice text by Unicode code points, not UTF-16 code units: `.slice()` splits a surrogate pair into a lone surrogate that breaks `encodeURIComponent` (`49b6241`, `66fee1c`).
 - Fold control characters before building an FTS5 phrase query, or a NUL byte breaks `MATCH` (`49b6241`).
 - Ignore `input` events while `event.isComposing` is true and search on `compositionend`, so an input method does not query unfinished pinyin (`5eb9145`).
 

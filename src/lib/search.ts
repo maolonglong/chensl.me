@@ -1,37 +1,18 @@
 import {
-  allNewsVectorIds,
   clipSnippet,
-  embeddingModel,
-  newsItemEmbeddingText,
   newsKeywordFallbackQuery,
   newsKeywordLimit,
   newsKeywordQuery,
-  newsVectors,
-  queryInstruction,
-  rankMatches,
-  searchNamespace,
-  semanticTopK,
 } from './search-text.mjs'
 import type { SearchHit } from './search-fuse'
-import { newsUrl, queryIssue, visibleIssueVersions } from './news'
+import { newsUrl } from './news'
 
-// Server side of /search/: semantic hits from Vectorize and AI News keyword hits from D1 FTS5.
-// The browser merges both with its Pagefind article hits; see src/pages/search.astro.
+// Server side of /search/: AI News keyword hits from D1 FTS5 (issue_items_fts).
+// The browser merges them with its Pagefind article hits; see src/pages/search.astro.
 // src/worker.ts routes GET /api/search/ here before the Astro handler.
 
-type SearchEnv = Pick<Cloudflare.Env, 'AI' | 'SEARCH_INDEX' | 'NEWS' | 'SEMANTIC_SEARCH'>
-
-// Local runs have the AI and Vectorize bindings without a remote session, so every call would
-// fail; the browser specs start the Worker with SEMANTIC_SEARCH=off to get keyword-only search.
-export const semanticEnabled = (
-  env: SearchEnv,
-): env is SearchEnv & { AI: Ai; SEARCH_INDEX: VectorizeIndex } =>
-  Boolean(env.AI && env.SEARCH_INDEX) && env.SEMANTIC_SEARCH !== 'off'
-
-// Milliseconds spent waiting on each service during one search, summed per service. Workers
-// clocks only advance across I/O, so these are wait times; they overlap because the keyword
-// half runs alongside the semantic half.
-export type SearchTiming = Partial<Record<'ai' | 'vec' | 'd1', number>>
+// Milliseconds spent waiting on D1 during one search, summed across queries.
+export type SearchTiming = Partial<Record<'d1', number>>
 
 async function timed<T>(timing: SearchTiming, name: keyof SearchTiming, work: Promise<T>) {
   const start = performance.now()
@@ -40,67 +21,6 @@ async function timed<T>(timing: SearchTiming, name: keyof SearchTiming, work: Pr
   } finally {
     timing[name] = (timing[name] ?? 0) + performance.now() - start
   }
-}
-
-interface BlogMetadata {
-  url: string
-  title: string
-  date: string
-  description: string
-}
-
-interface NewsMetadata {
-  date: string
-  version: number
-  title: string
-  snippet: string
-}
-
-export async function semanticSearch(
-  env: SearchEnv,
-  query: string,
-  timing: SearchTiming = {},
-): Promise<SearchHit[]> {
-  if (!semanticEnabled(env)) return []
-  const { data } = await timed(
-    timing,
-    'ai',
-    env.AI.run(embeddingModel, { queries: query, instruction: queryInstruction }),
-  )
-  const vector = data?.[0]
-  if (!vector) throw new Error('Workers AI returned no query embedding')
-  const { matches } = await timed(
-    timing,
-    'vec',
-    env.SEARCH_INDEX.query(vector, {
-      topK: semanticTopK,
-      returnMetadata: 'all',
-      namespace: searchNamespace,
-    }),
-  )
-  // Filter before ranking: an obsolete issue must not set the news score gap.
-  const newsDates = [
-    ...new Set(
-      matches
-        .filter((match) => match.metadata?.type === 'news')
-        .map((match) => (match.metadata as unknown as NewsMetadata).date),
-    ),
-  ]
-  const versions = await timed(timing, 'd1', visibleIssueVersions(env.NEWS, newsDates))
-  const current = matches.filter((match) => {
-    if (match.metadata?.type !== 'news') return true
-    const { date, version } = match.metadata as unknown as NewsMetadata
-    return versions.has(date) && versions.get(date) === version
-  })
-  return rankMatches(current).map((match) => {
-    const score = Math.round(match.score * 1000) / 1000
-    if (match.type === 'news') {
-      const { date, title, snippet } = match.metadata as unknown as NewsMetadata
-      return { type: 'news', url: newsUrl(date), title, date, snippet, score }
-    }
-    const { url, title, date, description } = match.metadata as unknown as BlogMetadata
-    return { type: 'blog', url, title, date, snippet: clipSnippet(description), score }
-  })
 }
 
 type KeywordRow = { date: string; title: string; snippet: string }
@@ -117,11 +37,12 @@ async function keywordRows(db: D1Database, sql: string, binds: string[], timing:
   return results
 }
 
-// Phrase hits stay ahead of pair hits. The pair query runs only to fill a short list.
+// Phrase hits stay ahead of pair hits, and multiple matching items in one issue collapse to the
+// best-ranked item for that date. The pair query runs only to fill a short list.
 function mergeKeywordRows(primary: KeywordRow[], extra: KeywordRow[]) {
-  const seen = new Set(primary.map((row) => row.date))
-  const merged = [...primary]
-  for (const row of extra) {
+  const seen = new Set<string>()
+  const merged: KeywordRow[] = []
+  for (const row of [...primary, ...extra]) {
     if (seen.has(row.date)) continue
     seen.add(row.date)
     merged.push(row)
@@ -136,7 +57,7 @@ export async function newsKeywordSearch(
   timing: SearchTiming = {},
 ): Promise<SearchHit[]> {
   const phrase = newsKeywordQuery(query)
-  const primary = await keywordRows(db, phrase.sql, phrase.binds, timing)
+  const primary = mergeKeywordRows([], await keywordRows(db, phrase.sql, phrase.binds, timing))
   const pairs = primary.length >= newsKeywordLimit ? null : newsKeywordFallbackQuery(query)
   const rows = pairs
     ? mergeKeywordRows(primary, await keywordRows(db, pairs.sql, pairs.binds, timing))
@@ -148,36 +69,4 @@ export async function newsKeywordSearch(
     date: row.date,
     snippet: clipSnippet(row.snippet.replace(/\s*\n\s*/g, ' · ').trim()),
   }))
-}
-
-export type IndexResult = 'indexed' | 'removed' | 'disabled' | 'failed'
-
-// Mutation acceptance is not query visibility. Re-read after all mutations so a slow older
-// request repairs its own overwrite with the latest D1 state. A resend retries failures.
-export async function syncIssue(env: SearchEnv, date: string): Promise<IndexResult> {
-  if (!semanticEnabled(env)) return 'disabled'
-  try {
-    let issue = await queryIssue(env.NEWS, date)
-    for (let attempt = 0; attempt < 3; attempt++) {
-      if (issue) {
-        const { data } = await env.AI.run(embeddingModel, {
-          documents: issue.items.map(newsItemEmbeddingText),
-        })
-        if (data?.length !== issue.items.length)
-          throw new Error('Workers AI returned too few embeddings')
-        const { upserts, stale } = newsVectors(issue, data)
-        await env.SEARCH_INDEX.upsert(upserts)
-        await env.SEARCH_INDEX.deleteByIds(stale)
-      } else {
-        await env.SEARCH_INDEX.deleteByIds(allNewsVectorIds(date))
-      }
-      const current = await queryIssue(env.NEWS, date)
-      if (current?.version === issue?.version) return issue ? 'indexed' : 'removed'
-      issue = current
-    }
-    throw new Error('News changed during every indexing attempt')
-  } catch (error) {
-    console.error('news search indexing failed', date, error)
-    return 'failed'
-  }
 }

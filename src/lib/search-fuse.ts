@@ -4,22 +4,21 @@ export interface SearchHit {
   title: string
   date: string
   snippet: string
-  score?: number
 }
 
 export const maxQueryLength = 64
 
 export const cleanQuery = (raw: string | null) => (raw ?? '').replace(/[\p{Cc}\s]+/gu, ' ').trim()
 
-// Collapses whitespace and control characters and rejects empty or oversized input, so the
-// semantic and keyword halves search the same text and FTS5 never sees a NUL byte.
+// Collapses whitespace and control characters and rejects empty or oversized input, so Pagefind
+// and D1 search the same text and FTS5 never sees a NUL byte.
 export function normalizeQuery(raw: string | null) {
   const query = cleanQuery(raw)
   return query && [...query].length <= maxQueryLength ? query : null
 }
 
-// Reciprocal rank fusion: each list adds 1 / (k + rank) to a hit, by URL, so a page that
-// several searches rank high comes first without comparing their incompatible scores.
+// Reciprocal rank fusion: each list adds 1 / (k + rank) to a hit, by URL, so articles and news
+// items interleave by rank without comparing their incompatible scores.
 export const rrfK = 60
 
 export function fuse<T extends { url: string }>(lists: T[][], k = rrfK): T[] {
@@ -33,22 +32,4 @@ export function fuse<T extends { url: string }>(lists: T[][], k = rrfK): T[] {
     })
   }
   return [...scored.values()].sort((a, b) => b.score - a.score).map(({ hit }) => hit)
-}
-
-// Short queries are usually names, such as 智谱 or METR, which keyword search matches exactly and
-// semantic search matches loosely. Up to this many characters, when keyword search found anything,
-// the keyword hits come first and semantic hits only add documents after them.
-export const shortQueryChars = 4
-
-export function merge<T extends { url: string }>(
-  query: string,
-  keyword: T[][],
-  semantic: T[],
-  k = rrfK,
-): T[] {
-  const keywordHits = fuse(keyword, k)
-  if ([...query].length > shortQueryChars || !keywordHits.length)
-    return fuse([...keyword, semantic], k)
-  const seen = new Set(keywordHits.map((hit) => hit.url))
-  return [...keywordHits, ...semantic.filter((hit) => !seen.has(hit.url))]
 }

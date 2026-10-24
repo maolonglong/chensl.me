@@ -30,8 +30,6 @@ Articles live in `src/content/blog/`, as `<name>.md` or `<name>/index.md`. The n
 
 Keep local images next to the Markdown, link them with relative paths, and give them descriptive alt text; Astro optimizes them. Put files for download in `public/downloads/`. A remote image needs its origin in both CSP policies ([Architecture](docs/architecture.md#csp)).
 
-After you add or change an article, the search index job in GitHub Actions embeds it. When the job fails because `src/data/related-posts.json` is stale, download its `related-posts` artifact and commit the file; `pnpm check` fails when an article has no entry ([decision](.agents/notes/implemented/feature/2026-10-17-hybrid-search.md)).
-
 A paragraph that is only a link to a GitHub repository, such as `<https://github.com/owner/repo>`, renders as a card. After you add one, run `node scripts/github-repos.mjs` and commit `src/data/github-repos.json`; until then the link stays plain ([decision](.agents/notes/implemented/feature/2026-10-18-github-repository-cards.md)).
 
 Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, TeX math (`$…$` inline, `$$…$$` display), and code captions (`title="db/user.go"` on the fence).

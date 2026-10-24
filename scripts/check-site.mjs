@@ -7,7 +7,6 @@ import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 import { cardHeight, cardWidth } from '../src/lib/og.mjs'
 import { isPostId } from '../src/lib/post-id.mjs'
-import { articleInputs } from './search-inputs.mjs'
 
 const root = process.cwd()
 const outputDir = path.resolve(root, process.argv[2] ?? 'dist')
@@ -403,12 +402,11 @@ for (const file of files.filter((file) => file.endsWith('.xml'))) {
   }
 }
 
-// Search: Pagefind indexes every article, and every article has an embedding entry, which
-// scripts/embed-posts.mjs writes. A changed article keeps its old entry until the next run, so
-// a stale entry is only a warning; a missing one leaves the article out of semantic search.
+// Search: Pagefind must index every built article page.
 if (outputFiles.has('search/index.html')) {
-  const articles = await articleInputs(outputDir)
-  const articleCount = articles.length
+  const articleCount = [...outputFiles].filter((file) =>
+    /^blog\/[^/]+\/index\.html$/.test(file),
+  ).length
   const entry = outputFiles.has('pagefind/pagefind-entry.json')
     ? JSON.parse(await readFile(path.join(outputDir, 'pagefind/pagefind-entry.json'), 'utf8'))
     : null
@@ -418,23 +416,6 @@ if (outputFiles.has('search/index.html')) {
   )
   if (indexed !== articleCount) {
     errors.push(`Pagefind indexed ${indexed} pages; the build has ${articleCount} articles`)
-  }
-  const relatedFile = path.join(root, 'src/data/related-posts.json')
-  const { posts } = existsSync(relatedFile)
-    ? JSON.parse(await readFile(relatedFile, 'utf8'))
-    : { posts: {} }
-  const changed = []
-  for (const { id, hash } of articles) {
-    if (!posts[id]) {
-      errors.push(
-        `Article ${id} has no entry in src/data/related-posts.json: run scripts/embed-posts.mjs`,
-      )
-    } else if (posts[id].hash !== hash) changed.push(id)
-  }
-  if (changed.length) {
-    console.warn(
-      `Warning: articles changed since their embedding (${changed.join(', ')}); run scripts/embed-posts.mjs`,
-    )
   }
 }
 

@@ -57,7 +57,7 @@ export default defineConfig({
     ? undefined
     : {
         command:
-          'pnpm exec wrangler d1 migrations apply VOTES --local && pnpm exec wrangler d1 migrations apply NEWS --local && pnpm exec wrangler dev --port 8790 --local --var SEMANTIC_SEARCH:off',
+          'pnpm exec wrangler d1 migrations apply VOTES --local && pnpm exec wrangler d1 migrations apply NEWS --local && pnpm exec wrangler dev --port 8790 --local --var NEWS_TOKEN:$NEWS_TOKEN',
         url: baseURL,
         reuseExistingServer: false,
         timeout: 120_000,

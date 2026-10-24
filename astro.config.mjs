@@ -13,14 +13,7 @@ import { siteUrl } from './src/lib/site.mjs'
 
 export default defineConfig({
   site: siteUrl,
-  // remoteBindings: false keeps `astro dev` from opening a session for the AI and Vectorize
-  // bindings, which have no local simulation and need a Cloudflare login; search then answers
-  // with keyword results only.
-  adapter: cloudflare({
-    imageService: 'compile',
-    prerenderEnvironment: 'node',
-    remoteBindings: false,
-  }),
+  adapter: cloudflare({ imageService: 'compile', prerenderEnvironment: 'node' }),
   session: false,
   fonts: await siteFonts(),
   vite: {
@@ -50,13 +43,7 @@ export default defineConfig({
       hooks: {
         async 'astro:build:done'({ dir, logger }) {
           const { index } = await pagefind.createIndex({
-            excludeSelectors: [
-              '.post-meta',
-              '.post-creation-note',
-              '.post-notice',
-              '.toc',
-              '.post-related',
-            ],
+            excludeSelectors: ['.post-meta', '.post-creation-note', '.post-notice', '.toc'],
           })
           const { errors, page_count } = await index.addDirectory({ path: fileURLToPath(dir) })
           if (errors.length) throw new Error(`Pagefind failed: ${errors.join('; ')}`)

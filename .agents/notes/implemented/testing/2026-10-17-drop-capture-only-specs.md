@@ -12,7 +12,7 @@ A later cut found two leftovers. The touch "contents popover" spec opened the pa
 
 A browser spec asserts behavior that a reader can observe. The suite keeps no spec whose only result is a screenshot. `e2e/appearance.spec.mjs` keeps the specs that assert: the theme cycle and its persistence, a wide formula scrolling inside its wrapper, native contents without page scripts, and a theme switch when storage throws. Copy success and failure live in `e2e/code.spec.mjs`, and the open contents panel lives in `e2e/contents.spec.mjs`. Contents geometry stays in `e2e/contents.spec.mjs`. Font loading stays in `tests/fonts.test.mjs` and `e2e/page-shell.spec.mjs`.
 
-The same cut removes search assertions that restated the implementation. `tests/search.test.mjs` no longer asserts `semanticMaxGap` and `semanticMinScore.news` equal to the constants those names already hold, and no longer counts `indexIssues` upsert and delete calls. The default retry test checks the five-minute ceiling and the growing delays instead of restating `evaluationBudgetMs`. `searchIndexApi` accepts an injected sleep, so its poll test yields once without waiting three real seconds. Ranking and vector identity stay asserted with literal scores and vector IDs.
+The same cut removed search assertions in `tests/search.test.mjs` that restated implementation constants and loop counts before [keyword-only search](../simplification/2026-10-24-keyword-only-search.md) removed the embedding layer.
 
 ## Alternatives considered
 

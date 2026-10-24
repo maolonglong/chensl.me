@@ -35,7 +35,7 @@ const span = (className, value, properties = {}) => ({
 // scripts/github-repos.mjs writes, so a build never calls the GitHub API and the card is complete
 // without scripts, in RSS, and when the refresh fails. src/components/GitHubCards.astro replaces
 // the stats line, the description, and the archived label from /api/github/repos/<key>/.
-// The label and the stats line stay out of search (data-pagefind-ignore, scripts/search-inputs.mjs):
+// The label and the stats line stay out of search (data-pagefind-ignore):
 // they change with every snapshot and say nothing about the article.
 function githubCards(tree) {
   let cards = 0

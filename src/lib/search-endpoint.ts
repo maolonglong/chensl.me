@@ -1,11 +1,9 @@
-import { newsKeywordSearch, semanticEnabled, semanticSearch, type SearchTiming } from './search'
+import { newsKeywordSearch, type SearchTiming } from './search'
 import { normalizeQuery } from './search-fuse'
 
-// GET /api/search/?q=… returns semantic hits (articles and AI News) and AI News keyword hits.
+// GET /api/search/?q=… returns AI News keyword hits from D1 FTS5.
 // Article keyword search runs in the browser with Pagefind. src/worker.ts calls this before the
-// Astro handler, which would add several milliseconds of CPU to every request. Each half fails
-// on its own: the response then carries an empty list and `partial: true`.
-// Search is not cached: Vectorize acceptance does not mean queries can see the new vectors.
+// Astro handler, which would add several milliseconds of CPU to every request.
 export async function handleSearch(request: Request, env: Cloudflare.Env) {
   if (request.method !== 'GET' && request.method !== 'HEAD')
     return reply(405, { error: 'method_not_allowed' }, { Allow: 'GET, HEAD' })
@@ -15,35 +13,14 @@ export async function handleSearch(request: Request, env: Cloudflare.Env) {
   const { success } = await env.READ_LIMITER.limit({ key: `search:${clientAddress}` })
   if (!success) return reply(429, { error: 'rate_limited' })
 
-  const settle = async <T>(work: Promise<T>, label: string) => {
-    try {
-      return await work
-    } catch (error) {
-      console.error(`search ${label} failed`, error)
-      return null
-    }
-  }
   const timing: SearchTiming = {}
-  const [semantic, news] = await Promise.all([
-    settle(semanticSearch(env, query, timing), 'semantic'),
-    settle(newsKeywordSearch(env.NEWS, query, timing), 'news keyword'),
-  ])
-  const partial = semantic === null || news === null
-  return reply(
-    200,
-    {
-      query,
-      semantic: semantic ?? [],
-      news: news ?? [],
-      ...(partial && { partial }),
-    },
-    {
-      // A failed AI or Vectorize call shows as partial; this header reports binding availability.
-      'X-Semantic-Search': semanticEnabled(env) ? 'on' : 'off',
-      // Only services that were called appear.
-      'Server-Timing': serverTiming(timing),
-    },
-  )
+  try {
+    const news = await newsKeywordSearch(env.NEWS, query, timing)
+    return reply(200, { query, news }, { 'Server-Timing': serverTiming(timing) })
+  } catch (error) {
+    console.error('search news keyword failed', error)
+    return reply(500, { error: 'search_failed' }, { 'Server-Timing': serverTiming(timing) })
+  }
 }
 
 const reply = (
@@ -53,7 +30,4 @@ const reply = (
 ) => Response.json(body, { status, headers: { 'Cache-Control': 'private, no-store', ...headers } })
 
 const serverTiming = (timing: SearchTiming) =>
-  (['ai', 'vec', 'd1'] as const)
-    .filter((name) => timing[name] !== undefined)
-    .map((name) => `${name};dur=${Math.round(timing[name]!)}`)
-    .join(', ')
+  timing.d1 !== undefined ? `d1;dur=${Math.round(timing.d1)}` : ''

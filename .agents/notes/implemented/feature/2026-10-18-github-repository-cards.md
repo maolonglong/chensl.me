@@ -15,7 +15,7 @@ Several articles end a section with a paragraph that is only a link to a GitHub 
 - **Closed set.** The endpoint serves only the snapshot keys, and `scripts/check-site.mjs` fails when a key has no card. Any other path gets a 404 and never reaches GitHub, so the endpoint is not an open proxy and a query string cannot bypass the cache.
 - **Cache.** Workers Cache keeps a success for an hour and serves it stale for a day while it refreshes in the background; browsers keep it for 10 minutes. The edge directive is in `CDN-Cache-Control`, because `s-maxage` disables `stale-while-revalidate` in Workers Cache. A GitHub failure returns the snapshot, marked `stale`, for five minutes, and the page keeps its build text. Only a miss runs the Worker, and a miss uses the `READ_LIMITER` budget.
 - **Token.** The `GITHUB_TOKEN` secret is a read-only token for public repositories. Without it the Worker calls GitHub unauthenticated, which shares the Cloudflare egress quota and often falls back to the snapshot.
-- **Search.** The description is article text for Pagefind and the embeddings. The stats line and the archived label carry `data-pagefind-ignore`, and `scripts/search-inputs.mjs` skips them, so a snapshot refresh does not change the vectors.
+- **Search.** The description is article text for Pagefind. The stats line and the archived label carry `data-pagefind-ignore`, so they stay out of the search index.
 
 ## Alternatives considered
 

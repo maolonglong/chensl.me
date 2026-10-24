@@ -1,8 +1,6 @@
 import { randomBytes, randomInt } from 'node:crypto'
 import { expect, test as base } from './site.mjs'
 
-// The local Worker has no Workers AI or Vectorize binding, so /api/search answers with news
-// keyword results only. Tests that need semantic results stub the endpoint in the browser.
 const token = process.env.NEWS_TOKEN
 
 const test = base.extend({
@@ -81,7 +79,7 @@ test.describe('search page', () => {
     await page.route('**/api/search/**', (route) => {
       apiQueries.push(new URL(route.request().url()).searchParams.get('q'))
       return route.fulfill({
-        json: { query: '', semantic: [], news: [] },
+        json: { query: '', news: [] },
       })
     })
     // Fake timers keep running in real time; runFor below fires any pending debounce at once.
@@ -124,65 +122,29 @@ test.describe('search page', () => {
   }) => {
     // 智能体 appears in no article as a phrase; the characters 智, 能 and 体 appear in many.
     await page.route('**/api/search/**', (route) =>
-      route.fulfill({ json: { query: '智能体', semantic: [], news: [] } }),
+      route.fulfill({ json: { query: '智能体', news: [] } }),
     )
     await open('/search/?q=智能体')
     await expect(page.getByRole('status')).toHaveText('没有找到相关内容')
     await expect(results(page)).toHaveCount(0)
   })
 
-  test('merges keyword and semantic results by rank', async ({ open, page }) => {
-    const semantic = [
-      {
-        type: 'blog',
-        url: '/blog/dockertest/',
-        title: '语义结果',
-        date: '2020-01-01',
-        snippet: '',
-      },
-      {
-        type: 'blog',
-        url: '/blog/lock-free-queue/',
-        title: '无锁队列',
-        date: '2020-01-01',
-        snippet: '',
-      },
-    ]
-    await page.route('**/api/search/**', (route) =>
-      route.fulfill({ json: { query: '无锁队列', semantic, news: [] } }),
-    )
-    await open('/search/?q=无锁队列')
-    // The article that both lists return ranks above the one only the semantic list returns.
-    const links = results(page).getByRole('link')
-    await expect(links.nth(0)).toHaveAttribute('href', '/blog/lock-free-queue/')
-    await expect(links.nth(1)).toHaveAttribute('href', '/blog/dockertest/')
-    await expect(results(page)).toHaveCount(2)
-  })
-
-  test('a short query lists keyword hits before semantic hits', async ({ open, page }) => {
+  test('merges article and news results by rank', async ({ open, page }) => {
     const issue = {
       type: 'news',
       url: '/news/2026-10-16/',
       title: '日报',
       date: '2026-10-16',
-      snippet: '智谱发布',
-    }
-    const article = {
-      type: 'blog',
-      url: '/blog/1brc-in-zig/',
-      title: '语义结果',
-      date: '2024-02-22',
-      snippet: '',
+      snippet: '无锁队列',
     }
     await page.route('**/api/search/**', (route) =>
-      route.fulfill({
-        json: { query: '智谱', semantic: [article, issue], news: [issue] },
-      }),
+      route.fulfill({ json: { query: '无锁队列', news: [issue] } }),
     )
-    await open('/search/?q=智谱')
+    await open('/search/?q=无锁队列')
     const links = results(page).getByRole('link')
-    await expect(links.nth(0)).toHaveAttribute('href', '/news/2026-10-16/')
-    await expect(links.nth(1)).toHaveAttribute('href', '/blog/1brc-in-zig/')
+    await expect(links.nth(0)).toHaveAttribute('href', '/blog/lock-free-queue/')
+    await expect(links.nth(1)).toHaveAttribute('href', '/news/2026-10-16/')
+    await expect(results(page)).toHaveCount(2)
   })
 
   test('keeps article results when the search API fails', async ({ open, page }) => {
@@ -225,15 +187,10 @@ test.describe('search page', () => {
     expect(await urls()).toEqual([])
   })
 
-  test('the response header reports the semantic search state', async ({ api }) => {
-    // The local Worker runs with SEMANTIC_SEARCH=off (playwright.config.mjs); production has the
-    // AI and Vectorize bindings and reports on.
+  test('reports D1 wait time in Server-Timing', async ({ api }) => {
     const response = await api.get('/api/search/?q=docker')
     expect(response.status()).toBe(200)
-    expect(response.headers()['x-semantic-search']).toBe('off')
-    // Keyword-only search waits on D1 alone.
     expect(response.headers()['server-timing']).toMatch(/^d1;dur=\d+$/)
-    expect((await response.json()).semantic).toEqual([])
   })
 
   test('rejects empty and overlong queries and normalizes control characters and astral code points', async ({
@@ -253,32 +210,10 @@ test.describe('search page', () => {
       expect(response.headers()['cache-control'], path).toBe('private, no-store')
       const body = await response.json()
       expect(body.query, path).toBe('abc def')
-      expect(body.partial, path).toBeUndefined()
     }
     // 64 Unicode code points (65 UTF-16 code units) must not split the surrogate pair in the page.
     const astral64 = `${'a'.repeat(63)}𠀀`
     await open(`/search/?q=${encodeURIComponent(astral64)}`)
     await expect(page.getByRole('status')).toHaveText('没有找到相关内容')
-  })
-})
-
-test.describe('related articles', () => {
-  test('an article links its related articles after the text', async ({ open, page }) => {
-    await open('/blog/thin-agent-thick-harness/')
-    const related = page.locator('.post-related')
-    await expect(related).toContainText('相关文章：')
-    await expect(related.getByRole('link')).toHaveCount(3)
-    await expect(related.getByRole('link').first()).toHaveAttribute(
-      'href',
-      '/blog/harness-engineering/',
-    )
-  })
-
-  test('an article without a related article above the threshold shows no line', async ({
-    open,
-    page,
-  }) => {
-    await open('/blog/lock-free-queue/')
-    await expect(page.locator('.post-related')).toHaveCount(0)
   })
 })

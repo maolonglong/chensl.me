@@ -2,7 +2,9 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
-import { articleFromHtml } from '../scripts/search-inputs.mjs'
+import rehypeParse from 'rehype-parse'
+import { unified } from 'unified'
+import { SKIP, visit } from 'unist-util-visit'
 import { remarkSite } from '../src/lib/markdown.mjs'
 import { formatCount, statsLine } from '../src/lib/github-repo.mjs'
 import { remarkReadingStats } from '../src/lib/reading-time.mjs'
@@ -66,9 +68,14 @@ test('an archived repository shows the label, and other GitHub links stay plain'
   assert.match(html, /<a href="https:\/\/github\.com\/example-owner\/not-in-snapshot">/)
 })
 
-test('search text keeps the description and leaves out the stats line and the archived label', async () => {
+test('Pagefind keeps the description and skips the stats line and the archived label', async () => {
   const html = await render('开头。\n\n<https://github.com/maolonglong/zig-buddy2>\n')
-  const { text } = articleFromHtml(`<h1>标题</h1><div class="prose">${html}</div>`)
+  const tree = unified().use(rehypeParse, { fragment: true }).parse(html)
+  let text = ''
+  visit(tree, (node) => {
+    if (node.type === 'element' && node.properties?.dataPagefindIgnore !== undefined) return SKIP
+    if (node.type === 'text') text += node.value
+  })
   const repo = snapshot['maolonglong/zig-buddy2']
   assert.ok(text.includes(repo.description), text)
   assert.ok(text.includes('maolonglong/zig-buddy2'), text)

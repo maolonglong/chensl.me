@@ -8,23 +8,20 @@ import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
 import GitHubCards from '../../components/GitHubCards.astro'
 import Upvote from '../../components/Upvote.astro'
-import { creationLabels, publishedPosts, displayDate, postUrl } from '../../lib/posts'
-import { relatedPosts } from '../../lib/related'
+import { creationLabels, publishedPosts, displayDate } from '../../lib/posts'
 import { isStaleSince } from '../../lib/stale'
 import { readingLength } from '../../lib/reading-time.mjs'
 export async function getStaticPaths() {
   const posts = await publishedPosts()
-  const byId = new Map(posts.map((post) => [post.id, post]))
   return posts.map((post) => ({
     params: { id: post.id },
-    props: { post, related: relatedPosts(post.id, byId) },
+    props: { post },
   }))
 }
 interface Props {
   post: CollectionEntry<'blog'>
-  related: CollectionEntry<'blog'>[]
 }
-const { post, related } = Astro.props
+const { post } = Astro.props
 const { Content, headings, remarkPluginFrontmatter } = await render(post)
 const { wordCount, minutes } = remarkPluginFrontmatter.readingStats
 const lastModified = post.data.updatedDate ?? post.data.pubDate
@@ -67,17 +64,6 @@ const { creation } = post.data
     <div class="prose">
       <Content />
     </div>
-    {related.length > 0 && (
-      <p class="post-related">
-        <span>相关文章：</span>
-        {related.map((other, index) => (
-          <>
-            {index > 0 && <span aria-hidden="true">/</span>}
-            <a href={postUrl(other)}>{other.data.title}</a>
-          </>
-        ))}
-      </p>
-    )}
     <CodeCopy />
     {remarkPluginFrontmatter.githubCards && <GitHubCards />}
   </article>
@@ -121,18 +107,6 @@ const { creation } = post.data
   }
   .post-creation-note {
     overflow-wrap: anywhere;
-  }
-  /* Flex drops the whitespace between the label, the links, and the separators. */
-  .post-related {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 0.5em;
-    margin: 48px 0 0;
-    font-size: 0.875rem;
-    color: var(--muted-color);
-  }
-  .post-related a {
-    text-decoration-line: underline;
   }
   /* Markdown descendants do not carry this component's scope attribute. */
   .prose :global(.astro-code),

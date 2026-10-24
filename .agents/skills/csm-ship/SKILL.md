@@ -24,7 +24,7 @@ A push to `main` deploys production. Cloudflare builds it without waiting for Gi
 
    Run only the commands for the binding whose `migrations_dir` gained a file. The token needs D1 edit permission. Done when `pnpm exec wrangler d1 migrations list <BINDING> --remote` (and with `--preview`) lists no unapplied migration.
 6. **Push.** Run `git push origin <SHA>:main` with the SHA from step 1. Done when the remote reports that SHA as the new head.
-7. **CI.** Find the runs for the pushed commit with `gh run list --commit <SHA> --json workflowName,headSha,status,conclusion,url`, and wait for them. Check the triggers in `.github/workflows/ci.yml` and `.github/workflows/search-index.yml` against the outgoing diff. Done when each expected run has `headSha` equal to the SHA from step 1 and has concluded; report a workflow excluded by its path filter as not triggered.
+7. **CI.** Find the runs for the pushed commit with `gh run list --commit <SHA> --json workflowName,headSha,status,conclusion,url`, and wait for them. Check the triggers in `.github/workflows/ci.yml` against the outgoing diff. Done when each expected run has `headSha` equal to the SHA from step 1 and has concluded; report a workflow excluded by its path filter as not triggered.
 8. **Deployment.** Match a Cloudflare deployment record to the pushed commit. When you cannot reach the records, check that production serves the change, for example with `curl -sI https://chensl.me/<changed path>`. A charset proves itself only in production, because local Wrangler adds one to every `text/*` response ([previews](../../../docs/testing.md#previews)). Done when the deployment is confirmed, or reported as unverified.
 
 ## Report

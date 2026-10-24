@@ -109,18 +109,6 @@ export async function queryIssue(db: D1Database, date: string) {
   return row ? fromRow(row) : null
 }
 
-// D1 decides which semantic versions are current while Vectorize mutations are pending.
-export async function visibleIssueVersions(db: D1Database, dates: string[]) {
-  if (!dates.length) return new Map<string, number>()
-  const { results } = await db
-    .prepare(
-      `SELECT date, version FROM issues WHERE ${visible} AND date IN (${dates.map(() => '?').join(', ')})`,
-    )
-    .bind(...dates)
-    .all<{ date: string; version: number }>()
-  return new Map(results.map(({ date, version }) => [date, version]))
-}
-
 export async function queryMonths(db: D1Database) {
   const { results } = await db
     .prepare(
@@ -139,7 +127,7 @@ export type SaveResult = 'created' | 'updated' | 'unchanged'
 export async function saveIssue(
   db: D1Database,
   issue: NewsIssue,
-): Promise<{ status: SaveResult; version: number; hidden: boolean }> {
+): Promise<{ status: SaveResult; version: number }> {
   const itemsJson = JSON.stringify(issue.items)
   const now = new Date().toISOString()
   const [existing, inserted, , current] = await db.batch([
@@ -163,15 +151,11 @@ export async function saveIssue(
            updated_at = excluded.updated_at`,
       )
       .bind(issue.date),
-    db.prepare('SELECT version, hidden_at FROM issues WHERE date = ?').bind(issue.date),
+    db.prepare('SELECT version FROM issues WHERE date = ?').bind(issue.date),
   ])
-  const { version, hidden_at } = current.results[0] as {
-    version: number
-    hidden_at: string | null
-  }
-  const hidden = hidden_at !== null
-  if (!existing.results.length) return { status: 'created', version, hidden }
-  return { status: inserted.meta.changes ? 'updated' : 'unchanged', version, hidden }
+  const { version } = current.results[0] as { version: number }
+  if (!existing.results.length) return { status: 'created', version }
+  return { status: inserted.meta.changes ? 'updated' : 'unchanged', version }
 }
 
 // Retraction only flips hidden_at; content and versions stay. Returns false for an unknown date.

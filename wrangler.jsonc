@@ -35,10 +35,6 @@
         "simple": { "limit": 120, "period": 60 },
       },
     ],
-    // Search: query embeddings and the AI News index write call Workers AI. Previews use their
-    // own index, so Preview news writes never reach the production vectors.
-    "ai": { "binding": "AI" },
-    "vectorize": [{ "binding": "SEARCH_INDEX", "index_name": "blog-search-preview" }],
   },
   "observability": {
     "enabled": true,
@@ -89,10 +85,6 @@
       "simple": { "limit": 120, "period": 60 },
     },
   ],
-  // Search: Workers AI embeds queries and AI News items; blog-search holds the article chunks and
-  // news items (.github/workflows/search-index.yml writes the articles).
-  "ai": { "binding": "AI" },
-  "vectorize": [{ "binding": "SEARCH_INDEX", "index_name": "blog-search" }],
   "routes": [
     {
       "pattern": "chensl.me",

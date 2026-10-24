@@ -31,12 +31,10 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
 </BaseLayout>
 
 <script>
-  import { cleanQuery, maxQueryLength, merge, type SearchHit } from '../lib/search-fuse'
+  import { cleanQuery, fuse, maxQueryLength, type SearchHit } from '../lib/search-fuse'
 
   interface ServerResults {
-    semantic: SearchHit[]
     news: SearchHit[]
-    partial?: boolean
   }
   interface PagefindResult {
     id: string
@@ -129,14 +127,12 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
     const [articles, server] = await Promise.allSettled([articleHits(query), serverHits(query)])
     // A slower answer to an earlier query must not replace the current results.
     if (id !== latest) return
-    const keyword: SearchHit[][] = []
-    if (articles.status === 'fulfilled') keyword.push(articles.value)
-    if (server.status === 'fulfilled') keyword.push(server.value.news)
-    const semantic = server.status === 'fulfilled' ? server.value.semantic : []
-    const hits = merge(query, keyword, semantic).slice(0, resultLimit * 2)
+    const lists: SearchHit[][] = []
+    if (articles.status === 'fulfilled') lists.push(articles.value)
+    if (server.status === 'fulfilled') lists.push(server.value.news)
+    const hits = fuse(lists).slice(0, resultLimit * 2)
     render(hits)
-    const degraded =
-      articles.status === 'rejected' || server.status === 'rejected' || server.value.partial
+    const degraded = articles.status === 'rejected' || server.status === 'rejected'
     status.textContent =
       (hits.length ? `找到 ${hits.length} 条结果` : '没有找到相关内容') +
       (degraded ? '（部分搜索暂时不可用）' : '')

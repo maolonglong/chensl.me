@@ -420,7 +420,7 @@ test('site checker allows WebAssembly only on the search page', async () => {
   assert.match(result.stderr, /search\/index\.html CSP script-src must allow 'wasm-unsafe-eval'/)
 })
 
-test('site checker requires every article in the search index and the embeddings', async () => {
+test('site checker requires every article in the Pagefind index', async () => {
   const fixture = await checkerFixture()
   await writeArticle(fixture, 'indexed', '<h1>Indexed</h1><div class="prose">Text.</div>')
   await writeArticle(fixture, 'missing', '<h1>Missing</h1><div class="prose">Text.</div>')
@@ -430,18 +430,9 @@ test('site checker requires every article in the search index and the embeddings
     'dist/pagefind/pagefind-entry.json',
     JSON.stringify({ languages: { zh: { page_count: 1 } } }),
   )
-  await write(
-    fixture,
-    'src/data/related-posts.json',
-    JSON.stringify({ posts: { indexed: { hash: 'old', related: [] } } }),
-  )
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
   assert.match(result.stderr, /Pagefind indexed 1 pages; the build has 2 articles/)
-  assert.match(result.stderr, /Article missing has no entry in src\/data\/related-posts\.json/)
-  assert.doesNotMatch(result.stderr, /Article indexed has no entry/)
-  // A changed article only warns: its old embedding still serves until the next run.
-  assert.match(result.stderr, /articles changed since their embedding \(indexed\)/)
 })
 
 test('site checker requires the article feed link in every page footer', async () => {

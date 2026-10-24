@@ -155,7 +155,6 @@ test.describe('news retraction', () => {
     expect(hidden.body).toEqual({
       status: 'hidden',
       date,
-      search: 'disabled',
       cache: 'unavailable',
     })
 
@@ -172,7 +171,6 @@ test.describe('news retraction', () => {
     expect(restored.body).toEqual({
       status: 'visible',
       date,
-      search: 'disabled',
       cache: 'unavailable',
     })
     expect((await page.goto(`/news/${date}/`)).status()).toBe(200)
