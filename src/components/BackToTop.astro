@@ -1,6 +1,7 @@
 <template id="back-to-top-template">
   <button class="back-to-top" type="button" aria-label="回到顶部">
     <svg
+      class="back-to-top-icon"
       width="20"
       height="20"
       viewBox="0 0 24 24"
@@ -12,7 +13,7 @@
       aria-hidden="true"
       focusable="false"
     >
-      <path d="M5 4h14M12 20V9m-6 6 6-6 6 6" />
+      <path d="M7 5h10M12 19V9m-5 5 5-5 5 5" />
     </svg>
   </button>
 </template>
@@ -23,10 +24,10 @@
     const button = template.content.firstElementChild!.cloneNode(true) as HTMLButtonElement
     document.body.append(button)
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => button.toggleAttribute('data-visible', window.scrollY > window.innerHeight)
-    window.addEventListener('scroll', update, { passive: true })
-    window.addEventListener('resize', update)
-    update()
+    const toggle = () => button.toggleAttribute('data-visible', window.scrollY > window.innerHeight)
+    window.addEventListener('scroll', toggle, { passive: true })
+    window.addEventListener('resize', toggle)
+    toggle()
     button.addEventListener('click', (event) => {
       if (reduceMotion.matches) window.scrollTo({ top: 0, behavior: 'instant' })
       else {
