@@ -159,12 +159,12 @@ body:has(.toc-button) {
         translate: 0 -50%;
     }
 
-    /* Collapsed, each entry is a 12px row with its label clipped but still naming the link. */
+    /* Collapsed, each entry is a 14px row with its label clipped but still naming the link. */
     .toc a {
         display: flex;
         align-items: center;
         gap: 12px;
-        height: 12px;
+        height: 14px;
         padding: 0;
         overflow: hidden;
         color: transparent;
@@ -178,19 +178,26 @@ body:has(.toc-button) {
     .toc a::before {
         content: '';
         flex: none;
-        width: 20px;
+        width: 18px;
         height: 2px;
         background-color: color-mix(in srgb, var(--muted-color) 35%, var(--background-color));
         border-radius: 1px;
+        transition: width 180ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .toc ul ul a::before {
-        width: 12px;
-        margin-right: 8px;
+        width: 11px;
+        margin-right: 7px;
     }
 
     .toc a[aria-current]::before {
+        width: 24px;
         background-color: var(--heading-color);
+    }
+
+    .toc ul ul a[aria-current]::before {
+        width: 15px;
+        margin-right: 3px;
     }
 
     .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) {
@@ -198,9 +205,9 @@ body:has(.toc-button) {
         left: min(50% + var(--measure) / 2 + var(--gutter) - 17px, 100% - var(--gutter) - 16rem);
         width: 16rem;
         max-height: calc(100% - 2 * (var(--gutter) + 44px + 8px));
-        padding: 8px 16px;
+        padding: 10px 16px;
         overflow-y: auto;
-        background-color: var(--background-color);
+        background-color: var(--code-block-background-color);
         border: 1px solid var(--border-color);
     }
 
@@ -212,12 +219,31 @@ body:has(.toc-button) {
         white-space: normal;
     }
 
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) a[aria-current] {
+        color: var(--heading-color);
+    }
+
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) a[aria-current]::before {
+        width: 18px;
+    }
+
+    .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) ul ul a[aria-current]::before {
+        width: 11px;
+        margin-right: 7px;
+    }
+
     .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) ul ul a {
         gap: calc(12px + 1em);
     }
 
     .toc:is(:hover, :has(:focus-visible)):not([data-dismissed]) a:hover {
         color: var(--link-hover-color);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toc a::before {
+        transition: none;
     }
 }
 

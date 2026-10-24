@@ -29,10 +29,11 @@ const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(
 
 <style>
   .posts-year {
-    margin: 2em 0 0.25em;
+    margin: 2.25em 0 0.35em;
     font-size: 1.125rem;
     color: var(--muted-color);
     font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
   }
   :global(main) > .posts-year:first-of-type {
     margin-top: 0;
@@ -43,19 +44,57 @@ const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(
     list-style: none;
   }
   .blog-posts a {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 16px;
+    display: flex;
     align-items: baseline;
+    gap: 12px;
     padding-block: 8px;
+    transition:
+      color 150ms ease-out,
+      opacity 150ms ease-out;
+  }
+  .blog-posts span {
+    min-width: 0;
+  }
+  .blog-posts a::after {
+    content: '';
+    flex: 1;
+    min-width: 12px;
+    border-bottom: 1px dashed var(--border-color);
+    order: 1;
+    translate: 0 0.22em;
+    transition: border-color 150ms ease-out;
   }
   .blog-posts time {
+    order: 2;
     font-size: 0.875rem;
     color: var(--muted-color);
     font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
     white-space: nowrap;
   }
   .blog-posts a:visited {
     color: var(--visited-color);
+  }
+  @media (hover: hover) {
+    .blog-posts:hover a:not(:hover) {
+      opacity: 0.58;
+    }
+    .blog-posts a:hover {
+      text-decoration-line: none;
+    }
+    .blog-posts a:hover span {
+      text-decoration-line: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.22em;
+    }
+    .blog-posts a:hover::after {
+      border-bottom-color: var(--muted-color);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .blog-posts a,
+    .blog-posts a::after {
+      transition: none;
+    }
   }
 </style>

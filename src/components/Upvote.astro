@@ -50,6 +50,7 @@ const { postId } = Astro.props
     button.addEventListener('click', () => {
       if (button.disabled) return
       votedOnThisPage = true
+      button.dataset.justVoted = ''
       // Like Bear Blog, feedback is immediate and independent of the submission result.
       void actions.upvote({ postId }).catch(() => {})
       button.disabled = true
@@ -72,24 +73,30 @@ const { postId } = Astro.props
   }
   button {
     display: inline-flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     min-width: 44px;
-    min-height: 48px;
-    padding: 0;
-    border: 0;
-    background: transparent;
+    min-height: 44px;
+    padding: 0 16px 0 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background-color: var(--code-block-background-color);
     color: inherit;
     font-variant-numeric: tabular-nums;
     touch-action: manipulation;
     flex-shrink: 0;
+    transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   [data-count] {
-    margin-top: -3px;
-    line-height: 1.4;
+    line-height: 1;
+  }
+  [data-count]:empty {
+    display: none;
   }
   svg {
+    width: 20px;
+    height: 20px;
     fill: none;
     stroke: currentColor;
     stroke-width: 2;
@@ -98,16 +105,57 @@ const { postId } = Astro.props
   }
   button:disabled {
     color: var(--link-color);
+    border-color: color-mix(in srgb, var(--link-color) 35%, var(--border-color));
+    background-color: color-mix(in srgb, var(--link-color) 6%, var(--code-block-background-color));
     cursor: default;
   }
   @media (hover: hover) {
     button:not(:disabled):hover {
       color: var(--link-color);
+      border-color: color-mix(in srgb, var(--link-color) 35%, var(--border-color));
+    }
+  }
+  @keyframes upvote-chevron {
+    0% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-3.5px);
+    }
+    75% {
+      transform: translateY(1px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  @keyframes upvote-count {
+    from {
+      opacity: 0.4;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
   @media (prefers-reduced-motion: no-preference) {
     button:not(:disabled, :focus-visible):active {
-      transform: scale(0.96);
+      transform: scale(0.95);
+    }
+    button[data-just-voted] polyline:first-child {
+      animation: upvote-chevron 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    button[data-just-voted] polyline:last-child {
+      animation: upvote-chevron 420ms cubic-bezier(0.22, 1, 0.36, 1) 45ms;
+    }
+    button[data-just-voted] [data-count] {
+      animation: upvote-count 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    button {
+      transition: none;
     }
   }
   @media (scripting: none) {
