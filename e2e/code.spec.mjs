@@ -116,7 +116,13 @@ for (const hasTouch of [false, true]) {
           if (button(block).length !== 1) return false
           const b = button(block)[0].getBoundingClientRect()
           const r = block.getBoundingClientRect()
-          return b.width >= 24 && b.top >= r.top && b.right <= r.right && b.right <= innerWidth
+          return (
+            b.width >= 24 &&
+            b.top > r.top &&
+            b.right < r.right &&
+            b.top - r.top === r.right - b.right &&
+            b.right <= innerWidth
+          )
         })
         const wide = blocks.filter((block) => block.scrollWidth > block.clientWidth)
         const firstLineClear = wide.every((block) => {
@@ -142,15 +148,24 @@ for (const hasTouch of [false, true]) {
         'let a scrolled first line clear the button': copy.firstLineClear,
       })
 
+      const button = page.locator('.code-copy').first()
+      await expect(button).toHaveCSS('opacity', hasTouch ? '0.75' : '0')
+      if (!hasTouch) {
+        await page
+          .locator('.code-block')
+          .first()
+          .hover({ position: { x: 16, y: 16 } })
+        await expect(button).toHaveCSS('opacity', '0.75')
+      }
+
       // "已复制" is announced only after the browser accepts the write to the real clipboard.
-      await page.locator('.code-copy').first().click()
+      await button.click()
       await expect(page.locator('.code-copy-status')).toHaveText('已复制', { timeout: 1000 })
       expect(
         await page.evaluate(() => navigator.clipboard.readText()),
         'Copy button must copy the code without its trailing newline',
       ).toBe(copy.expected)
 
-      const button = page.locator('.code-copy').first()
       await expect(button).toHaveAttribute('data-state', 'done')
       await expect(button.locator('[data-copy-icon=done]')).toBeVisible()
       await expect(button.locator('[data-copy-icon=idle]')).toBeHidden()

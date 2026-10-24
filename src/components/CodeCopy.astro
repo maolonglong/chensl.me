@@ -67,8 +67,8 @@
   }
   .code-copy {
     position: absolute;
-    top: 4px;
-    right: 9px;
+    top: 10px;
+    right: 10px;
     display: grid;
     place-items: center;
     width: 32px;
@@ -133,7 +133,7 @@
     .code-copy {
       opacity: 0;
     }
-    :where(:global(.code-block:hover, .code-block:focus-within)) .code-copy {
+    :global(:where(.code-block:hover, .code-block:focus-within)) .code-copy {
       opacity: 0.75;
     }
     .code-copy:hover {
