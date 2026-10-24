@@ -65,6 +65,48 @@ for (const width of [375, 1280]) {
       await expect(notice).not.toHaveAttribute('aria-live')
       await capture(page, `stale-header-${width}-${mode}`)
     })
+
+    test(`archive layout at ${width}px in ${mode}`, async ({ page, open, capture }) => {
+      await page.setViewportSize({ width, height: 844 })
+      await page.emulateMedia({ colorScheme: mode })
+      await open('/blog/')
+      const layout = await page.evaluate(() => {
+        const group = document.querySelector('.year-group')
+        const year = group.querySelector('.posts-year').getBoundingClientRect()
+        const list = group.querySelector('.blog-posts').getBoundingClientRect()
+        const rows = [...document.querySelectorAll('.blog-posts > li')].map((item) => {
+          const row = item.querySelector('.post-row').getBoundingClientRect()
+          const link = item.querySelector('.post-row a')
+          const time = item.querySelector('.post-row time')
+          const desc = item.querySelector('.post-description')
+          const timeBox = time.getBoundingClientRect()
+          const descBox = desc.getBoundingClientRect()
+          return {
+            afterContent: getComputedStyle(link, '::after').content,
+            timeRightGap: Math.abs(row.right - timeBox.right),
+            descBelowRow: descBox.top - row.bottom,
+            descMatchesTime:
+              getComputedStyle(desc).fontSize === getComputedStyle(time).fontSize &&
+              getComputedStyle(desc).color === getComputedStyle(time).color,
+          }
+        })
+        return {
+          sideBySide: year.right <= list.left,
+          stacked: year.bottom <= list.top && Math.abs(year.left - list.left) <= 1,
+          rows,
+        }
+      })
+      expect(layout.rows.length).toBeGreaterThan(0)
+      expect(width >= 768 ? layout.sideBySide : layout.stacked).toBe(true)
+      for (const row of layout.rows) {
+        expect(row.afterContent).toBe('none')
+        expect(row.timeRightGap).toBeLessThanOrEqual(1)
+        expect(row.descBelowRow).toBeGreaterThanOrEqual(2)
+        expect(row.descBelowRow).toBeLessThanOrEqual(8)
+        expect(row.descMatchesTime).toBe(true)
+      }
+      await capture(page, `archive-${width}-${mode}`)
+    })
   }
 }
 
