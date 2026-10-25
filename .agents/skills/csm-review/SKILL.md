@@ -75,7 +75,7 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 
 ### UI — [design](../../../docs/design.md)
 
-- Floating buttons and popover entries measure at least 44 px including padding, and header tools 40 px; the spec said 44 while contents entries were 37 (`b91f0fc`). A round control hit-tests as a circle, so sample inside it.
+- Floating buttons, popover entries, and in-page controls measure at least 44 px including padding, and header tools 40 px; the spec said 44 while contents entries were 37 (`b91f0fc`). A round control hit-tests as a circle, so sample inside it.
 - Hover and touch are separate branches: pointer-only affordances sit behind `@media (hover: hover)`, and specs select the capability with `test.use({ hasTouch })`.
 - Pick a `--size-*` and `--space-*` step; a raw `font-size` or margin value between steps is a hit. Reading text is serif and chrome is `--font-sans`; a component that mixes the two voices in one role is a hit.
 - A component that renders text in `--font-mono` outside code loads the code font on pages without code (`e2e/code.spec.mjs`).

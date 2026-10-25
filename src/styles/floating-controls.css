@@ -219,6 +219,11 @@ body:has(.toc-button) {
         right: max(var(--gutter), 50% - var(--measure) / 2 - 44px - var(--space-7));
         bottom: var(--gutter);
     }
+
+    /* The contents button hides at this width, so only back-to-top's lane needs clearance. */
+    body:has(.toc-button) {
+        padding-bottom: calc(44px + var(--gutter) + var(--space-2));
+    }
 }
 
 /* Scrolled at print time, the floating controls would stamp themselves on every page. */

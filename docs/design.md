@@ -18,7 +18,7 @@ The site reads like a small printed journal: warm paper, ink type, and hairline 
 
 ## Interaction
 
-- Every control works with a keyboard, has a visible focus ring and an accessible name. Floating buttons and contents entries in the popover are 44 px targets; the header tools are 40 px circles that never overlap (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`, `e2e/navigation.spec.mjs`).
+- Every control works with a keyboard, has a visible focus ring and an accessible name. Floating buttons, contents entries in the popover, and in-page controls like the upvote are 44 px targets; the header tools are 40 px circles that never overlap (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`, `e2e/navigation.spec.mjs`).
 - Hover affordances sit behind `@media (hover: hover)`, and every pressable control moves on press. `prefers-reduced-motion: reduce` zeroes every transition in `src/styles/global.css`; keyframe animations run only under `no-preference` (`e2e/footnotes.spec.mjs`).
 - A link that leads to more of the same (`.arrow-link`) ends with an arrow that steps forward on hover. It is the one signature motion.
 
