@@ -142,6 +142,15 @@ test('a pointer in a view without a margin opens the contents from the button', 
   })
   await page.keyboard.press('Escape')
   expect((await measure(page)).panel).toBeNull()
+
+  await page.locator('.toc-button').click()
+  await page.setViewportSize({ width: 1280, height: 768 })
+  const widened = await measure(page)
+  expectAll('/blog/dockertest/ widened to 1280px with popover open', widened, {
+    'popover closes when the margin rail appears': !widened.panel,
+    'list sits in the margin':
+      widened.rail?.left >= 24 && widened.rail?.right <= widened.column.left - 23,
+  })
 })
 
 test.describe('with a touch screen', () => {
@@ -161,7 +170,7 @@ test.describe('with a touch screen', () => {
       // The button holds the corner from the start; back-to-top joins above it later, so neither ever moves.
       const rest = await measure(page, () => scrollTo(0, 0))
       expectAll(label, rest, {
-        'no rail on a touch screen': !rest.rail,
+        'no rail below 76rem': !rest.rail,
         'button sits inside the view': inside(rest.button, rest),
         'button paints on top': rest.buttonOnTop,
         'button lines up with back-to-top':

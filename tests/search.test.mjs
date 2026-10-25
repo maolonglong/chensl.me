@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { cleanQuery, fuse, normalizeQuery } from '../src/lib/search-fuse.ts'
+import { articleQuery, cleanQuery, fuse, normalizeQuery } from '../src/lib/search-fuse.ts'
 import {
   clipSnippet,
   hanPairs,
@@ -9,16 +9,37 @@ import {
   newsKeywordQuery,
 } from '../src/lib/search-text.mjs'
 
-test('query normalization strips control characters and snippet clipping preserves surrogate pairs', () => {
+test('query normalization strips control characters and quotes, and snippet clipping preserves surrogate pairs', () => {
   assert.equal(normalizeQuery('abc\0def\tghi'), 'abc def ghi')
   assert.equal(normalizeQuery('\0\x1f'), null)
-  assert.equal(cleanQuery('  a\0b  '), 'a b')
+  assert.equal(normalizeQuery('"""'), null)
+  assert.equal(normalizeQuery('"芯片"'), '芯片')
+  assert.equal(normalizeQuery('"OpenAI" 芯片'), 'OpenAI 芯片')
+  assert.equal(cleanQuery('  a\0"b"  '), 'a b')
   const exact120 = `${'a'.repeat(118)}𠀀b`
   assert.equal(clipSnippet(exact120), exact120)
   assert.doesNotThrow(() => encodeURIComponent(clipSnippet(exact120)))
   const over120 = `${'a'.repeat(118)}𠀀bc`
   assert.equal(clipSnippet(over120), `${'a'.repeat(118)}𠀀…`)
   assert.doesNotThrow(() => encodeURIComponent(clipSnippet(over120)))
+})
+
+test('article queries space Han characters for Pagefind and quote multi-token words', () => {
+  assert.deepEqual(articleQuery('函数式编程'), {
+    query: '函 数 式 编 程',
+    phrases: ['"函 数 式 编 程"'],
+  })
+  assert.deepEqual(articleQuery('Docker 单元测试'), {
+    query: 'Docker 单 元 测 试',
+    phrases: ['"单 元 测 试"'],
+  })
+  assert.deepEqual(articleQuery('abc𠀀'), {
+    query: 'abc𠀀',
+    phrases: ['"abc 𠀀"'],
+  })
+  assert.deepEqual(articleQuery('gobreak'), { query: 'gobreak', phrases: [] })
+  assert.deepEqual(articleQuery('C++'), { query: 'C++', phrases: [] })
+  assert.deepEqual(articleQuery('锁'), { query: '锁', phrases: [] })
 })
 
 test('news keyword queries bind literal terms and split Han compounds by word boundaries', () => {

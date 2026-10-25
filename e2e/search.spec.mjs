@@ -54,13 +54,21 @@ const results = (page) => page.locator('.search-results > li')
 test.describe('search page', () => {
   test('finds articles by keyword through the static index', async ({ open, page }) => {
     await open('/search/')
-    await search(page, '无锁队列')
-    await expect(results(page).first().getByRole('link')).toHaveAttribute(
-      'href',
-      /^\/blog\/lock-free-queue\/$/,
-    )
-    await expect(results(page).first()).toContainText('文章')
-    await expect(page).toHaveURL(/\?q=%E6%97%A0%E9%94%81%E9%98%9F%E5%88%97$/)
+    for (const [query, slug] of [
+      ['无锁队列', 'lock-free-queue'],
+      ['函数式编程', 'functional-programming'],
+      ['字节池', 'bytebufferpool'],
+      ['手动分配内存', 'manual-memory-management'],
+      ['gobreak', 'gobreaker'],
+    ]) {
+      await search(page, query)
+      await expect(results(page).first().getByRole('link'), query).toHaveAttribute(
+        'href',
+        new RegExp(`^/blog/${slug}/$`),
+      )
+      await expect(results(page).first(), query).toContainText('文章')
+    }
+    await expect(page).toHaveURL(/\?q=gobreak$/)
   })
 
   test('does not search while an input method is composing, and searches once after', async ({
@@ -112,7 +120,7 @@ test.describe('search page', () => {
     expect({
       api: apiQueries,
       pagefind: await page.evaluate(() => globalThis.pagefindTerms ?? []),
-    }).toEqual({ api: ['你好'], pagefind: ['你好', '"你好"'] })
+    }).toEqual({ api: ['你好'], pagefind: ['你 好', '"你 好"'] })
     await expect(page).toHaveURL(/\?q=%E4%BD%A0%E5%A5%BD$/)
   })
 
@@ -185,12 +193,6 @@ test.describe('search page', () => {
     })
     expect(retract.status()).toBe(200)
     expect(await urls()).toEqual([])
-  })
-
-  test('reports D1 wait time in Server-Timing', async ({ api }) => {
-    const response = await api.get('/api/search/?q=docker')
-    expect(response.status()).toBe(200)
-    expect(response.headers()['server-timing']).toMatch(/^d1;dur=\d+$/)
   })
 
   test('rejects empty and overlong queries and normalizes control characters and astral code points', async ({

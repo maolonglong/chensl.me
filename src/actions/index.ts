@@ -1,11 +1,13 @@
 import { ActionError, defineAction } from 'astro:actions'
 import { z } from 'astro/zod'
 import { env } from 'cloudflare:workers'
-import { postIdPattern } from '../lib/post-id.mjs'
 
 // Collection IDs are slugs; rejecting other characters keeps path syntax out of the lookup.
 const input = z.object({
-  postId: z.string().regex(postIdPattern).max(200),
+  postId: z
+    .string()
+    .regex(/^[a-z0-9_-]+$/)
+    .max(200),
 })
 const visitorCookie = '__Host-blog-voter'
 const visitorId = z.uuid()

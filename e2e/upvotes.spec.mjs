@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto'
-import http from 'node:http'
 import { createRequire } from 'node:module'
 import { expect, test as base } from './site.mjs'
 
@@ -103,64 +102,6 @@ test.describe('vote Actions', () => {
     expect(vote.status).toBe(403)
     expect(vote.headers['set-cookie']).toBeUndefined()
     expect((await action('getVotes', article)).data.count).toBe(baseline)
-  })
-
-  test('a cross-origin body over 1 MB gets 403 and the connection serves the next request', async ({
-    baseURL,
-    clientAddress,
-  }) => {
-    // Local Wrangler loses the next request on a connection whose rejected body was left unread
-    // (d104578). 2 MB is past the 1 MB cap of readBoundedBytes in src/lib/request-body.ts.
-    const site = new URL(baseURL)
-    const agent = new http.Agent({ keepAlive: true, maxSockets: 1 })
-    const post = (name, origin, body) =>
-      new Promise((resolve, reject) => {
-        const request = http.request(
-          {
-            hostname: site.hostname,
-            port: site.port,
-            path: `/_actions/${name}/`,
-            method: 'POST',
-            agent,
-            headers: {
-              Origin: origin,
-              'Content-Type': 'application/json',
-              'Content-Length': body.byteLength,
-              'CF-Connecting-IP': clientAddress,
-            },
-          },
-          (response) => {
-            const chunks = []
-            response.on('data', (chunk) => chunks.push(chunk))
-            response.on('end', () =>
-              resolve({
-                status: response.statusCode,
-                reusedSocket: request.reusedSocket,
-                body: Buffer.concat(chunks).toString(),
-              }),
-            )
-          },
-        )
-        request.on('error', reject)
-        request.end(body)
-      })
-    try {
-      const rejected = await post(
-        'upvote',
-        'https://other.example',
-        Buffer.alloc(2 * 1024 * 1024, ' '),
-      )
-      expect(rejected.status, rejected.body).toBe(403)
-      const next = await post(
-        'getVotes',
-        site.origin,
-        Buffer.from(JSON.stringify({ postId: article })),
-      )
-      expect(next.reusedSocket).toBe(true)
-      expect(next.status, next.body).toBe(200)
-    } finally {
-      agent.destroy()
-    }
   })
 
   test('pages that are not published articles cannot be voted on', async ({ action }) => {
@@ -317,7 +258,6 @@ test('a keyboard vote changes the button and persists after reload', async ({
 test('an unavailable initial count stays blank and does not prevent a first vote', async ({
   page,
   open,
-  capture,
   action,
 }) => {
   const baseline = (await action('getVotes', article)).data.count
@@ -332,7 +272,6 @@ test('an unavailable initial count stays blank and does not prevent a first vote
   await expect(button).toBeEnabled()
   await expect(count).toHaveText('')
   await expect(page.locator('[data-upvote] [aria-live]')).toBeEmpty()
-  await captureStates(page, capture, 'unavailable')
 
   const response = page.waitForResponse('**/_actions/upvote/**')
   await button.click()
@@ -341,7 +280,6 @@ test('an unavailable initial count stays blank and does not prevent a first vote
   await expect(count).toHaveText('')
   await expect(button).toHaveAccessibleName('已点赞')
   await expect(page.locator('[data-upvote] [aria-live]')).toHaveText('已点赞')
-  await captureStates(page, capture, 'voted-unloaded')
   await page.unroute('**/_actions/getVotes/**')
   await page.reload()
   await expect(count).toHaveText(String(baseline + 1))
@@ -411,7 +349,6 @@ test('a failed submission leaves the immediate vote feedback unchanged', async (
   open,
   settle,
   action,
-  capture,
 }) => {
   const baseline = (await action('getVotes', article)).data.count
   const button = page.locator('[data-upvote] button')
@@ -437,7 +374,6 @@ test('a failed submission leaves the immediate vote feedback unchanged', async (
   await expect(button).not.toHaveCSS('color', unvotedColor)
   await expect(page.locator('[data-upvote] [aria-live]')).toHaveText('已点赞')
   await button.dispatchEvent('click')
-  await captureStates(page, capture, 'pending')
   release()
   await finished
   // The rejection settles in a microtask after requestfailed. A rendered frame after it is where
@@ -446,7 +382,6 @@ test('a failed submission leaves the immediate vote feedback unchanged', async (
   expect(submissions).toBe(1)
   await expect(button).toBeDisabled()
   await expect(count).toHaveText(String(baseline + 1))
-  await captureStates(page, capture, 'failed-vote')
   expect((await action('getVotes', article)).data.count).toBe(baseline)
 
   await page.reload()

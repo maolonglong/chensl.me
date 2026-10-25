@@ -20,7 +20,7 @@ The site splits state into build-time static inputs and request-time edge databa
                    ├─ Static Assets + public/_headers (all prerendered routes and 404s)
                    ├─ Worker: src/worker.ts ─► /api/search (D1 NEWS FTS5) & /api/github/repos
                    ├─ Worker: src/middleware.ts + src/actions/ ─► D1 (VOTES), rate limiters, ASSETS
-                   └─ Worker: src/live.config.ts + src/pages/api/news* ─► D1 (NEWS), Workers Cache
+                   └─ Worker: src/lib/news-pages.ts + src/pages/api/news* ─► D1 (NEWS), Workers Cache
 ```
 
 ## Entry points
@@ -62,14 +62,14 @@ Articles and their local images live in `src/content/blog/`. `src/content.config
 - **Architecture Invariant:** A vote write and its read-back execute in a single `env.VOTES.batch` call so the returned count always includes the caller's vote.
 - **Architecture Invariant:** An early 4xx return on a POST request drains the bounded request body first so local `wrangler dev` does not drop the next request on a reused connection.
 
-### `src/live.config.ts`, `src/lib/news.ts`, `src/lib/news-cache.ts`, `src/pages/news/`, `src/pages/api/news*`
+### `src/lib/news.ts`, `src/lib/news-pages.ts`, `src/lib/news-cache.ts`, `src/pages/news/`, `src/pages/api/news*`
 
-Bot-written AI News issues live in the `NEWS` D1 database (`migrations/news/`) ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). `src/pages/api/news.ts` and `src/pages/api/news/retract.ts` verify `NEWS_TOKEN`, write to `issue_versions` and `issues`, and purge Workers Cache tags via `src/lib/news-cache.ts`. `/news/` pages and `/news/index.xml` read through `src/live.config.ts`.
+Bot-written AI News issues live in the `NEWS` D1 database (`migrations/news/`) ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)). `src/pages/api/news.ts` and `src/pages/api/news/retract.ts` verify `NEWS_TOKEN`, write to `issue_versions` and `issues`, and purge Workers Cache tags via `src/lib/news-cache.ts`. `/news/` pages and `/news/index.xml` read `env.NEWS` through `src/lib/news-pages.ts`.
 
 - **Architecture Invariant:** `src/lib/news.ts` is the **Boundary** for all news storage and validation. Issues are plain structured data, never HTML or Markdown; pages escape all text and link only `http` and `https` URLs. Every read query has a hard `LIMIT` on the `date` primary key.
-- **Architecture Invariant:** `src/live.config.ts` imports `cloudflare:workers` lazily at request time so `astro sync` can load the config in Node. Because `astro:content` bundles the article content store into the Worker, `scripts/check-site.mjs` caps the bundled store at 1,200,000 bytes.
+- **Architecture Invariant:** The Worker never imports `astro:content`, so the static article content store stays out of `dist/server` (`scripts/check-site.mjs`).
 
-### `src/lib/search-endpoint.ts`, `src/lib/search.ts`, `src/lib/search-fuse.ts`, `src/pages/search.astro`
+### `src/lib/search.ts`, `src/lib/search-fuse.ts`, `src/pages/search.astro`
 
 `/search/` merges browser-side Pagefind article hits with `/api/search` AI News hits using reciprocal rank fusion in `src/lib/search-fuse.ts` ([decision](../.agents/notes/implemented/simplification/2026-10-24-keyword-only-search.md)).
 
@@ -86,7 +86,7 @@ Bot-written AI News issues live in the `NEWS` D1 database (`migrations/news/`) (
 
 Each component in `src/components/` owns its scoped styles and compiled browser script. `src/styles/global.css` holds design tokens, the shared chrome classes (`.measure`, `.meta`, `.section-label`, `.entries`), and `.prose` rules; `src/styles/floating-controls.css` holds the article's contents list, its button, and back-to-top. `src/scripts/theme-bootstrap.js` runs inline in `<head>` before first paint (`astro.config.mjs` reads it at startup, so restart `pnpm dev` after editing it).
 
-- **Architecture Invariant:** Pages require no JavaScript to read. When scripts do not run, the contents list opens via `<details>`, script-only buttons stay hidden, and build-time stale notices remain visible (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
+- **Architecture Invariant:** Pages require no JavaScript to read. When scripts do not run, the contents list opens via its native popover, script-only buttons stay hidden, and build-time stale notices remain visible (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
 
 ## Cross-cutting concerns
 

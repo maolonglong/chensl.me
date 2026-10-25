@@ -61,4 +61,4 @@ The repository follows the [documentation standard](../../../../docs/AGENTS.md),
 
 ## Consequences
 
-Agents must follow the routing table in root `AGENTS.md` to reach a reference document; a skill loads by its description. The checks catch broken references, wrapped paragraphs, and format errors, but not a copied value or growth. The admission rule depends on review for that, and the `csm-review` skill carries the trap.
+Agents must follow the routing table in root `AGENTS.md` to reach a reference document; a skill loads by its description. The checks catch broken references and missing skill links, but not a copied value or growth. The admission rule depends on review for that, and the `csm-review` skill carries the trap.

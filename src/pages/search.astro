@@ -33,7 +33,13 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
 </BaseLayout>
 
 <script>
-  import { cleanQuery, fuse, maxQueryLength, type SearchHit } from '../lib/search-fuse'
+  import {
+    articleQuery,
+    cleanQuery,
+    fuse,
+    maxQueryLength,
+    type SearchHit,
+  } from '../lib/search-fuse'
 
   interface ServerResults {
     news: SearchHit[]
@@ -63,19 +69,19 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   const plainText = (html: string) =>
     new DOMParser().parseFromString(html, 'text/html').body.textContent ?? ''
 
-  // Pagefind splits Chinese text into words and matches any of them, so 智能体 alone matches an
-  // article that only mentions 智能指针. A query without spaces keeps only the pages that also
-  // contain it as one phrase; the plain search supplies the ranking, which phrase search lacks.
-  // Typing spaces searches the separate words.
-  async function articleHits(query: string): Promise<SearchHit[]> {
+  // Pagefind indexes each Han character as its own token, and articleQuery spaces Han runs and
+  // quotes runs of two or more characters so 智能体 does not match articles that only contain its
+  // characters apart; the plain search supplies the ranking, which phrase search lacks.
+  async function articleHits(raw: string): Promise<SearchHit[]> {
+    const { query, phrases } = articleQuery(raw)
+    if (!query) return []
     const index = await loadPagefind()
-    const phraseTerm = query.replaceAll('"', '').trim()
-    const plainSearch = index.search(query)
-    const phraseSearch =
-      phraseTerm && !/\s/.test(phraseTerm) ? index.search(`"${phraseTerm}"`) : null
-    const [plain, phrase] = await Promise.all([plainSearch, phraseSearch])
+    const [plain, ...phraseHits] = await Promise.all([
+      index.search(query),
+      ...phrases.map((phrase) => index.search(phrase)),
+    ])
     let { results } = plain
-    if (phrase) {
+    for (const phrase of phraseHits) {
       const phraseIds = new Set(phrase.results.map((result) => result.id))
       results = results.filter((result) => phraseIds.has(result.id))
     }
@@ -83,7 +89,7 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
     return pages.map((page) => ({
       type: 'blog',
       url: page.url,
-      title: page.meta.title ?? page.url,
+      title: (page.meta.title ?? page.url).replaceAll('\u200B', ''),
       date: page.meta.date ?? '',
       snippet: plainText(page.excerpt),
     }))

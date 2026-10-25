@@ -17,7 +17,7 @@ Two policies apply independently, and a browser enforces both:
 
 `public/_headers` defines no `script-src`, so a script source goes only in the meta policy. A frame, style, image, or connection source goes in each policy that defines its directive. Inline styles stay allowed for Shiki, table alignment, and the no-script fallback.
 
-`tests/document.test.mjs` checks policy order and hashes in a real build, `scripts/check-site.mjs` rejects a permissive script policy, and `e2e/page-shell.spec.mjs` injects scripts and event handlers in a browser.
+`tests/content.test.mjs` checks policy order and hashes in a real build, `scripts/check-site.mjs` rejects a permissive script policy, and `e2e/page-shell.spec.mjs` injects scripts and event handlers in a browser.
 
 ## Alternatives considered
 

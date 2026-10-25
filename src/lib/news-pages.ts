@@ -1,19 +1,30 @@
-import { getLiveCollection } from 'astro:content'
-import type { IssueQuery, StoredIssue } from './news'
+import { env } from 'cloudflare:workers'
+import {
+  issueCacheTags,
+  queryIssue,
+  queryIssues,
+  queryMonths,
+  type IssueQuery,
+  type StoredIssue,
+} from './news'
 
-// The live loader reports a failed read as an error beside missing entries. Surface the error
-// instead of rendering an empty page.
-// Each loader also tags the response with its cache hint (src/live.config.ts) for purging by tag
-// (src/lib/news-cache.ts).
-export async function loadIssues(filter: IssueQuery, headers: Headers): Promise<StoredIssue[]> {
-  const { entries, error, cacheHint } = await getLiveCollection('news', filter)
-  if (!entries) throw error
-  setCacheTag(headers, cacheHint?.tags)
-  return entries.map((entry) => entry.data)
+export function setCacheTag(headers: Headers, tags: Iterable<string>) {
+  const unique = [...new Set(tags)]
+  if (unique.length) headers.set('Cache-Tag', unique.join(','))
 }
 
-export function setCacheTag(headers: Headers, tags: string[] | undefined) {
-  if (tags?.length) headers.set('Cache-Tag', tags.join(','))
+// Each news page tags its response with `news` and any issue-specific `news-<date>` tags for
+// purging by tag (src/lib/news-cache.ts).
+export async function loadIssues(filter: IssueQuery, headers: Headers): Promise<StoredIssue[]> {
+  const issues = await queryIssues(env.NEWS, filter)
+  setCacheTag(headers, ['news', ...issues.flatMap((issue) => issueCacheTags(issue.date))])
+  return issues
+}
+
+export async function loadIssue(date: string, headers: Headers): Promise<StoredIssue | null> {
+  const issue = await queryIssue(env.NEWS, date)
+  if (issue) setCacheTag(headers, issueCacheTags(issue.date))
+  return issue
 }
 
 export interface NewsMonth {
@@ -22,8 +33,7 @@ export interface NewsMonth {
 }
 
 export async function loadMonths(headers: Headers): Promise<NewsMonth[]> {
-  const { entries, error, cacheHint } = await getLiveCollection('newsMonths')
-  if (!entries) throw error
-  setCacheTag(headers, cacheHint?.tags)
-  return entries.map((entry) => entry.data)
+  const months = await queryMonths(env.NEWS)
+  setCacheTag(headers, ['news'])
+  return months
 }

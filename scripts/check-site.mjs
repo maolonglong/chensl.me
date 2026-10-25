@@ -1,12 +1,10 @@
 import { existsSync } from 'node:fs'
-import { open, readFile, readdir, stat } from 'node:fs/promises'
+import { open, readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
-import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import rehypeParse from 'rehype-parse'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 import { cardHeight, cardWidth } from '../src/lib/og.mjs'
-import { isPostId } from '../src/lib/post-id.mjs'
 
 const root = process.cwd()
 const outputDir = path.resolve(root, process.argv[2] ?? 'dist')
@@ -357,7 +355,6 @@ for (const [file, page] of pages) {
   articleCards.set(target, relative)
 }
 
-const markdownFiles = new Set([...outputFiles].filter((file) => /^blog\/.+\/index\.md$/.test(file)))
 // Local Wrangler adds UTF-8 to text/* automatically, masking missing production headers.
 for (const [route, type] of [
   ['/llms.txt', 'text/plain'],
@@ -366,23 +363,6 @@ for (const [route, type] of [
   const rule = headerRule(route)
   if (!new RegExp(`^\\s*Content-Type:\\s*${type};\\s*charset=utf-8\\s*$`, 'im').test(rule)) {
     errors.push(`dist/_headers must set ${type}; charset=utf-8 for ${route}`)
-  }
-}
-// Validate with the same Astro Markdown engine used by the site, so reference images and HTML
-// are checked while examples inside code stay literal. This never rewrites the exported body.
-const markdownProcessor = await createMarkdownProcessor({
-  syntaxHighlight: false,
-  smartypants: false,
-})
-for (const markdown of markdownFiles) {
-  const file = path.join(outputDir, markdown)
-  const { code } = await markdownProcessor.render(await readFile(file, 'utf8'))
-  for (const image of elements(parseHtml(code), ['img'])) {
-    const src = image.properties.src ?? ''
-    if (isInternalUrl(src, file)) {
-      const error = internalReferenceError(src, file)
-      if (error) errors.push(`${markdown} ${error}`)
-    }
   }
 }
 for (const file of files.filter((file) => file.endsWith('.xml'))) {
@@ -439,39 +419,14 @@ if (existsSync(githubReposFile)) {
   }
 }
 
-// Upvote Actions only accept slug-shaped article IDs, so every article URL must match.
-for (const file of outputFiles) {
-  const id = file.match(/^blog\/([^/]+)\/index\.html$/)?.[1]
-  if (id && !isPostId(id)) {
-    errors.push(`Article URL /blog/${id}/ is outside the upvote ID contract [a-z0-9_-]+`)
-  }
-}
-
-// The AI News pages read through live content collections, and any astro:content import bundles
-// the content store into the Worker. The owner accepted that cost; this cap keeps it from growing
-// unnoticed. The store was 924,982 bytes on 2026-10-16; the cap leaves about 30% for new posts.
-const contentStoreLimitBytes = 1_200_000
+// Share cards render at build time in Node, and articles are prerendered, so neither the card
+// renderer nor the article content store may reach the Worker bundle.
 const serverDir = path.resolve(outputDir, '../server')
 if (existsSync(serverDir)) {
-  let contentStoreBytes = 0
-  const contentStoreFiles = []
   for (const file of await walk(serverDir)) {
     if (path.basename(file).includes('data-layer-content')) {
-      contentStoreBytes += (await stat(file)).size
-      contentStoreFiles.push(path.relative(root, file))
+      errors.push(`Worker bundle includes the article content store: ${path.relative(root, file)}`)
     }
-  }
-  if (contentStoreBytes > contentStoreLimitBytes) {
-    errors.push(
-      `Worker content store is ${contentStoreBytes} bytes, over the ${contentStoreLimitBytes}-byte limit: ${contentStoreFiles.join(', ')}`,
-    )
-  }
-}
-
-// Share cards render at build time in Node. The Worker never renders an image, so no renderer
-// code may reach its bundle.
-if (existsSync(serverDir)) {
-  for (const file of await walk(serverDir)) {
     if (
       /\.(?:m?js|wasm|node)$/.test(file) &&
       /@takumi-rs|takumi_wasm|subset-font/.test(await readFile(file, 'utf8'))

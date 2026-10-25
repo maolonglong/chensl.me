@@ -1,7 +1,7 @@
 main {
     --font-family-sans:
-        'TsangerJinKai02', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', Charter,
-        Georgia, serif;
+        'Source Serif 4', 'TsangerJinKai02', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC',
+        'STSong', Georgia, serif;
     --font-family-monospace:
         'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas,
         'Liberation Mono', var(--font-family-sans);
@@ -38,7 +38,7 @@ main {
     --color-prettylights-syntax-sublimelinter-gutter-mark: light-dark(#8b8981, #86847d);
     --color-prettylights-syntax-constant-other-reference-link: light-dark(#1b365d, #9db9d8);
     --color-btn-text: light-dark(#3d3d3a, #d1cfc6);
-    --color-btn-bg: light-dark(#f5f4ed, #282724);
+    --color-btn-bg: light-dark(#faf9f5, #282724);
     --color-btn-border: light-dark(#e8e6dc, #353430);
     --color-btn-shadow: 0 0 transparent;
     --color-btn-inset-shadow: 0 0 transparent;
@@ -47,14 +47,14 @@ main {
     --color-btn-active-bg: light-dark(#dce3eb, #354354);
     --color-btn-active-border: light-dark(#1b365d, #9db9d8);
     --color-btn-selected-bg: light-dark(#dce3eb, #354354);
-    --color-btn-primary-text: light-dark(#f5f4ed, #1b1a18);
+    --color-btn-primary-text: light-dark(#faf9f5, #1b1a18);
     --color-btn-primary-bg: light-dark(#1b365d, #9db9d8);
     --color-btn-primary-border: light-dark(#1b365d, #9db9d8);
     --color-btn-primary-hover-bg: light-dark(#2d5a8a, #bfd2e5);
     --color-btn-primary-hover-border: light-dark(#2d5a8a, #bfd2e5);
     --color-btn-primary-selected-bg: light-dark(#1b365d, #9db9d8);
     --color-btn-primary-selected-shadow: 0 0 transparent;
-    --color-btn-primary-disabled-text: light-dark(#f5f4ed, #353430);
+    --color-btn-primary-disabled-text: light-dark(#faf9f5, #353430);
     --color-btn-primary-disabled-bg: light-dark(#6b7b91, #687f96);
     --color-btn-primary-disabled-border: light-dark(#6b7b91, #687f96);
     --color-action-list-item-default-hover-bg: light-dark(
@@ -62,14 +62,14 @@ main {
         rgb(148 180 212 / 12%)
     );
     --color-segmented-control-bg: light-dark(#f0eee6, #282724);
-    --color-segmented-control-button-bg: light-dark(#f5f4ed, #1b1a18);
+    --color-segmented-control-button-bg: light-dark(#faf9f5, #1b1a18);
     --color-segmented-control-button-selected-border: light-dark(#d4d2c8, #66645f);
     --color-fg-default: light-dark(#3d3d3a, #d1cfc6);
     --color-fg-muted: light-dark(#6b6a64, #a29f95);
     --color-fg-subtle: light-dark(#8b8981, #86847d);
     --color-canvas-default: light-dark(#faf9f5, #1b1a18);
-    --color-canvas-overlay: light-dark(#f5f4ed, #282724);
-    --color-canvas-inset: light-dark(#f5f4ed, #282724);
+    --color-canvas-overlay: light-dark(#faf9f5, #282724);
+    --color-canvas-inset: light-dark(#f0eee6, #282724);
     --color-canvas-subtle: light-dark(#f0eee6, #282724);
     --color-border-default: light-dark(#e8e6dc, #353430);
     --color-border-muted: light-dark(#e8e6dc, #353430);
@@ -124,7 +124,7 @@ textarea::placeholder {
 
 #__next .gsc-reactions-button,
 #__next .gsc-social-reaction-summary-item:not(.has-reacted) {
-    background-color: light-dark(#f5f4ed, #282724);
+    background-color: light-dark(#f0eee6, #282724);
 }
 
 #__next .gsc-reactions-popover {
@@ -138,7 +138,7 @@ textarea::placeholder {
 
 #__next .BtnGroup {
     padding: 2px;
-    background-color: light-dark(#f5f4ed, #282724);
+    background-color: light-dark(#faf9f5, #282724);
     border: 1px solid var(--color-border-default);
     border-radius: 6px;
 }
@@ -161,7 +161,7 @@ textarea::placeholder {
 
 #__next .gsc-comment-box:not(.gsc-comment-box-is-reply),
 #__next .gsc-comment > :first-child {
-    background-color: light-dark(#f5f4ed, #282724);
+    background-color: light-dark(#faf9f5, #282724);
     border-radius: 6px;
 }
 

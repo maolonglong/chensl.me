@@ -20,4 +20,4 @@ The blog loader wraps `parseData` in `src/content.config.ts`, which `glob` calls
 
 ## Consequences
 
-An unzoned clock time is Shanghai local time during builds and development reloads. Date-only values and explicit offsets stay as they were. Each changed entry needs one extra file read and front matter parse; Markdown rendering and the stored body remain owned by `glob`. `tests/content.test.mjs` and `tests/post-dates.test.mjs` pin the rule.
+An unzoned clock time is Shanghai local time during builds and development reloads. Date-only values and explicit offsets stay as they were. Each changed entry needs one extra file read and front matter parse; Markdown rendering and the stored body remain owned by `glob`. `tests/content.test.mjs` pins the rule.

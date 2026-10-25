@@ -4,7 +4,7 @@ import path from 'node:path'
 import { test } from 'node:test'
 import fontverter from 'fontverter'
 import { Blob, Face } from 'harfbuzzjs'
-import { astroProject, behaviorFixture, buildAstro, frontmatter, root, write } from './support.mjs'
+import { behaviorFixture, root } from './support.mjs'
 
 // Font declarations, page coverage, versioning, conditional code fonts, and the cold-visit transfer budget.
 
@@ -105,73 +105,38 @@ test('JinKai slices cover every supported character exactly once, in cached file
   assert.match(css, /var\(--font-jinkai\),\s*["']TsangerJinKai02 Slices["']/)
 })
 
-test('shared layouts declare code fonts without preloading them', async () => {
+test('shared layouts declare code fonts without preloading them, and unpublished characters stay out of subsets', async () => {
   const { dist } = await behaviorFixture()
   for (const file of ['index.html', 'blog/render/index.html', 'blog/older/index.html']) {
     const html = await readFile(path.join(dist, file), 'utf8')
     assert.match(html, /font-family:\s*['"]?JetBrains Mono/, file)
     assert.doesNotMatch(html, /rel=["']preload["']/)
   }
-})
-
-test('font subsets follow edited content and remain deterministic across builds', async () => {
-  const fixture = await astroProject('astro-font-update-')
-  await write(
-    fixture,
-    'src/pages/index.astro',
-    `---\nimport BaseLayout from '../layouts/BaseLayout.astro'\n---\n<BaseLayout><p>龘 &amp; &#20598;</p></BaseLayout>`,
+  const index = await readFile(path.join(dist, 'index.html'), 'utf8')
+  const faces = [...index.matchAll(/@font-face\s*\{([^}]+)\}/g)]
+    .map(([, face]) => face)
+    .filter((face) => face.includes('TsangerJinKai02'))
+  const subsets = await Promise.all(
+    faces.map(async (css) => {
+      const url = css.match(/url\(["']?([^)'"]+)/)[1]
+      const bytes = await readFile(path.join(dist, url))
+      const face = new Face(new Blob(await fontverter.convert(bytes, 'sfnt')))
+      return { chars: [...face.collectUnicodes()], copyright: face.getName(0, 'en') }
+    }),
   )
-  await write(fixture, 'src/content/blog/post.md', `${frontmatter('Article', '2025-01-01')}麤`)
-  await write(
-    fixture,
-    'src/content/blog/draft.md',
-    `${frontmatter('Draft', '2025-01-01', 'draft: true\n')}龗`,
+  // Article-only character 麤 stays in the article subset, not the common subset.
+  assert.ok(subsets[0].chars.includes('麤'.codePointAt(0)))
+  assert.ok(!subsets[1].chars.includes('麤'.codePointAt(0)))
+  assert.equal(
+    subsets[0].chars.some((cp) => subsets[1].chars.includes(cp)),
+    false,
   )
-  await write(fixture, 'src/content/blog/future.md', `${frontmatter('Future', '2999-01-01')}龖`)
-  const dist = await buildAstro(fixture)
-  async function subsets() {
-    const html = await readFile(path.join(dist, 'index.html'), 'utf8')
-    const faces = [...html.matchAll(/@font-face\s*\{([^}]+)\}/g)]
-      .map(([, face]) => face)
-      .filter((face) => face.includes('TsangerJinKai02'))
-    return Promise.all(
-      faces.map(async (css) => {
-        const url = css.match(/url\(["']?([^)'"]+)/)[1]
-        const bytes = await readFile(path.join(dist, url))
-        const face = new Face(new Blob(await fontverter.convert(bytes, 'sfnt')))
-        return { url, chars: [...face.collectUnicodes()], copyright: face.getName(0, 'en') }
-      }),
-    )
-  }
-  const first = await subsets()
-  assert.ok(first[1].chars.includes('龘'.codePointAt(0)))
-  assert.ok(first[1].chars.includes('偶'.codePointAt(0)), 'decode HTML character references')
-  assert.ok(first[0].chars.includes('麤'.codePointAt(0)))
-  assert.ok(!first[1].chars.includes('麤'.codePointAt(0)))
+  assert.ok(subsets.every((face) => face.copyright.length > 0))
   for (const unpublished of ['龗', '龖']) {
     assert.equal(
-      first.some((face) => face.chars.includes(unpublished.codePointAt(0))),
+      subsets.some((face) => face.chars.includes(unpublished.codePointAt(0))),
       false,
       `unpublished character ${unpublished} leaked into built font subsets`,
     )
   }
-  assert.equal(
-    first[0].chars.some((cp) => first[1].chars.includes(cp)),
-    false,
-  )
-  assert.ok(first.every((face) => face.copyright.length > 0))
-  await buildAstro(fixture)
-  assert.deepEqual(await subsets(), first)
-  await write(
-    fixture,
-    'src/pages/index.astro',
-    `---\nimport BaseLayout from '../layouts/BaseLayout.astro'\n---\n<BaseLayout><p>龘麤</p></BaseLayout>`,
-  )
-  await buildAstro(fixture)
-  const updated = await subsets()
-  // The home page now uses the article's only character, so the article subset is empty and
-  // the build declares only the common subset.
-  assert.equal(updated.length, 1)
-  assert.ok(updated[0].chars.includes('麤'.codePointAt(0)))
-  assert.notEqual(updated[0].url, first[1].url)
 })

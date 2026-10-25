@@ -73,9 +73,10 @@ export async function cardLayout({ title, label }) {
       letterSpacing: '0.02em',
     },
     [
-      text(siteTitle, { fontSize: 36, color: colors.heading }),
+      text(siteTitle, { fontSize: 36, fontWeight: 500, color: colors.heading }),
       text(title, {
         fontSize: 64,
+        fontWeight: 500,
         lineHeight: 1.3,
         color: colors.heading,
         letterSpacing: 0,

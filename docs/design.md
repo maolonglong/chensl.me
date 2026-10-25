@@ -42,7 +42,7 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 - JinKai W04 alone covers weights 400 to 500, synthesized bold is off, and the served Source Serif keeps only that slice of its weight axis.
 - Fonts are self-hosted with `font-display: swap` and content-versioned URLs, without preloads. Code fonts are declared on every page, and the browser loads them only when a page uses them (`tests/fonts.test.mjs`, `e2e/code.spec.mjs`). Repository cards use the sans face, so a card alone never loads the code font.
 - A cold visit to the home page loads at most 120 KiB of JinKai and 150 KiB of fonts in total, and `/news/` loads cached JinKai slices for its D1 text (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
-- The fonts are not under the repository's code license; read [NOTICE.md](../public/fonts/tsanger-jinkai02/NOTICE.md) before you add or change one.
+- The fonts are not under the repository's code license; read [NOTICE.md](../public/fonts/tsanger-jinkai02/NOTICE.md), [Source Serif OFL.txt](../public/fonts/source-serif-4/OFL.txt), and [JetBrains Mono OFL.txt](../public/fonts/jetbrains-mono-2.304/OFL.txt) before you add or change one.
 - Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart.
 - `<em>` stays upright and carries CJK emphasis dots. `<strong>` uses weight 500 in the heading color.
 
@@ -50,11 +50,11 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 
 - **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails (`e2e/appearance.spec.mjs`).
 - **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
-- **Article header.** The date, length, reading time, and creation label share one sans metadata line. A stale notice is a quiet parchment note below it (`e2e/page-shell.spec.mjs`, `e2e/creation.spec.mjs`).
+- **Article header.** The date, length, reading time, and creation label share one sans metadata line. A stale notice is a quiet parchment note below it (`e2e/page-shell.spec.mjs`, `e2e/reading-time.spec.mjs`).
 - **Article end.** The upvote, then the earlier and later articles, then the comments under a section label.
 - **Search** is one ruled input line and a result list: title, type and date, excerpt. No filters or suggestions.
 - **Icons** are inline SVG, not font glyphs or an icon library.
-- **Site icon.** A sleeping cat, hand-drawn in `scripts/icons/` (`tests/icons.test.mjs`).
+- **Site icon.** A sleeping cat, hand-drawn in `scripts/icons/` (`scripts/build-icons.mjs`).
 - **Repository cards** are a hairline frame with the code block corners and muted text, with no avatar or language color (`e2e/github-cards.spec.mjs`).
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
 - **Links** in article text and the footer are underlined; external prose links and AI News items add a north-east arrow. Underline rules set `text-decoration-line` rather than the `text-decoration` shorthand, which resets thickness (`e2e/navigation.spec.mjs`).

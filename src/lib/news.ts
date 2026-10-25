@@ -1,5 +1,7 @@
 import { z } from 'astro/zod'
-import { maxNewsItems } from './news-limits.mjs'
+
+// migrations/news/0004_item_search.sql reserves 32 issue_items_fts rowids per day (day * 32 + key).
+const maxNewsItems = 30
 
 // Calendar dates in Asia/Shanghai, the day the issue covers. The key is also the page URL.
 const isoDate = z
@@ -78,7 +80,7 @@ function fromRow(row: IssueRow): StoredIssue | null {
     : null
 }
 
-// All reads go through the live collection in src/live.config.ts; this is its only SQL.
+// All page reads go through src/lib/news-pages.ts; this is their only SQL.
 // Retracted issues (hidden_at set) are never returned. Dates are the primary key of a
 // WITHOUT ROWID table, so lookups, ranges and ORDER BY date use it.
 const columns = 'date, title, summary, items_json, created_at, updated_at, version'

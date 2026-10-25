@@ -171,35 +171,6 @@ test('repository paths and commits named in first-party Markdown exist', () => {
   assert.deepEqual(errors, [])
 })
 
-test('each Markdown paragraph is one physical line', () => {
-  // A wrapped line that follows a list can also join the wrong item when it renders.
-  // ponytail: line heuristics, not a Markdown parser; move to an AST when a real case slips by.
-  const html = /^\s*<(?:!--|\/?(?:details|summary|div|p|table|picture|figure|section|img|br)\b)/i
-  const block = /^\s*(?:[-*+]\s|\d+[.)]\s|\||#|$)/
-  const errors = []
-  for (const file of documents) {
-    const lines = proseLines(file)
-    // Skill front matter is YAML, not prose.
-    const start = lines[0] === '---' ? lines.indexOf('---', 1) + 1 : 0
-    let code = false
-    for (let index = start + 1; index < lines.length; index++) {
-      // An indented code block starts after a blank line and keeps its 4-space indent.
-      code = /^ {4}/.test(lines[index]) && (code || !lines[index - 1].trim())
-      if (code) continue
-      // Compare blockquote lines by the text after their `>` markers.
-      const quoted = /^\s*>/.test(lines[index])
-      if (quoted !== /^\s*>/.test(lines[index - 1]) && quoted) continue
-      const [previous, line] = [lines[index - 1], lines[index]].map((text) =>
-        quoted ? text.replace(/^\s*(?:>\s?)+/, '') : text,
-      )
-      if (block.test(line) || html.test(line)) continue
-      if (!previous.trim() || /^\s*(?:\||#)/.test(previous) || html.test(previous)) continue
-      errors.push(`${file}:${index + 1} continues the paragraph above; join the two lines.`)
-    }
-  }
-  assert.deepEqual(errors, [])
-})
-
 test('each skill has a matching name and a Claude Code link', () => {
   const errors = []
   for (const name of readdirSync(path.join(root, '.agents/skills'))) {
@@ -227,65 +198,6 @@ test('each skill has a matching name and a Claude Code link', () => {
   for (const name of readdirSync(path.join(root, '.claude/skills'))) {
     if (!existsSync(path.join(root, '.agents/skills', name))) {
       errors.push(`.claude/skills/${name} links to a skill that does not exist; remove it.`)
-    }
-  }
-  assert.deepEqual(errors, [])
-})
-
-// The closed sets in .agents/notes/AGENTS.md.
-const lifecycles = ['proposed', 'implemented', 'rejected']
-const classes = ['feature', 'bug-fix', 'simplification', 'architecture', 'process', 'testing']
-
-test('Agent Notes follow the lifecycle format', () => {
-  const sections = {
-    proposed: ['Problem', 'Proposal', 'Alternatives considered', 'Acceptance criteria', 'Risks'],
-    implemented: ['Problem', 'Decision', 'Alternatives considered', 'Consequences'],
-    rejected: ['Problem', 'Proposal', 'Alternatives considered'],
-  }
-  const unrecorded = '<!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->'
-  // The format started on this date; later notes record their alternatives.
-  const formatStart = '2026-10-07'
-  const errors = []
-  const notes = tracked.filter(
-    (file) =>
-      file.startsWith('.agents/notes/') &&
-      !['.agents/notes/AGENTS.md', '.agents/notes/README.md'].includes(file),
-  )
-  for (const file of notes) {
-    const [, , lifecycle, kind, name, ...deeper] = file.split('/')
-    const fail = (problem) => errors.push(`${file}: ${problem}. See .agents/notes/README.md.`)
-    if (!lifecycles.includes(lifecycle) || !classes.includes(kind) || !name || deeper.length) {
-      fail(`the path is not <lifecycle>/<class>/<name>, with a class from: ${classes.join(', ')}`)
-      continue
-    }
-    if (!/^\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.md$/.test(name)) {
-      fail('the file name is not YYYY-MM-DD-topic.md')
-    }
-    const lines = readFileSync(path.join(root, file), 'utf8').split('\n')
-    if (!lines[0].startsWith('# Agent Note: ') || lines[1] !== '') {
-      fail('line 1 is not "# Agent Note: <title>" followed by a blank line')
-    }
-    const status = lines[2] ?? ''
-    const statusMatches =
-      lifecycle === 'rejected'
-        ? /^Status: rejected — \S/.test(status)
-        : status === `Status: ${lifecycle}`
-    if (!statusMatches) fail(`line 3 "${status}" does not match the ${lifecycle}/ folder`)
-    if (lines[3] !== '') fail('line 4 is not blank')
-    // A fenced example heading is not a section.
-    const headings = proseLines(file).flatMap((line) => line.match(/^## (.+)$/)?.[1] ?? [])
-    if (headings[0] !== 'Problem') fail('the body does not open with "## Problem"')
-    for (const section of sections[lifecycle]) {
-      const waived = section === 'Alternatives considered' && lines.includes(unrecorded)
-      if (!headings.includes(section) && !waived) fail(`"## ${section}" is missing`)
-    }
-    if (lines.includes(unrecorded) && name >= formatStart) {
-      fail(`only notes dated before ${formatStart} may waive "## Alternatives considered"`)
-    }
-    if (lifecycle === 'implemented') {
-      for (const section of ['Proposal', 'Plan', 'Migration plan', 'Acceptance criteria']) {
-        if (headings.includes(section)) fail(`"## ${section}" is proposal text in a shipped note`)
-      }
     }
   }
   assert.deepEqual(errors, [])

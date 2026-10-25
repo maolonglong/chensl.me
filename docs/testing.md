@@ -15,7 +15,7 @@ Read this before you add or change a test, or when you choose the checks for a c
 | Layer | Files | What it proves | Run |
 |---|---|---|---|
 | Build regressions | `tests/*.test.mjs` | Most of them build a disposable Astro fixture project and check the output: content rules, Markdown, fonts, CSP order, RSS | `pnpm check`, or `node --test tests/<name>.test.mjs` |
-| Output checks | `scripts/check-site.mjs`, `tests/check-site.test.mjs` | The real build has valid links, images, CSP sources, `_headers` rules, article share cards, a complete search index, and a capped Worker content store without the card renderer | `pnpm check` |
+| Output checks | `scripts/check-site.mjs`, `tests/check-site.test.mjs` | The real build has valid links, images, CSP sources, `_headers` rules, article share cards, a complete search index, and a Worker bundle free of the content store and the card renderer | `pnpm check` |
 | Document checks | `tests/docs.test.mjs` | First-party Markdown and skills follow the rules of the [documentation standard](AGENTS.md#checks) that a script can decide | `node --test tests/docs.test.mjs` |
 | Browser specs | `e2e/*.spec.mjs` | Layout, interactions, themes, CSP in a real browser, the upvote Actions, the AI News, and search against local D1 | `pnpm test:e2e`, or `pnpm exec playwright test e2e/<name>.spec.mjs` after `pnpm check` |
 | Exploration | agent-browser | A question no spec answers yet | By hand; turn a finding worth keeping into a spec |
@@ -47,8 +47,8 @@ Before each commit, `prek.toml` runs the document checks and `git diff --cached 
 
 `pnpm test:e2e` builds the site, then Playwright starts its own Wrangler preview with local D1 and runs `e2e/`; after `pnpm check` has already built `dist/`, run `pnpm exec playwright test` directly to skip a second build. The specs run on the Chromium that Playwright installs; run `pnpm exec playwright install chromium` once per machine and after a Playwright upgrade. CI (`CI` is set) runs them on the Google Chrome of the GitHub runner image instead. `playwright.config.mjs` holds the port and the report folders. Run one suite at a time: two runs, or a build during a run, share `dist/` and the port and fail with misleading errors.
 
-- Wait for a state or a `page.clock` step, not a fixed time (`tests/e2e-waits.test.mjs`).
-- Do not poll with `page.waitForFunction`: in a spec that turns page scripts off, it checks once and then hangs. Wait with `expect.poll`, a locator assertion, or a promise such as `document.fonts.ready` (`tests/e2e-waits.test.mjs`).
+- Wait for a state or a `page.clock` step, not a fixed time.
+- Do not poll with `page.waitForFunction`: in a spec that turns page scripts off, it checks once and then hangs. Wait with `expect.poll`, a locator assertion, or a promise such as `document.fonts.ready`.
 - `e2e/site.mjs` holds the shared fixtures. `test.use({ hasTouch: true })` selects a touch screen, and `open()` fails when the browser's hover capability differs from what the test asked for. Viewport width alone does not reproduce hover or touch states.
 - The upvote specs write to D1, so the config accepts only a loopback `SITE_URL`. Each test sends its own client address, so the rate limits do not depend on suite speed. Each run adds votes to the `dockertest` article; the specs compare counts with a baseline read at the start of each test.
 - To reuse your own preview, set `SITE_URL`, apply the local migrations (`pnpm exec wrangler d1 migrations apply VOTES --local`, then `NEWS`), and start it with the `NEWS_TOKEN` from `playwright.config.mjs`.

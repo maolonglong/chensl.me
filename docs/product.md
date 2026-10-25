@@ -8,10 +8,10 @@ Read this before you change what readers see or rely on. Each section states a p
 - **Navigation.** The site title links home. The header links the archive, AI News, and search ([decision](../.agents/notes/implemented/simplification/2026-10-17-lean-header-navigation.md), `e2e/navigation.spec.mjs`).
 - **Article pages** use one reading column and end with links to the earlier and the later article. An article with at least three H2 or H3 headings gets a contents list (`tests/markdown.test.mjs`, `e2e/contents.spec.mjs`).
 - **Length.** The article header shows the approximate length and reading time after the date, and the JSON-LD carries the exact `wordCount`. Reading time assumes 300 Chinese characters or 238 English words a minute. Code blocks and display math do not count (`tests/reading-time.test.mjs`, `e2e/reading-time.spec.mjs`).
-- **Stale notice.** An article whose last modification (`updatedDate`, else `pubDate`) is more than two calendar years old shows a notice under its header. The browser checks the current date on each visit, so the notice appears when the article crosses two years, with no rebuild. The build also marks articles that were already stale, so a visitor whose clock is behind the build time still sees the notice (`tests/stale.test.mjs`, `e2e/page-shell.spec.mjs`).
+- **Stale notice.** An article whose last modification (`updatedDate`, else `pubDate`) is more than two calendar years old shows a notice under its header. The browser checks the current date on each visit, so the notice appears when the article crosses two years, with no rebuild. The build also marks articles that were already stale, so a visitor whose clock is behind the build time still sees the notice (`tests/content.test.mjs`, `e2e/page-shell.spec.mjs`).
 - **Search** (`/search/`) finds articles and AI News by keyword. Article results survive a server failure (`e2e/search.spec.mjs`).
 - **Repository cards.** A paragraph that is only a GitHub repository link shows a card. The page refreshes its numbers and keeps the build text on failure (`e2e/github-cards.spec.mjs`).
-- **Share previews.** A shared article link shows a large card with the article title. The home page and the archive have fixed cards. AI News issues share one card, and the news archive pages share another (`tests/document.test.mjs`, `e2e/news.spec.mjs`).
+- **Share previews.** A shared article link shows a large card with the article title. The home page and the archive have fixed cards. AI News issues share one card, and the news archive pages share another (`tests/content.test.mjs`, `e2e/news.spec.mjs`).
 
 ## Articles and publication
 
@@ -27,7 +27,7 @@ The optional `creation` field declares how the author made the article: `handmad
 - Without `creation`, the article shows nothing.
 - Set `creation` on an existing article only from the author's own declaration, never from its date or writing style.
 
-The page, the RSS item, and the Markdown export show the same declaration, and the article body stays unchanged (`e2e/creation.spec.mjs`).
+The page, the RSS item, and the Markdown export show the same declaration, and the article body stays unchanged (`tests/content.test.mjs`, `e2e/reading-time.spec.mjs`).
 
 ## Feeds and exports
 

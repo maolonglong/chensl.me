@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
+import { readdirSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import { test } from 'node:test'
 import { stylesheets } from '../src/lib/assets.ts'
 import { codeThemes } from '../src/lib/markdown.mjs'
+import { root } from './support.mjs'
 
 const luminance = (hex) =>
   hex
@@ -40,6 +43,8 @@ test('giscus themes meet AA contrast for reading and controls', () => {
       assert.ok(ratio >= 4.5, `${mode}: ${foreground} on ${background}: ${ratio.toFixed(2)}:1`)
     }
   }
+  const giscusLight = readFileSync(path.join(root, 'src/styles/giscus.css'), 'utf8')
+  assert.doesNotMatch(giscusLight, /light-dark\(#f5f4ed,/)
 })
 
 test('code comments meet AA contrast on the code fill', () => {
@@ -51,4 +56,43 @@ test('code comments meet AA contrast on the code fill', () => {
       `${mode}: comment ${comment.foreground} on the code fill: ${ratio.toFixed(2)}:1`,
     )
   }
+})
+
+function walk(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name)
+    return entry.isDirectory() ? walk(full) : [full]
+  })
+}
+
+test('site styles use the size ladder and do not transition theme colors', () => {
+  const files = [
+    path.join(root, 'src/styles/global.css'),
+    path.join(root, 'src/styles/floating-controls.css'),
+    ...walk(path.join(root, 'src')).filter((file) => file.endsWith('.astro')),
+  ]
+  for (const file of files) {
+    const rel = path.relative(root, file)
+    const content = readFileSync(file, 'utf8')
+    for (const [, value] of content.matchAll(/font-size:\s*([^;}\n]+);/g)) {
+      assert.match(
+        value.trim(),
+        /^(?:var\(--size-[\w-]+\)|100%|inherit|[\d.]+em)$/,
+        `${rel}: off-ladder font-size ${value.trim()}`,
+      )
+    }
+    for (const [, value] of content.matchAll(/transition:\s*([^;]+);/g)) {
+      assert.doesNotMatch(
+        value,
+        /(?<![\w-])color(?![\w-])/,
+        `${rel}: transition on color ${value.trim()}`,
+      )
+    }
+  }
+})
+
+test('Source Serif license file preserves Adobe copyright and Reserved Font Name', () => {
+  const ofl = readFileSync(path.join(root, 'public/fonts/source-serif-4/OFL.txt'), 'utf8')
+  assert.match(ofl, /Adobe Systems Incorporated/)
+  assert.match(ofl, /Reserved Font Name ['‘]Source['’]/)
 })

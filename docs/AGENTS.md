@@ -31,7 +31,7 @@ When a check can decide a rule, write the check and keep only what a writer need
 
 - Write the current state. History belongs to commits and Agent Notes.
 - Write direct, specific English: short sentences, active voice, one term for each concept. State the target behavior; use a prohibition only for a hard limit, paired with the target.
-- Give each paragraph one physical line (`tests/docs.test.mjs`).
+- Give each paragraph one physical line.
 - When you shorten text, keep each actor, condition, modality, exception, and failure.
 - Paths in backticks are relative to the repository root. Links are relative to the document, so the link check covers them.
 - Cite a commit by its hash in backticks, and a removed file as `<commit>:<path>` at a commit where the file exists; cite only commits on `main`, which is never rewritten.
@@ -41,4 +41,4 @@ Before you finish, remove caches, duplicates, history in a current-state documen
 
 ## Checks
 
-`tests/docs.test.mjs` enforces each rule here that a script can decide: links and anchors resolve, named paths and commits exist, paragraphs are one line, skills are linked from `.claude/skills/`, and Agent Notes follow their format. The pre-commit hook in `prek.toml` runs it. [Evidence for each change](testing.md#evidence-for-each-change) says when to run it by hand.
+`tests/docs.test.mjs` enforces each rule here that a script can decide: links and anchors resolve, named paths and commits exist, and skills are linked from `.claude/skills/`. The pre-commit hook in `prek.toml` runs it. [Evidence for each change](testing.md#evidence-for-each-change) says when to run it by hand.

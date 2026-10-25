@@ -1,7 +1,7 @@
 import type { ExecutionContext } from '@cloudflare/workers-types'
 import { handle } from '@astrojs/cloudflare/handler'
 import { handleGitHubRepo } from './lib/github-endpoint'
-import { handleSearch } from './lib/search-endpoint'
+import { handleSearch } from './lib/search'
 import { withSecurityHeaders } from './lib/security-headers.mjs'
 
 // The Worker entry (`main` in wrangler.jsonc). /api/search/ and /api/github/ are the hot Worker

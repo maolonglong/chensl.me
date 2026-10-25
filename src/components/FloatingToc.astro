@@ -82,6 +82,9 @@ for (const heading of headings) {
         }
         window.addEventListener('scroll', schedule, { passive: true })
         window.addEventListener('resize', schedule)
+        window.matchMedia('(min-width: 76rem)').addEventListener('change', (event) => {
+          if (event.matches && list.matches(':popover-open')) list.hidePopover()
+        })
         spy()
         list.addEventListener('click', (event) => {
           if (!(event.target instanceof Element) || !event.target.closest('a')) return

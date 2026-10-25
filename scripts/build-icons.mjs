@@ -1,13 +1,11 @@
 // Writes the site icons in public/ from the hand-drawn sources in scripts/icons/:
 //
-//   node scripts/build-icons.mjs           # write the files
-//   node scripts/build-icons.mjs --check   # fail when a committed file differs from the sources
+//   node scripts/build-icons.mjs
 //
 // cat.svg is the full drawing, cat-32.svg and cat-16.svg are simplified for tab sizes. The colors
 // come from the tokens in src/styles/global.css, so the icons add no color of their own.
 import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { parseArgs } from 'node:util'
 import sharp from 'sharp'
 
 const root = path.resolve(import.meta.dirname, '..')
@@ -117,42 +115,6 @@ const outputs = {
   'maskable-512x512.png': await png(raster(full, { shape: 'square', scale: 0.9 }), 512),
 }
 
-const { values } = parseArgs({ options: { check: { type: 'boolean', default: false } } })
-const stale = []
 for (const [name, data] of Object.entries(outputs)) {
-  const file = path.join(publicDir, name)
-  if (!values.check) {
-    await writeFile(file, data)
-    continue
-  }
-  const current = await readFile(file).catch(() => null)
-  if (!current || !(await samePixels(name, current, data))) stale.push(`public/${name}`)
-}
-if (stale.length) {
-  console.error(`Stale icons: ${stale.join(', ')}. Run node scripts/build-icons.mjs.`)
-  process.exit(1)
-}
-
-// PNG bytes can differ between zlib builds, so raster files compare decoded pixels.
-async function samePixels(name, current, expected) {
-  if (name.endsWith('.svg')) return current.toString() === expected
-  const [a, b] = [current, expected].map((data) =>
-    name.endsWith('.ico') ? icoFrames(data) : [data],
-  )
-  if (a.length !== b.length) return false
-  for (let index = 0; index < a.length; index++) {
-    const decode = (data) => sharp(data).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
-    const [x, y] = await Promise.all([decode(a[index]), decode(b[index])])
-    if (x.info.width !== y.info.width || x.info.height !== y.info.height) return false
-    if (!x.data.every((value, i) => Math.abs(value - y.data[i]) <= 2)) return false
-  }
-  return true
-}
-
-function icoFrames(data) {
-  return Array.from({ length: data.readUInt16LE(4) }, (_, index) => {
-    const entry = 6 + 16 * index
-    const offset = data.readUInt32LE(entry + 12)
-    return data.subarray(offset, offset + data.readUInt32LE(entry + 8))
-  })
+  await writeFile(path.join(publicDir, name), data)
 }

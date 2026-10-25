@@ -1,5 +1,4 @@
 import { env } from 'cloudflare:workers'
-import { readBoundedBytes } from './request-body'
 
 const maxBodyBytes = 64 * 1024
 const headers = { 'Cache-Control': 'private, no-store' }
@@ -34,9 +33,8 @@ export async function authorizedJson<T>(
   schema: BodySchema<T>,
 ): Promise<{ data: T } | { response: Response }> {
   // Read the body before any early response: local Wrangler dropped the connection when a
-  // response left a small request body unread. readBoundedBytes cancels a body over 1 MB, which
-  // can still cost local Wrangler the next request; real issues stay under maxBodyBytes.
-  const bytes = await readBoundedBytes(request, maxBodyBytes)
+  // response left a small request body unread.
+  const bytes = new Uint8Array(await request.arrayBuffer())
   // The limiter runs before authentication, so it also slows token guessing.
   const { success } = await env.VOTE_LIMITER.limit({ key: `news:${clientAddress}` })
   if (!success) return { response: reply(429, { error: 'rate_limited' }) }
@@ -57,7 +55,7 @@ export async function authorizedJson<T>(
   if (!/^application\/json\b/i.test(request.headers.get('content-type') ?? '')) {
     return { response: reply(415, { error: 'unsupported_media_type' }) }
   }
-  if (!bytes) {
+  if (bytes.byteLength > maxBodyBytes) {
     return { response: reply(413, { error: 'payload_too_large' }) }
   }
   let json: unknown

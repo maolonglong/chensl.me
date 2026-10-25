@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as pagefind from 'pagefind'
 import sitemap from '@astrojs/sitemap'
@@ -38,18 +39,32 @@ export default defineConfig({
     {
       // Article keyword search for /search/. Only elements marked data-pagefind-body are indexed,
       // which are the article pages; the selectors drop article chrome that is not the article's
-      // own text. Pagefind's extended binary segments Chinese text.
+      // own text. Adjacent Han characters get a zero-width space in memory so build-time Jieba and
+      // the browser's Intl.Segmenter agree on every character boundary; Pagefind strips zero-width
+      // spaces from excerpts.
       name: 'pagefind',
       hooks: {
         async 'astro:build:done'({ dir, logger }) {
           const { index } = await pagefind.createIndex({
             excludeSelectors: ['.post-meta', '.post-creation-note', '.post-notice', '.toc'],
           })
-          const { errors, page_count } = await index.addDirectory({ path: fileURLToPath(dir) })
-          if (errors.length) throw new Error(`Pagefind failed: ${errors.join('; ')}`)
+          const root = fileURLToPath(dir)
+          let pageCount = 0
+          for (const relativePath of readdirSync(root, { recursive: true })) {
+            if (typeof relativePath !== 'string' || !relativePath.endsWith('.html')) continue
+            const html = readFileSync(path.join(root, relativePath), 'utf8')
+            if (!html.includes('data-pagefind-body')) continue
+            const content = html.replace(
+              />([^<]+)</g,
+              (_, text) => `>${text.replace(/\p{Script=Han}(?=\p{Script=Han})/gu, '$&\u200B')}<`,
+            )
+            const { errors } = await index.addHTMLFile({ sourcePath: relativePath, content })
+            if (errors.length) throw new Error(`Pagefind failed: ${errors.join('; ')}`)
+            pageCount += 1
+          }
           await index.writeFiles({ outputPath: fileURLToPath(new URL('pagefind/', dir)) })
           await pagefind.close()
-          logger.info(`Pagefind indexed ${page_count} pages.`)
+          logger.info(`Pagefind indexed ${pageCount} pages.`)
         },
       },
     },

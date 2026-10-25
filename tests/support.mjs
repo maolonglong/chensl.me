@@ -139,22 +139,22 @@ $$
       await write(
         fixture,
         'src/content/blog/below.md',
-        `${frontmatter('Below', '2025-01-01')}## First\n\n### Second\n\n#### Excluded\n`,
+        `${frontmatter('Below', '2024-06-15T23:00:00 # publication', 'updatedDate: 2024-06-16T23:00:00 # modification\ncreation: {"mode":"ai-assisted","note":"  AI 用于整理结构和润色，特殊文本 & <script>unexpected()</script> 应当原样可读。  "}\n')}## First\n\n### Second\n\n#### Excluded\n`,
       )
       await write(
         fixture,
         'src/content/blog/older.md',
-        `${frontmatter('Older', '2024-01-01', 'comments: false\n')}Published.`,
+        `${frontmatter('Older', '2024-01-01', 'comments: false\ncreation: {"mode":"handmade"}\n')}Published.`,
       )
       await write(
         fixture,
         'src/content/blog/draft.md',
-        `${frontmatter('Secret draft', '2026-01-01', 'draft: true\n')}Hidden.`,
+        `${frontmatter('Secret draft', '2026-01-01', 'draft: true\n')}Hidden 龗.`,
       )
       await write(
         fixture,
         'src/content/blog/future.md',
-        `${frontmatter('Future post', '2999-01-01')}Hidden.`,
+        `${frontmatter('Future post', '2999-01-01')}Hidden 龖.`,
       )
       await write(fixture, 'src/pages/about.astro', '<h1>Independent page</h1>')
       const dist = await buildAstro(fixture)

@@ -1,213 +1,4 @@
-import { createServer } from 'node:http'
-import { readFile } from 'node:fs/promises'
-import path from 'node:path'
-import { astroProject, buildAstro, frontmatter, write } from '../tests/support.mjs'
 import { expect, expectAll, test } from './site.mjs'
-
-// Repository cards: the build renders them from the snapshot alone, and the page script swaps in
-// fresh numbers from /api/github/repos/. GitHub itself is never called here: the fixture build
-// needs no Worker, and the article tests answer the endpoint with page.route.
-const repos = {
-  'example-owner/example-repo': {
-    name: 'Example-Owner/example-repo',
-    description:
-      '一个示例仓库, with a description long enough to wrap inside the card on a narrow phone screen. It goes on for a while so that it needs more than two lines even on a wide desktop column, which the card must clip to two lines.',
-    stars: 3708,
-    forks: 230,
-    language: 'Go',
-    archived: false,
-    pushedAt: '2026-02-07T09:21:38Z',
-  },
-  'example-owner/archived': {
-    name: 'example-owner/archived',
-    description: '',
-    stars: 3,
-    forks: 1,
-    language: null,
-    archived: true,
-    pushedAt: '2025-08-12T09:24:05Z',
-  },
-}
-const body = `开头。
-
-<https://github.com/example-owner/example-repo>
-
-[任意文字](https://github.com/Example-Owner/example-repo/)
-
-<https://github.com/example-owner/archived>
-
-<https://github.com/example-owner/missing-repo>
-
-正文里的 [example-owner/example-repo](https://github.com/example-owner/example-repo) 链接。
-
-<https://github.com/example-owner/example-repo/blob/main/README.md>
-
-[a](https://github.com/example-owner/example-repo) [b](https://github.com/example-owner/example-repo)
-
-- <https://github.com/example-owner/example-repo>
-
-> <https://github.com/example-owner/example-repo>
-
-\`\`\`text
-code block for the corner comparison
-\`\`\`
-
-结尾[^1]。
-
-[^1]: <https://github.com/example-owner/example-repo>
-`
-
-// Runs in the page. Self-contained: Playwright serializes it.
-function probeCards() {
-  const box = (element) => element.getBoundingClientRect().toJSON()
-  const code = getComputedStyle(document.querySelector('.highlight'))
-  const prose = box(document.querySelector('.prose'))
-  return {
-    cards: [...document.querySelectorAll('.repo-card')].map((card) => {
-      const link = card.querySelector('a')
-      const style = getComputedStyle(link)
-      const description = card.querySelector('.repo-card-description')
-      const lineHeight = description && parseFloat(getComputedStyle(description).lineHeight)
-      return {
-        repo: card.dataset.repo,
-        href: link?.getAttribute('href'),
-        name: card.querySelector('.repo-card-name')?.textContent,
-        archived: card.querySelector('.repo-card-archived')?.textContent ?? null,
-        description: description?.textContent ?? null,
-        descriptionLines: description ? Math.round(box(description).height / lineHeight) : 0,
-        stats: card.querySelector('.repo-card-stats')?.textContent,
-        links: card.querySelectorAll('a').length,
-        extras: card.querySelectorAll('img, script, iframe, svg').length,
-        frame:
-          style.borderTopWidth === '1px' &&
-          style.borderTopStyle === 'solid' &&
-          style.borderRadius === code.borderRadius,
-        underline: style.textDecorationLine,
-        inColumn: box(link).left >= prose.left && box(link).right <= prose.right,
-        height: box(link).height,
-      }
-    }),
-    plain: [...document.querySelectorAll('.prose a[href*="github.com"]')]
-      .filter((link) => !link.closest('.repo-card'))
-      .map((link) => link.getAttribute('href')),
-  }
-}
-
-test.describe('GitHub cards from a fixture snapshot', () => {
-  test.use({ javaScriptEnabled: false })
-  let origin
-  let server
-  let cleanup
-
-  test.beforeAll(async () => {
-    test.setTimeout(120_000)
-    const fixture = await astroProject('astro-github-cards-e2e-', (dispose) => {
-      cleanup = dispose
-    })
-    await write(fixture, 'src/data/github-repos.json', `${JSON.stringify(repos, null, 2)}\n`)
-    await write(
-      fixture,
-      'src/content/blog/cards.md',
-      `${frontmatter('GitHub 链接卡片', '2000-01-01', 'comments: false\n')}${body}`,
-    )
-    const dist = await buildAstro(fixture)
-    server = createServer(async (request, response) => {
-      const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname)
-      const file = path.resolve(dist, `.${pathname}`, pathname.endsWith('/') ? 'index.html' : '')
-      try {
-        if (!file.startsWith(`${dist}${path.sep}`)) throw new Error('Outside fixture output')
-        const content = await readFile(file)
-        const type = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8' }
-        response.writeHead(200, {
-          'Content-Type': type[path.extname(file)] ?? 'application/octet-stream',
-        })
-        response.end(content)
-      } catch {
-        response.writeHead(404)
-        response.end()
-      }
-    })
-    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
-    origin = `http://127.0.0.1:${server.address().port}`
-  })
-
-  test.afterAll(async () => {
-    if (server) await new Promise((resolve) => server.close(resolve))
-    await cleanup?.()
-  })
-
-  for (const width of [375, 1280]) {
-    for (const mode of ['light', 'dark']) {
-      test(`standalone repository links in the snapshot become complete cards at ${width}px in ${mode}`, async ({
-        page,
-        open,
-        capture,
-      }) => {
-        await page.setViewportSize({ width, height: 844 })
-        await page.emulateMedia({ colorScheme: mode })
-        await open(`${origin}/blog/cards/`)
-        const state = await page.evaluate(probeCards)
-        const { description } = repos['example-owner/example-repo']
-        const full = {
-          repo: 'example-owner/example-repo',
-          name: 'Example-Owner/example-repo',
-          archived: null,
-          description,
-          stats: 'Go · ★ 3.7k · fork 230 · 2026 年 2 月更新',
-          links: 1,
-          extras: 0,
-        }
-        expect(
-          state.cards.map(({ repo, href, name, archived, description, stats, links, extras }) => ({
-            repo,
-            href,
-            name,
-            archived,
-            description,
-            stats,
-            links,
-            extras,
-          })),
-        ).toEqual([
-          { ...full, href: 'https://github.com/example-owner/example-repo' },
-          { ...full, href: 'https://github.com/Example-Owner/example-repo/' },
-          {
-            repo: 'example-owner/archived',
-            href: 'https://github.com/example-owner/archived',
-            name: 'example-owner/archived',
-            archived: '已归档',
-            description: null,
-            stats: '★ 3 · fork 1 · 2025 年 8 月更新',
-            links: 1,
-            extras: 0,
-          },
-        ])
-        expect(state.plain).toEqual([
-          'https://github.com/example-owner/missing-repo',
-          'https://github.com/example-owner/example-repo',
-          'https://github.com/example-owner/example-repo/blob/main/README.md',
-          'https://github.com/example-owner/example-repo',
-          'https://github.com/example-owner/example-repo',
-          'https://github.com/example-owner/example-repo',
-          'https://github.com/example-owner/example-repo',
-          'https://github.com/example-owner/example-repo',
-        ])
-        for (const [index, card] of state.cards.entries()) {
-          expectAll(`card ${index} at ${width}px in ${mode}`, card, {
-            'has a hairline frame with the code block corners': card.frame,
-            'has no underline at rest': card.underline === 'none',
-            'stays inside the column': card.inColumn,
-            'is a 44 px touch target': card.height >= 44,
-            'clips the description to two lines': card.descriptionLines <= 2,
-          })
-        }
-        expect(state.cards[0].descriptionLines).toBe(2)
-        await page.locator('.repo-card').first().scrollIntoViewIfNeeded()
-        await capture(page, `github-cards-fixture-${width}-${mode}`)
-      })
-    }
-  }
-})
 
 // Articles with real snapshot entries: gobreaker links sony/gobreaker, buddy the archived
 // maolonglong/zig-buddy2.
@@ -220,6 +11,36 @@ const fresh = {
   language: 'Go',
   archived: true,
   pushedAt: '2026-10-01T02:03:04Z',
+}
+
+function probeCards() {
+  const box = (element) => element.getBoundingClientRect().toJSON()
+  const code = getComputedStyle(document.querySelector('.highlight'))
+  const prose = box(document.querySelector('.prose'))
+  return [...document.querySelectorAll('.repo-card')].map((card) => {
+    const link = card.querySelector('a')
+    const style = getComputedStyle(link)
+    const description = card.querySelector('.repo-card-description')
+    const lineHeight = description && parseFloat(getComputedStyle(description).lineHeight)
+    return {
+      repo: card.dataset.repo,
+      href: link?.getAttribute('href'),
+      name: card.querySelector('.repo-card-name')?.textContent,
+      archived: card.querySelector('.repo-card-archived')?.textContent ?? null,
+      description: description?.textContent ?? null,
+      descriptionLines: description ? Math.round(box(description).height / lineHeight) : 0,
+      stats: card.querySelector('.repo-card-stats')?.textContent,
+      links: card.querySelectorAll('a').length,
+      extras: card.querySelectorAll('img, script, iframe, svg').length,
+      frame:
+        style.borderTopWidth === '1px' &&
+        style.borderTopStyle === 'solid' &&
+        style.borderRadius === code.borderRadius,
+      underline: style.textDecorationLine,
+      inColumn: box(link).left >= prose.left && box(link).right <= prose.right,
+      height: box(link).height,
+    }
+  })
 }
 
 async function answer(page, respond) {
@@ -260,6 +81,14 @@ test.describe('GitHub card refresh', () => {
         const violations = await cspViolations(page)
         await open('/blog/gobreaker/')
         await expect(card(page)).toHaveCount(1)
+        const [initial] = await page.evaluate(probeCards)
+        expectAll(`gobreaker card at ${width}px in ${mode}`, initial, {
+          'has a hairline frame with the code block corners': initial.frame,
+          'has no underline at rest': initial.underline === 'none',
+          'stays inside the column': initial.inColumn,
+          'is a 44 px touch target': initial.height >= 44,
+          'clips the description to two lines': initial.descriptionLines <= 2,
+        })
         const stats = card(page).locator('.repo-card-stats')
         const before = await stats.textContent()
         const head = await card(page).locator('.repo-card-head').boundingBox()

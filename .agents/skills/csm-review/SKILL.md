@@ -24,7 +24,7 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 | --- | --- |
 | `astro.config.mjs` `security`, `public/_headers`, `src/scripts/theme-bootstrap.js`, `src/components/Theme.astro`, any `<script>` or handler | CSP |
 | `src/actions/`, `src/middleware.ts`, `src/components/Upvote.astro`, `migrations/0001_votes.sql`, `wrangler.jsonc` bindings | Upvotes |
-| `src/live.config.ts`, `src/lib/news*`, `src/pages/news/`, `src/pages/api/`, `src/components/News*`, `migrations/news/` | AI News |
+| `src/lib/news*`, `src/pages/news/`, `src/pages/api/`, `src/components/News*`, `migrations/news/` | AI News |
 | `src/worker.ts`, `src/lib/search*`, `src/pages/search.astro` | Search |
 | `src/lib/og*`, `src/pages/og/` | Share cards |
 | `src/components/Comments.astro`, `src/styles/giscus*.css`, `src/pages/css/` | Comments |
@@ -45,7 +45,7 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 - `requirePost` uses `redirect: 'manual'` and demands exactly 200 (`d16b247`). Any new prerendered page under `/blog/<x>/` that is not an article passes that check: hit.
 - Each Action calls `requireQuota` with its own limiter; sharing a budget or omitting one is a hit (`287be50`). A new limiter is a new account resource on deploy.
 - A write followed by a read is one `env.VOTES.batch`; two round trips let the count miss the caller's vote (`287be50`).
-- An early 4xx return on a POST request drains the bounded request body first, or local `wrangler dev` drops the next request on the reused connection (`d104578`, `49b6241`).
+- An early 4xx return on a POST request drains the request body first, or local `wrangler dev` drops the next request on the reused connection (`d104578`, `49b6241`).
 
 ### AI News — [product](../../../docs/product.md#ai-news), [decision](../../notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)
 

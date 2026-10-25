@@ -10,7 +10,7 @@ The documentation process had grown three layers that guarded the documents rath
 
 - Agent Notes have three lifecycles: `proposed/`, `implemented/`, and `rejected/`. A note that no longer guides a change is deleted; git keeps its text. The four archived notes and `SEALS.sha256` are deleted.
 - No document has a word budget. The finishing sweep in the [documentation standard](../../../../docs/AGENTS.md) and review catch sprawl.
-- `8771ac9:tests/docs-rejects.test.mjs` and its `prek.toml` hook are deleted. `tests/docs.test.mjs` keeps the checks that guard references: links and anchors, named paths and commits, one-line paragraphs, skill links, and the note format.
+- `8771ac9:tests/docs-rejects.test.mjs` and its `prek.toml` hook are deleted. `tests/docs.test.mjs` keeps the checks that guard references: links and anchors, named paths and commits, and skill links.
 - `docs/AGENTS.md`, `.agents/notes/README.md`, and `csm-doc` shrink to match.
 
 This supersedes the archived decision that added class folders and the sealed archive (`8771ac9:.agents/notes/archived/process/2026-10-08-agent-note-classes-and-archive.md`): the class folders stay, the archive goes. It updates the [documentation decision](../process/2026-10-07-documents-hold-only-what-code-cannot.md) and the [pre-commit hook](../process/2026-10-08-pre-commit-document-checks.md) in place.

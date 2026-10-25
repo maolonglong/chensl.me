@@ -16,7 +16,7 @@ registerHooks({
 })
 
 const search = await import('../src/lib/search.ts')
-const { handleSearch } = await import('../src/lib/search-endpoint.ts')
+const { handleSearch } = search
 const { newsKeywordLimit } = await import('../src/lib/search-text.mjs')
 
 function fixture() {
@@ -35,24 +35,8 @@ function fixture() {
   return { env }
 }
 
-test('search returns news keyword hits and Server-Timing', async () => {
+test('search returns news keyword hits', async () => {
   const { env } = fixture()
-  const slow =
-    (work, ms) =>
-    async (...args) => {
-      await new Promise((resolve) => setTimeout(resolve, ms))
-      return work(...args)
-    }
-  const prepare = env.NEWS.prepare
-  env.NEWS.prepare = (sql) => {
-    const statement = prepare(sql)
-    return {
-      bind: (...binds) => ({
-        ...statement.bind(...binds),
-        all: slow(statement.bind(...binds).all, 15),
-      }),
-    }
-  }
   for (const requestPath of ['/api/search', '/api/search/']) {
     const response = await handleSearch(
       new Request(`https://example.com${requestPath}?q=Test`),
@@ -61,9 +45,6 @@ test('search returns news keyword hits and Server-Timing', async () => {
     const body = await response.json()
     assert.equal(response.headers.get('cache-control'), 'private, no-store')
     assert.equal(body.news[0].url, '/news/2026-10-17/')
-    const timing = response.headers.get('server-timing') ?? ''
-    assert.match(timing, /^d1;dur=\d+$/)
-    assert.ok(Number(timing.slice('d1;dur='.length)) >= 10, timing)
   }
 })
 

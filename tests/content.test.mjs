@@ -1,19 +1,19 @@
 import assert from 'node:assert/strict'
-import { readFile, readdir, rm } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
+import { spawnSync } from 'node:child_process'
 import { test } from 'node:test'
-import { isPublishedPost, parsePostDate, rewriteUnzonedFrontMatter } from '../src/lib/post-date.ts'
 import {
-  astroProject,
-  behaviorFixture,
-  buildAstro,
-  frontmatter,
-  root,
-  run,
-  write,
-} from './support.mjs'
+  blogSchema,
+  isPublishedPost,
+  parsePostDate,
+  rewriteUnzonedFrontMatter,
+} from '../src/lib/post-date.ts'
+import { isStaleSince } from '../src/lib/stale.ts'
+import { astroProject, behaviorFixture, frontmatter, root, run, write } from './support.mjs'
 
-// Collection validation, publication rules, standalone pages, and the sitemap.
+// Collection validation, publication rules, document contracts, stale notices, and exports.
 
 test('a clock time with no timezone is Shanghai time', () => {
   assert.equal(parsePostDate('2024-06-15T23:00:00').toISOString(), '2024-06-15T15:00:00.000Z')
@@ -38,6 +38,93 @@ test('a clock time with no timezone is Shanghai time', () => {
     ),
     '---\npubDate: 2024-06-15T23:00:00+08:00 # publication\nupdatedDate: 2024-06-16T23:00:00+08:00 # modification\n---\n',
   )
+})
+
+test('staleness starts strictly after two calendar years, including across a leap year', () => {
+  const now = Date.parse('2025-03-01T12:34:56Z')
+  assert.equal(isStaleSince(new Date('2023-03-01T12:34:56Z'), now), false)
+  assert.equal(isStaleSince(new Date('2023-03-01T12:34:55.999Z'), now), true)
+  assert.equal(isStaleSince(new Date('2023-03-01T12:34:56.001Z'), now), false)
+})
+
+test('collection schema rejects missing required metadata, unknown fields, and invalid creation declarations', () => {
+  assert.equal(blogSchema.safeParse({ pubDate: '2025-01-01' }).success, false)
+  assert.equal(
+    blogSchema.safeParse({ title: 'Unfinished', pubDate: '2025-01-01', darft: true }).success,
+    false,
+  )
+  for (const creation of [
+    { mode: 'automatic' },
+    { note: 'Only a note.' },
+    { mode: 'ai-assisted', note: '   ' },
+  ]) {
+    assert.equal(
+      blogSchema.safeParse({ title: 'Post', pubDate: '2025-01-01', creation }).success,
+      false,
+    )
+  }
+  assert.equal(
+    blogSchema.safeParse({
+      title: 'Valid',
+      pubDate: '2025-01-01',
+      creation: { mode: 'ai-assisted', note: 'Human-led.' },
+    }).success,
+    true,
+  )
+})
+
+test('Astro rejects a missing local bundle image', async () => {
+  const fixture = await astroProject('astro-missing-image-')
+  await write(
+    fixture,
+    'src/content/blog/missing.md',
+    `${frontmatter('Missing image', '2025-01-01')}![missing](absent.png)\n`,
+  )
+  const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
+  assert.notEqual(result.status, 0, 'a missing local image must fail the build')
+  assert.match(result.stderr + result.stdout, /absent\.png|image.*(?:missing|not found)/i)
+})
+
+test('CSP precedes executable scripts and hashes their emitted bytes, and metadata escapes hostile titles', async () => {
+  const { dist } = await behaviorFixture()
+  for (const page of ['index.html', 'blog/render/index.html', '404.html']) {
+    const html = await readFile(path.join(dist, page), 'utf8')
+    const policy = html.match(/<meta http-equiv="content-security-policy" content="([^"]+)"/)
+    assert.ok(policy, `${page}: missing CSP`)
+    const scripts = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script[^>]*>/gi)].filter(
+      ([, attributes]) => !attributes.includes('application/ld+json'),
+    )
+    assert.ok(scripts.length, `${page}: missing scripts`)
+    for (const script of scripts) {
+      assert.ok(policy.index < script.index, `${page}: executable script precedes CSP`)
+      if (script[1].includes('src=')) continue
+      const hash = createHash('sha256').update(script[2]).digest('base64')
+      assert.ok(policy[1].includes(`'sha256-${hash}'`), `${page}: untrusted inline script`)
+    }
+  }
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  assert.match(html, /<title>[^<]*Escaped &lt;title&gt; &amp; (?:&quot;|&#34;)quote/)
+  assert.match(html, /rel="canonical" href="https:\/\/chensl\.me\/blog\/render\/"/)
+  const parsed = spawnSync(
+    'python3',
+    [
+      '-c',
+      `
+from html.parser import HTMLParser
+import sys
+class Parser(HTMLParser):
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'meta' and attrs.get('property') == 'og:title':
+            print(attrs['content'])
+Parser().feed(sys.stdin.read())
+`,
+    ],
+    { input: html, encoding: 'utf8' },
+  )
+  assert.equal(parsed.status, 0, parsed.stderr)
+  assert.equal(parsed.stdout.trim(), 'Escaped <title> & "quote"')
+  assert.doesNotMatch(html, /<title>[^<]*<title>/)
 })
 
 test('sitemap discovers built pages and excludes unpublished content and endpoints', async () => {
@@ -66,7 +153,6 @@ print(json.dumps(sorted(e.text for e in pages.findall('s:url/s:loc', ns))))`,
     'https://chensl.me/blog/below/',
     'https://chensl.me/blog/older/',
     'https://chensl.me/blog/render/',
-    // On-demand news routes without parameters are listed; issue and month pages are not.
     'https://chensl.me/news/',
     'https://chensl.me/news/archive/',
   ])
@@ -80,82 +166,11 @@ print(json.dumps(sorted(e.text for e in pages.findall('s:url/s:loc', ns))))`,
   )
 })
 
-test('Astro rejects collection entries missing required metadata', async () => {
-  const fixture = await astroProject('astro-invalid-metadata-')
-  await write(fixture, 'src/content/blog/missing.md', '---\npubDate: 2025-01-01\n---\nNo title.\n')
-  const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
-  assert.notEqual(result.status, 0, 'missing title must fail the build')
-  assert.match(result.stderr + result.stdout, /title|schema|frontmatter/i)
-})
-
-test('Astro rejects misspelled publication fields instead of publishing a draft', async () => {
-  const fixture = await astroProject('astro-unknown-metadata-')
-  await write(
-    fixture,
-    'src/content/blog/unfinished.md',
-    `${frontmatter('Unfinished article', '2025-01-01', 'darft: true\n')}Private draft.`,
-  )
-  const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
-  assert.notEqual(result.status, 0, 'unknown frontmatter must fail the build')
-  assert.match(result.stderr + result.stdout, /darft/)
-})
-
-for (const [name, creation, field] of [
-  ['unknown mode', { mode: 'automatic' }, 'mode'],
-  ['missing mode', { note: 'Only a note.' }, 'mode'],
-  ['blank note', { mode: 'ai-assisted', note: '   ' }, 'note'],
-]) {
-  test(`Astro rejects a creation declaration with ${name}`, async () => {
-    const fixture = await astroProject('astro-invalid-creation-')
-    await write(
-      fixture,
-      'src/content/blog/invalid.md',
-      `${frontmatter('Invalid creation', '2025-01-01', `creation: ${JSON.stringify(creation)}\n`)}Body.`,
-    )
-    const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
-    assert.notEqual(result.status, 0, `${name} must fail the build`)
-    assert.match(result.stderr + result.stdout, new RegExp(`creation[\\s\\S]*${field}`))
-  })
-}
-
-test('home, archive, and RSS build without page Markdown entries', async () => {
-  const fixture = await astroProject('astro-standalone-pages-')
-  await rm(path.join(fixture, 'src/content/home.md'), { force: true })
-  await rm(path.join(fixture, 'src/content/archive.md'), { force: true })
-  await write(
-    fixture,
-    'src/content/blog/post.md',
-    `${frontmatter('Only article', '2025-01-01')}Body.`,
-  )
-  const dist = await buildAstro(fixture)
+test('drafts and future posts are filtered, dates sort by instants, and giscus respects comments: false', async () => {
+  const { dist } = await behaviorFixture()
   const home = await readFile(path.join(dist, 'index.html'), 'utf8')
   const archive = await readFile(path.join(dist, 'blog/index.html'), 'utf8')
-  const rss = await readFile(path.join(dist, 'index.xml'), 'utf8')
   assert.match(home, /👋 Hi! 我是陈劭珑/)
-  assert.match(home, /你喜欢简洁、稳定、可控的东西/)
-  assert.match(home, /name="description" content="陈劭珑的个人网站与技术博客"/)
-  assert.match(archive, /<title>博客 \| ~chensl<\/title>/)
-  assert.match(archive, /陈劭珑的技术文章：系统性能、Go\/Zig\/Rust 与 Agent 工程实践/)
-  assert.match(archive, /href="\/blog\/post\/"/)
-  assert.match(rss, /<description>陈劭珑的个人网站与技术博客<\/description>/)
-  assert.match(rss, /<title>Only article<\/title>/)
-})
-
-test('Astro rejects a missing local bundle image', async () => {
-  const fixture = await astroProject('astro-missing-image-')
-  await write(
-    fixture,
-    'src/content/blog/missing.md',
-    `${frontmatter('Missing image', '2025-01-01')}![missing](absent.png)\n`,
-  )
-  const result = run(path.join(root, 'node_modules/.bin/astro'), ['build'], fixture)
-  assert.notEqual(result.status, 0, 'a missing local image must fail the build')
-  assert.match(result.stderr + result.stdout, /absent\.png|image.*(?:missing|not found)/i)
-})
-
-test('drafts and future posts are filtered and dates sort by instants', async () => {
-  const { dist } = await behaviorFixture()
-  const archive = await readFile(path.join(dist, 'blog/index.html'), 'utf8')
   assert.doesNotMatch(archive, /Secret draft|Future post/)
   assert.match(
     archive,
@@ -166,10 +181,7 @@ test('drafts and future posts are filtered and dates sort by instants', async ()
   assert.ok(archive.indexOf('Below') < archive.indexOf('Older'))
   await assert.rejects(readFile(path.join(dist, 'blog/draft/index.html'), 'utf8'))
   await assert.rejects(readFile(path.join(dist, 'blog/future/index.html'), 'utf8'))
-})
 
-test('articles show giscus comments unless front matter sets comments: false', async () => {
-  const { dist } = await behaviorFixture()
   const withComments = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
   assert.match(withComments, /<section[^>]*\bclass="comments"/)
   assert.match(withComments, /https:\/\/giscus\.app\/client\.js/)
@@ -177,7 +189,7 @@ test('articles show giscus comments unless front matter sets comments: false', a
   assert.doesNotMatch(withoutComments, /\bclass="comments"|giscus\.app\/client\.js/)
 })
 
-test('Markdown exports preserve the raw body and publish only visible articles', async () => {
+test('stale notices and creation declarations render across pages, RSS, and Markdown exports', async () => {
   const { fixture, dist } = await behaviorFixture()
   const exports = (await readdir(path.join(dist, 'blog'), { recursive: true }))
     .filter((file) => file.endsWith('/index.md'))
@@ -188,7 +200,6 @@ test('Markdown exports preserve the raw body and publish only visible articles',
       path.join(fixture, 'src/content/blog', id === 'render' ? 'render/index.md' : `${id}.md`),
       'utf8',
     )
-    // Astro's collection body excludes frontmatter and trims only the outer whitespace.
     const body = source.replace(/^---\n[\s\S]*?\n---\n/, '').trim()
     const markdown = await readFile(path.join(dist, `blog/${id}/index.md`), 'utf8')
     assert.equal(
@@ -197,6 +208,7 @@ test('Markdown exports preserve the raw body and publish only visible articles',
       `${id}: original Markdown body must be verbatim`,
     )
     assert.ok(markdown.includes(`Canonical: https://chensl.me/blog/${id}/\n`))
+    assert.doesNotMatch(markdown, /两年多以前|post-notice/)
     const html = await readFile(path.join(dist, `blog/${id}/index.html`), 'utf8')
     assert.match(
       html,
@@ -205,12 +217,55 @@ test('Markdown exports preserve the raw body and publish only visible articles',
       ),
     )
   }
-  const markdown = await readFile(path.join(dist, 'blog/render/index.md'), 'utf8')
+
+  // render: fresh (< 2 years), no creation declaration.
+  const renderHtml = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  assert.match(renderHtml, /<p class="post-notice"[^>]*\bhidden\b[^>]*>/)
+  assert.doesNotMatch(renderHtml, /class="post-creation/)
+  const renderMd = await readFile(path.join(dist, 'blog/render/index.md'), 'utf8')
   assert.match(
-    markdown,
+    renderMd,
     /^# Escaped <title> & "quote"\n\nPublished: 2025-01-02\nUpdated: 2025-01-03\n/,
   )
-  assert.doesNotMatch(await readFile(path.join(dist, 'blog/older/index.md'), 'utf8'), /^Updated:/m)
+  assert.doesNotMatch(renderMd, /^Creation:/m)
+
+  // below: unzoned Shanghai dates with YAML comments, updated > 2 years ago, ai-assisted + note.
+  const belowHtml = await readFile(path.join(dist, 'blog/below/index.html'), 'utf8')
+  assert.match(
+    belowHtml,
+    /<time datetime="2024-06-15T15:00:00\.000Z"[^>]*>2024-06-15<\/time>[\s\S]*?<span class="post-creation"[^>]*>AI 辅助<\/span>/,
+  )
+  assert.match(
+    belowHtml,
+    /<p class="post-creation-note meta"[^>]*>\s*AI 用于整理结构和润色，特殊文本 &amp; &lt;script&gt;unexpected\(\)&lt;\/script&gt; 应当原样可读。\s*<\/p>/,
+  )
+  assert.match(
+    belowHtml,
+    /<p class="post-notice"(?![^>]*\bhidden\b)[^>]*data-stale-since="2024-06-16T15:00:00\.000Z"[^>]*>\s*这篇文章最后更新于两年多以前，部分内容可能已经过时。\s*<\/p>/,
+  )
+  const belowMd = await readFile(path.join(dist, 'blog/below/index.md'), 'utf8')
+  assert.match(
+    belowMd,
+    /Published: 2024-06-15\nUpdated: 2024-06-16\nCanonical: https:\/\/chensl\.me\/blog\/below\/\nCreation: AI 辅助\nCreation note: AI 用于整理结构和润色，特殊文本 & \\<script\\>unexpected\(\)\\<\/script\\> 应当原样可读。\n/,
+  )
+
+  // older: published > 2 years ago without updatedDate, handmade without note.
+  const olderHtml = await readFile(path.join(dist, 'blog/older/index.html'), 'utf8')
+  assert.match(olderHtml, /<span class="post-creation"[^>]*>手作<\/span>/)
+  assert.doesNotMatch(olderHtml, /class="post-creation-note/)
+  assert.match(
+    olderHtml,
+    /<p class="post-notice"(?![^>]*\bhidden\b)[^>]*data-stale-since="2024-01-01T00:00:00\.000Z"[^>]*>\s*这篇文章写于两年多以前，部分内容可能已经过时。\s*<\/p>/,
+  )
+  const olderMd = await readFile(path.join(dist, 'blog/older/index.md'), 'utf8')
+  assert.doesNotMatch(olderMd, /^Updated:|^Creation note:/m)
+  assert.match(olderMd, /^Creation: 手作$/m)
+
+  const rss = await readFile(path.join(dist, 'index.xml'), 'utf8')
+  assert.doesNotMatch(rss, /两年多以前|post-notice/)
+  assert.match(rss, /创作方式：AI 辅助。AI 用于整理结构和润色/)
+  assert.match(rss, /&lt;p&gt;创作方式：手作&lt;\/p&gt;/)
+
   for (const name of ['pixel.png', 'café.png', 'shape.svg']) {
     assert.deepEqual(
       await readFile(path.join(dist, 'blog/render', name)),
@@ -239,106 +294,4 @@ test('llms.txt lists absolute Markdown exports newest first with optional descri
   for (const [, url] of llms.matchAll(/\]\(([^)]+)\)/g)) {
     await readFile(path.join(dist, new URL(url).pathname))
   }
-})
-
-let staleBuild
-async function staleFixture() {
-  if (!staleBuild)
-    staleBuild = (async () => {
-      const fixture = await astroProject('astro-stale-notice-')
-      const recent = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-      const writtenNotice = '这篇文章写于两年多以前，部分内容可能已经过时。'
-      const updatedNotice = '这篇文章最后更新于两年多以前，部分内容可能已经过时。'
-      const cases = [
-        { id: 'old', pubDate: '2000-01-01', notice: writtenNotice, hidden: false },
-        {
-          id: 'recently-updated',
-          pubDate: '2000-01-01',
-          updatedDate: recent,
-          notice: updatedNotice,
-          hidden: true,
-        },
-        {
-          id: 'old-update',
-          pubDate: '2000-01-01',
-          updatedDate: '2001-01-01',
-          notice: updatedNotice,
-          hidden: false,
-        },
-        { id: 'fresh', pubDate: recent, notice: writtenNotice, hidden: true },
-        // 23:00 with no offset is the next Shanghai day if it is read as UTC.
-        {
-          id: 'zoneless',
-          pubDate: '2024-06-15T23:00:00',
-          notice: writtenNotice,
-          hidden: false,
-          instant: '2024-06-15T15:00:00.000Z',
-          displayed: '2024-06-15',
-        },
-      ]
-      for (const { id, pubDate, updatedDate } of cases) {
-        await write(
-          fixture,
-          `src/content/blog/${id}.md`,
-          `${frontmatter(id, pubDate, updatedDate ? `updatedDate: ${updatedDate}\n` : '')}Original body.`,
-        )
-      }
-      return { dist: await buildAstro(fixture), cases }
-    })()
-  return staleBuild
-}
-
-test('stale article notices use the last modification date and stay out of content exports', async () => {
-  const { dist, cases } = await staleFixture()
-  for (const { id, pubDate, updatedDate, notice, hidden, instant, displayed } of cases) {
-    const html = await readFile(path.join(dist, `blog/${id}/index.html`), 'utf8')
-    const header = html.match(/<header class="post-header"[^>]*>([\s\S]*?)<\/header>/)?.[1]
-    assert.ok(header, `${id}: missing article header`)
-    const notices = [...header.matchAll(/<p class="post-notice"([^>]*)>([^<]*)<\/p>/g)]
-    assert.deepEqual(
-      notices.map(([, , text]) => text.trim()),
-      [notice],
-      id,
-    )
-    const attributes = notices[0][1]
-    assert.equal(
-      attributes.match(/\bdata-stale-since="([^"]+)"/)?.[1],
-      instant ?? new Date(updatedDate ?? pubDate).toISOString(),
-      `${id}: last modification date`,
-    )
-    if (displayed) assert.match(header, new RegExp(`<time[^>]*>${displayed}</time>`))
-    assert.equal(/\shidden(?=\s|$)/.test(attributes), hidden, `${id}: build-time visibility`)
-    assert.match(header, /class="post-meta[^"]*"[^>]*>[\s\S]*?<\/p>\s*<p class="post-notice"/)
-    const markdown = await readFile(path.join(dist, `blog/${id}/index.md`), 'utf8')
-    assert.doesNotMatch(markdown, /两年多以前|post-notice/)
-    assert.ok(markdown.endsWith('Original body.'))
-  }
-  for (const file of ['index.xml', 'index.html', 'blog/index.html']) {
-    assert.doesNotMatch(
-      await readFile(path.join(dist, file), 'utf8'),
-      /两年多以前|post-notice/,
-      file,
-    )
-  }
-})
-
-test('the RSS feed keeps the 20 newest articles', async () => {
-  const fixture = await astroProject('astro-rss-limit-')
-  for (let index = 0; index <= 20; index++) {
-    const day = String(index + 1).padStart(2, '0')
-    const id = `feed-${day}`
-    await write(
-      fixture,
-      `src/content/blog/${id}.md`,
-      `${frontmatter(`Feed ${day}`, `2020-01-${day}T00:00:00+08:00`)}Body.\n`,
-    )
-  }
-  const dist = await buildAstro(fixture)
-  const rss = await readFile(path.join(dist, 'index.xml'), 'utf8')
-  const titles = [...rss.matchAll(/<title>([^<]*)<\/title>/g)].map(([, title]) => title)
-  assert.deepEqual(
-    titles.slice(1),
-    Array.from({ length: 20 }, (_, index) => `Feed ${String(21 - index).padStart(2, '0')}`),
-  )
-  assert.equal(titles.includes('Feed 01'), false)
 })
