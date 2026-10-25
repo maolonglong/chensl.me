@@ -5,7 +5,7 @@ description: Document chensl.me. Use when you add or change AGENTS.md, a file in
 
 # Maintain chensl.me documents
 
-The [documentation standard](../../../docs/AGENTS.md) holds the rules: the homes, the admission rule, the writing rules, the budgets, and the checks. [`.agents/notes/AGENTS.md`](../../notes/AGENTS.md) and [`.agents/notes/README.md`](../../notes/README.md) hold the note lifecycle. This skill is guidance, not a mechanical checklist: follow the steps and apply judgment to the prose in scope.
+The [documentation standard](../../../docs/AGENTS.md) holds the rules: the homes, the admission rule, the writing rules, and the checks. [`.agents/notes/AGENTS.md`](../../notes/AGENTS.md) and [`.agents/notes/README.md`](../../notes/README.md) hold the note lifecycle. This skill is guidance, not a mechanical checklist: follow the steps and apply judgment to the prose in scope.
 
 ## Steps
 
@@ -14,8 +14,8 @@ The [documentation standard](../../../docs/AGENTS.md) holds the rules: the homes
 3. **Write.** Apply the writing rules, and the [prose coverage](#prose-coverage) for the kind of text. Before you shorten or restructure text, read the [calibration examples](references/examples.md). Done when the text passes the admission rule sentence by sentence, and each shortened passage keeps all of its propositions.
 4. **Fact-check.** Follow [Fact-check](#fact-check). Done when every command, path, default, and value is observed or traced, or deleted.
 5. **Agent Notes.** For a new note, run the [supersession check](#supersession-check). For a note that a change touches, keep its paths, names, and mechanisms current. Done when no two active notes own the same decision without links both ways.
-6. **Audit.** Run the slop checklist over every document that you touched, not only the lines you changed, then the [newcomer test](#newcomer-test). A change that touches two or more standing documents touches the set: audit every standing document, not only the changed ones. Done when each item is fixed or is a deliberate keep that you can name.
-7. **Validate.** Run `node --test tests/docs*.test.mjs` and `git diff --check`. When the change also reaches site output, run the checks in [Evidence for each change](../../../docs/testing.md#evidence-for-each-change). Read the complete diff once for correctness, then once for brevity. Done when the checks pass and both reads find nothing to fix.
+6. **Audit.** Run the standard's finishing sweep over every document that you touched, not only the lines you changed, then the [newcomer test](#newcomer-test). A change that touches two or more standing documents touches the set: audit every standing document, not only the changed ones. Done when each item is fixed or is a deliberate keep that you can name.
+7. **Validate.** Run `node --test tests/docs.test.mjs` and `git diff --check`. When the change also reaches site output, run the checks in [Evidence for each change](../../../docs/testing.md#evidence-for-each-change). Read the complete diff once for correctness, then once for brevity. Done when the checks pass and both reads find nothing to fix.
 8. **Report.** List the documents changed, the deliberate keeps, the claims that you could not verify, and each check that ran with its result. Done when each item in the list names a file or a command.
 
 ## Fact-check
@@ -40,10 +40,10 @@ Add text where code cannot show a required fact, and remove text that code alrea
 
 ## History and session references
 
-This probe finds candidates for the two slop items on history and session references. It is not the definition: judge each hit, and also read the densest prose without it.
+This probe finds candidates for the sweep's items on history and session references. It is not the definition: judge each hit, and also read the densest prose without it.
 
 ```sh
-grep -rnEi 'no longer|used to|was changed|\bnow\b|as discussed|in review|this session' AGENTS.md README.md docs .agents/notes/AGENTS.md .agents/notes/README.md .agents/notes/implemented .agents/notes/rejected .agents/skills/csm-*
+grep -rnEi 'no longer|used to|was changed|\bnow\b|as discussed|in review|this session' AGENTS.md README.md docs .agents/notes .agents/skills/csm-*
 ```
 
 Keep these; they are not history:
@@ -59,7 +59,7 @@ A reader with no context reads root `AGENTS.md` and at most three linked pages. 
 
 ## Supersession check
 
-1. Search the active notes for the same decision, mechanism, or rejected option: `grep -ril --exclude-dir=archived <topic> .agents/notes/`. Search for the names of the files and settings that the decision touches, not only its title.
+1. Search the notes for the same decision, mechanism, or rejected option: `grep -ril <topic> .agents/notes/`. Search for the names of the files and settings that the decision touches, not only its title.
 2. Read each match. Classify it as fully superseded, partly superseded, an obsolete rejection, or unrelated, by the [Agent Note retention rules](../../notes/README.md#retention).
 3. Apply the result in the same commit as the new note: delete or update the old note, add the links both ways, and repair inbound links.
 
@@ -67,7 +67,7 @@ Done when each match has a class and its result is in the commit.
 
 ## Audit the notes
 
-When you review the notes as a set, classify each active note by the [retention rules](../../notes/README.md#retention) as keep, archive, or delete. Word count and age are not criteria. Inspect every note in scope, and report the borderline cases. Skip `archived/`.
+When you review the notes as a set, classify each note by the [retention rules](../../notes/README.md#retention) as keep or delete. Word count and age are not criteria. Inspect every note in scope, and report the borderline cases.
 
 These cases set the bar:
 
@@ -75,17 +75,6 @@ These cases set the bar:
 - **Keep** [delete the archived W05 font](../../notes/rejected/simplification/2026-10-04-delete-archived-w05-font.md): removing an unused 19 MB file stays tempting, and the note says why it loses.
 - **Delete** a note that only records a new color for a hover state, or a renamed helper: nothing in it can guide a later change.
 - **Reopen.** A note whose decision depends on an external fact, such as a version, an upstream behavior, or a limit, and that has no `## Reopen when` condition is a finding. A note whose premise is internal stands on its alternatives and consequences.
-
-## Archive a note
-
-Archive a note only when the retention rules say so, in a commit that does nothing else to it.
-
-1. Move it with its name unchanged: `git mv .agents/notes/implemented/<class>/<name> .agents/notes/archived/<class>/<name>`.
-2. Insert `Archived: YYYY-MM-DD`, with today's date, as line 4, directly below `Status: implemented`. Keep the blank line after it.
-3. Seal it from the repository root: `shasum -a 256 .agents/notes/archived/<class>/<name> >> .agents/notes/archived/SEALS.sha256`.
-4. Repair or delete each inbound link. Keep a link only where the text cites history.
-
-Done when `node --test tests/docs.test.mjs` passes and the diff of the note shows only the move and line 4.
 
 ## Calibrate
 

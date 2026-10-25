@@ -20,11 +20,11 @@ The repository follows the [documentation standard](../../../../docs/AGENTS.md),
 - Each kind of content has one home: root `AGENTS.md` for standing orders and routing; subtree `AGENTS.md` files for the rules of their folder; `docs/architecture.md`, `docs/product.md`, `docs/design.md`, and `docs/testing.md` for reference; Agent Notes for decisions; project skills (`csm-doc`, `csm-review`, `csm-ship`, `csm-deps`, prefixed so a human scanning `.agents/skills/` can tell them apart from lockfile skills) for procedures.
 - A sentence enters a document only if code, configuration, and tests cannot carry it. A value appears only with the test that pins it.
 - The standard holds the rules, and the [`csm-doc`](../../../skills/csm-doc/SKILL.md) skill holds the procedure. DeepSeek splits the same way, between `docs/AGENTS.md` and its `dsh-doc`, `dsh-prose-standard`, and `dsh-archive-agent-notes` skills; one skill covers all three here so the repository pays for one always-loaded description.
-- Shortening keeps every proposition: actor, condition, modality, exception, and failure. This is DeepSeek's complete-proposition rule, and it balances the word budgets.
+- Shortening keeps every proposition: actor, condition, modality, exception, and failure. This is DeepSeek's complete-proposition rule.
 - Review adds two tests from DeepSeek, as steps in `csm-doc`: the newcomer test from `dsh-doc`, and the test for references that only the writing session can resolve, from `dsh-trim-cot-leakage`.
-- Agent Notes follow DeepSeek's lifecycle, format, supersession, consolidation, and retention rules. Only notes dated before the format started may waive their alternatives. [A later decision](../../archived/process/2026-10-08-agent-note-classes-and-archive.md) adds DeepSeek's class folders and sealed archive.
+- Agent Notes follow DeepSeek's lifecycle, format, supersession, consolidation, and retention rules. Only notes dated before the format started may waive their alternatives. Notes sit in DeepSeek's class folders; [a later decision](../simplification/2026-10-25-drop-document-machinery.md) removed its sealed archive and the word budgets.
 - `csm-doc` keeps [calibration examples](../../../skills/csm-doc/references/examples.md) from this repository's history, as DeepSeek's `dsh-prose-standard` does. When the owner decides a borderline case, it becomes an example.
-- `tests/docs.test.mjs` enforces the rules that a script can decide, and `tests/docs-rejects.test.mjs` proves that each of those checks can fail.
+- `tests/docs.test.mjs` enforces the rules that a script can decide.
 - Decisions that only an agent's private memory held are Agent Notes.
 
 ## Alternatives considered
@@ -34,8 +34,6 @@ The repository follows the [documentation standard](../../../../docs/AGENTS.md),
 **One central decision list instead of one file per decision.** A list is shorter, but code and documents cannot link to one decision, and the deepseek-harness format gives each decision a problem, rejected options, and consequences.
 
 **Procedures in a cookbook folder under `docs/` instead of skills.** The owner chose skills: an agent loads a skill when its description matches the task, while a cookbook page depends on a routing line.
-
-**A word budget for root `AGENTS.md` only.** Only that file is in every session, but the other standing documents grow too. A ceiling makes an agent relocate or condense before it adds, as DeepSeek's budgets do.
 
 **Chinese counterparts for each document**, with a pairing check. The documents are in English, and one maintainer reads them. A pair doubles the cost of each edit.
 
@@ -63,4 +61,4 @@ The repository follows the [documentation standard](../../../../docs/AGENTS.md),
 
 ## Consequences
 
-Agents must follow the routing table in root `AGENTS.md` to reach a reference document; a skill loads by its description. The checks catch broken references, wrapped paragraphs, growth, and format errors, but not a copied value. The admission rule depends on review for that, and the `csm-review` skill carries the trap.
+Agents must follow the routing table in root `AGENTS.md` to reach a reference document; a skill loads by its description. The checks catch broken references, wrapped paragraphs, and format errors, but not a copied value or growth. The admission rule depends on review for that, and the `csm-review` skill carries the trap.

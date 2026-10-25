@@ -8,11 +8,10 @@ The document checks ran only in `pnpm check` and in GitHub CI. Cloudflare Worker
 
 ## Decision
 
-A prek pre-commit hook runs the checks on the staged tree. `prek.toml` defines three local hooks:
+A prek pre-commit hook runs the checks on the staged tree. `prek.toml` defines two local hooks:
 
 - `git diff --cached --check` rejects whitespace errors.
 - `tests/docs.test.mjs` runs on every commit, because a rename anywhere can break a path that a document names.
-- `tests/docs-rejects.test.mjs` runs only when a staged path matches `^tests/docs`, because it proves the checks themselves and takes several seconds.
 
 `@j178/prek` is a pinned dev dependency. `pnpm exec prek install` enables the hook once per clone; `README.md` lists it in the setup.
 

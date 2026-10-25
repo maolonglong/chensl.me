@@ -16,7 +16,7 @@ Read this before you add or change a test, or when you choose the checks for a c
 |---|---|---|---|
 | Build regressions | `tests/*.test.mjs` | Most of them build a disposable Astro fixture project and check the output: content rules, Markdown, fonts, CSP order, RSS | `pnpm check`, or `node --test tests/<name>.test.mjs` |
 | Output checks | `scripts/check-site.mjs`, `tests/check-site.test.mjs` | The real build has valid links, images, CSP sources, `_headers` rules, article share cards, a complete search index, and a capped Worker content store without the card renderer | `pnpm check` |
-| Document checks | `tests/docs.test.mjs`, `tests/docs-rejects.test.mjs` | First-party Markdown and skills follow the rules of the [documentation standard](AGENTS.md#checks) that a script can decide | `node --test tests/docs.test.mjs` |
+| Document checks | `tests/docs.test.mjs` | First-party Markdown and skills follow the rules of the [documentation standard](AGENTS.md#checks) that a script can decide | `node --test tests/docs.test.mjs` |
 | Browser specs | `e2e/*.spec.mjs` | Layout, interactions, themes, CSP in a real browser, the upvote Actions, the AI News, and search against local D1 | `pnpm test:e2e`, or `pnpm exec playwright test e2e/<name>.spec.mjs` after `pnpm check` |
 | Exploration | agent-browser | A question no spec answers yet | By hand; turn a finding worth keeping into a spec |
 
@@ -31,7 +31,7 @@ Run the narrowest check that fails for the regression, plus the checks below for
 | Site output, build, content rules | `pnpm check` |
 | Layout, styles, fonts, browser interactions, CSP, upvotes | `pnpm check` and the affected `e2e/<name>.spec.mjs` specs (`pnpm exec playwright test` for a cross-cutting change), then inspect the screenshots |
 | Dependencies or `wrangler.jsonc` | `pnpm check`, then `pnpm exec wrangler deploy --dry-run` on the fresh build |
-| Markdown outside `public/` and `src/` | `node --test tests/docs*.test.mjs` and `git diff --check` |
+| Markdown outside `public/` and `src/` | `node --test tests/docs.test.mjs` and `git diff --check` |
 | Search ranking or indexing | `pnpm check` and `pnpm exec playwright test e2e/search.spec.mjs` |
 | Tooling only | The checks that the tool affects |
 

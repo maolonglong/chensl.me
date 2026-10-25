@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, readlinkSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
@@ -8,8 +7,7 @@ import { test } from 'node:test'
 // Structural checks for first-party Markdown: the rules in docs/AGENTS.md that a script can
 // decide. Each failure names the file, the problem, and the fix.
 
-// tests/docs-rejects.test.mjs points DOCS_CHECK_ROOT at a fixture with one defect per rule.
-const root = process.env.DOCS_CHECK_ROOT ?? path.resolve(import.meta.dirname, '..')
+const root = path.resolve(import.meta.dirname, '..')
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: 'pipe' })
 const tracked = git('ls-files', '--cached', '--others', '--exclude-standard')
   .split('\n')
@@ -20,11 +18,10 @@ const topLevel = new Set(tracked.map((file) => file.split('/')[0]))
 const installedSkills = Object.keys(
   JSON.parse(readFileSync(path.join(root, 'skills-lock.json'), 'utf8')).skills,
 )
-// Archived Agent Notes are frozen: their outbound links and paths may go stale by design.
+// archived/ holds retired blog posts, which keep the author's words as they were.
 const isFirstParty = (file) =>
   !file.startsWith('src/content/') &&
   !file.startsWith('archived/') &&
-  !file.startsWith('.agents/notes/archived/') &&
   !installedSkills.some((name) => file.startsWith(`.agents/skills/${name}/`))
 const documents = tracked.filter((file) => file.endsWith('.md') && isFirstParty(file))
 
@@ -203,38 +200,6 @@ test('each Markdown paragraph is one physical line', () => {
   assert.deepEqual(errors, [])
 })
 
-test('standing documents stay within their word budgets', () => {
-  // docs/AGENTS.md says how to respond: relocate, condense, then raise with a reason.
-  const budgets = {
-    'AGENTS.md': 510,
-    'docs/AGENTS.md': 1300,
-    'docs/architecture.md': 1340,
-    'docs/design.md': 1120,
-    'docs/product.md': 960,
-    'docs/testing.md': 1000,
-    '.agents/notes/AGENTS.md': 290,
-    '.agents/notes/README.md': 1080,
-  }
-  const standing = documents.filter((file) =>
-    /(?:^|\/)AGENTS\.md$|^\.agents\/notes\/README\.md$|^docs\/[^/]+\.md$/.test(file),
-  )
-  const errors = []
-  for (const file of standing) {
-    if (!(file in budgets)) errors.push(`${file} has no word budget; add one in this test.`)
-  }
-  for (const [file, budget] of Object.entries(budgets)) {
-    if (!existsSync(path.join(root, file))) {
-      errors.push(`${file} has a budget but does not exist; remove the budget.`)
-      continue
-    }
-    const words = readFileSync(path.join(root, file), 'utf8').split(/\s+/).filter(Boolean).length
-    if (words > budget) {
-      errors.push(`${file} has ${words} words; the budget is ${budget}. See docs/AGENTS.md.`)
-    }
-  }
-  assert.deepEqual(errors, [])
-})
-
 test('each skill has a matching name and a Claude Code link', () => {
   const errors = []
   for (const name of readdirSync(path.join(root, '.agents/skills'))) {
@@ -268,9 +233,8 @@ test('each skill has a matching name and a Claude Code link', () => {
 })
 
 // The closed sets in .agents/notes/AGENTS.md.
-const lifecycles = ['proposed', 'implemented', 'rejected', 'archived']
+const lifecycles = ['proposed', 'implemented', 'rejected']
 const classes = ['feature', 'bug-fix', 'simplification', 'architecture', 'process', 'testing']
-const seals = '.agents/notes/archived/SEALS.sha256'
 
 test('Agent Notes follow the lifecycle format', () => {
   const sections = {
@@ -285,7 +249,7 @@ test('Agent Notes follow the lifecycle format', () => {
   const notes = tracked.filter(
     (file) =>
       file.startsWith('.agents/notes/') &&
-      !['.agents/notes/AGENTS.md', '.agents/notes/README.md', seals].includes(file),
+      !['.agents/notes/AGENTS.md', '.agents/notes/README.md'].includes(file),
   )
   for (const file of notes) {
     const [, , lifecycle, kind, name, ...deeper] = file.split('/')
@@ -302,14 +266,6 @@ test('Agent Notes follow the lifecycle format', () => {
       fail('line 1 is not "# Agent Note: <title>" followed by a blank line')
     }
     const status = lines[2] ?? ''
-    if (lifecycle === 'archived') {
-      // A sealed note keeps the body it had; only the header is checked.
-      if (status !== 'Status: implemented') fail(`line 3 "${status}" is not "Status: implemented"`)
-      if (!/^Archived: \d{4}-\d{2}-\d{2}$/.test(lines[3] ?? '') || lines[4] !== '') {
-        fail('line 4 is not "Archived: YYYY-MM-DD" followed by a blank line')
-      }
-      continue
-    }
     const statusMatches =
       lifecycle === 'rejected'
         ? /^Status: rejected — \S/.test(status)
@@ -330,53 +286,6 @@ test('Agent Notes follow the lifecycle format', () => {
       for (const section of ['Proposal', 'Plan', 'Migration plan', 'Acceptance criteria']) {
         if (headings.includes(section)) fail(`"## ${section}" is proposal text in a shipped note`)
       }
-    }
-  }
-  assert.deepEqual(errors, [])
-})
-
-test('archived Agent Notes match their seals', () => {
-  // The seal file is in `shasum -a 256` format, so `shasum -a 256 -c` also verifies it.
-  const read = (text) => text.split('\n').filter(Boolean)
-  const lines = existsSync(path.join(root, seals))
-    ? read(readFileSync(path.join(root, seals), 'utf8'))
-    : []
-  const errors = []
-  const sealed = new Map()
-  for (const line of lines) {
-    const match = line.match(/^([0-9a-f]{64}) {2}(\.agents\/notes\/archived\/\S+\.md)$/)
-    if (!match) {
-      errors.push(`${seals} has a malformed line "${line}"; append lines from shasum -a 256.`)
-      continue
-    }
-    sealed.set(match[2], match[1])
-    if (!existsSync(path.join(root, match[2]))) {
-      errors.push(`${match[2]} has a seal but no file; archived notes are never moved or deleted.`)
-    }
-  }
-  const archived = tracked.filter(
-    (file) => file.startsWith('.agents/notes/archived/') && file !== seals,
-  )
-  for (const file of archived) {
-    const digest = createHash('sha256')
-      .update(readFileSync(path.join(root, file)))
-      .digest('hex')
-    if (!sealed.has(file)) {
-      errors.push(`${file} has no seal; append it with shasum -a 256 ${file} >> ${seals}.`)
-    } else if (sealed.get(file) !== digest) {
-      errors.push(`${file} changed after it was sealed; archived notes are frozen.`)
-    }
-  }
-  // The seal file only grows: every line on main stays.
-  let onMain = []
-  try {
-    onMain = read(git('show', `${mainRef}:${seals}`))
-  } catch {
-    // main has no seal file yet.
-  }
-  for (const line of onMain) {
-    if (!lines.includes(line)) {
-      errors.push(`${seals} drops the seal "${line}" that ${mainRef} has; restore it.`)
     }
   }
   assert.deepEqual(errors, [])

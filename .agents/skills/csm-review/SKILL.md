@@ -5,7 +5,7 @@ description: Review a chensl.me diff, pull request, or commit against the regres
 
 # Review chensl.me
 
-A rubric of traps: lessons from incidents that review must catch again. Each trap cites the commit that hit it; `git show <hash>` gives the full story. The rules themselves live in the documents that each section links. A trap that a test or check enforces leaves this list ([promotion](../../../docs/AGENTS.md#promotion)). This skill is guidance, not a complete checklist: rule on the traps for each touched area, and pair with `check` for general engineering judgment across the diff.
+A rubric of traps: lessons from incidents that review must catch again. Each trap cites the commit that hit it; `git show <hash>` gives the full story. The rules themselves live in the documents that each section links. A trap that a test or check enforces leaves this list ([admission rule](../../../docs/AGENTS.md#admission-rule)). This skill is guidance, not a complete checklist: rule on the traps for each touched area, and pair with `check` for general engineering judgment across the diff.
 
 ## Steps
 

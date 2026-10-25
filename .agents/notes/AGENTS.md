@@ -1,6 +1,6 @@
 # AGENTS.md - Agent Notes
 
-An Agent Note records one decision about this repository: the problem, what was chosen, what was given up, and why. It holds the reasons that code, tests, and other documents cannot carry. Read [`README.md`](README.md) when you create, classify, move, or archive a note.
+An Agent Note records one decision about this repository: the problem, what was chosen, what was given up, and why. It holds the reasons that code, tests, and other documents cannot carry. Read [`README.md`](README.md) when you create, classify, or move a note.
 
 ## When to write one
 
@@ -14,7 +14,6 @@ Local and mechanical edits need no note, and neither do small changes to how a p
 
 ## Rules
 
-- **Search before proposing.** Before you propose to remove, replace, or reintroduce something, search the active notes: `grep -ril --exclude-dir=archived <topic> .agents/notes/`. Answer the matching note's rationale and reopen condition, not only the general case.
-- **Supersession check.** Every new note starts with a [supersession check](../skills/csm-doc/SKILL.md#supersession-check) across active notes in the same commit.
-- **Keep active notes current.** When a change renames a path or alters a mechanism that an `implemented/` note names, update that note in place in the same commit; do not append chronological history.
-- **Archive is frozen.** Never edit, move, or delete a file in `archived/`, and never treat an archived note as a current rule ([archive rules](README.md#archive)).
+- **Search before proposing.** Before you propose to remove, replace, or reintroduce something, search the notes: `grep -ril <topic> .agents/notes/`. Answer the matching note's rationale and reopen condition, not only the general case.
+- **Supersession check.** Every new note starts with a [supersession check](../skills/csm-doc/SKILL.md#supersession-check) across the notes in the same commit.
+- **Keep notes current.** When a change renames a path or alters a mechanism that an `implemented/` note names, update that note in place in the same commit; do not append chronological history.
