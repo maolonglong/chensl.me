@@ -22,6 +22,8 @@ export default defineConfig({
   outputDir: 'test-results',
   use: {
     baseURL,
+    // The GitHub runner image ships Google Chrome, so CI skips the Chromium download.
+    channel: process.env.CI ? 'chrome' : undefined,
     deviceScaleFactor: 2,
     viewport: { width: 1280, height: 844 },
     trace: 'retain-on-failure',

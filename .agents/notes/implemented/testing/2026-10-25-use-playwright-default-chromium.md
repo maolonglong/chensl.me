@@ -8,7 +8,9 @@ Status: implemented
 
 ## Decision
 
-The config sets no browser. Playwright runs the Chromium that `playwright install chromium` provides, at the version that the pinned `@playwright/test` expects. CI installs it with `pnpm exec playwright install --with-deps chromium`. An environment that lacks the browser runs the same install command; the config does not adapt to the environment.
+Locally, the config sets no browser. Playwright runs the Chromium that `playwright install chromium` provides, at the version that the pinned `@playwright/test` expects. A machine that lacks the browser runs the same install command; the config does not adapt to the machine.
+
+In CI, the config sets `channel: 'chrome'` when `CI` is set. GitHub Actions sets `CI` itself, and the runner image ships Google Chrome, so the workflow has no browser install step.
 
 ## Alternatives considered
 
@@ -18,10 +20,14 @@ The config sets no browser. Playwright runs the Chromium that `playwright instal
 
 **Keep `CHROME_PATH` as an override.** `PLAYWRIGHT_BROWSERS_PATH` already redirects Playwright's browsers, so a project variable would add an interface that nothing needs.
 
+**Install Chromium in CI.** It keeps CI and local runs on one browser, but it downloads about 150 MB on every run to get a browser that the runner already has. The owner chose the runner's Chrome.
+
 ## Consequences
 
-The specs no longer run on Chrome stable. A rendering difference between Chromium and Chrome can change geometry and timing checks; fix the spec or the code, and do not return to a system browser. CI downloads the browser on every run.
+CI runs on Chrome stable and local runs on Playwright's Chromium. A rendering difference between them can change geometry and timing checks in one place only. Fix the spec or the code. Reproduce a CI-only failure with a local Chrome and `CI=1`.
+
+The runner's Chrome version follows the image, not the Playwright version. A Chrome that is too old or too new for the pinned Playwright shows up as a CI-only failure.
 
 ## Reopen when
 
-A regression ships that only Chrome stable shows, or the CI download time becomes a cost worth a cache.
+A regression ships that only one of the two browsers shows, or the runner image drops Google Chrome.

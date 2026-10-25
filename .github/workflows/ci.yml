@@ -27,8 +27,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm exec wrangler deploy --dry-run
-      - run: pnpm exec playwright install --with-deps chromium
-      # pnpm check leaves the production build in dist/, which the specs serve.
+      # pnpm check leaves the production build in dist/, which the specs serve; the runner's Chrome is used.
       - run: pnpm exec playwright test
       - uses: actions/upload-artifact@v7
         if: failure()
