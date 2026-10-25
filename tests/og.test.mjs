@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { test } from 'node:test'
 import { Renderer } from '@takumi-rs/core'
-import { cardLayout, renderCard } from '../src/lib/og-card.mjs'
+import { cardLayout, renderCard, serifFont, serifPath } from '../src/lib/og-card.mjs'
 import { cardHeight, cardWidth } from '../src/lib/og.mjs'
 import { root } from './support.mjs'
 
@@ -29,7 +29,10 @@ for (const [name, title] of [
 ]) {
   test(`card titles stop at two lines inside the card for ${name}`, async () => {
     const node = await titleOf({ title, label: '2026-10-17' })
-    const lines = new Set(node.runs.map((run) => Math.round(run.y)))
+    // Latin and CJK runs on one line sit at their own font's baseline, so a line is a line box.
+    const lines = new Set(
+      node.runs.map((run) => Math.round(run.y / (titleFontSize * titleLineHeight))),
+    )
     assert.equal(lines.size, 2, JSON.stringify(node.runs))
     assert.ok(node.height <= 2 * titleFontSize * titleLineHeight + 1, `height ${node.height}`)
     for (const run of node.runs) assert.ok(run.x + run.width <= node.width + 0.5, run.text)
@@ -54,14 +57,15 @@ test('card subsets draw the same pixels as the full JinKai face, ellipsis includ
     'PNG IHDR size',
   )
   const { node } = await cardLayout(card)
-  const full = await readFile(
-    path.join(root, 'vendor/fonts/tsanger-jinkai02/TsangerJinKai02-W04.ttf'),
-  )
+  const [full, serif] = await Promise.all([
+    readFile(path.join(root, 'vendor/fonts/tsanger-jinkai02/TsangerJinKai02-W04.ttf')),
+    readFile(path.join(root, serifPath)),
+  ])
   const reference = await new Renderer().render(node, {
     width: cardWidth,
     height: cardHeight,
     format: 'png',
-    fonts: [{ name: 'JinKai', data: full }],
+    fonts: [serifFont(serif), { name: 'JinKai', data: full }],
   })
   assert.ok(png.equals(reference), 'a glyph missing from the subset falls back to another font')
 })

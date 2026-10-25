@@ -12,20 +12,20 @@ const Item = `h${level + 1}` as 'h3' | 'h4'
 
 {groupByTag(items).map((group) => (
   <section class="group">
-    <Group class="group-tag">{group.tag}</Group>
+    <Group class="group-tag section-label">{group.tag}</Group>
     <ul class="items">
       {group.items.map((item) => (
         <li>
           <Item class="item-title">
             {isWebUrl(item.url) ? (
-              <a href={item.url} rel="noopener noreferrer">
+              <a class="external" href={item.url} rel="noopener noreferrer">
                 {item.title}
               </a>
             ) : (
               item.title
             )}
           </Item>
-          <p>{item.summary}</p>
+          <p class="item-summary">{item.summary}</p>
         </li>
       ))}
     </ul>
@@ -34,25 +34,51 @@ const Item = `h${level + 1}` as 'h3' | 'h4'
 
 <style>
   .group {
-    margin-bottom: 28px;
+    margin-top: var(--space-7);
   }
   .group-tag {
-    margin: 0 0 10px;
-    font-size: 1rem;
+    margin-bottom: var(--space-4);
+    letter-spacing: 0.04em;
   }
   .items {
     margin: 0;
-    padding-left: 1.25em;
+    padding: 0;
+    list-style: none;
   }
-  .items li {
-    margin-bottom: 16px;
+  .items > li + li {
+    margin-top: var(--space-5);
   }
   .item-title {
     margin: 0;
-    font-size: 1rem;
+    font-size: var(--size-body);
     font-weight: 500;
+    line-height: 1.55;
+    color: var(--heading-color);
   }
-  .items p {
-    margin: 4px 0 0;
+  .item-title a {
+    color: inherit;
+  }
+  /* Every item leaves the site, so the title carries the same arrow as an external prose link. */
+  .external::after {
+    content: '↗\FE0E' / '';
+    display: inline-block;
+    margin-left: 0.2em;
+    font-family: var(--font-sans);
+    font-size: 0.75em;
+    color: var(--muted-color);
+    transition: transform 150ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .item-title a:hover {
+      color: inherit;
+      text-decoration-color: var(--rule-color);
+    }
+    .external:hover::after {
+      transform: translate(1px, -1px);
+    }
+  }
+  .item-summary {
+    margin: var(--space-1) 0 0;
+    color: var(--text-color);
   }
 </style>

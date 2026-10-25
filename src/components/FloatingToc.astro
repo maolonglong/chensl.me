@@ -84,25 +84,6 @@ for (const heading of headings) {
         list.addEventListener('click', (event) => {
           if (!(event.target instanceof Element) || !event.target.closest('a')) return
           if (list.matches(':popover-open')) list.hidePopover()
-          if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
-        })
-        document.addEventListener('keydown', (event) => {
-          if (
-            event.key === 'Escape' &&
-            !list.matches(':popover-open') &&
-            list.matches(':hover, :focus-within')
-          )
-            list.dataset.dismissed = ''
-        })
-        list.addEventListener('pointerleave', () => {
-          if (!list.matches(':focus-within')) delete list.dataset.dismissed
-        })
-        list.addEventListener('focusout', (event) => {
-          if (
-            !(event.relatedTarget instanceof Node && list.contains(event.relatedTarget)) &&
-            !list.matches(':hover')
-          )
-            delete list.dataset.dismissed
         })
       })()
     </script>

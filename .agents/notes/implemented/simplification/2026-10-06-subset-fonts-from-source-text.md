@@ -8,7 +8,7 @@ The site shipped 255 JinKai fallback blocks (11 MB, 128 code points each) beside
 
 ## Decision
 
-At build time and dev-server startup, `src/lib/fonts.mjs` scans the source text and builds two disjoint subsets: a common subset for page templates and shared UI, and an article subset for the remaining blog characters. The scan reads `src/` and `astro.config.mjs`, which holds Markdown labels such as the footnote heading. A character outside the source text falls through to the JinKai slices, which [a later note](../feature/2026-10-16-jinkai-unicode-range-slices.md) added for text that exists only at runtime.
+At build time and dev-server startup, `src/lib/fonts.mjs` scans the source text and builds two disjoint subsets: a common subset for page templates, shared UI, and published article titles and descriptions, which the home page and the archive list, and an article subset for the remaining blog characters. The scan reads `src/` and `astro.config.mjs`, which holds Markdown labels such as the footnote heading. A character outside the source text falls through to the JinKai slices, which [a later note](../feature/2026-10-16-jinkai-unicode-range-slices.md) added for text that exists only at runtime.
 
 `tests/fonts.test.mjs` requires every page character that JinKai supports to reach a declared face, on the home page and on an article page.
 

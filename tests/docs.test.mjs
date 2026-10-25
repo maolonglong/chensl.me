@@ -209,7 +209,7 @@ test('standing documents stay within their word budgets', () => {
     'AGENTS.md': 510,
     'docs/AGENTS.md': 1300,
     'docs/architecture.md': 1340,
-    'docs/design.md': 1050,
+    'docs/design.md': 1120,
     'docs/product.md': 960,
     'docs/testing.md': 1000,
     '.agents/notes/AGENTS.md': 290,

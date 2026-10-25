@@ -6,106 +6,73 @@ const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(
 ---
 
 <BaseLayout title="博客" description="陈劭珑的技术文章：系统性能、Go/Zig/Rust 与 Agent 工程实践">
-  <h1 class="visually-hidden">博客</h1>
-  {[...years].map(([year, entries]) => (
-    <section class="year-group" aria-labelledby={`year-${year}`}>
-      <h2 class="posts-year" id={`year-${year}`}>
-        {year}
-      </h2>
-      <ul class="blog-posts">
-        {entries.map((post) => (
-          <li>
-            <div class="post-row">
-              <a href={postUrl(post)}>{post.data.title}</a>
-              <time datetime={post.data.pubDate.toISOString()}>
-                {displayDate(post.data.pubDate).slice(5)}
-              </time>
-            </div>
-            {post.data.description && <p class="post-description">{post.data.description}</p>}
-          </li>
-        ))}
-      </ul>
-    </section>
-  ))}
-  {posts.length === 0 && <p class="blog-posts-empty">还没有文章</p>}
+  <div class="measure">
+    <header class="page-header">
+      <h1>博客</h1>
+      <p class="meta">系统性能、Go/Zig/Rust 与 Agent 工程实践，共 {posts.length} 篇。</p>
+    </header>
+    {[...years].map(([year, entries]) => (
+      <section class="year-group" aria-labelledby={`year-${year}`}>
+        <h2 class="posts-year" id={`year-${year}`}>
+          {year}
+        </h2>
+        <ul class="entries blog-posts">
+          {entries.map((post) => (
+            <li>
+              <div class="entry-head">
+                <h3 class="entry-title">
+                  <a href={postUrl(post)}>{post.data.title}</a>
+                </h3>
+                <time class="meta" datetime={post.data.pubDate.toISOString()}>
+                  {displayDate(post.data.pubDate).slice(5)}
+                </time>
+              </div>
+              {post.data.description && (
+                <p class="entry-summary post-description">{post.data.description}</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+    {posts.length === 0 && <p class="blog-posts-empty">还没有文章</p>}
+  </div>
 </BaseLayout>
 
 <style>
+  .page-header {
+    margin-bottom: var(--space-7);
+  }
+  .page-header .meta {
+    margin: 0;
+  }
+  /* The year hangs in its own column so the titles share one left edge. */
   .year-group {
     display: grid;
-    grid-template-columns: 4.5rem minmax(0, 1fr);
-    column-gap: 24px;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    column-gap: var(--space-5);
     align-items: baseline;
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--rule-color);
   }
   .year-group + .year-group {
-    margin-top: 32px;
-    padding-top: 32px;
-    border-top: 1px solid var(--border-color);
+    margin-top: var(--space-7);
   }
   .posts-year {
     margin: 0;
-    font-size: 1.125rem;
+    font-family: var(--font-sans);
+    font-size: var(--size-ui);
+    font-weight: 500;
     color: var(--muted-color);
-    font-variant-numeric: tabular-nums;
     letter-spacing: 0.04em;
-  }
-  .blog-posts {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .blog-posts > li + li {
-    margin-top: 20px;
-  }
-  .post-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-  }
-  .post-row a {
-    min-width: 0;
-    transition:
-      color 150ms ease-out,
-      opacity 100ms ease-out;
-  }
-  .post-row a:visited {
-    color: var(--visited-color);
-  }
-  .post-row a:active {
-    opacity: 0.65;
-  }
-  .post-row time {
-    flex: none;
-    font-size: 0.875rem;
-    color: var(--muted-color);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-  }
-  .post-description {
-    margin: 4px 0 0;
-    font-size: 0.875rem;
-    color: var(--muted-color);
-  }
-  @media (hover: hover) {
-    .post-row a:hover {
-      color: var(--link-hover-color);
-    }
   }
   @media (max-width: 600px) {
     .year-group {
       grid-template-columns: minmax(0, 1fr);
-      row-gap: 12px;
+      row-gap: var(--space-4);
     }
     .year-group + .year-group {
-      margin-top: 28px;
-      padding-top: 28px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .post-row a {
-      transition: none;
+      margin-top: var(--space-6);
     }
   }
 </style>

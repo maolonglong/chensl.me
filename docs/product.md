@@ -4,9 +4,9 @@ Read this before you change what readers see or rely on. Each section states a p
 
 ## Pages
 
-- **Home** introduces the author. **Archive** (`/blog/`) lists published articles with their descriptions, grouped by year, newest first (`tests/content.test.mjs`, `e2e/page-shell.spec.mjs`).
+- **Home** introduces the author, lists the five newest published articles, and points to AI News. **Archive** (`/blog/`) lists published articles with their descriptions, grouped by year, newest first (`tests/content.test.mjs`, `e2e/page-shell.spec.mjs`).
 - **Navigation.** The site title links home. The header links the archive, AI News, and search ([decision](../.agents/notes/implemented/simplification/2026-10-17-lean-header-navigation.md), `e2e/navigation.spec.mjs`).
-- **Article pages** use one reading column. An article with at least three H2 or H3 headings gets a contents list (`tests/markdown.test.mjs`, `e2e/contents.spec.mjs`).
+- **Article pages** use one reading column and end with links to the earlier and the later article. An article with at least three H2 or H3 headings gets a contents list (`tests/markdown.test.mjs`, `e2e/contents.spec.mjs`).
 - **Length.** The article header shows the approximate length and reading time after the date, and the JSON-LD carries the exact `wordCount`. Reading time assumes 300 Chinese characters or 238 English words a minute. Code blocks and display math do not count (`tests/reading-time.test.mjs`, `e2e/reading-time.spec.mjs`).
 - **Stale notice.** An article whose last modification (`updatedDate`, else `pubDate`) is more than two calendar years old shows a notice under its header. The browser checks the current date on each visit, so the notice appears when the article crosses two years, with no rebuild. The build also marks articles that were already stale, so a visitor whose clock is behind the build time still sees the notice (`tests/stale.test.mjs`, `e2e/page-shell.spec.mjs`).
 - **Search** (`/search/`) finds articles and AI News by keyword. Article results survive a server failure (`e2e/search.spec.mjs`).

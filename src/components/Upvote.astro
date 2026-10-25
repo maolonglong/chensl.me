@@ -63,13 +63,13 @@ const { postId } = Astro.props
 
 <style>
   .upvote {
-    margin-top: 40px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
     min-height: 44px;
+    font-family: var(--font-sans);
+    font-size: var(--size-ui);
     color: var(--muted-color);
-    font-size: 0.875rem;
   }
   button {
     display: inline-flex;
@@ -77,16 +77,16 @@ const { postId } = Astro.props
     justify-content: center;
     gap: 6px;
     min-width: 44px;
-    min-height: 44px;
+    min-height: 40px;
     padding: 0 16px 0 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 999px;
-    background-color: var(--code-block-background-color);
     color: inherit;
     font-variant-numeric: tabular-nums;
+    background-color: transparent;
+    border: 1px solid var(--rule-color);
+    border-radius: 999px;
     touch-action: manipulation;
     flex-shrink: 0;
-    transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 120ms var(--ease-out);
   }
   [data-count] {
     line-height: 1;
@@ -95,25 +95,28 @@ const { postId } = Astro.props
     display: none;
   }
   svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     fill: none;
     stroke: currentColor;
-    stroke-width: 2;
+    stroke-width: 1.75;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
   button:disabled {
     color: var(--link-color);
-    border-color: color-mix(in srgb, var(--link-color) 35%, var(--border-color));
-    background-color: color-mix(in srgb, var(--link-color) 6%, var(--code-block-background-color));
+    background-color: color-mix(in srgb, var(--link-color) 7%, transparent);
+    border-color: color-mix(in srgb, var(--link-color) 40%, var(--rule-color));
     cursor: default;
   }
   @media (hover: hover) {
     button:not(:disabled):hover {
-      color: var(--link-color);
-      border-color: color-mix(in srgb, var(--link-color) 35%, var(--border-color));
+      color: var(--heading-color);
+      background-color: var(--surface-color);
     }
+  }
+  button:not(:disabled, :focus-visible):active {
+    transform: scale(0.95);
   }
   @keyframes upvote-chevron {
     0% {
@@ -140,22 +143,14 @@ const { postId } = Astro.props
     }
   }
   @media (prefers-reduced-motion: no-preference) {
-    button:not(:disabled, :focus-visible):active {
-      transform: scale(0.95);
-    }
     button[data-just-voted] polyline:first-child {
-      animation: upvote-chevron 420ms cubic-bezier(0.22, 1, 0.36, 1);
+      animation: upvote-chevron 420ms var(--ease-out);
     }
     button[data-just-voted] polyline:last-child {
-      animation: upvote-chevron 420ms cubic-bezier(0.22, 1, 0.36, 1) 45ms;
+      animation: upvote-chevron 420ms var(--ease-out) 45ms;
     }
     button[data-just-voted] [data-count] {
-      animation: upvote-count 260ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    button {
-      transition: none;
+      animation: upvote-count 260ms var(--ease-out);
     }
   }
   @media (scripting: none) {

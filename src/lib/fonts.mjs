@@ -10,6 +10,7 @@ import rehypeParse from 'rehype-parse'
 import remarkMath from 'remark-math'
 import { visit } from 'unist-util-visit'
 import { rehypeSite, remarkSite } from './markdown.mjs'
+import { latinRanges, latinUnicodeRange } from './latin-range.mjs'
 import { isPublishedPost, rewriteUnzonedFrontMatter } from './post-date.ts'
 
 const parser = unified().use(rehypeParse, { fragment: true })
@@ -153,6 +154,13 @@ export async function siteFonts() {
         if (isBlog) {
           const { frontmatter } = parseFrontmatter(rewriteUnzonedFrontMatter(input))
           if (!isPublishedPost(frontmatter, now, dev)) continue
+          // Titles and descriptions also appear on the home page, the archive, and the
+          // neighbouring articles, so they belong to the common subset.
+          for (const value of [frontmatter.title, frontmatter.description])
+            for (const character of typeof value === 'string' ? value : '') {
+              const point = character.codePointAt(0)
+              if (supported.has(point)) common.add(point)
+            }
         }
         const body = input.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, '')
         html += (await markdown.render(body)).code
@@ -195,7 +203,42 @@ export async function siteFonts() {
       unicodeRange: unicodeRanges(points),
     })
   }
+  // The vendored Latin file is variable from 200 to 900; the site sets only 400 and 500, so the
+  // served copy keeps that slice of the axis and the Latin range, about 30 KB.
+  const serif = path.join(directory, 'latin-serif.woff2')
+  const latinText = latinRanges
+    .flatMap(([start, end]) => Array.from({ length: end - start + 1 }, (_, i) => start + i))
+    .map((point) => String.fromCodePoint(point))
+    .join('')
+  await writeFile(
+    serif,
+    await subsetFont(
+      await readFile(
+        path.join(root, 'src/assets/fonts/source-serif-4/SourceSerif4-Latin-wght.woff2'),
+      ),
+      latinText,
+      { targetFormat: 'woff2', variationAxes: { wght: { min: 400, max: 500 } } },
+    ),
+  )
   return [
+    {
+      provider: fontProviders.local(),
+      name: 'Source Serif 4',
+      cssVariable: '--font-source-serif',
+      display: 'swap',
+      fallbacks: [],
+      optimizedFallbacks: false,
+      options: {
+        variants: [
+          {
+            src: [serif],
+            weight: '400 500',
+            style: 'normal',
+            unicodeRange: latinUnicodeRange,
+          },
+        ],
+      },
+    },
     {
       provider: fontProviders.local(),
       name: 'TsangerJinKai02',

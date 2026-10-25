@@ -6,7 +6,7 @@ Read this before you change how the site builds, serves, or runs scripts. It giv
 
 The site splits state into build-time static inputs and request-time edge databases:
 
-- **Build-time ground state.** Markdown articles in `src/content/blog/`, the repository snapshot `src/data/github-repos.json`, and the JinKai font source in `vendor/fonts/` are the only build inputs. The build makes no network requests. Astro prerenders these inputs into static HTML, RSS, Markdown exports, PNG share cards, a Pagefind keyword index, and font subsets in `dist/client`, plus a Cloudflare Worker bundle in `dist/server`.
+- **Build-time ground state.** Markdown articles in `src/content/blog/`, the repository snapshot `src/data/github-repos.json`, the JinKai font source in `vendor/fonts/`, and the Latin serif in `src/assets/fonts/` are the only build inputs. The build makes no network requests. Astro prerenders these inputs into static HTML, RSS, Markdown exports, PNG share cards, a Pagefind keyword index, and font subsets in `dist/client`, plus a Cloudflare Worker bundle in `dist/server`.
 - **Runtime ground state.** Two Cloudflare D1 databases hold mutable state: `VOTES` for article upvotes and `NEWS` for bot-written daily AI News issues (`/news/`) and their FTS5 search index. Workers Static Assets serves every prerendered file directly; the Worker runs only on the paths listed in `assets.run_worker_first` (`/_actions/*`, `/api/*`, `/news/*`).
 
 ```text
@@ -84,7 +84,7 @@ Bot-written AI News issues live in the `NEWS` D1 database (`migrations/news/`) (
 
 ### `src/components/`, `src/scripts/theme-bootstrap.js`, `src/styles/`
 
-Each component in `src/components/` owns its scoped styles and compiled browser script. `src/styles/global.css` holds design tokens and `.prose` rules; `src/styles/floating-controls.css` holds shared floating-button transitions. `src/scripts/theme-bootstrap.js` runs inline in `<head>` before first paint (`astro.config.mjs` reads it at startup, so restart `pnpm dev` after editing it).
+Each component in `src/components/` owns its scoped styles and compiled browser script. `src/styles/global.css` holds design tokens, the shared chrome classes (`.measure`, `.meta`, `.section-label`, `.entries`), and `.prose` rules; `src/styles/floating-controls.css` holds the article's contents list, its button, and back-to-top. `src/scripts/theme-bootstrap.js` runs inline in `<head>` before first paint (`astro.config.mjs` reads it at startup, so restart `pnpm dev` after editing it).
 
 - **Architecture Invariant:** Pages require no JavaScript to read. When scripts do not run, the contents list opens via `<details>`, script-only buttons stay hidden, and build-time stale notices remain visible (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
 
@@ -101,7 +101,7 @@ Add any new third-party source to every policy that defines its directive, and t
 
 ### Fonts
 
-`src/lib/fonts.mjs` builds two disjoint JinKai W04 subsets from source text before Astro resolves fonts ([decision](../.agents/notes/implemented/simplification/2026-10-06-subset-fonts-from-source-text.md)), plus cached `unicode-range` slices from `vendor/fonts/google-fonts-noto-sans-sc-slices.json` for runtime D1 text on `/news/` ([decision](../.agents/notes/implemented/feature/2026-10-16-jinkai-unicode-range-slices.md)).
+`src/lib/fonts.mjs` builds a Latin Source Serif subset (its range is `src/lib/latin-range.mjs`) and two disjoint JinKai W04 subsets from source text before Astro resolves fonts ([decision](../.agents/notes/implemented/simplification/2026-10-06-subset-fonts-from-source-text.md)), plus cached `unicode-range` slices from `vendor/fonts/google-fonts-noto-sans-sc-slices.json` for runtime D1 text on `/news/` ([decision](../.agents/notes/implemented/feature/2026-10-16-jinkai-unicode-range-slices.md)).
 
 ### Delivery
 

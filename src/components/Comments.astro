@@ -8,7 +8,9 @@ import { giscusThemes } from '../lib/assets'
   data-light-theme={giscusThemes.light}
   data-dark-theme={giscusThemes.dark}
 >
-  <h2 id="comments-title">评论</h2>
+  <h2 class="section-label" id="comments-title">
+    评论
+  </h2>
   <div class="giscus"></div>
   <noscript>
     <p class="comments-unavailable">启用 JavaScript 后可以查看和发表评论。</p>
@@ -70,10 +72,7 @@ import { giscusThemes } from '../lib/assets'
 
 <style>
   .comments {
-    margin-top: 72px;
-  }
-  .comments h2 {
-    margin-top: 0;
+    margin-top: var(--space-8);
   }
   .comments :global(.giscus),
   .comments :global(.giscus-frame) {
@@ -84,7 +83,7 @@ import { giscusThemes } from '../lib/assets'
     border: 0;
   }
   .comments-unavailable {
-    font-size: 0.875rem;
+    font-size: var(--size-ui);
     color: var(--muted-color);
   }
 </style>

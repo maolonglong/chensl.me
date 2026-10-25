@@ -157,8 +157,11 @@ test('drafts and future posts are filtered and dates sort by instants', async ()
   const { dist } = await behaviorFixture()
   const archive = await readFile(path.join(dist, 'blog/index.html'), 'utf8')
   assert.doesNotMatch(archive, /Secret draft|Future post/)
-  assert.match(archive, /<p class="post-description"[^>]*>A concise description\.<\/p>/)
-  assert.equal([...archive.matchAll(/<p class="post-description"/g)].length, 1)
+  assert.match(
+    archive,
+    /<p class="[^"]*\bpost-description\b[^"]*"[^>]*>A concise description\.<\/p>/,
+  )
+  assert.equal([...archive.matchAll(/<p class="[^"]*\bpost-description\b/g)].length, 1)
   assert.ok(archive.indexOf('Escaped &lt;title&gt;') < archive.indexOf('Below'))
   assert.ok(archive.indexOf('Below') < archive.indexOf('Older'))
   await assert.rejects(readFile(path.join(dist, 'blog/draft/index.html'), 'utf8'))
@@ -305,7 +308,7 @@ test('stale article notices use the last modification date and stay out of conte
     )
     if (displayed) assert.match(header, new RegExp(`<time[^>]*>${displayed}</time>`))
     assert.equal(/\shidden(?=\s|$)/.test(attributes), hidden, `${id}: build-time visibility`)
-    assert.match(header, /class="post-meta"[^>]*>[\s\S]*?<\/p>\s*<p class="post-notice"/)
+    assert.match(header, /class="post-meta[^"]*"[^>]*>[\s\S]*?<\/p>\s*<p class="post-notice"/)
     const markdown = await readFile(path.join(dist, `blog/${id}/index.md`), 'utf8')
     assert.doesNotMatch(markdown, /两年多以前|post-notice/)
     assert.ok(markdown.endsWith('Original body.'))

@@ -170,7 +170,7 @@ for (const width of [375, 1280]) {
             const stale = document.querySelector('.post-notice').getBoundingClientRect()
             return { afterDate: note.top - date.bottom, beforeStale: stale.top - note.bottom }
           })
-          expect(layout).toEqual({ afterDate: 8, beforeStale: 8 })
+          expect(layout).toEqual({ afterDate: 8, beforeStale: 24 })
         }
         await capture(page, `creation-${id}-${width}-${mode}`)
       }

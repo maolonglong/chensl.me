@@ -14,46 +14,45 @@ if (!issues.length) Astro.response.status = 404
 
 {issues.length ? (
   <BaseLayout title={`AI News ${month}`} description={`AI News ${month} 的全部期数`}>
-    <header class="page-header">
-      <p class="meta">
-        <a href="/news/">AI News</a> · <a href="/news/archive/">归档</a>
-      </p>
-      <h1>{month}</h1>
-    </header>
-    <ol class="issues">
-      {issues.map((issue) => (
-        <li>
-          <time datetime={issue.date}>{issue.date}</time>
-          <a href={newsUrl(issue.date)}>{issue.title}</a>
-          <NewsTags tags={issueTags(issue)} />
-        </li>
-      ))}
-    </ol>
+    <div class="measure">
+      <header class="page-header">
+        <p class="meta">
+          <a href="/news/">AI News</a> · <a href="/news/archive/">归档</a>
+        </p>
+        <h1>{month}</h1>
+      </header>
+      <ol class="entries issues">
+        {issues.map((issue) => (
+          <li>
+            <time class="meta" datetime={issue.date}>
+              {issue.date}
+            </time>
+            <h2 class="entry-title">
+              <a href={newsUrl(issue.date)}>{issue.title}</a>
+            </h2>
+            <NewsTags tags={issueTags(issue)} />
+          </li>
+        ))}
+      </ol>
+    </div>
   </BaseLayout>
 ) : (
   <BaseLayout title="没有这个月" notFound>
-    <h1>没有这个月</h1>
-    <p>
-      <a href="/news/archive/">返回归档</a>
-    </p>
+    <div class="measure">
+      <h1>没有这个月</h1>
+      <p>
+        <a href="/news/archive/">返回归档</a>
+      </p>
+    </div>
   </BaseLayout>
 )}
 
 <style>
   .page-header {
-    margin-bottom: 40px;
+    margin-bottom: var(--space-7);
   }
-  .meta,
-  .issues time {
-    color: var(--muted-color);
-    font-size: 0.875rem;
-  }
-  .issues {
-    padding: 0;
-    list-style: none;
-  }
-  .issues > li {
-    margin-bottom: 20px;
+  .page-header > .meta {
+    margin: 0 0 var(--space-3);
   }
   .issues time {
     display: block;

@@ -12,54 +12,73 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
 ---
 
 <BaseLayout title="AI News" description={newsDescription}>
-  <header class="page-header">
-    <h1>AI News</h1>
-    <p class="note">
-      每天 AI 圈发生了什么。由 bot 收集整理，作者不逐条审阅。这里显示最新一期，往期在
-      <a href="/news/archive/">归档</a>。
-      <a href="/news/index.xml" type="application/rss+xml">
-        订阅 RSS
-      </a>
-    </p>
-  </header>
-  {issues.length ? (
-    issues.map((issue) => (
-      <section class="day">
-        <h2>
-          <a href={newsUrl(issue.date)}>
-            <time datetime={issue.date}>{issue.date}</time> · {issue.title}
-          </a>
-        </h2>
-        <p>{issue.summary}</p>
-        <NewsGroups items={issue.items} level={3} />
-      </section>
-    ))
-  ) : (
-    <p>还没有内容。</p>
-  )}
-  {issues.length > 0 && (
-    <p class="older">
-      <a href="/news/archive/">查看往期日报</a>
-    </p>
-  )}
+  <div class="measure">
+    <header class="page-header">
+      <h1>AI News</h1>
+      <!-- prettier-ignore -->
+      <p class="meta">每天 AI 圈发生了什么。由 bot 收集整理，作者不逐条审阅。这里显示最新一期，往期在<a href="/news/archive/">归档</a>，也可以<a href="/news/index.xml" type="application/rss+xml">订阅 RSS</a>。</p>
+    </header>
+    {issues.length ? (
+      issues.map((issue) => (
+        <article class="day">
+          <p class="meta day-date">
+            <time datetime={issue.date}>{issue.date}</time>
+          </p>
+          <h2 class="day-title">
+            <a href={newsUrl(issue.date)}>{issue.title}</a>
+          </h2>
+          <p class="day-summary">{issue.summary}</p>
+          <NewsGroups items={issue.items} level={3} />
+        </article>
+      ))
+    ) : (
+      <p>还没有内容。</p>
+    )}
+    {issues.length > 0 && (
+      <p class="older meta">
+        <a class="arrow-link" href="/news/archive/">
+          查看往期日报
+        </a>
+      </p>
+    )}
+  </div>
 </BaseLayout>
 
 <style>
   .page-header {
-    margin-bottom: 40px;
+    margin-bottom: var(--space-8);
   }
-  .note {
-    color: var(--muted-color);
-    font-size: 0.875rem;
-  }
-  .day {
-    margin-bottom: 48px;
-  }
-  .older {
+  .page-header .meta {
     margin: 0;
   }
-  .day h2 {
-    margin: 0 0 8px;
-    font-size: 1.25rem;
+  .day + .day {
+    margin-top: var(--space-8);
+  }
+  .day-date {
+    margin: 0 0 var(--space-2);
+  }
+  /* Issue titles are long sentences; breaking only at spaces would strand a leading word. */
+  .day-title {
+    margin: 0;
+    font-size: var(--size-h2);
+    word-break: normal;
+  }
+  .day-title a {
+    color: inherit;
+  }
+  @media (hover: hover) {
+    .day-title a:hover {
+      color: inherit;
+      text-decoration-color: var(--rule-color);
+    }
+  }
+  .day-summary {
+    margin: var(--space-3) 0 0;
+    font-size: var(--size-h3);
+    line-height: 1.65;
+    color: var(--text-color);
+  }
+  .older {
+    margin: var(--space-8) 0 0;
   }
 </style>

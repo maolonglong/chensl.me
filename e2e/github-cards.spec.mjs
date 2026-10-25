@@ -49,7 +49,7 @@ const body = `开头。
 > <https://github.com/example-owner/example-repo>
 
 \`\`\`text
-code block for the frame comparison
+code block for the corner comparison
 \`\`\`
 
 结尾[^1]。
@@ -79,11 +79,9 @@ function probeCards() {
         links: card.querySelectorAll('a').length,
         extras: card.querySelectorAll('img, script, iframe, svg').length,
         frame:
-          style.borderTopWidth === code.borderTopWidth &&
-          style.borderTopStyle === code.borderTopStyle &&
-          style.borderTopColor === code.borderTopColor &&
-          style.borderRadius === code.borderRadius &&
-          style.backgroundColor === code.backgroundColor,
+          style.borderTopWidth === '1px' &&
+          style.borderTopStyle === 'solid' &&
+          style.borderRadius === code.borderRadius,
         underline: style.textDecorationLine,
         inColumn: box(link).left >= prose.left && box(link).right <= prose.right,
         height: box(link).height,
@@ -196,7 +194,7 @@ test.describe('GitHub cards from a fixture snapshot', () => {
         ])
         for (const [index, card] of state.cards.entries()) {
           expectAll(`card ${index} at ${width}px in ${mode}`, card, {
-            'shares the code block frame': card.frame,
+            'has a hairline frame with the code block corners': card.frame,
             'has no underline at rest': card.underline === 'none',
             'stays inside the column': card.inColumn,
             'is a 44 px touch target': card.height >= 44,

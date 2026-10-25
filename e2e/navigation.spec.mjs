@@ -47,10 +47,11 @@ test('the search icon is a named link that marks the search page as current', as
   await expect(search).toHaveAttribute('aria-label', '搜索')
   await expect(search.locator('svg')).toHaveAttribute('aria-hidden', 'true')
   expect((await mark())?.height).toBeGreaterThan(0)
-  await expect(page.getByRole('link', { name: '博客', exact: true })).not.toHaveAttribute(
-    'aria-current',
-    /.+/,
-  )
+  await expect(
+    page
+      .getByRole('navigation', { name: '主导航' })
+      .getByRole('link', { name: '博客', exact: true }),
+  ).not.toHaveAttribute('aria-current', /.+/)
 
   for (const path of ['/', '/blog/', '/news/']) {
     await open(path)
@@ -60,14 +61,10 @@ test('the search icon is a named link that marks the search page as current', as
   }
 })
 
-// The header keeps its text spacing (12 px on phones, 20 px on desktop). Each icon's target is
-// 44 px tall and reaches halfway into the gap beside it: 44 px wide on desktop, 36 px on phones.
-for (const [width, gap] of [
-  [320, 12],
-  [390, 12],
-  [1280, 20],
-]) {
-  test(`the search icon and the theme toggle own separate 44px-tall targets at ${width}px`, async ({
+// The search icon and the theme toggle are 40 px round tools side by side; each one owns its
+// whole circle, so a tap never lands on the neighbor.
+for (const width of [320, 390, 1280]) {
+  test(`the search icon and the theme toggle own separate 40px targets at ${width}px`, async ({
     open,
     page,
   }) => {
@@ -79,31 +76,26 @@ for (const [width, gap] of [
         search: nav.querySelector('a[href="/search/"]'),
         theme: document.querySelector('[data-theme-toggle]'),
       }
-      const search = controls.search.getBoundingClientRect()
-      const theme = controls.theme.getBoundingClientRect()
-      const iconGap = theme.left - search.right
-      const halfWidth = Math.min(22, search.width / 2 + iconGap / 2)
-      // Sample each target, edges included (one pixel in); every point must hit that control,
-      // so neither target overlaps the other or lets a tap land on its neighbor.
-      const misses = Object.fromEntries(
+      return Object.fromEntries(
         Object.entries(controls).map(([name, control]) => {
           const box = control.getBoundingClientRect()
-          const x = box.left + box.width / 2
-          const y = box.top + box.height / 2
           const missed = []
-          for (const dx of [-(halfWidth - 1), -halfWidth / 2, 0, halfWidth / 2, halfWidth - 1])
-            for (const dy of [-21, -11, 0, 11, 21]) {
-              const hit = document.elementFromPoint(x + dx, y + dy)?.closest('a, button')
+          // The tools are round, so sample a cross inside the circle.
+          for (const dx of [box.width / 2 - 14, box.width / 2, box.width / 2 + 14])
+            for (const dy of [box.height / 2 - 14, box.height / 2, box.height / 2 + 14]) {
+              const hit = document
+                .elementFromPoint(box.left + dx, box.top + dy)
+                ?.closest('a, button')
               if (hit !== control) missed.push([dx, dy])
             }
-          return [name, missed]
+          return [name, { width: box.width, height: box.height, missed }]
         }),
       )
-      return { navGap: getComputedStyle(nav).columnGap, iconGap, halfWidth, misses }
     })
-    expect(result.navGap).toBe(`${gap}px`)
-    expect(result.iconGap).toBeCloseTo(gap, 0)
-    expect(result.halfWidth).toBeCloseTo(Math.min(22, 12 + gap / 2), 0)
-    expect(result.misses).toEqual({ search: [], theme: [] })
+    for (const control of Object.values(result)) {
+      expect(control.width).toBeGreaterThanOrEqual(40)
+      expect(control.height).toBeGreaterThanOrEqual(40)
+      expect(control.missed).toEqual([])
+    }
   })
 }

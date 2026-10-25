@@ -12,7 +12,7 @@ The build renders the cards in Node. `src/pages/og/[...card].png.ts` is a preren
 
 - **No rendering in the Worker.** `/news/` renders on request, so each issue cannot have its own card without a runtime renderer. All news pages share the AI News card, and the monthly archive pages share the news archive card. Astro leaves prerendered routes out of the Worker bundle, and `scripts/check-site.mjs` fails a bundle that contains the renderer.
 - **Renderer.** `src/lib/og-card.mjs` lays out a node tree and renders it with `@takumi-rs/core`, the native Node binding of Takumi. It supports `line-clamp` with an ellipsis, `text-wrap: balance`, and `word-break: keep-all`, so the title keeps the rules of the site's `h1`. A fresh `Renderer` renders each card, because a shared one keeps every face registered under the family name.
-- **Font.** Each card embeds a subset of JinKai W04 with only its own characters and the ellipsis, made with `subset-font`. `tests/og.test.mjs` compares each subset render with a render that uses the full face.
+- **Font.** Each card sets Latin text in Source Serif and the rest in a subset of JinKai W04 with only its own characters and the ellipsis, made with `subset-font`, the same stack as the page ([redesign](2026-10-25-editorial-redesign.md)). `tests/og.test.mjs` compares each subset render with a render that uses the full JinKai face.
 - **Colors.** The renderer reads the light-theme tokens from `src/styles/global.css`, so a card adds no color of its own.
 
 ## Alternatives considered

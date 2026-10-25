@@ -10,43 +10,59 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
 ---
 
 <BaseLayout title="AI News 归档" description="AI News 按月归档">
-  <header class="page-header">
-    <p class="meta">
-      <a href="/news/">AI News</a>
-    </p>
-    <h1>归档</h1>
-  </header>
-  {months.length ? (
-    <ul class="months">
-      {months.map(({ month, count }) => (
-        <li>
-          <a href={`/news/archive/${month}/`}>{month}</a>
-          <span class="count">{count} 期</span>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p>还没有内容。</p>
-  )}
+  <div class="measure">
+    <header class="page-header">
+      <p class="meta">
+        <a href="/news/">AI News</a>
+      </p>
+      <h1>归档</h1>
+    </header>
+    {months.length ? (
+      <ul class="months">
+        {months.map(({ month, count }) => (
+          <li>
+            <a href={`/news/archive/${month}/`}>
+              <time datetime={month}>{month}</time>
+            </a>
+            <span class="count meta">{count} 期</span>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>还没有内容。</p>
+    )}
+  </div>
 </BaseLayout>
 
 <style>
   .page-header {
-    margin-bottom: 40px;
+    margin-bottom: var(--space-7);
   }
-  .meta,
-  .count {
-    color: var(--muted-color);
-    font-size: 0.875rem;
+  .page-header > .meta {
+    margin: 0 0 var(--space-3);
   }
   .months {
+    margin: 0;
     padding: 0;
     list-style: none;
+    border-top: 1px solid var(--rule-color);
   }
   .months li {
     display: flex;
-    gap: 12px;
     align-items: baseline;
-    margin-bottom: 8px;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--border-color);
+  }
+  .months a {
+    font-weight: 500;
+    color: var(--heading-color);
+  }
+  @media (hover: hover) {
+    .months a:hover {
+      color: var(--heading-color);
+      text-decoration-color: var(--rule-color);
+    }
   }
 </style>

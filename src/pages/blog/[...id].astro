@@ -8,20 +8,23 @@ import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
 import GitHubCards from '../../components/GitHubCards.astro'
 import Upvote from '../../components/Upvote.astro'
-import { creationLabels, publishedPosts, displayDate } from '../../lib/posts'
+import { creationLabels, publishedPosts, displayDate, postUrl } from '../../lib/posts'
 import { isStaleSince } from '../../lib/stale'
 import { readingLength } from '../../lib/reading-time.mjs'
 export async function getStaticPaths() {
   const posts = await publishedPosts()
-  return posts.map((post) => ({
+  // Posts are newest first, so the earlier article follows and the later one precedes.
+  return posts.map((post, index) => ({
     params: { id: post.id },
-    props: { post },
+    props: { post, earlier: posts[index + 1], later: posts[index - 1] },
   }))
 }
 interface Props {
   post: CollectionEntry<'blog'>
+  earlier?: CollectionEntry<'blog'>
+  later?: CollectionEntry<'blog'>
 }
-const { post } = Astro.props
+const { post, earlier, later } = Astro.props
 const { Content, headings, remarkPluginFrontmatter } = await render(post)
 const { wordCount, minutes } = remarkPluginFrontmatter.readingStats
 const lastModified = post.data.updatedDate ?? post.data.pubDate
@@ -30,13 +33,13 @@ const { creation } = post.data
 
 <BaseLayout {...post.data} updatedDate={lastModified} wordCount={wordCount} article>
   <article
-    class="post"
+    class="post measure"
     data-pagefind-body
     data-pagefind-meta={`date:${displayDate(post.data.pubDate)}`}
   >
     <header class="post-header">
       <h1>{post.data.title}</h1>
-      <p class="post-meta">
+      <p class="post-meta meta">
         <time datetime={post.data.pubDate.toISOString()}>{displayDate(post.data.pubDate)}</time>{' '}
         <span aria-hidden="true">·</span>{' '}
         <span class="post-length">{readingLength(wordCount)}</span>{' '}
@@ -49,7 +52,7 @@ const { creation } = post.data
           </>
         )}
       </p>
-      {creation?.note && <p class="post-creation-note">{creation.note}</p>}
+      {creation?.note && <p class="post-creation-note meta">{creation.note}</p>}
       <p
         class="post-notice"
         data-stale-since={lastModified.toISOString()}
@@ -67,8 +70,26 @@ const { creation } = post.data
     <CodeCopy />
     {remarkPluginFrontmatter.githubCards && <GitHubCards />}
   </article>
-  <Upvote postId={post.id} />
-  {post.data.comments && <Comments />}
+  <div class="post-end measure">
+    <Upvote postId={post.id} />
+    {(earlier || later) && (
+      <nav class="post-nav" aria-label="相邻文章">
+        {earlier && (
+          <a class="post-nav-link" href={postUrl(earlier)} rel="prev">
+            <span class="meta">上一篇</span>
+            <span class="post-nav-title">{earlier.data.title}</span>
+          </a>
+        )}
+        {later && (
+          <a class="post-nav-link post-nav-later" href={postUrl(later)} rel="next">
+            <span class="meta">下一篇</span>
+            <span class="post-nav-title">{later.data.title}</span>
+          </a>
+        )}
+      </nav>
+    )}
+    {post.data.comments && <Comments />}
+  </div>
   <BackToTop />
 </BaseLayout>
 
@@ -84,35 +105,83 @@ const { creation } = post.data
 
 <style>
   .post-header {
-    margin-bottom: 40px;
+    margin-bottom: var(--space-7);
   }
-  .post-meta,
-  .post-creation-note,
-  .post-notice {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--muted-color);
+  .post-header h1 {
+    margin-bottom: var(--space-4);
   }
   .post-meta {
-    font-variant-numeric: tabular-nums;
+    margin: 0;
   }
-  .post-creation-note,
-  .post-notice {
-    margin-top: 8px;
-  }
-  .post-creation,
-  .post-length,
-  .post-reading-time {
+  .post-meta > :not([aria-hidden]) {
     white-space: nowrap;
   }
   .post-creation-note {
+    margin: var(--space-2) 0 0;
     overflow-wrap: anywhere;
+  }
+  .post-notice {
+    margin: var(--space-5) 0 0;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--size-ui);
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    border-radius: var(--radius);
+  }
+  .post-end {
+    margin-top: var(--space-8);
+  }
+  .post-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--rule-color);
+  }
+  .post-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    color: var(--heading-color);
+  }
+  .post-nav-later {
+    grid-column: 2;
+    text-align: right;
+  }
+  .post-nav-title {
+    font-weight: 500;
+    line-height: 1.55;
+    text-wrap: balance;
+  }
+  @media (hover: hover) {
+    .post-nav-link:hover {
+      color: var(--heading-color);
+      text-decoration-line: none;
+    }
+    .post-nav-link:hover .post-nav-title {
+      text-decoration-line: underline;
+      text-decoration-color: var(--rule-color);
+    }
+  }
+  .post-nav-link:active {
+    opacity: 0.65;
+  }
+  @media (max-width: 600px) {
+    .post-nav {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .post-nav-later {
+      grid-column: 1;
+      text-align: left;
+    }
   }
   /* Markdown descendants do not carry this component's scope attribute. */
   .prose :global(.astro-code),
   .prose :global(.astro-code span) {
     color: light-dark(var(--shiki-light), var(--shiki-dark));
-    background-color: var(--code-block-background-color);
+    background-color: var(--surface-color);
   }
   .prose :global(.astro-code) {
     -webkit-text-size-adjust: none;

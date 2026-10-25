@@ -23,7 +23,7 @@ function token(name) {
 }
 const stroke = token('link-color')
 // The dark page color is close to a dark browser tab strip, so the dark tile uses the code fill.
-const tile = { light: token('background-color').light, dark: token('code-background-color').dark }
+const tile = { light: token('background-color').light, dark: token('surface-color').dark }
 
 async function source(name) {
   const svg = await readFile(path.join(import.meta.dirname, 'icons', name), 'utf8')

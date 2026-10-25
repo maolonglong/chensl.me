@@ -75,9 +75,11 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 
 ### UI — [design](../../../docs/design.md)
 
-- Every control measures at least 44 px including padding; the spec said 44 while contents entries were 37 (`b91f0fc`).
+- Floating buttons and popover entries measure at least 44 px including padding, and header tools 40 px; the spec said 44 while contents entries were 37 (`b91f0fc`). A round control hit-tests as a circle, so sample inside it.
 - Hover and touch are separate branches: pointer-only affordances sit behind `@media (hover: hover)`, and specs select the capability with `test.use({ hasTouch })`.
-- Dismissal state survives until every input has left. Escape-dismissed contents stayed dismissed only until the pointer left, then focus reopened it (`379176f`). Walk hover, focus, resize, and scroll.
+- Pick a `--size-*` and `--space-*` step; a raw `font-size` or margin value between steps is a hit. Reading text is serif and chrome is `--font-sans`; a component that mixes the two voices in one role is a hit.
+- A component that renders text in `--font-mono` outside code loads the code font on pages without code (`e2e/code.spec.mjs`).
+- A transition on `color` makes specs that read a computed color right after a theme switch read a mid-transition value. Keep color changes on state controls instant.
 - Scroll boxes are focusable `role=region` wrappers with a label and an unclipped focus ring; the `<table>` itself never becomes `display:block` (`b32e2dd`, `82d1217`).
 - The scroll box carries the code fill, since an iOS overscroll exposes whatever sits behind it (`da19164`). At 320 px the copy button leaves the first line readable (`f48a91b`).
 - Decorative glyphs are `aria-hidden`, never headings (`2d9e213`).

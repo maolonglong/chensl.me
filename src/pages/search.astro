@@ -7,27 +7,29 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
 ---
 
 <BaseLayout title="搜索" description="搜索陈劭珑的技术文章和 AI News">
-  <h1 class="visually-hidden">搜索</h1>
-  <form class="search-form" role="search" action="/search/" method="get">
-    <label class="visually-hidden" for="search-input">
-      搜索文章和 AI News
-    </label>
-    <input
-      id="search-input"
-      class="search-input"
-      type="search"
-      name="q"
-      maxlength={maxQueryLength}
-      autocomplete="off"
-      enterkeyhint="search"
-      placeholder="搜索文章和 AI News"
-    />
-  </form>
-  <p class="search-status" role="status" aria-live="polite"></p>
-  <ol class="search-results"></ol>
-  <noscript>
-    <p class="search-status">搜索需要 JavaScript。</p>
-  </noscript>
+  <div class="measure">
+    <h1 class="visually-hidden">搜索</h1>
+    <form class="search-form" role="search" action="/search/" method="get">
+      <label class="visually-hidden" for="search-input">
+        搜索文章和 AI News
+      </label>
+      <input
+        id="search-input"
+        class="search-input"
+        type="search"
+        name="q"
+        maxlength={maxQueryLength}
+        autocomplete="off"
+        enterkeyhint="search"
+        placeholder="搜索文章和 AI News"
+      />
+    </form>
+    <p class="search-status meta" role="status" aria-live="polite"></p>
+    <ol class="search-results entries"></ol>
+    <noscript>
+      <p class="search-status meta">搜索需要 JavaScript。</p>
+    </noscript>
+  </div>
 </BaseLayout>
 
 <script>
@@ -97,16 +99,19 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
     list.replaceChildren(
       ...hits.map((hit) => {
         const item = document.createElement('li')
+        const title = document.createElement('p')
+        title.className = 'entry-title'
         const link = document.createElement('a')
         link.href = hit.url
         link.textContent = hit.title
+        title.append(link)
         const meta = document.createElement('p')
-        meta.className = 'search-meta'
+        meta.className = 'search-meta meta'
         meta.textContent = [typeLabels[hit.type], hit.date].filter(Boolean).join(' · ')
-        item.append(link, meta)
+        item.append(title, meta)
         if (hit.snippet) {
           const snippet = document.createElement('p')
-          snippet.className = 'search-snippet'
+          snippet.className = 'search-snippet entry-summary'
           snippet.textContent = hit.snippet
           item.append(snippet)
         }
@@ -176,43 +181,45 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
 </script>
 
 <style>
+  /* A ruled line to write on, not a boxed field. */
   .search-input {
     box-sizing: border-box;
     width: 100%;
-    min-height: 44px;
-    padding: 8px 12px;
+    min-height: 56px;
+    padding: var(--space-2) 0;
     font: inherit;
+    font-size: var(--size-h2);
+    letter-spacing: 0.02em;
     color: var(--heading-color);
-    background-color: var(--code-block-background-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--rule-color);
+    border-radius: 0;
+    appearance: none;
+    transition: border-color 150ms ease-out;
+  }
+  .search-input:focus {
+    outline: none;
+    border-bottom-color: var(--heading-color);
+  }
+  .search-input:focus-visible {
+    outline: none;
+    box-shadow: 0 1px 0 var(--heading-color);
   }
   .search-input::placeholder {
     color: var(--muted-color);
+    opacity: 1;
   }
   .search-status {
-    margin: 16px 0 0;
-    font-size: 0.875rem;
-    color: var(--muted-color);
+    margin: var(--space-4) 0 0;
   }
   .search-status:empty {
     display: none;
   }
   .search-results {
-    margin: 24px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .search-results :global(li + li) {
-    margin-top: 20px;
-  }
-  .search-results :global(.search-meta),
-  .search-results :global(.search-snippet) {
-    margin: 4px 0 0;
-    font-size: 0.875rem;
+    margin-top: var(--space-6);
   }
   .search-results :global(.search-meta) {
-    color: var(--muted-color);
-    font-variant-numeric: tabular-nums;
+    margin: var(--space-1) 0 0;
   }
 </style>

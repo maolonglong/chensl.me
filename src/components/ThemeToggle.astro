@@ -1,4 +1,4 @@
-<button class="theme-toggle" type="button" data-theme-toggle>
+<button class="theme-toggle icon-button" type="button" data-theme-toggle>
   <svg
     width="20"
     height="20"
@@ -69,31 +69,12 @@
 </script>
 
 <style>
+  /* The box comes from .icon-button in BaseLayout. */
   .theme-toggle {
-    position: relative;
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    color: var(--heading-color);
-    background: transparent;
-    border: 0;
     visibility: hidden;
-    touch-action: manipulation;
-    transition:
-      opacity 100ms ease-out,
-      transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   :global(:root[data-theme-ready]) .theme-toggle {
     visibility: visible;
-  }
-  /* 44 px tall; as wide as the header gap allows without overlapping the search icon's target. */
-  .theme-toggle::before {
-    content: '';
-    position: absolute;
-    inset: -10px calc(var(--nav-gap, 20px) / -2);
   }
   .theme-toggle [data-theme-icon] {
     display: none;
@@ -102,10 +83,6 @@
   .theme-toggle[data-theme-mode='light'] [data-theme-icon='light'],
   .theme-toggle[data-theme-mode='dark'] [data-theme-icon='dark'] {
     display: inline;
-  }
-  .theme-toggle:active {
-    opacity: 0.65;
-    transform: scale(0.92);
   }
   @keyframes theme-icon-in {
     from {
@@ -122,12 +99,7 @@
     .theme-toggle[data-theme-switched][data-theme-mode='light'] [data-theme-icon='light'],
     .theme-toggle[data-theme-switched][data-theme-mode='dark'] [data-theme-icon='dark'] {
       transform-origin: 12px 12px;
-      animation: theme-icon-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .theme-toggle {
-      transition: none;
+      animation: theme-icon-in 200ms var(--ease-out);
     }
   }
 </style>

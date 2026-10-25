@@ -23,32 +23,48 @@ if (!issue) Astro.response.status = 404
 
 {issue ? (
   <BaseLayout title={`AI News ${issue.date}：${issue.title}`} description={issue.summary}>
-    <article>
+    <article class="measure">
       <header class="page-header">
         <p class="meta">
           <a href="/news/">AI News</a> · <time datetime={issue.date}>{issue.date}</time>
         </p>
         <h1>{issue.title}</h1>
-        <p>{issue.summary}</p>
+        <p class="summary">{issue.summary}</p>
       </header>
       <NewsGroups items={issue.items} level={2} />
+      <p class="older meta">
+        <a class="arrow-link" href="/news/archive/">
+          查看往期日报
+        </a>
+      </p>
     </article>
   </BaseLayout>
 ) : (
   <BaseLayout title="没有这一期" notFound>
-    <h1>没有这一期</h1>
-    <p>
-      <a href="/news/">返回 AI News</a>
-    </p>
+    <div class="measure">
+      <h1>没有这一期</h1>
+      <p>
+        <a href="/news/">返回 AI News</a>
+      </p>
+    </div>
   </BaseLayout>
 )}
 
 <style>
-  .page-header {
-    margin-bottom: 40px;
+  /* Issue titles are long sentences; breaking only at spaces would strand a leading word. */
+  h1 {
+    word-break: normal;
   }
-  .meta {
-    color: var(--muted-color);
-    font-size: 0.875rem;
+  .page-header > .meta {
+    margin: 0 0 var(--space-3);
+  }
+  .summary {
+    margin: 0;
+    font-size: var(--size-h3);
+    line-height: 1.65;
+    color: var(--text-color);
+  }
+  .older {
+    margin: var(--space-8) 0 0;
   }
 </style>

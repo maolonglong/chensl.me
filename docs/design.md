@@ -1,52 +1,61 @@
 # Design
 
-Read this before you change layout, styles, fonts, or browser interactions. It states the visual intent and the reasons behind it. The values live in `src/styles/global.css` (tokens and Markdown typography) and in each component's scoped styles; a value appears here only with the test that pins it. Reuse a `src/styles/global.css` token before you add a value.
+Read this before you change layout, styles, fonts, or browser interactions. It states the visual intent and the reasons behind it. The values live in `src/styles/global.css` (tokens, chrome type, and Markdown typography) and in each component's scoped styles; a value appears here only with the test that pins it. Pick a `src/styles/global.css` token before you add a value: sizes come from the `--size-*` ladder and spacing from the `--space-*` scale, never from a step between them.
 
 ## Intent
 
-- A warm neutral page with ink-blue links, JinKai type, an introductory home, a year-grouped archive, and single-column articles.
-- Header, main, and footer share one reading column. Short pages keep the footer at the bottom.
-- Ink-blue means a link. Emphasis, list markers, and headings use other means.
-- Every interactive control works with a keyboard, has a visible focus ring and an accessible name, and has a touch target of at least 44 px (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`, `e2e/navigation.spec.mjs`). Header links and archive rows keep their text spacing: padding them up to 44 px was rejected.
-- Hover affordances sit behind `@media (hover: hover)`, touch and keyboard states stay independent, and `@media (prefers-reduced-motion: reduce)` disables non-essential motion (`e2e/contents.spec.mjs`, `e2e/appearance.spec.mjs`).
+The site reads like a small printed journal: warm paper, ink type, and hairline rules. Three ideas carry it ([decision](../.agents/notes/implemented/feature/2026-10-25-editorial-redesign.md)):
 
-## Kami as the reference
+- **Two type voices.** Reading text is serif: Source Serif sets Latin letters and digits, and JinKai sets Chinese. Chrome is sans: navigation, dates, counts, labels, and buttons. A reader can tell content from controls by the face alone.
+- **Ruled sections.** A section opens with a hairline and a small sans label (`.section-label`). Rules divide sections and rows; boxes are for code, notes, and floating controls only.
+- **Ink-blue means a link in running text.** Lists of titles, navigation, and news items use the heading color and underline on hover, so ink-blue stays rare enough to signal a link.
 
-[Kami](https://github.com/tw93/Kami) is the visual reference, not the specification. Read only the Principles, Color, Typography, Spacing, and Depth & Separation sections of [Kami's design reference](../.agents/skills/kami/references/design.md). Kami's landing-page defaults for plain links, Latin-first font stacks, and self-scrolling tables do not apply here.
+## Layout
 
-Article text follows the `.prose` rules of Kami's site pages. These differences are deliberate:
+- The header and the footer span the shell (`--shell`). Every page column is the reading measure (`.measure`), centred under it.
+- Short pages keep the footer at the bottom of the view (`e2e/page-shell.spec.mjs`).
+- Where the view leaves a margin beside the column, an article's contents sit there as a plain list; elsewhere a corner button opens them as a popover (`e2e/contents.spec.mjs`). The list does not depend on hover.
 
-- **Dark theme.** Kami defines no dark palette, so the dark theme is this site's own. Kami's link color fails contrast on the dark background, so dark links use lighter tints.
-- **Headings, `strong`, and table headers** use the near-black heading color. The single W04 weight gives 500 no visible extra stroke, so color sets them apart ([decision](../.agents/notes/implemented/simplification/2026-09-23-serve-jinkai-w04-only.md)).
-- **List markers** are muted, not ink-blue as in Kami's print spec, because ink-blue means a link.
-- **Alerts** use the code background fill, because Kami's ivory barely separates from the page.
-- **Code blocks** follow Kami's landing page: an ivory fill, a thin border, and near-black base text. Token colors follow Kami's syntax table.
-- **Code captions and code on narrow screens** use smaller sizes than Kami's type scale: a file label sits below the code it names, and Kami itself shrinks code on phones.
+## Interaction
+
+- Every control works with a keyboard, has a visible focus ring and an accessible name. Floating buttons and contents entries in the popover are 44 px targets; the header tools are 40 px circles that never overlap (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`, `e2e/navigation.spec.mjs`).
+- Hover affordances sit behind `@media (hover: hover)`, and every pressable control moves on press. `prefers-reduced-motion: reduce` zeroes every transition in `src/styles/global.css`; keyframe animations run only under `no-preference` (`e2e/footnotes.spec.mjs`).
+- A link that leads to more of the same (`.arrow-link`) ends with an arrow that steps forward on hover. It is the one signature motion.
+
+## Kami and Anthropic as references
+
+[Kami](https://github.com/tw93/Kami) supplies the warm palette, ink-blue, and the 400/500 weight pair; Anthropic's site supplies the serif-body, sans-chrome split. Neither is the specification. These choices are deliberate:
+
+- **Page color.** The page is ivory; parchment is the fill for code, notes, and inline code. Kami's parchment page made every fill look grey.
+- **Dark theme.** Kami defines none, so it is this site's own. Dark text uses grayscale smoothing, because light strokes on a dark page look heavier.
+- **Headings, `strong`, and table headers** use the heading color. JinKai W04 has one weight, so color sets them apart ([decision](../.agents/notes/implemented/simplification/2026-09-23-serve-jinkai-w04-only.md)).
+- **List markers** are muted, not ink-blue, because ink-blue means a link.
+- **Code blocks** are a parchment fill with no border. Token colors follow Kami's syntax table.
 
 ## Color
 
-Beyond Kami's light palette, the site adds these chromatic values: the dark-mode link tints, the selection and visited tints in `src/styles/global.css`, and the red, green, and amber diff and state colors in the giscus themes (`src/styles/giscus*.css`). The diff colors carry addition and deletion meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
+Beyond Kami's light palette, the site adds these chromatic values: the dark-mode link tints, the selection tint in `src/styles/global.css`, and the red, green, and amber diff and state colors in the giscus themes (`src/styles/giscus*.css`). The diff colors carry addition and deletion meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
 
 ## Typography
 
-- JinKai comes first for mixed Chinese and Latin text. W04 alone covers weights 400 to 500, and synthesized bold is off.
-- Fonts are self-hosted with `font-display: swap` and content-versioned URLs, without preloads. Code fonts are declared on every page, and the browser loads them only when a page uses them (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
+- The serif stack is Source Serif for the Latin range in `src/lib/latin-range.mjs`, then JinKai. CJK punctuation, curly quotes, the middle dot, and dashes stay outside the Latin range, so they keep JinKai's full-width forms. Share cards use the same stack (`tests/og.test.mjs`).
+- JinKai W04 alone covers weights 400 to 500, synthesized bold is off, and the served Source Serif keeps only that slice of its weight axis.
+- Fonts are self-hosted with `font-display: swap` and content-versioned URLs, without preloads. Code fonts are declared on every page, and the browser loads them only when a page uses them (`tests/fonts.test.mjs`, `e2e/code.spec.mjs`). Repository cards use the sans face, so a card alone never loads the code font.
+- A cold visit to the home page loads at most 120 KiB of JinKai and 150 KiB of fonts in total, and `/news/` loads cached JinKai slices for its D1 text (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
 - The fonts are not under the repository's code license; read [NOTICE.md](../public/fonts/tsanger-jinkai02/NOTICE.md) before you add or change one.
-- A cold visit to the home page loads at most 100 KiB of JinKai, and `/news/` loads cached JinKai slices for its D1 text (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
 - Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart.
 - `<em>` stays upright and carries CJK emphasis dots. `<strong>` uses weight 500 in the heading color.
 
 ## Components
 
-- **Contents.** One prerendered list: a hover rail beside the column where a pointer can hover and the column leaves room, a native popover elsewhere (`e2e/contents.spec.mjs`).
 - **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails (`e2e/appearance.spec.mjs`).
 - **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
-- **Creation label.** It follows the article date, length, and reading time in the date's neutral typography, with no icon, badge, or interaction. Its note sits before the stale notice. Home and archive lists omit it.
-- **Search** is one input and a result list: title, type and date, excerpt. No filters or suggestions.
+- **Article header.** The date, length, reading time, and creation label share one sans metadata line. A stale notice is a quiet parchment note below it (`e2e/page-shell.spec.mjs`, `e2e/creation.spec.mjs`).
+- **Article end.** The upvote, then the earlier and later articles, then the comments under a section label.
+- **Search** is one ruled input line and a result list: title, type and date, excerpt. No filters or suggestions.
 - **Icons** are inline SVG, not font glyphs or an icon library.
 - **Site icon.** A sleeping cat, hand-drawn in `scripts/icons/` (`tests/icons.test.mjs`).
-- **Header icons.** Search and theme share one style: an icon in the heading color, because each is a tool and not a section link. The search icon shows the current page with the underline of a current text link, drawn under the glyph. Header items keep their text spacing (20 px, 12 px on phones); a wider gap was rejected. Each icon's target is 44 px tall and reaches halfway into the gap, so it is 36 px wide on phones and never overlaps its neighbor (`e2e/navigation.spec.mjs`).
-- **Repository cards** use the code block frame and muted text, with no avatar or language color (`e2e/github-cards.spec.mjs`).
+- **Repository cards** are a hairline frame with the code block corners and muted text, with no avatar or language color (`e2e/github-cards.spec.mjs`).
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
-- **Links** in article text and the footer are underlined; external prose links add a north-east arrow. Archive links show a visited color. Underline rules set `text-decoration-line` rather than the `text-decoration` shorthand, which resets thickness (`e2e/navigation.spec.mjs`).
-- **Share cards** are 1200×630 PNGs (`scripts/check-site.mjs`). They use the light theme's page, border, and text tokens, with no gradient or shadow. `~chensl` sits at the top left, the title in the middle, and the date or section label with `chensl.me` at the bottom. A title longer than two lines ends with an ellipsis (`tests/og.test.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md).
+- **Links** in article text and the footer are underlined; external prose links and AI News items add a north-east arrow. Underline rules set `text-decoration-line` rather than the `text-decoration` shorthand, which resets thickness (`e2e/navigation.spec.mjs`).
+- **Share cards** are 1200×630 PNGs (`scripts/check-site.mjs`). They use the light theme's page, border, rule, and text tokens, with no gradient or shadow. `~chensl` sits at the top left, the title in the middle, and the date or section label with `chensl.me` at the bottom. A title longer than two lines ends with an ellipsis (`tests/og.test.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md).

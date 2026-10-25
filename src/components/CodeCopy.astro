@@ -75,7 +75,7 @@
     height: 32px;
     padding: 0;
     color: var(--muted-color);
-    background-color: var(--code-block-background-color);
+    background-color: var(--background-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     opacity: 0.75;
@@ -84,7 +84,7 @@
       opacity 120ms ease-out,
       color 120ms ease-out,
       border-color 120ms ease-out,
-      transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
+      transform 120ms var(--ease-out);
   }
   .code-copy::before {
     content: '';
@@ -126,7 +126,7 @@
   @media (prefers-reduced-motion: no-preference) {
     .code-copy[data-state='done'] [data-copy-icon='done'] {
       transform-origin: 12px 12px;
-      animation: code-copy-done 180ms cubic-bezier(0.22, 1, 0.36, 1);
+      animation: code-copy-done 180ms var(--ease-out);
     }
   }
   @media (hover: hover) {
@@ -138,13 +138,8 @@
     }
     .code-copy:hover {
       color: var(--heading-color);
-      border-color: color-mix(in srgb, var(--heading-color) 24%, var(--border-color));
+      border-color: var(--rule-color);
       opacity: 1;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .code-copy {
-      transition: none;
     }
   }
 </style>

@@ -59,7 +59,7 @@ test('JinKai declarations cover page text with versioned files within the cold-v
     total += file.length
   }
   assert.equal(needed.size, 1, 'home must use only its small common subset')
-  assert.ok(total <= 100 * 1024, `${Math.round(total / 1024)} KiB exceeds 100 KiB`)
+  assert.ok(total <= 120 * 1024, `${Math.round(total / 1024)} KiB exceeds 120 KiB`)
 })
 
 test('JinKai slices cover every supported character exactly once, in cached files', async () => {

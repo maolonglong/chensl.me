@@ -1,29 +1,57 @@
 /* ------------------------------------------------------------------ tokens */
 
 :root {
-    --measure: 42rem;
+    --shell: 72rem;
+    --measure: 40rem;
     --gutter: 24px;
     --radius: 6px;
+
+    /* One ladder for every size; a component picks a step, never a value between steps. */
+    --size-caption: 0.8125rem;
+    --size-ui: 0.875rem;
+    --size-body: 1.0625rem;
+    --size-h3: 1.25rem;
+    --size-h2: 1.5rem;
+    --size-h1: clamp(1.875rem, 1.45rem + 1.8vw, 2.375rem);
+    --size-display: clamp(2.25rem, 1.6rem + 2.8vw, 3.25rem);
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+    --space-9: 96px;
+
+    /* Source Serif sets Latin letters and digits only (its unicode-range), so CJK text and
+       CJK punctuation fall through to JinKai. */
     --font-serif:
-        var(--font-jinkai), 'TsangerJinKai02 Slices', 'Noto Serif SC', 'Source Han Serif SC',
-        'Songti SC', 'STSong', Charter, Georgia, serif;
+        var(--font-source-serif), var(--font-jinkai), 'TsangerJinKai02 Slices', 'Noto Serif SC',
+        'Source Han Serif SC', 'Songti SC', 'STSong', Georgia, serif;
+    /* Chrome only: navigation, dates, labels, counts. Reading text never uses it. */
+    --font-sans:
+        ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+        'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
     --font-mono:
         var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo,
         Consolas, 'Liberation Mono', var(--font-serif);
-    --background-color: light-dark(#f5f4ed, #141413);
-    --heading-color: light-dark(#141413, #faf9f5);
-    --text-color: light-dark(#504e49, #d4d3cd);
-    --muted-color: light-dark(#6b6a64, #b0aea5);
-    --link-color: light-dark(#1b365d, #94b4d4);
-    --link-hover-color: light-dark(#2d5a8a, #bfd2e5);
-    --visited-color: light-dark(#4a5d78, #7e93a8);
-    --code-background-color: light-dark(#f0eee6, #30302e);
-    --code-block-background-color: light-dark(#faf9f5, #30302e);
-    --code-color: light-dark(#3d3d3a, #d4d3cd);
-    --blockquote-color: light-dark(#504e49, #b0aea5);
-    --border-color: light-dark(#e8e6dc, #3d3d3a);
+
+    --background-color: light-dark(#faf9f5, #1b1a18);
+    --surface-color: light-dark(#f0eee6, #282724);
+    --heading-color: light-dark(#141413, #f5f4ed);
+    --text-color: light-dark(#3d3d3a, #d1cfc6);
+    --muted-color: light-dark(#6b6a64, #a29f95);
+    --link-color: light-dark(#1b365d, #9db9d8);
+    --link-hover-color: light-dark(#2d5a8a, #c3d4e8);
+    --border-color: light-dark(#e8e6dc, #353430);
+    --rule-color: light-dark(#d8d5c8, #4a4843);
     --selection-color: light-dark(#dce3eb, #354354);
-    --mark-background-color: light-dark(#e8e6dc, #3d3d3a);
+    --mark-background-color: light-dark(#e8e6dc, #3d3c38);
+
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --shadow-float: 0 6px 20px light-dark(rgb(20 20 19 / 7%), rgb(0 0 0 / 36%));
     color-scheme: light dark;
 }
 
@@ -45,6 +73,20 @@ html {
     text-size-adjust: 100%;
 }
 
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    font-size: var(--size-body);
+    line-height: 1.75;
+    letter-spacing: 0.02em;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    overflow-wrap: break-word;
+}
+
 h1,
 h2,
 h3,
@@ -52,44 +94,42 @@ h4,
 h5,
 h6 {
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.35;
     color: var(--heading-color);
-    letter-spacing: 0;
+    letter-spacing: 0.01em;
     text-wrap: balance;
     /* Break titles at spaces and punctuation, not inside a word like 单元; overflow-wrap still rescues a segment wider than the line. */
     word-break: keep-all;
 }
 
 h1 {
-    margin: 0 0 16px;
-    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    margin: 0 0 var(--space-4);
+    font-size: var(--size-h1);
     line-height: 1.25;
 }
 
-h2 {
-    margin: 2em 0 0.75em;
-    font-size: 1.5rem;
-}
-
 /*
-  Every level must outrank the 1rem article body. Space carries the rest of
-  the hierarchy: a wide gap above detaches the heading from the previous
-  section, a narrow gap below binds it to its own text.
+  Every level must outrank or match the body. Space carries the rest of the
+  hierarchy: a wide gap above detaches the heading from the previous section,
+  a narrow gap below binds it to its own text.
 */
-h3 {
-    margin: 2.25em 0 0.5em;
-    font-size: 1.25rem;
+h2 {
+    margin: 2.25em 0 0.75em;
+    font-size: var(--size-h2);
 }
 
-/* Below h3 the reading measure has no size left to spend, so these sit on the body floor. */
+h3 {
+    margin: 2em 0 0.5em;
+    font-size: var(--size-h3);
+}
+
 h4,
 h5,
 h6 {
-    margin: 2em 0 0.5em;
-    font-size: 1rem;
+    margin: 1.75em 0 0.5em;
+    font-size: var(--size-body);
 }
 
-/* A subsection that opens its section belongs to that heading, not after a pause. */
 h2 + :is(h3, h4, h5, h6),
 h3 + :is(h4, h5, h6) {
     margin-top: 1em;
@@ -106,20 +146,22 @@ b {
     color: var(--heading-color);
 }
 
-/* No italic face exists and synthesis is off, so emphasis is the CJK dot below the glyph, not a slant or brand color that would read as a link. */
+/* JinKai has no italic and synthesis is off, so emphasis is the CJK dot below the glyph. */
 em {
     font-style: normal;
     text-emphasis: filled dot;
     text-emphasis-position: under right;
 }
 
-/* Underline geometry for every link; each context decides whether to draw the line. */
 a {
     color: var(--link-color);
     text-decoration-line: none;
-    text-decoration-color: color-mix(in srgb, currentColor 42%, transparent);
-    text-decoration-thickness: 0.08em;
-    text-underline-offset: 0.22em;
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.24em;
+    transition:
+        color 150ms ease-out,
+        text-decoration-color 150ms ease-out;
 }
 
 @media (hover: hover) {
@@ -148,11 +190,12 @@ img {
 button {
     margin: 0;
     font: inherit;
+    letter-spacing: inherit;
     cursor: pointer;
 }
 
 hr {
-    margin-block: 2em;
+    margin-block: 2.5em;
     border: 0;
     border-top: 1px solid var(--border-color);
 }
@@ -177,6 +220,10 @@ cite {
     font-style: normal;
 }
 
+time {
+    font-variant-numeric: tabular-nums;
+}
+
 .visually-hidden,
 .skip-link:not(:focus) {
     position: absolute;
@@ -190,6 +237,137 @@ cite {
     border: 0;
 }
 
+/* Light text on a dark page looks heavier than the same weight in ink; grayscale smoothing
+   restores the stroke weight the light theme shows. */
+:root[data-theme='dark'] body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Every page column: the reading measure, centred under the shell-wide header. */
+.measure {
+    width: 100%;
+    max-width: var(--measure);
+    margin-inline: auto;
+}
+
+/* ------------------------------------------------------------- chrome type */
+
+/* Small sans text for data about the content: dates, counts, labels. */
+.meta {
+    font-family: var(--font-sans);
+    font-size: var(--size-ui);
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+    color: var(--muted-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.meta a {
+    color: inherit;
+    text-decoration-line: underline;
+    text-decoration-color: var(--rule-color);
+}
+
+@media (hover: hover) {
+    .meta a:hover {
+        color: var(--heading-color);
+        text-decoration-color: currentColor;
+    }
+}
+
+/* A section opens with a hairline and a small label: the page's one structural signature. */
+.section-label {
+    margin: 0 0 var(--space-5);
+    padding-top: var(--space-3);
+    font-family: var(--font-sans);
+    font-size: var(--size-caption);
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+    color: var(--muted-color);
+    border-top: 1px solid var(--rule-color);
+}
+
+.section-label a {
+    color: inherit;
+}
+
+/* A link that leads on to more of the same: the arrow steps forward under the pointer. */
+.arrow-link::after {
+    content: '→' / '';
+    display: inline-block;
+    margin-left: 0.3em;
+    transition: transform 180ms var(--ease-out);
+}
+
+@media (hover: hover) {
+    .arrow-link:hover::after {
+        transform: translateX(3px);
+    }
+}
+
+/* An entry list: a title link in the heading color, then its date and summary. */
+.entries {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.entries > li + li {
+    margin-top: var(--space-5);
+}
+
+.entry-title {
+    min-width: 0;
+    margin: 0;
+    font-size: var(--size-body);
+    font-weight: 500;
+    line-height: 1.55;
+    color: var(--heading-color);
+}
+
+.entry-title a {
+    color: inherit;
+}
+
+@media (hover: hover) {
+    .entry-title a:hover {
+        color: inherit;
+        text-decoration-color: var(--rule-color);
+    }
+}
+
+.entry-title a:active {
+    opacity: 0.65;
+}
+
+.entry-summary {
+    margin: var(--space-1) 0 0;
+    font-size: var(--size-ui);
+    line-height: 1.65;
+    color: var(--muted-color);
+}
+
+.entry-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.entry-head > .meta {
+    flex: none;
+    white-space: nowrap;
+}
+
 /* ------------------------------------------------------------------- prose */
 
 .prose > :first-child {
@@ -200,12 +378,21 @@ cite {
     margin-bottom: 0;
 }
 
+.prose p {
+    margin-block: 0 1.1em;
+}
+
 .prose :is(ul, ol) {
+    margin-block: 0 1.1em;
     padding-left: 1.5em;
 }
 
 .prose li + li {
-    margin-top: 8px;
+    margin-top: 0.4em;
+}
+
+.prose li > :is(ul, ol) {
+    margin-block: 0.4em 0;
 }
 
 .prose li::marker {
@@ -213,6 +400,7 @@ cite {
 }
 
 .prose ol li::marker {
+    font-family: var(--font-sans);
     font-size: 0.875em;
     font-variant-numeric: tabular-nums;
 }
@@ -222,7 +410,7 @@ cite {
 }
 
 /* Running-text links are underlined so they never depend on color alone. */
-.prose a:not([data-footnote-ref]) {
+.prose a:not([data-footnote-ref], [data-footnote-backref]) {
     text-decoration-line: underline;
 }
 
@@ -231,14 +419,14 @@ cite {
     a:is([href^='http://'], [href^='https://']):not(:has(img), .repo-card a, .footnotes a)::after {
     content: '↗\FE0E';
     display: inline-block;
-    margin-left: 0.18em;
-    font-family: var(--font-serif);
-    font-size: 0.78em;
+    margin-left: 0.15em;
+    font-family: var(--font-sans);
+    font-size: 0.75em;
     line-height: 1;
     text-decoration-line: none;
-    opacity: 0.65;
+    opacity: 0.6;
     transition:
-        transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
+        transform 150ms var(--ease-out),
         opacity 150ms ease-out;
 }
 
@@ -254,26 +442,11 @@ cite {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .prose
-        a:is([href^='http://'], [href^='https://']):not(
-            :has(img),
-            .repo-card a,
-            .footnotes a
-        )::after {
-        transition: none;
-    }
-}
-
 blockquote {
     margin: 1.75em 0;
-    padding-inline: 1.25em 1em;
-    color: var(--blockquote-color);
-    border-left: 2px solid var(--border-color);
-}
-
-.alert {
-    border-left: 0;
+    padding-inline: 1.25em 0;
+    color: var(--muted-color);
+    border-left: 1px solid var(--rule-color);
 }
 
 blockquote > :first-child {
@@ -290,15 +463,20 @@ blockquote cite {
 
 /* Alerts are a quiet filled note; the heading names the kind, color does not. */
 .alert {
-    padding: 1em 1.25em;
+    margin: 1.75em 0;
+    padding: var(--space-4) var(--space-5);
     color: var(--text-color);
-    background-color: var(--code-background-color);
+    background-color: var(--surface-color);
+    border-left: 0;
     border-radius: var(--radius);
 }
 
 .alert-heading {
     margin-bottom: 0.35em;
+    font-family: var(--font-sans);
+    font-size: var(--size-ui);
     font-weight: 500;
+    letter-spacing: 0.04em;
     color: var(--heading-color);
 }
 
@@ -308,18 +486,17 @@ blockquote cite {
 
 /* ------------------------------------------------------------------- code */
 
-/* Kami's inline code: 13.5px against its 16px prose body. */
 :not(pre) > code {
-    padding: 0 3px;
-    font-size: 0.84375em;
-    color: var(--code-color);
-    background-color: var(--code-background-color);
-    border-radius: 2px;
+    padding: 0.1em 0.3em;
+    font-size: 0.84em;
+    color: var(--heading-color);
+    background-color: var(--surface-color);
+    border-radius: 3px;
 }
 
 pre {
-    font-size: 0.875rem;
-    line-height: 1.55;
+    font-size: var(--size-ui);
+    line-height: 1.6;
     tab-size: 4;
 }
 
@@ -331,7 +508,7 @@ pre code {
 .highlight,
 .math-scroll,
 .table-scroll {
-    margin-block: 1.5em;
+    margin-block: 1.75em;
     overflow-x: auto;
 }
 
@@ -342,8 +519,7 @@ pre code {
 
 /* The scroller carries the fill too, so iOS rubber-banding past either end never opens a gap. */
 .highlight {
-    background-color: var(--code-block-background-color);
-    border: 1px solid var(--border-color);
+    background-color: var(--surface-color);
     border-radius: var(--radius);
 }
 
@@ -352,18 +528,18 @@ pre code {
     width: max-content;
     min-width: 100%;
     margin: 0;
-    padding: 14px 18px;
+    padding: var(--space-4) var(--space-5);
 }
 
 /* `title="path/to/file"` on a fence: the filename is data, so it gets a label, not a frame. */
 .code-figure {
-    margin: 1.5em 0;
+    margin: 1.75em 0;
 }
 
 .code-figure figcaption {
-    padding-bottom: 0.4em;
+    padding-bottom: var(--space-2);
     font-family: var(--font-mono);
-    font-size: 0.8125rem;
+    font-size: var(--size-caption);
     color: var(--muted-color);
 }
 
@@ -373,19 +549,19 @@ pre code {
 
 /* --------------------------------------------------------- repository cards */
 
-/* A paragraph that is only a repository link, in the code block frame: no image, icon, or color
-   beyond the tokens. src/lib/markdown.mjs renders it; src/components/GitHubCards.astro refreshes
-   the text. */
+/* A paragraph that is only a repository link, drawn as a ruled entry rather than a box.
+   src/lib/markdown.mjs renders it; src/components/GitHubCards.astro refreshes the text. */
 .prose .repo-card a {
     display: block;
-    padding: 14px 18px;
+    padding: var(--space-4) var(--space-5);
+    color: var(--heading-color);
     text-decoration-line: none;
-    background-color: var(--code-block-background-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     transition:
         border-color 150ms ease-out,
-        transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
+        background-color 150ms ease-out,
+        transform 120ms var(--ease-out);
 }
 
 .prose .repo-card a:active {
@@ -399,21 +575,26 @@ pre code {
     overflow-wrap: anywhere;
 }
 
+/* Sans, not mono: a card alone must not pull in the code font. */
+.repo-card-name {
+    font-family: var(--font-sans);
+    font-size: var(--size-ui);
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
 .repo-card-archived {
     margin-left: 0.5em;
-    font-size: 0.875rem;
+    font-family: var(--font-sans);
+    font-size: var(--size-caption);
     color: var(--muted-color);
     white-space: nowrap;
 }
 
-.repo-card-description,
-.repo-card-stats {
-    margin-top: 4px;
-    font-size: 0.875rem;
-    color: var(--muted-color);
-}
-
 .repo-card-description {
+    margin-top: var(--space-1);
+    font-size: var(--size-ui);
+    color: var(--text-color);
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
@@ -423,27 +604,22 @@ pre code {
 
 /* A refreshed count keeps the width of its digits. */
 .repo-card-stats {
+    margin-top: var(--space-2);
+    font-family: var(--font-sans);
+    font-size: var(--size-caption);
+    color: var(--muted-color);
     font-variant-numeric: tabular-nums;
 }
 
 @media (hover: hover) {
     .prose .repo-card a:hover {
         text-decoration-line: none;
-        border-color: color-mix(in srgb, var(--heading-color) 22%, var(--border-color));
+        background-color: color-mix(in srgb, var(--surface-color) 60%, transparent);
+        border-color: var(--rule-color);
     }
 
     .prose .repo-card a:hover .repo-card-name {
         text-decoration-line: underline;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .prose .repo-card a {
-        transition: none;
-    }
-
-    .prose .repo-card a:active {
-        transform: none;
     }
 }
 
@@ -465,8 +641,10 @@ math[display='block'] {
 /* The wrapper scrolls so the <table> keeps its role in the accessibility tree. */
 table {
     width: 100%;
-    font-size: 0.875rem;
+    font-size: var(--size-ui);
+    line-height: 1.6;
     border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
 }
 
 th,
@@ -476,11 +654,14 @@ td {
     vertical-align: top;
 }
 
-/* Kami's header rule outweighs its row rules. A 0.5px row rule is a hairline on HiDPI screens and 1px elsewhere. */
+/* The header rule outweighs the row rules. A 0.5px row rule is a hairline on HiDPI screens and 1px elsewhere. */
 th {
+    font-family: var(--font-sans);
+    font-size: var(--size-caption);
     font-weight: 500;
-    color: var(--heading-color);
-    border-bottom: 1px solid var(--border-color);
+    letter-spacing: 0.04em;
+    color: var(--muted-color);
+    border-bottom: 1px solid var(--rule-color);
 }
 
 td {
@@ -512,23 +693,21 @@ details > summary {
 
 /* References, not a continuation of the argument, so they recede. */
 .footnotes {
-    font-size: 0.875rem;
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    font-size: var(--size-ui);
+    line-height: 1.7;
     color: var(--muted-color);
-}
-
-.footnotes::before {
-    content: '';
-    display: block;
-    margin-block: 3em 1.75em;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--rule-color);
 }
 
 .footnotes ol {
+    margin: 0;
     padding-left: 1.75em;
 }
 
 .footnotes li + li {
-    margin-top: 0.75em;
+    margin-top: 0.6em;
 }
 
 .footnotes li > :first-child {
@@ -537,6 +716,22 @@ details > summary {
 
 .footnotes li > :last-child {
     margin-bottom: 0;
+}
+
+.footnotes a {
+    text-decoration-color: var(--rule-color);
+}
+
+/* The return arrow is a control, not a citation, so it carries no underline. */
+.prose [data-footnote-backref] {
+    margin-left: 0.25em;
+    font-family: var(--font-sans);
+    color: var(--muted-color);
+}
+
+[data-footnote-ref] {
+    font-family: var(--font-sans);
+    font-size: 0.8em;
 }
 
 /* A jump between a reference and its note lands below the top edge and flashes the target, so the reader sees where they arrived. :target keeps it free of page scripts. */
@@ -549,7 +744,13 @@ details > summary {
 [data-footnote-ref]:target {
     --target-ring: 6px;
     border-radius: var(--radius);
-    animation: footnote-target 2s ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .footnotes li:target,
+    [data-footnote-ref]:target {
+        animation: footnote-target 2s ease-out;
+    }
 }
 
 [data-footnote-ref]:target {
@@ -570,10 +771,20 @@ details > summary {
     }
 }
 
+/* ------------------------------------------------------------------ motion */
+
+/* One switch for every transition. Keyframe animations opt in under no-preference instead, so a
+   state that an animation reveals, such as the footnote mark, can stay static. */
 @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        transition-duration: 0s !important;
+        scroll-behavior: auto !important;
+    }
+
     .footnotes li:target,
     [data-footnote-ref]:target {
-        animation: none;
         background-color: var(--mark-background-color);
         box-shadow: 0 0 0 var(--target-ring) var(--mark-background-color);
     }
@@ -587,6 +798,6 @@ details > summary {
     }
 
     pre {
-        font-size: 0.8125rem;
+        font-size: var(--size-caption);
     }
 }

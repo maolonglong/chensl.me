@@ -8,7 +8,7 @@ function probe() {
   return {
     visible: !!button && getComputedStyle(button).visibility === 'visible',
     button: box('.back-to-top'),
-    main: box('main'),
+    column: box('.post'),
     footer: box('body > footer'),
     comments: box('.comments'),
     width: innerWidth,
@@ -37,7 +37,7 @@ for (const width of [320, 390, 768, 1280]) {
       await settle(page)
       const end = await page.evaluate(probe)
       const button = end.button
-      const besideColumn = button?.left >= end.main.right
+      const besideColumn = button?.left >= end.column.right
       expectAll(`/blog/dockertest/ back-to-top at ${width}px / ${size}`, end, {
         'hidden at the top': !top.visible,
         'visible at the bottom': end.visible,
@@ -45,9 +45,9 @@ for (const width of [320, 390, 768, 1280]) {
           inside(button, end) && button.width >= 44 && button.height >= 44,
         'clear of the footer': !!button && apart(button, end.footer),
         'clear of the comments': !!button && apart(button, end.comments),
-        // Without room beside the column, the button still hangs from its right edge.
-        "on the column's right edge or beside it":
-          besideColumn || Math.abs(end.main.right - button?.right) <= 1,
+        // Without room beside the column, the button holds the corner of the view.
+        'in the corner or beside the column':
+          besideColumn || Math.abs(end.width - button?.right - 24) <= 4,
         ...(width === 1280 &&
           size === '100%' && { 'beside the column when there is room': besideColumn }),
       })

@@ -154,7 +154,7 @@ function theme(name, dark) {
     type: dark ? 'dark' : 'light',
     colors: {
       'editor.foreground': dark ? '#faf9f5' : '#141413',
-      'editor.background': dark ? '#30302e' : '#faf9f5',
+      'editor.background': dark ? '#282724' : '#f0eee6',
     },
     tokenColors: [
       {
@@ -165,7 +165,7 @@ function theme(name, dark) {
           'entity.name.tag',
           'constant.character.escape',
         ],
-        settings: { foreground: dark ? '#94b4d4' : '#1b365d' },
+        settings: { foreground: dark ? '#9db9d8' : '#1b365d' },
       },
       {
         scope: ['string'],

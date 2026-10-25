@@ -4,10 +4,14 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { Renderer } from '@takumi-rs/core'
 import subsetFont from 'subset-font'
+import { latinRanges } from './latin-range.mjs'
 import { cardHeight, cardWidth } from './og.mjs'
 import { siteTitle, siteUrl } from './site.mjs'
 
 const siteHost = new URL(siteUrl).host
+export const serifPath = 'src/assets/fonts/source-serif-4/SourceSerif4-Latin-wght.woff2'
+// The page's font stack: Source Serif for Latin, JinKai for the rest.
+export const serifFont = (data) => ({ name: 'Source Serif', data, unicodeRange: latinRanges })
 
 const ellipsis = '…'
 
@@ -15,11 +19,12 @@ let shared
 function load() {
   shared ??= (async () => {
     const root = process.cwd()
-    const [font, css] = await Promise.all([
+    const [font, serif, css] = await Promise.all([
       readFile(path.join(root, 'vendor/fonts/tsanger-jinkai02/TsangerJinKai02-W04.ttf')),
+      readFile(path.join(root, serifPath)),
       readFile(path.join(root, 'src/styles/global.css'), 'utf8'),
     ])
-    return { font, colors: lightColors(css) }
+    return { font, serif, colors: lightColors(css) }
   })()
   return shared
 }
@@ -37,6 +42,7 @@ function lightColors(css) {
     text: color('text-color'),
     muted: color('muted-color'),
     border: color('border-color'),
+    rule: color('rule-color'),
   }
 }
 
@@ -48,7 +54,7 @@ const container = (style, children) => ({ type: 'container', style, children })
  * @param {{ title: string, label: string }} card
  */
 export async function cardLayout({ title, label }) {
-  const { font, colors } = await load()
+  const { font, serif, colors } = await load()
   // Each card embeds only its own glyphs; the full W04 face is about 19 MB.
   const glyphs = await subsetFont(font, siteTitle + title + label + siteHost + ellipsis, {
     targetFormat: 'truetype',
@@ -63,7 +69,7 @@ export async function cardLayout({ title, label }) {
       padding: 72,
       backgroundColor: colors.background,
       border: `2px solid ${colors.border}`,
-      fontFamily: 'JinKai',
+      fontFamily: '"Source Serif", JinKai',
       letterSpacing: '0.02em',
     },
     [
@@ -83,14 +89,14 @@ export async function cardLayout({ title, label }) {
           display: 'flex',
           justifyContent: 'space-between',
           paddingTop: 24,
-          borderTop: `2px solid ${colors.border}`,
+          borderTop: `2px solid ${colors.rule}`,
           fontSize: 28,
         },
         [text(label, { color: colors.muted }), text(siteHost, { color: colors.text })],
       ),
     ],
   )
-  return { node, fonts: [{ name: 'JinKai', data: glyphs }] }
+  return { node, fonts: [serifFont(serif), { name: 'JinKai', data: glyphs }] }
 }
 
 /**

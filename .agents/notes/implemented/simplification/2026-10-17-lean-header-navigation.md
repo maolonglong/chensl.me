@@ -10,7 +10,7 @@ The header listed 首页, 博客, AI News, 搜索, and RSS as text links, then t
 
 The header holds the site title, which links home, the 博客 and AI News links, a search icon, and the theme toggle. The search icon is a link named 搜索 and styled like the theme toggle. The article feed link moves to the footer of every page. AI News pages link the news feed in the footer instead, which matches the feed that their head advertises. The head feed links for autodiscovery do not change.
 
-`e2e/navigation.spec.mjs` pins the header links, the current mark and the 44 px target of the search icon, and the footer feed link. `scripts/check-site.mjs` requires the footer feed link on every prerendered page, and `e2e/news.spec.mjs` requires the news feed link on the AI News pages.
+`e2e/navigation.spec.mjs` pins the header links, the current mark and the 40 px target of the search icon, and the footer feed link. `scripts/check-site.mjs` requires the footer feed link on every prerendered page, and `e2e/news.spec.mjs` requires the news feed link on the AI News pages.
 
 ## Alternatives considered
 
@@ -24,7 +24,7 @@ The header holds the site title, which links home, the 博客 and AI News links,
 
 ## Consequences
 
-No header item is current on the home page. On phones the header keeps the 12 px text gap rather than a 20 px gap, and each icon's target reaches halfway into the gap (44 px tall, 36 px wide) so adjacent targets never overlap. A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
+No header item is current on the home page. The two tools are 40 px circles side by side ([redesign](../feature/2026-10-25-editorial-redesign.md)), and the text links keep their spacing. A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
 
 ## Reopen when
 
