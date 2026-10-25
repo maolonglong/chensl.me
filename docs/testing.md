@@ -45,7 +45,7 @@ Before each commit, `prek.toml` runs the document checks and `git diff --cached 
 
 ## Browser specs
 
-`pnpm test:e2e` builds the site, then Playwright starts its own Wrangler preview with local D1 and runs `e2e/`; after `pnpm check` has already built `dist/`, run `pnpm exec playwright test` directly to skip a second build. `playwright.config.mjs` holds the port, the browser discovery, and the report folders. Run one suite at a time: two runs, or a build during a run, share `dist/` and the port and fail with misleading errors.
+`pnpm test:e2e` builds the site, then Playwright starts its own Wrangler preview with local D1 and runs `e2e/`; after `pnpm check` has already built `dist/`, run `pnpm exec playwright test` directly to skip a second build. The specs run on the Chromium that Playwright installs; run `pnpm exec playwright install chromium` once per machine and after a Playwright upgrade. `playwright.config.mjs` holds the port and the report folders. Run one suite at a time: two runs, or a build during a run, share `dist/` and the port and fail with misleading errors.
 
 - Wait for a state or a `page.clock` step, not a fixed time (`tests/e2e-waits.test.mjs`).
 - Do not poll with `page.waitForFunction`: in a spec that turns page scripts off, it checks once and then hangs. Wait with `expect.poll`, a locator assertion, or a promise such as `document.fonts.ready` (`tests/e2e-waits.test.mjs`).
