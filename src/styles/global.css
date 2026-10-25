@@ -415,8 +415,7 @@ time {
 }
 
 /* External links in running text carry a quiet north-east arrow after the text. */
-.prose
-    a:is([href^='http://'], [href^='https://']):not(:has(img), .repo-card a, .footnotes a)::after {
+.prose a:is([href^='http://'], [href^='https://']):not(:has(img))::after {
     content: '↗\FE0E';
     display: inline-block;
     margin-left: 0.15em;
@@ -431,15 +430,17 @@ time {
 }
 
 @media (hover: hover) {
-    .prose
-        a:is([href^='http://'], [href^='https://']):not(
-            :has(img),
-            .repo-card a,
-            .footnotes a
-        ):hover::after {
+    .prose a:is([href^='http://'], [href^='https://']):not(:has(img)):hover::after {
         opacity: 1;
         transform: translate(1px, -1px);
     }
+}
+
+/* Citations and repo cards carry no arrow. This is a separate rule because WebKit ignores a
+   descendant selector in :not() when the same selector also holds :not(:has()) and a pseudo-element. */
+.prose .repo-card a[href]::after,
+.prose .footnotes a[href]::after {
+    content: none;
 }
 
 blockquote {
