@@ -34,7 +34,7 @@ When a check can decide a rule, write the check and keep only what a writer need
 - Give each paragraph one physical line (`tests/docs.test.mjs`).
 - When you shorten text, keep each actor, condition, modality, exception, and failure.
 - Paths in backticks are relative to the repository root. Links are relative to the document, so the link check covers them.
-- Cite a commit by its hash in backticks, and only commits on `main`, which is never rewritten.
+- Cite a commit by its hash in backticks, and a removed file as `<commit>:<path>` at a commit where the file exists; cite only commits on `main`, which is never rewritten.
 - A change to documented behavior updates its home in the same commit.
 
 Before you finish, remove caches, duplicates, history in a current-state document, references that only the writing session can resolve, and instructions that an agent follows by default.
