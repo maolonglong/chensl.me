@@ -57,6 +57,10 @@ body:has(.toc-button) .back-to-top {
     bottom: calc(var(--gutter) + 44px + var(--space-2));
 }
 
+.toc-rail {
+    display: contents;
+}
+
 body:has(#article-toc:popover-open) .toc-button {
     color: var(--heading-color);
     background-color: var(--surface-color);
@@ -157,18 +161,34 @@ body:has(.toc-button) {
 /*
   A wide view leaves a margin beside the column: the list sits there as plain
   text, ruled on its left edge, the current entry marked in ink. Author styles
-  outrank the popover's default `display: none`, so it needs no opening.
+  outrank the popover's default `display: none`, so it needs no opening. The
+  list is sticky inside a rail that spans the article, not fixed to the view,
+  so a rubber-band bounce at the page edge moves it with the header and text.
 */
 @media (min-width: 76rem) {
     .toc-button {
         display: none;
     }
 
+    .post {
+        position: relative;
+    }
+
+    .toc-rail {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: calc(100% + var(--space-7));
+        bottom: 0;
+        width: 13rem;
+    }
+
     .toc {
-        inset: 8rem calc(50% + var(--measure) / 2 + var(--space-7)) auto auto;
+        position: sticky;
+        inset: 8rem auto auto auto;
         display: block;
         width: 13rem;
-        max-height: calc(100% - 12rem);
+        max-height: calc(100dvh - 12rem);
         padding: 0;
         overflow-y: auto;
         font-size: var(--size-caption);

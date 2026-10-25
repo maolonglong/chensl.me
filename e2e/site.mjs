@@ -9,13 +9,6 @@ export const apart = (a, b) =>
   !a || !b || a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top
 export const inside = (a, view) =>
   !!a && a.left >= 0 && a.top >= 0 && a.right <= view.width && a.bottom <= view.height
-export const covers = (outer, inner) =>
-  !!outer &&
-  !!inner &&
-  outer.left <= inner.left &&
-  outer.top <= inner.top &&
-  outer.right >= inner.right &&
-  outer.bottom >= inner.bottom
 
 // One soft assertion per named rule, so a failure names the rule that broke, with the measured state.
 export function expectAll(label, state, rules) {

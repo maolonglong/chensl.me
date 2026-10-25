@@ -1,4 +1,4 @@
-import { apart, covers, expect, expectAll, inside, test } from './site.mjs'
+import { apart, expect, expectAll, inside, test } from './site.mjs'
 
 // The article's one contents list: a plain list in the margin beside the column where the view
 // leaves room, and a popover behind a button in back-to-top's corner everywhere else.
@@ -92,10 +92,36 @@ for (const width of [1280, 1440]) {
     expectAll(`${label} after Enter`, jumped, {
       'URL points at the first heading': jumped.hash === jumped.first,
       'heading sits at the top': Math.abs(jumped.targetTop) <= 1,
-      'list stays in the margin': covers(jumped.rail, rest.rail),
+      'list stays in the margin':
+        jumped.rail?.left === rest.rail.left && inside(jumped.rail, jumped),
     })
   })
 }
+
+// A list fixed to the view stays put while a trackpad bounce at the page edge drags the header
+// down, and stacks the two. Playwright cannot emulate that bounce, so the test pins what keeps the
+// list with the page: it starts level with the article, holds below the header while reading, and
+// ends with the article.
+test('the margin list travels with the page instead of staying fixed to the view', async ({
+  page,
+  open,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 844 })
+  await open('/blog/dockertest/')
+  const label = '/blog/dockertest/ margin list'
+  const rest = await measure(page, () => scrollTo(0, 0))
+  expectAll(label, rest, {
+    'list starts level with the article': Math.abs(rest.rail?.top - rest.column.top) <= 1,
+  })
+  const reading = await measure(page, () => scrollTo(0, 1500))
+  expectAll(`${label} while reading`, reading, {
+    'list holds 8rem below the top of the view': Math.abs(reading.rail?.top - 128) <= 1,
+  })
+  const end = await measure(page, () => scrollTo(0, document.documentElement.scrollHeight))
+  expectAll(`${label} at the bottom`, end, {
+    'list ends with the article, above the footer': end.rail?.bottom <= end.footer.top,
+  })
+})
 
 test('a pointer in a view without a margin opens the contents from the button', async ({
   page,
