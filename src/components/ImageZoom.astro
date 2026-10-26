@@ -1,0 +1,312 @@
+<template id="image-zoom-template">
+  <dialog class="image-zoom" aria-label="图片预览">
+    <div class="image-zoom-stage"></div>
+  </dialog>
+</template>
+<script>
+  ;(() => {
+    const template = document.querySelector<HTMLTemplateElement>('#image-zoom-template')
+    if (!template) return
+    const candidates = [...document.querySelectorAll<HTMLImageElement>('.prose img')]
+    if (!candidates.length) return
+
+    // Only standalone images whose intrinsic width exceeds their rendered width by at least 15%
+    // benefit from zooming; linked images stay links, and small diagrams at 1:1 stay static.
+    const minZoomRatio = 1.15
+    const intrinsicWidth = (img: HTMLImageElement) =>
+      img.naturalWidth || Number(img.getAttribute('width')) || 0
+    const intrinsicHeight = (img: HTMLImageElement) =>
+      img.naturalHeight || Number(img.getAttribute('height')) || 0
+    const isZoomable = (img: HTMLImageElement) =>
+      !img.closest('a') &&
+      img.clientWidth > 0 &&
+      intrinsicWidth(img) >= img.clientWidth * minZoomRatio
+
+    let dialog: HTMLDialogElement | undefined
+    let stage: HTMLElement | undefined
+    let target: HTMLImageElement | undefined
+    let activeSource: HTMLImageElement | undefined
+    let closing = false
+    let animation: Animation | undefined
+
+    const computeZoomSize = (img: HTMLImageElement, sourceRect: DOMRect) => {
+      const naturalW = intrinsicWidth(img)
+      const naturalH = intrinsicHeight(img)
+      const gutter =
+        Number.parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue('--gutter'),
+        ) || 24
+      const availW = Math.max(1, document.documentElement.clientWidth - 2 * gutter)
+      const availH = Math.max(1, document.documentElement.clientHeight - 2 * gutter)
+      const fitScale = Math.min(1, availW / naturalW, availH / naturalH)
+      const fitW = naturalW * fitScale
+      // On narrow viewports the reading column already fills the width, so fitting to the viewport
+      // would barely enlarge the image. Scale past the viewport width so the reader can pan.
+      const scale =
+        fitW < sourceRect.width * 1.4 && naturalW > fitW
+          ? Math.min(
+              1,
+              Math.max((sourceRect.width * 2.2) / naturalW, Math.min(240, availH * 0.5) / naturalH),
+              (availH * 0.85) / naturalH,
+            )
+          : fitScale
+      return {
+        width: Math.round(naturalW * scale),
+        height: Math.round(naturalH * scale),
+      }
+    }
+
+    const closeZoom = () => {
+      if (!dialog?.open || closing) return
+      closing = true
+      animation?.cancel()
+      const source = activeSource
+      const finish = () => {
+        closing = false
+        animation = undefined
+        activeSource = undefined
+        if (source) delete source.dataset.zoomed
+        if (dialog?.open) dialog.close()
+        source?.focus({ preventScroll: true })
+      }
+      if (source && target && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+        const sourceRect = source.getBoundingClientRect()
+        const targetRect = target.getBoundingClientRect()
+        if (targetRect.width > 0 && targetRect.height > 0 && sourceRect.width > 0) {
+          const dx = sourceRect.left - targetRect.left
+          const dy = sourceRect.top - targetRect.top
+          const sx = sourceRect.width / targetRect.width
+          const sy = sourceRect.height / targetRect.height
+          animation = target.animate(
+            [
+              { transform: 'none' },
+              { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
+            ],
+            { duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+          )
+          animation.onfinish = finish
+          animation.oncancel = () => {
+            closing = false
+          }
+          return
+        }
+      }
+      finish()
+    }
+
+    const ensureDialog = () => {
+      if (dialog) return
+      dialog = template.content.firstElementChild!.cloneNode(true) as HTMLDialogElement
+      stage = dialog.querySelector<HTMLElement>('.image-zoom-stage')!
+      target = document.createElement('img')
+      target.className = 'image-zoom-target'
+      target.decoding = 'async'
+      stage.append(target)
+      document.body.append(dialog)
+
+      let downX = 0
+      let downY = 0
+      dialog.addEventListener('pointerdown', (event) => {
+        downX = event.clientX
+        downY = event.clientY
+      })
+      dialog.addEventListener('click', (event) => {
+        if (event.detail > 0 && Math.hypot(event.clientX - downX, event.clientY - downY) > 6) return
+        closeZoom()
+      })
+      dialog.addEventListener('cancel', (event) => {
+        event.preventDefault()
+        closeZoom()
+      })
+      dialog.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          closeZoom()
+        }
+      })
+      dialog.addEventListener(
+        'wheel',
+        (event) => {
+          if (event.ctrlKey) return
+          if (
+            dialog!.scrollWidth <= dialog!.clientWidth &&
+            dialog!.scrollHeight <= dialog!.clientHeight
+          ) {
+            event.preventDefault()
+            closeZoom()
+          }
+        },
+        { passive: false },
+      )
+      dialog.addEventListener('close', () => {
+        closing = false
+        if (activeSource) {
+          const source = activeSource
+          activeSource = undefined
+          delete source.dataset.zoomed
+          source.focus({ preventScroll: true })
+        }
+      })
+    }
+
+    const openZoom = (img: HTMLImageElement, clientX?: number) => {
+      if (!isZoomable(img) || dialog?.open) return
+      ensureDialog()
+      animation?.cancel()
+      closing = false
+      const sourceRect = img.getBoundingClientRect()
+      const { width, height } = computeZoomSize(img, sourceRect)
+      target!.src = img.currentSrc || img.src
+      target!.alt = img.alt
+      target!.width = width
+      target!.height = height
+      target!.style.width = `${width}px`
+      target!.style.height = `${height}px`
+      activeSource = img
+      img.dataset.zoomed = ''
+      dialog!.showModal()
+
+      const ratioX =
+        clientX !== undefined && sourceRect.width > 0
+          ? Math.min(1, Math.max(0, (clientX - sourceRect.left) / sourceRect.width))
+          : 0.5
+      dialog!.scrollLeft = Math.round(
+        Math.max(0, dialog!.scrollWidth - dialog!.clientWidth) * ratioX,
+      )
+      dialog!.scrollTop = Math.round(Math.max(0, dialog!.scrollHeight - dialog!.clientHeight) * 0.5)
+
+      if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+        const targetRect = target!.getBoundingClientRect()
+        if (targetRect.width > 0 && targetRect.height > 0) {
+          const dx = sourceRect.left - targetRect.left
+          const dy = sourceRect.top - targetRect.top
+          const sx = sourceRect.width / targetRect.width
+          const sy = sourceRect.height / targetRect.height
+          animation = target!.animate(
+            [
+              { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
+              { transform: 'none' },
+            ],
+            { duration: 220, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+          )
+        }
+      }
+    }
+
+    const syncCandidate = (img: HTMLImageElement) => {
+      if (isZoomable(img)) {
+        img.dataset.zoomable = ''
+        img.tabIndex = 0
+        img.setAttribute('role', 'button')
+        img.setAttribute('aria-haspopup', 'dialog')
+      } else {
+        delete img.dataset.zoomable
+        img.removeAttribute('tabindex')
+        img.removeAttribute('role')
+        img.removeAttribute('aria-haspopup')
+      }
+    }
+
+    const syncAll = () => {
+      for (const img of candidates) syncCandidate(img)
+      if (dialog?.open && activeSource && target) {
+        if (!isZoomable(activeSource)) {
+          closeZoom()
+        } else {
+          const { width, height } = computeZoomSize(
+            activeSource,
+            activeSource.getBoundingClientRect(),
+          )
+          target.width = width
+          target.height = height
+          target.style.width = `${width}px`
+          target.style.height = `${height}px`
+        }
+      }
+    }
+
+    for (const img of candidates) {
+      syncCandidate(img)
+      img.addEventListener('load', () => syncCandidate(img))
+      img.addEventListener('click', (event) => {
+        if (!img.hasAttribute('data-zoomable')) return
+        openZoom(img, event.detail > 0 ? event.clientX : undefined)
+      })
+      img.addEventListener('keydown', (event) => {
+        if (!img.hasAttribute('data-zoomable')) return
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          openZoom(img)
+        }
+      })
+    }
+    window.addEventListener('resize', syncAll)
+  })()
+</script>
+
+<style>
+  :global(.prose img[data-zoomable]:focus-visible) {
+    border-radius: var(--radius);
+    outline-offset: 4px;
+  }
+  :global(.prose img[data-zoomed]) {
+    visibility: hidden;
+  }
+  .image-zoom[open] {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    background-color: color-mix(in srgb, var(--background-color) 92%, transparent);
+    backdrop-filter: blur(6px);
+    border: 0;
+  }
+  .image-zoom::backdrop {
+    background: transparent;
+  }
+  .image-zoom:focus-visible {
+    outline: none;
+  }
+  .image-zoom-stage {
+    box-sizing: border-box;
+    display: flex;
+    width: max-content;
+    min-width: 100%;
+    min-height: 100%;
+    padding: var(--gutter);
+  }
+  :global(.image-zoom-target) {
+    display: block;
+    flex: none;
+    max-width: none;
+    margin: auto;
+    border-radius: var(--radius);
+    box-shadow:
+      0 0 0 1px var(--border-color),
+      var(--shadow-float);
+    transform-origin: 0 0;
+  }
+  @media (hover: hover) {
+    :global(.prose img[data-zoomable]) {
+      cursor: zoom-in;
+    }
+    .image-zoom[open] {
+      cursor: zoom-out;
+    }
+  }
+  @media print {
+    :global(.prose img[data-zoomed]) {
+      visibility: visible;
+    }
+    .image-zoom {
+      display: none;
+    }
+  }
+</style>

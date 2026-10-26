@@ -257,3 +257,11 @@ test('TOC uses exactly three H2/H3 headings as its threshold', async () => {
     assert.match(html, new RegExp(`href="#${id}"`))
   assert.doesNotMatch(html, /href="#excluded"/)
 })
+
+test('image zoom styles load only on articles with images', async () => {
+  const { dist } = await behaviorFixture()
+  const below = await readFile(path.join(dist, 'blog/below/index.html'), 'utf8')
+  assert.doesNotMatch(below, /image-zoom/)
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  assert.match(html, /image-zoom/)
+})

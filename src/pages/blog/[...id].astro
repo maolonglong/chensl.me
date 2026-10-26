@@ -7,6 +7,7 @@ import FloatingToc from '../../components/FloatingToc.astro'
 import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
 import GitHubCards from '../../components/GitHubCards.astro'
+import ImageZoom from '../../components/ImageZoom.astro'
 import Upvote from '../../components/Upvote.astro'
 import { creationLabels, publishedPosts, displayDate, postUrl } from '../../lib/posts'
 import { isStaleSince } from '../../lib/stale'
@@ -69,6 +70,7 @@ const { creation } = post.data
     </div>
     <CodeCopy />
     {remarkPluginFrontmatter.githubCards && <GitHubCards />}
+    {remarkPluginFrontmatter.images && <ImageZoom />}
   </article>
   <div class="post-end measure">
     <Upvote postId={post.id} />

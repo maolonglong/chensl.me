@@ -101,8 +101,18 @@ const scrollRegion = (className, label, child) =>
   element('div', { className: [className], tabIndex: 0, role: 'region', ariaLabel: label }, [child])
 
 export function rehypeSite() {
-  return (tree) => {
-    visit(tree, 'element', (node, index, parent) => {
+  return (tree, file) => {
+    let images = false
+    visit(tree, (node, index, parent) => {
+      if (node.type === 'raw' && /<img\b/i.test(node.value)) {
+        images = true
+        return
+      }
+      if (node.type !== 'element') return
+      if (node.tagName === 'img') {
+        images = true
+        return
+      }
       // remark-math emits `code.language-math` inline and `pre > code.language-math` on display.
       // Render it before the `pre` branch below takes it for a code block. Astro parses the raw
       // MathML later.
@@ -145,6 +155,7 @@ export function rehypeSite() {
         return SKIP
       }
     })
+    if (images && file?.data?.astro?.frontmatter) file.data.astro.frontmatter.images = true
   }
 }
 
