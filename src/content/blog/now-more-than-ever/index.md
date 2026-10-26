@@ -2,7 +2,7 @@
 title: 把代码仓库改成 Agent 也能看懂的样子：从 Ron Minsky 的 Bug Bash 演讲说起
 description: Jane Street 的 Ron Minsky 在 Bug Bash 2026 上聊了类型、expect test、代码评审和形式化验证。这些老派工程手段放在一起，刚好回答了怎么把代码仓库改得更适合 Agent。
 pubDate: 2026-10-26T20:30:00+08:00
-draft: true
+draft: false
 creation:
   mode: ai-generated
   note: 根据演讲视频的字幕和幻灯片整理，配图为视频截图。
