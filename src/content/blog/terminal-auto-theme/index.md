@@ -49,9 +49,9 @@ creation:
 
 **第三层是针对短生命周期命令的 `OSC 11` 背景探测**，像 `bat`、`delta` 这类跑完即退的 CLI 工具，启动时只需向终端发送 `\e]11;?\e\\` 查询当前背景色的 RGB 值，算出相对亮度后就能自动选择对应的语法高亮主题（例如 `bat` 内置的 `--theme=auto:system`）。
 
-这里唯一剩下的盲区是**管道里的子进程**。`OSC 11` 查询要求进程直接连着控制终端（TTY）。当 `delta` 被 `lazygit` 这类上层 TUI 通过管道调用时，它的输入和输出都是 pipe，没法向终端发查询，就会退回默认的深色模式。对这种场景，直接读取操作系统的外观状态（比如 macOS 上的 `defaults read -g AppleInterfaceStyle`）再传参，就能补上最后一块拼图。
+![浅色模式下用 lazygit 查看 home/cli.nix 的改动：bat 的主题设成 auto:system，亮暗分别用 Catppuccin Latte 和 Catppuccin Mocha，fzf 改用 --color=base16 输出标准 ANSI 语义色](./lazygit-bat-fzf-config.webp)
 
-![浅色模式下的 lazygit：右侧 Patch 面板里，delta 的 diff 高亮也跟着用了浅色主题，对应的正是 home/git.nix 里用 delta-auto-theme 包装 delta 的这段配置](./lazygit-delta-light.webp)
+这里唯一剩下的盲区是**管道里的子进程**。`OSC 11` 查询要求进程直接连着控制终端（TTY）。当 `delta` 被 `lazygit` 这类上层 TUI 通过管道调用时，它的输入和输出都是 pipe，没法向终端发查询，就会退回默认的深色模式。对这种场景，直接读取操作系统的外观状态（比如 macOS 上的 `defaults read -g AppleInterfaceStyle`）再传参，就能补上最后一块拼图。
 
 如果你也常年在明亮的办公室里盯着全黑的终端看小字号代码，不妨试着开启终端的 `auto` 模式。刚从黑底切到浅底可能会有一两天的陌生感，但适应之后，白天看高密度日志和代码 diff 时，眼睛的紧绷感确实会小很多。
 
