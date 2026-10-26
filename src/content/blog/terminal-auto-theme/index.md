@@ -51,6 +51,8 @@ creation:
 
 这里唯一剩下的盲区是**管道里的子进程**。`OSC 11` 查询要求进程直接连着控制终端（TTY）。当 `delta` 被 `lazygit` 这类上层 TUI 通过管道调用时，它的输入和输出都是 pipe，没法向终端发查询，就会退回默认的深色模式。对这种场景，直接读取操作系统的外观状态（比如 macOS 上的 `defaults read -g AppleInterfaceStyle`）再传参，就能补上最后一块拼图。
 
+![浅色模式下的 lazygit：右侧 Patch 面板里，delta 的 diff 高亮也跟着用了浅色主题，对应的正是 home/git.nix 里用 delta-auto-theme 包装 delta 的这段配置](./lazygit-delta-light.webp)
+
 如果你也常年在明亮的办公室里盯着全黑的终端看小字号代码，不妨试着开启终端的 `auto` 模式。刚从黑底切到浅底可能会有一两天的陌生感，但适应之后，白天看高密度日志和代码 diff 时，眼睛的紧绷感确实会小很多。
 
 [^buchner-2009]: Axel Buchner、Susanne Mayr、Martin Brandt，[The advantage of positive text-background polarity is due to high display luminance](https://pubmed.ncbi.nlm.nih.gov/19562598/)，*Ergonomics*，52(7):882-886，2009。
