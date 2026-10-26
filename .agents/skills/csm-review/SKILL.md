@@ -70,21 +70,21 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 - The tree you edit is not the HTML the browser gets. Shiki emits lowercase `tabindex`, so `delete node.properties.tabIndex` silently did nothing (`82d1217`). Check every plugin `delete` and regex against emitted HTML from a real build.
 - Plugins leave a clean tree, with no emptied text node after a stripped marker (`dfa3891`).
 - One Markdown pipeline. A second parser for RSS or exports is a hit. Parse HTML before you rewrite `href`/`src` (entities), and every feed URL ends absolute (`988b08d`).
-- `publishedPosts()` and `isPublishedPost()` are the only draft and future filters; a direct `getCollection('blog')` or a build scan of `src/content/blog/` that skips `isPublishedPost()` leaks unpublished text into the output or font subsets (`66fee1c`). `import.meta.env.DEV` shows drafts by design.
+- `publishedPosts()` and `isPublishedPost()` are the only draft and future filters; a direct `getCollection('blog')` or a build scan of `src/content/blog/` that skips `isPublishedPost()` leaks unpublished text into the output (`66fee1c`). `import.meta.env.DEV` shows drafts by design.
 - Dates display through `displayDate` (`Asia/Shanghai`). CI runs UTC and the author's machine runs CST, so local-time getters or `toLocale*` without `timeZone` differ between them.
 
 ### UI — [design](../../../docs/design.md)
 
 - Floating buttons, popover entries, and in-page controls measure at least 44 px including padding, and header tools 40 px; the spec said 44 while contents entries were 37 (`b91f0fc`). A round control hit-tests as a circle, so sample inside it.
 - Hover and touch are separate branches: pointer-only affordances sit behind `@media (hover: hover)`, and specs select the capability with `test.use({ hasTouch })`.
-- Pick a `--size-*` and `--space-*` step; a raw `font-size` or margin value between steps is a hit. Reading text is serif and chrome is `--font-sans`; a component that mixes the two voices in one role is a hit.
+- Pick a `--size-*` and `--space-*` step; a raw `font-size` or margin value between steps is a hit. Reading text and chrome use `--font-sans`; only code uses `--font-mono`.
 - A component that renders text in `--font-mono` outside code loads the code font on pages without code (`e2e/code.spec.mjs`).
 - A transition on `color` makes specs that read a computed color right after a theme switch read a mid-transition value. Keep color changes on state controls instant.
 - Scroll boxes are focusable `role=region` wrappers with a label and an unclipped focus ring; the `<table>` itself never becomes `display:block` (`b32e2dd`, `82d1217`).
 - The scroll box carries the code fill, since an iOS overscroll exposes whatever sits behind it (`da19164`). At 320 px the copy button leaves the first line readable (`f48a91b`).
 - Decorative glyphs are `aria-hidden`, never headings (`2d9e213`).
 - Underline contexts set `text-decoration-line`, not the `text-decoration` shorthand: the shorthand resets thickness, and the CSS minifier dropped a thickness that followed `text-decoration: none` in the same rule (`61b7873`). Compare computed styles against a baseline build; a screenshot does not show it.
-- A new chromatic value without an entry in [design § Color](../../../docs/design.md#color) is a hit; ink-blue means link only.
+- A new chromatic value without an entry in [design § Color](../../../docs/design.md#color) is a hit; optical blue (`--link-color`) means link only.
 
 ### Checks & ship — [testing](../../../docs/testing.md), `csm-ship`, `csm-deps`
 

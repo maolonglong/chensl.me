@@ -37,12 +37,6 @@
       "skillPath": "skills/hunt/SKILL.md",
       "computedHash": "0d1d422a22ed4a2495baf5b1f410b95d1fbf5e24ae51f60dfe28eb0de33d5ef6"
     },
-    "kami": {
-      "source": "tw93/kami",
-      "sourceType": "github",
-      "skillPath": "skills/kami/SKILL.md",
-      "computedHash": "f6a33840594c26cd23e49bae657e89217ea3b47c2fb1ef463fc55d8ef011d344"
-    },
     "learn": {
       "source": "tw93/Waza",
       "sourceType": "github",

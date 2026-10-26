@@ -1,8 +1,5 @@
 ---
 import '../styles/global.css'
-// JinKai slices for text outside the build-time subsets, such as news read from D1.
-// src/lib/fonts.mjs writes this file before Astro starts.
-import '../../.astro/site-fonts/slices.css'
 import Theme from '../components/Theme.astro'
 import ThemeToggle from '../components/ThemeToggle.astro'
 import { Font } from 'astro:assets'
@@ -139,8 +136,6 @@ const feed = isNews
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <Font cssVariable="--font-source-serif" preload={false} />
-    <Font cssVariable="--font-jinkai" preload={false} />
     <Font cssVariable="--font-jetbrains" preload={false} />
     {
       // News pages advertise the news feed in place of the blog feed, in the head and the footer.
@@ -216,8 +211,7 @@ const feed = isNews
         </p>
       </div>
       <p class="footer-credit meta">
-        基于 <a href="https://astro.build">Astro</a> 构建，排版灵感来自
-        <a href="https://github.com/tw93/Kami">Kami</a>
+        基于 <a href="https://astro.build">Astro</a> 构建
       </p>
     </footer>
   </body>
@@ -242,7 +236,6 @@ const feed = isNews
     left: 0;
     z-index: 2;
     padding: var(--space-2) var(--space-4);
-    font-family: var(--font-sans);
     color: var(--background-color);
     background: var(--link-color);
   }
@@ -258,9 +251,9 @@ const feed = isNews
   .site-title {
     margin: 0;
     font-size: var(--size-h3);
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.2;
-    letter-spacing: 0;
+    letter-spacing: -0.01em;
   }
   .site-title a {
     color: var(--heading-color);
@@ -270,9 +263,9 @@ const feed = isNews
     display: flex;
     align-items: center;
     gap: var(--space-5);
-    font-family: var(--font-sans);
     font-size: var(--size-ui);
-    letter-spacing: 0.01em;
+    line-height: 1.4;
+    letter-spacing: 0;
   }
   /* The vertical padding makes a 40 px target without changing the visible spacing. */
   .nav-link {
@@ -363,7 +356,7 @@ const feed = isNews
   }
   .footer-mark a {
     font-size: var(--size-body);
-    font-weight: 500;
+    font-weight: 600;
     color: var(--heading-color);
   }
   .footer-links {

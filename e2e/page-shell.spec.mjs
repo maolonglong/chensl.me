@@ -142,12 +142,9 @@ test('CSP blocks untrusted inline scripts and event handlers', async ({ page, op
   })
 })
 
-// `pnpm check` models the JinKai budget statically; this confirms the browser agrees in practice.
-// The home page also loads the Latin serif, so the cold visit fetches two font files in total.
-test('home loads its fonts in two requests and at most 150 KiB on a cold visit', async ({
-  page,
-  open,
-}) => {
+// Reading text and chrome use the system sans-serif stack, and JetBrains Mono is not preloaded, so
+// a cold visit to a page without code downloads no web fonts.
+test('home loads zero web fonts on a cold visit', async ({ page, open }) => {
   await open('/')
   const fonts = await page.evaluate(() => {
     const fonts = performance
@@ -156,67 +153,25 @@ test('home loads its fonts in two requests and at most 150 KiB on a cold visit',
     return {
       requests: fonts.length,
       bytes: fonts.reduce((sum, entry) => sum + entry.encodedBodySize, 0),
-      loaded: [...document.fonts].some(
-        (font) => font.family.toLowerCase().includes('tsanger') && font.status === 'loaded',
-      ),
     }
   })
-  expect(fonts.loaded, 'JinKai must actually load').toBe(true)
-  expect(fonts.bytes).toBeGreaterThan(0)
-  expect(fonts.bytes).toBeLessThanOrEqual(150 * 1024)
-  expect(fonts.requests).toBe(2)
-  const slices = await page.evaluate(
-    () =>
-      performance.getEntriesByType('resource').filter((entry) => entry.name.includes('/slice-'))
-        .length,
-  )
-  expect(slices, 'home text must not need a JinKai slice').toBe(0)
+  expect(fonts).toEqual({ requests: 0, bytes: 0 })
 })
 
-// Text that only exists at runtime, such as a news issue read from D1, is in no build-time
-// subset. It must still render in JinKai by downloading the slice that covers it.
-test('runtime text outside the build-time subsets loads a JinKai slice', async ({ page, open }) => {
-  await open('/')
-  const result = await page.evaluate(async () => {
-    const probe = document.createElement('p')
-    // Neither character appears in the source, so only a slice can cover them.
-    probe.textContent = '龘鼐'
-    document.querySelector('main').append(probe)
-    await document.fonts.load(`16px ${getComputedStyle(probe).fontFamily}`, probe.textContent)
-    await document.fonts.ready
-    return {
-      slices: performance
-        .getEntriesByType('resource')
-        .filter((entry) => /\/_astro\/slice-\d+\.[\w-]+\.woff2$/.test(entry.name))
-        .map((entry) => entry.encodedBodySize),
-      loaded: [...document.fonts].some(
-        (font) =>
-          font.family.replaceAll('"', '') === 'TsangerJinKai02 Slices' && font.status === 'loaded',
-      ),
-    }
-  })
-  expect(result.loaded, 'a JinKai slice must load').toBe(true)
-  expect(result.slices.length).toBeGreaterThanOrEqual(1)
-  expect(result.slices.length).toBeLessThanOrEqual(2)
-})
-
-// Code and italic Latin added to a standalone page must work without article metadata or layout
+// Code added to a standalone page loads JetBrains Mono on demand without article metadata or layout
 // flags, and <em> sets italic without CJK emphasis dots.
-test('standalone pages load code and italic Latin fonts on demand', async ({
+test('standalone pages load code fonts on demand and set italic without emphasis dots', async ({
   page,
   open,
   capture,
 }) => {
   await open('/')
   const state = await page.evaluate(async () => {
-    const italicFace = () =>
+    const codeFace = () =>
       [...document.fonts].some(
-        (font) =>
-          font.family.includes('Source Serif') &&
-          font.style === 'italic' &&
-          font.status === 'loaded',
+        (font) => font.family.includes('JetBrains') && font.status === 'loaded',
       )
-    const italicBefore = italicFace()
+    const codeBefore = codeFace()
     const code = document.createElement('code')
     code.textContent = 'const answer = 42'
     const em = document.createElement('em')
@@ -226,13 +181,8 @@ test('standalone pages load code and italic Latin fonts on demand', async ({
     await document.fonts.ready
     const emStyle = getComputedStyle(em)
     const result = {
-      italicBefore,
-      codeLoaded:
-        getComputedStyle(code).fontFamily.includes('JetBrains') &&
-        [...document.fonts].some(
-          (font) => font.family.includes('JetBrains') && font.status === 'loaded',
-        ),
-      italicLoaded: italicFace(),
+      codeBefore,
+      codeLoaded: getComputedStyle(code).fontFamily.includes('JetBrains') && codeFace(),
       fontStyle: emStyle.fontStyle,
       emphasisStyle: emStyle.textEmphasisStyle,
     }
@@ -241,9 +191,8 @@ test('standalone pages load code and italic Latin fonts on demand', async ({
     return result
   })
   expect(state).toEqual({
-    italicBefore: false,
+    codeBefore: false,
     codeLoaded: true,
-    italicLoaded: true,
     fontStyle: 'italic',
     emphasisStyle: 'none',
   })

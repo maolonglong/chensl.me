@@ -72,7 +72,7 @@ When you review the notes as a set, classify each note by the [retention rules](
 These cases set the bar:
 
 - **Keep** [TypeScript 6 for astro check](../../notes/implemented/process/2026-09-27-typescript-6-for-astro-check.md): it is short, but its reopen condition stops a TypeScript 7 upgrade that would break `pnpm check`.
-- **Keep** [delete the archived W05 font](../../notes/rejected/simplification/2026-10-04-delete-archived-w05-font.md): removing an unused 19 MB file stays tempting, and the note says why it loses.
+- **Keep** [drop the `_headers` checks](../../notes/rejected/simplification/2026-10-04-drop-headers-checks.md): removing static checks that seem covered by browser preview tests stays tempting, and the note says why it loses.
 - **Delete** a note that only records a new color for a hover state, or a renamed helper: nothing in it can guide a later change.
 - **Reopen.** A note whose decision depends on an external fact, such as a version, an upstream behavior, or a limit, and that has no `## Reopen when` condition is a finding. A note whose premise is internal stands on its alternatives and consequences.
 

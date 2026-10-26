@@ -3,7 +3,8 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { test } from 'node:test'
 import { Renderer } from '@takumi-rs/core'
-import { cardLayout, renderCard, serifFont, serifPath } from '../src/lib/og-card.mjs'
+import fontverter from 'fontverter'
+import { cardLayout, renderCard, sansPath } from '../src/lib/og-card.mjs'
 import { cardHeight, cardWidth } from '../src/lib/og.mjs'
 import { root } from './support.mjs'
 
@@ -29,7 +30,6 @@ for (const [name, title] of [
 ]) {
   test(`card titles stop at two lines inside the card for ${name}`, async () => {
     const node = await titleOf({ title, label: '2026-10-17' })
-    // Latin and CJK runs on one line sit at their own font's baseline, so a line is a line box.
     const lines = new Set(
       node.runs.map((run) => Math.round(run.y / (titleFontSize * titleLineHeight))),
     )
@@ -44,10 +44,10 @@ test('a short title stays on one line', async () => {
   assert.equal(new Set(node.runs.map((run) => Math.round(run.y))).size, 1)
 })
 
-test('card subsets draw the same pixels as the full JinKai face, ellipsis included', async () => {
+test('card subsets draw the same pixels as the full Noto Sans SC face, ellipsis included', async () => {
   const card = {
     title:
-      '从 Amp 看 Agent 产品设计：薄 Agent，厚流程。再加一段让标题超出两行的文字，确认省略号也来自 JinKai',
+      '从 Amp 看 Agent 产品设计：薄 Agent，厚流程。再加一段让标题超出两行的文字，确认省略号也来自 Noto Sans SC',
     label: '2026-07-11 · AI 辅助',
   }
   const png = await renderCard(card)
@@ -57,15 +57,12 @@ test('card subsets draw the same pixels as the full JinKai face, ellipsis includ
     'PNG IHDR size',
   )
   const { node } = await cardLayout(card)
-  const [full, serif] = await Promise.all([
-    readFile(path.join(root, 'vendor/fonts/tsanger-jinkai02/TsangerJinKai02-W04.ttf')),
-    readFile(path.join(root, serifPath)),
-  ])
+  const full = await fontverter.convert(await readFile(path.join(root, sansPath)), 'truetype')
   const reference = await new Renderer().render(node, {
     width: cardWidth,
     height: cardHeight,
     format: 'png',
-    fonts: [serifFont(serif), { name: 'JinKai', data: full }],
+    fonts: [{ name: 'Noto Sans SC', data: full }],
   })
   assert.ok(png.equals(reference), 'a glyph missing from the subset falls back to another font')
 })

@@ -1,9 +1,9 @@
 main {
     color-scheme: dark;
-    --primary-default: 157, 185, 216;
-    --bg-default: 40, 39, 36;
-    --color-scale-gray-7: #282724;
-    --color-scale-blue-8: #354354;
+    --primary-default: 41, 151, 255;
+    --bg-default: 22, 22, 24;
+    --color-scale-gray-7: #161618;
+    --color-scale-blue-8: #1d3b5c;
 }
 
 main .pagination-loader-container {

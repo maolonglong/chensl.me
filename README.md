@@ -35,7 +35,7 @@ A paragraph that is only a link to a GitHub repository, such as `<https://github
 
 Markdown supports GitHub-style alerts (`> [!TIP]`), tables, footnotes, TeX math (`$…$` inline, `$$…$$` display), and code captions (`title="db/user.go"` on the fence).
 
-JinKai font subsets are built from the source text, and slices cover the rest of the font for runtime text, so new text needs no font step; restart `pnpm dev` to refresh them. Font licensing is in [NOTICE.md](public/fonts/tsanger-jinkai02/NOTICE.md).
+Pages use the system sans-serif stack and load `JetBrains Mono` on demand for code; build-time share cards subset `Noto Sans SC`. Font licenses are in [Noto Sans SC OFL.txt](public/fonts/noto-sans-sc/OFL.txt) and [JetBrains Mono OFL.txt](public/fonts/jetbrains-mono-2.304/OFL.txt).
 
 ## Deployment
 

@@ -91,8 +91,8 @@ test('site styles use the size ladder and do not transition theme colors', () =>
   }
 })
 
-test('Source Serif license file preserves Adobe copyright and Reserved Font Name', () => {
-  const ofl = readFileSync(path.join(root, 'public/fonts/source-serif-4/OFL.txt'), 'utf8')
-  assert.match(ofl, /Adobe Systems Incorporated/)
+test('Noto Sans SC license file preserves Adobe copyright and Reserved Font Name', () => {
+  const ofl = readFileSync(path.join(root, 'public/fonts/noto-sans-sc/OFL.txt'), 'utf8')
+  assert.match(ofl, /Adobe/)
   assert.match(ofl, /Reserved Font Name ['‘]Source['’]/)
 })

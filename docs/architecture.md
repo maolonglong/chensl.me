@@ -6,13 +6,13 @@ Read this before you change how the site builds, serves, or runs scripts. It giv
 
 The site splits state into build-time static inputs and request-time edge databases:
 
-- **Build-time ground state.** Markdown articles in `src/content/blog/`, the repository snapshot `src/data/github-repos.json`, the JinKai font source in `vendor/fonts/`, and the Latin serif in `src/assets/fonts/` are the only build inputs. The build makes no network requests. Astro prerenders these inputs into static HTML, RSS, Markdown exports, PNG share cards, a Pagefind keyword index, and font subsets in `dist/client`, plus a Cloudflare Worker bundle in `dist/server`.
+- **Build-time ground state.** Markdown articles in `src/content/blog/`, the repository snapshot `src/data/github-repos.json`, and the font files in `src/assets/fonts/` are the only build inputs. The build makes no network requests. Astro prerenders these inputs into static HTML, RSS, Markdown exports, PNG share cards, a Pagefind keyword index, and code fonts in `dist/client`, plus a Cloudflare Worker bundle in `dist/server`.
 - **Runtime ground state.** Two Cloudflare D1 databases hold mutable state: `VOTES` for article upvotes and `NEWS` for bot-written daily AI News issues (`/news/`) and their FTS5 search index. Workers Static Assets serves every prerendered file directly; the Worker runs only on the paths listed in `assets.run_worker_first` (`/_actions/*`, `/api/*`, `/news/*`).
 
 ```text
   src/content/blog/*.md ──► content collection ──► Markdown pipeline ──► pages, RSS, exports
   src/data/github-repos.json  src/content.config.ts  src/lib/markdown.mjs  src/pages/
-  vendor/fonts/ ──────────► src/lib/fonts.mjs ──► subsets + slices ────────┤
+  src/assets/fonts/ ──────► src/lib/fonts.mjs & src/lib/og-card.mjs ───────┤
                                                                            ▼
                                                     dist/client (static) + dist/server (Worker)
                                                                            │
@@ -101,7 +101,7 @@ Add any new third-party source to every policy that defines its directive, and t
 
 ### Fonts
 
-`src/lib/fonts.mjs` builds a Latin Source Serif subset (its range is `src/lib/latin-range.mjs`) and two disjoint JinKai W04 subsets from source text before Astro resolves fonts ([decision](../.agents/notes/implemented/simplification/2026-10-06-subset-fonts-from-source-text.md)), plus cached `unicode-range` slices from `vendor/fonts/google-fonts-noto-sans-sc-slices.json` for runtime D1 text on `/news/` ([decision](../.agents/notes/implemented/feature/2026-10-16-jinkai-unicode-range-slices.md)).
+Pages use the system sans-serif stack (`--font-sans`), and `src/lib/fonts.mjs` registers `JetBrains Mono` (`src/assets/fonts/jetbrains-mono-2.304/`) for code without preloading it ([decision](../.agents/notes/implemented/feature/2026-10-26-apple-sans-editorial-redesign.md)). Build-time share cards (`src/lib/og-card.mjs`) subset `src/assets/fonts/noto-sans-sc/NotoSansSC-SemiBold.woff2` per card ([decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md)).
 
 ### Delivery
 

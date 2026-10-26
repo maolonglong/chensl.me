@@ -3,15 +3,13 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { Renderer } from '@takumi-rs/core'
+import fontverter from 'fontverter'
 import subsetFont from 'subset-font'
-import { latinRanges } from './latin-range.mjs'
 import { cardHeight, cardWidth } from './og.mjs'
 import { siteTitle, siteUrl } from './site.mjs'
 
 const siteHost = new URL(siteUrl).host
-export const serifPath = 'src/assets/fonts/source-serif-4/SourceSerif4-Latin-wght.woff2'
-// The page's font stack: Source Serif for Latin, JinKai for the rest.
-export const serifFont = (data) => ({ name: 'Source Serif', data, unicodeRange: latinRanges })
+export const sansPath = 'src/assets/fonts/noto-sans-sc/NotoSansSC-SemiBold.woff2'
 
 const ellipsis = '…'
 
@@ -19,12 +17,12 @@ let shared
 function load() {
   shared ??= (async () => {
     const root = process.cwd()
-    const [font, serif, css] = await Promise.all([
-      readFile(path.join(root, 'vendor/fonts/tsanger-jinkai02/TsangerJinKai02-W04.ttf')),
-      readFile(path.join(root, serifPath)),
+    const [woff2, css] = await Promise.all([
+      readFile(path.join(root, sansPath)),
       readFile(path.join(root, 'src/styles/global.css'), 'utf8'),
     ])
-    return { font, serif, colors: lightColors(css) }
+    const font = await fontverter.convert(woff2, 'truetype')
+    return { font, colors: lightColors(css) }
   })()
   return shared
 }
@@ -54,8 +52,8 @@ const container = (style, children) => ({ type: 'container', style, children })
  * @param {{ title: string, label: string }} card
  */
 export async function cardLayout({ title, label }) {
-  const { font, serif, colors } = await load()
-  // Each card embeds only its own glyphs; the full W04 face is about 19 MB.
+  const { font, colors } = await load()
+  // Each card embeds only its own glyphs from the build-time Noto Sans SC face.
   const glyphs = await subsetFont(font, siteTitle + title + label + siteHost + ellipsis, {
     targetFormat: 'truetype',
   })
@@ -69,17 +67,17 @@ export async function cardLayout({ title, label }) {
       padding: 72,
       backgroundColor: colors.background,
       border: `2px solid ${colors.border}`,
-      fontFamily: '"Source Serif", JinKai',
-      letterSpacing: '0.02em',
+      fontFamily: '"Noto Sans SC"',
+      letterSpacing: '-0.01em',
     },
     [
-      text(siteTitle, { fontSize: 36, fontWeight: 500, color: colors.heading }),
+      text(siteTitle, { fontSize: 36, fontWeight: 600, color: colors.heading }),
       text(title, {
         fontSize: 64,
-        fontWeight: 500,
+        fontWeight: 600,
         lineHeight: 1.3,
         color: colors.heading,
-        letterSpacing: 0,
+        letterSpacing: '-0.015em',
         wordBreak: 'keep-all',
         overflowWrap: 'anywhere',
         textWrap: 'balance',
@@ -92,12 +90,13 @@ export async function cardLayout({ title, label }) {
           paddingTop: 24,
           borderTop: `2px solid ${colors.rule}`,
           fontSize: 28,
+          letterSpacing: 0,
         },
         [text(label, { color: colors.muted }), text(siteHost, { color: colors.text })],
       ),
     ],
   )
-  return { node, fonts: [serifFont(serif), { name: 'JinKai', data: glyphs }] }
+  return { node, fonts: [{ name: 'Noto Sans SC', data: glyphs }] }
 }
 
 /**

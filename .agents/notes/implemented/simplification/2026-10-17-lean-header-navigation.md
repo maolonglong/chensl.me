@@ -24,7 +24,7 @@ The header holds the site title, which links home, the 博客 and AI News links,
 
 ## Consequences
 
-No header item is current on the home page. The two tools are 40 px circles side by side ([redesign](../feature/2026-10-25-editorial-redesign.md)), and the text links keep their spacing. A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
+No header item is current on the home page. The two tools are 40 px circles side by side ([redesign](../feature/2026-10-26-apple-sans-editorial-redesign.md)), and the text links keep their spacing. A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
 
 ## Reopen when
 

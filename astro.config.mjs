@@ -17,11 +17,6 @@ export default defineConfig({
   adapter: cloudflare({ imageService: 'compile', prerenderEnvironment: 'node' }),
   session: false,
   fonts: await siteFonts(),
-  vite: {
-    // Keep JinKai slices as separate cached files: an inlined slice would put its glyphs into
-    // the shared stylesheet that every page blocks on.
-    build: { assetsInlineLimit: (file) => (file.endsWith('.woff2') ? false : undefined) },
-  },
   integrations: [
     // /search/ is an empty form until a visitor types a query, so crawlers get nothing from it.
     sitemap({ filter: (page) => new URL(page).pathname !== '/search/' }),
