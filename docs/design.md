@@ -1,18 +1,18 @@
 # Design
 
-Read this before you change layout, styles, fonts, or browser interactions. It states the visual intent and the reasons behind it. The values live in `src/styles/global.css` (tokens, chrome type, and Markdown typography) and in each component's scoped styles; a value appears here only with the test that pins it. Pick a `src/styles/global.css` token before you add a value: sizes come from the `--size-*` ladder and spacing from the `--space-*` scale, never from a step between them.
+Read this before you change layout, styles, fonts, or browser interactions. It states the visual intent and the reasons behind it. The values live in `src/styles/global.css` (tokens, chrome type, and Markdown typography) and in each component's scoped styles; a value appears here only with the test that pins it. Pick a `src/styles/global.css` token before you add a value: sizes come from the `--size-*` ladder and spacing from the `--space-*` scale, never from a step between them (`tests/design.test.mjs`).
 
 ## Intent
 
-The site reads like a small printed journal: warm paper, ink type, and hairline rules. Three ideas carry it ([decision](../.agents/notes/implemented/feature/2026-10-25-editorial-redesign.md)):
+The site reads like an engineering research publication: optical-white canvas, cool neutral surfaces, crisp hairline rules, and native sans-serif typography inspired by Apple Machine Learning Research and the Apple Human Interface Guidelines. Three ideas carry it ([decision](../.agents/notes/implemented/feature/2026-10-26-apple-sans-editorial-redesign.md)):
 
-- **Two type voices.** Reading text is serif: Source Serif sets Latin letters and digits, and JinKai sets Chinese. Chrome is sans: navigation, dates, counts, labels, and buttons. A reader can tell content from controls by the face alone.
-- **Ruled sections.** A section opens with a hairline and a small sans label (`.section-label`). Rules divide sections and rows; boxes are for code, notes, and floating controls only.
-- **Ink-blue means a link in running text.** Lists of titles, navigation, and news items use the heading color and underline on hover, so ink-blue stays rare enough to signal a link.
+- **Hierarchy through weight, scale, and tracking.** System sans-serif (`--font-sans`) sets both reading text and UI chrome; monospace (`--font-mono`) sets code. Headings, section labels, entry titles, `strong`, and table headers use weight 600 and progressive optical display tracking, while metadata and secondary copy recede in weight 400 and `--muted-color`.
+- **Ruled sections.** A section opens with a hairline and a small sans label (`.section-label`). Rules divide sections and rows; fills and frames are for code, notes, repository cards, and floating controls only.
+- **Optical blue means a link or active control.** Lists of titles, navigation, and news items use the heading color and underline on hover, so `--link-color` stays rare enough to signal an interactive link or active state.
 
 ## Layout
 
-- The header and the footer span the shell (`--shell`). Every page column is the reading measure (`.measure`), centred under it.
+- The header and the footer span the shell (`--shell`). Every page column is the reading measure (`.measure`), centred under it (`e2e/page-shell.spec.mjs`).
 - Short pages keep the footer at the bottom of the view (`e2e/page-shell.spec.mjs`).
 - Where the view leaves a margin beside the column, an article's contents sit there as a plain list; elsewhere a corner button opens them as a popover (`e2e/contents.spec.mjs`). The list does not depend on hover.
 
@@ -22,35 +22,34 @@ The site reads like a small printed journal: warm paper, ink type, and hairline 
 - Hover affordances sit behind `@media (hover: hover)`, and every pressable control moves on press. `prefers-reduced-motion: reduce` zeroes every transition in `src/styles/global.css`; keyframe animations run only under `no-preference` (`e2e/footnotes.spec.mjs`).
 - A link that leads to more of the same (`.arrow-link`) ends with an arrow that steps forward on hover. It is the one signature motion.
 
-## Kami and Anthropic as references
+## Apple editorial references
 
-[Kami](https://github.com/tw93/Kami) supplies the warm palette, ink-blue, and the 400/500 weight pair; Anthropic's site supplies the serif-body, sans-chrome split. Neither is the specification. These choices are deliberate:
+Apple Machine Learning Research and the Apple Human Interface Guidelines supply the optical-white canvas, cool neutral surfaces, optical blue link accent, and native sans-serif weight and tracking hierarchy. Neither is a rigid specification. These choices are deliberate:
 
-- **Page color.** The page is ivory; parchment is the fill for code, notes, and inline code. Kami's parchment page made every fill look grey.
-- **Dark theme.** Kami defines none, so it is this site's own. Dark text uses grayscale smoothing, because light strokes on a dark page look heavier.
-- **Headings, `strong`, and table headers** use the heading color. JinKai W04 has one weight, so color sets them apart ([decision](../.agents/notes/implemented/simplification/2026-09-23-serve-jinkai-w04-only.md)).
-- **List markers** are muted, not ink-blue, because ink-blue means a link.
-- **Code blocks** are a parchment fill with no border. Token colors follow Kami's syntax table.
+- **Page and surface fills.** `--background-color` is the optical-white or obsidian-carbon canvas; `--surface-color` is the cool neutral fill for code blocks, notes, and inline code.
+- **Dark theme.** Dark text uses grayscale smoothing, because light strokes on a dark page look heavier.
+- **Headings, entry titles, `strong`, and table headers** use weight 600 in the heading color, with tighter tracking at display sizes and slight positive tracking on small section labels.
+- **List markers** are muted, not optical blue, because `--link-color` means a link or active control.
+- **Code blocks** are a `--surface-color` fill with no border. Token colors in `src/lib/markdown.mjs` follow the same cool neutral and optical-blue palette.
 
 ## Color
 
-Beyond Kami's light palette, the site adds these chromatic values: the dark-mode link tints, the selection tint in `src/styles/global.css`, and the red, green, and amber diff and state colors in the giscus themes (`src/styles/giscus*.css`). The diff colors carry addition and deletion meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
+Beyond the core tokens in `src/styles/global.css`, the giscus themes (`src/styles/giscus*.css`) add red, green, and amber diff and state colors for addition, deletion, and warning meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
 
 ## Typography
 
-- The serif stack is Source Serif for the Latin range in `src/lib/latin-range.mjs`, then JinKai. CJK punctuation, curly quotes, the middle dot, and dashes stay outside the Latin range, so they keep JinKai's full-width forms. Share cards use the same stack (`tests/og.test.mjs`).
-- JinKai W04 alone covers weights 400 to 500, font synthesis is off, and the served Source Serif keeps roman and italic subsets for that slice of its weight axis (`tests/fonts.test.mjs`).
-- Fonts are self-hosted with `font-display: swap` and content-versioned URLs, without preloads. Code fonts and the italic Latin serif are declared on every page, and the browser loads them only when a page uses them (`tests/fonts.test.mjs`, `e2e/code.spec.mjs`, `e2e/page-shell.spec.mjs`). Repository cards use the sans face, so a card alone never loads the code font.
-- A cold visit to the home page loads at most 120 KiB of JinKai and 150 KiB of fonts in total, and `/news/` loads cached JinKai slices for its D1 text (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
-- The fonts are not under the repository's code license; read [NOTICE.md](../public/fonts/tsanger-jinkai02/NOTICE.md), [Source Serif OFL.txt](../public/fonts/source-serif-4/OFL.txt), and [JetBrains Mono OFL.txt](../public/fonts/jetbrains-mono-2.304/OFL.txt) before you add or change one.
+- `--font-sans` sets reading text and UI chrome in the platform's native sans-serif, with `font-synthesis: none` so CJK glyphs never receive synthetic oblique shear.
+- `--font-mono` sets code in self-hosted `JetBrains Mono` (`src/lib/fonts.mjs`) with `font-display: swap`, content-versioned URLs, and `preload={false}`. Repository cards use `--font-sans`, so a cold visit to a page without `<code>` downloads zero web fonts (`tests/fonts.test.mjs`, `e2e/code.spec.mjs`, `e2e/page-shell.spec.mjs`).
+- Build-time share cards (`src/lib/og-card.mjs`) subset `NotoSansSC-SemiBold.woff2` (`src/assets/fonts/noto-sans-sc/NotoSansSC-SemiBold.woff2`) per card so every card embeds only its own glyphs without shipping the font to the Worker (`tests/og.test.mjs`).
+- The fonts are not under the repository's code license; read [Noto Sans SC OFL.txt](../public/fonts/noto-sans-sc/OFL.txt) and [JetBrains Mono OFL.txt](../public/fonts/jetbrains-mono-2.304/OFL.txt) before you add or change one (`tests/design.test.mjs`).
 - Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart.
-- `<em>` sets Latin text in Source Serif italic while Chinese stays upright in JinKai (`e2e/page-shell.spec.mjs`). `<strong>` uses weight 500 in the heading color.
+- `<em>` sets Latin text in native italic without CJK emphasis dots (`e2e/page-shell.spec.mjs`). `<strong>` uses weight 600 in the heading color.
 
 ## Components
 
 - **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails (`e2e/appearance.spec.mjs`).
 - **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
-- **Article header.** The date, length, reading time, and creation label share one sans metadata line. A stale notice is a quiet parchment note below it (`e2e/page-shell.spec.mjs`, `e2e/reading-time.spec.mjs`).
+- **Article header.** The date, length, reading time, and creation label share one sans metadata line. A stale notice is a quiet surface note below it (`e2e/page-shell.spec.mjs`, `e2e/reading-time.spec.mjs`).
 - **Article end.** The upvote, then the earlier and later articles, then the comments under a section label.
 - **Search** is one ruled input line and a result list: title, type and date, excerpt. No filters or suggestions.
 - **Icons** are inline SVG, not font glyphs or an icon library.

@@ -102,7 +102,6 @@ body:has(.toc-button) {
     margin: 0;
     padding: var(--space-2);
     overflow-y: auto;
-    font-family: var(--font-sans);
     font-size: var(--size-ui);
     line-height: 1.5;
     color: var(--text-color);
@@ -145,6 +144,7 @@ body:has(.toc-button) {
 }
 
 .toc a[aria-current] {
+    font-weight: 500;
     color: var(--heading-color);
     background-color: var(--surface-color);
 }

@@ -32,14 +32,7 @@ export function run(command, args, cwd) {
 
 export async function astroProject(prefix, onCleanup) {
   const fixture = await temporaryDirectory(prefix, onCleanup)
-  for (const relative of [
-    'astro.config.mjs',
-    'wrangler.jsonc',
-    'src',
-    'public',
-    'vendor/fonts',
-    'package.json',
-  ]) {
+  for (const relative of ['astro.config.mjs', 'wrangler.jsonc', 'src', 'public', 'package.json']) {
     await cp(path.join(root, relative), path.join(fixture, relative), { recursive: true })
   }
   await rm(path.join(fixture, 'src/content/blog'), { recursive: true, force: true })

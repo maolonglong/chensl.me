@@ -4,7 +4,7 @@
     --shell: 72rem;
     --measure: 40rem;
     --gutter: 24px;
-    --radius: 6px;
+    --radius: 8px;
 
     /* One ladder for every size; a component picks a step, never a value between steps. */
     --size-caption: 0.8125rem;
@@ -25,33 +25,27 @@
     --space-8: 64px;
     --space-9: 96px;
 
-    /* Source Serif sets Latin letters and digits only (its unicode-range), so CJK text and
-       CJK punctuation fall through to JinKai. */
-    --font-serif:
-        var(--font-source-serif), var(--font-jinkai), 'TsangerJinKai02 Slices', 'Noto Serif SC',
-        'Source Han Serif SC', 'Songti SC', 'STSong', Georgia, serif;
-    /* Chrome only: navigation, dates, labels, counts. Reading text never uses it. */
     --font-sans:
-        ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+        ui-sans-serif, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro SC', 'PingFang SC',
         'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
     --font-mono:
         var(--font-jetbrains, 'JetBrains Mono'), ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo,
-        Consolas, 'Liberation Mono', var(--font-serif);
+        Consolas, 'Liberation Mono', var(--font-sans);
 
-    --background-color: light-dark(#faf9f5, #1b1a18);
-    --surface-color: light-dark(#f0eee6, #282724);
-    --heading-color: light-dark(#141413, #f5f4ed);
-    --text-color: light-dark(#3d3d3a, #d1cfc6);
-    --muted-color: light-dark(#6b6a64, #a29f95);
-    --link-color: light-dark(#1b365d, #9db9d8);
-    --link-hover-color: light-dark(#2d5a8a, #c3d4e8);
-    --border-color: light-dark(#e8e6dc, #353430);
-    --rule-color: light-dark(#d8d5c8, #4a4843);
-    --selection-color: light-dark(#dce3eb, #354354);
-    --mark-background-color: light-dark(#e8e6dc, #3d3c38);
+    --background-color: light-dark(#ffffff, #0a0a0c);
+    --surface-color: light-dark(#f5f5f7, #161618);
+    --heading-color: light-dark(#1d1d1f, #f5f5f7);
+    --text-color: light-dark(#2c2c2e, #d2d2d7);
+    --muted-color: light-dark(#636366, #98989d);
+    --link-color: light-dark(#0066cc, #2997ff);
+    --link-hover-color: light-dark(#004499, #66b5ff);
+    --border-color: light-dark(#e5e5ea, #2c2c2e);
+    --rule-color: light-dark(#d2d2d7, #38383a);
+    --selection-color: light-dark(#d4e8ff, #1d3b5c);
+    --mark-background-color: light-dark(#e8f2ff, #1e3246);
 
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-    --shadow-float: 0 6px 20px light-dark(rgb(20 20 19 / 7%), rgb(0 0 0 / 36%));
+    --shadow-float: 0 6px 20px light-dark(rgb(29 29 31 / 7%), rgb(0 0 0 / 40%));
     color-scheme: light dark;
 }
 
@@ -66,7 +60,7 @@
 /* -------------------------------------------------------------------- base */
 
 html {
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
     font-size: 100%;
     font-synthesis: none;
     -webkit-text-size-adjust: 100%;
@@ -81,7 +75,7 @@ body {
     margin: 0;
     font-size: var(--size-body);
     line-height: 1.75;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     color: var(--text-color);
     background-color: var(--background-color);
     overflow-wrap: break-word;
@@ -93,10 +87,10 @@ h3,
 h4,
 h5,
 h6 {
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.35;
     color: var(--heading-color);
-    letter-spacing: 0.01em;
+    letter-spacing: -0.015em;
     text-wrap: balance;
     /* Break titles at spaces and punctuation, not inside a word like 单元; overflow-wrap still rescues a segment wider than the line. */
     word-break: keep-all;
@@ -105,7 +99,8 @@ h6 {
 h1 {
     margin: 0 0 var(--space-4);
     font-size: var(--size-h1);
-    line-height: 1.25;
+    line-height: 1.22;
+    letter-spacing: -0.02em;
 }
 
 /*
@@ -116,11 +111,15 @@ h1 {
 h2 {
     margin: 2.25em 0 0.75em;
     font-size: var(--size-h2);
+    line-height: 1.3;
+    letter-spacing: -0.015em;
 }
 
 h3 {
     margin: 2em 0 0.5em;
     font-size: var(--size-h3);
+    line-height: 1.35;
+    letter-spacing: -0.01em;
 }
 
 h4,
@@ -128,6 +127,8 @@ h5,
 h6 {
     margin: 1.75em 0 0.5em;
     font-size: var(--size-body);
+    line-height: 1.45;
+    letter-spacing: -0.005em;
 }
 
 h2 + :is(h3, h4, h5, h6),
@@ -142,7 +143,7 @@ li {
 
 strong,
 b {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--heading-color);
 }
 
@@ -253,10 +254,9 @@ time {
 
 /* Small sans text for data about the content: dates, counts, labels. */
 .meta {
-    font-family: var(--font-sans);
     font-size: var(--size-ui);
     line-height: 1.5;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
     color: var(--muted-color);
     font-variant-numeric: tabular-nums;
 }
@@ -278,12 +278,11 @@ time {
 .section-label {
     margin: 0 0 var(--space-5);
     padding-top: var(--space-3);
-    font-family: var(--font-sans);
     font-size: var(--size-caption);
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.4;
-    letter-spacing: 0.08em;
-    color: var(--muted-color);
+    letter-spacing: 0.04em;
+    color: var(--heading-color);
     border-top: 1px solid var(--rule-color);
 }
 
@@ -320,8 +319,9 @@ time {
     min-width: 0;
     margin: 0;
     font-size: var(--size-body);
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.55;
+    letter-spacing: -0.01em;
     color: var(--heading-color);
 }
 
@@ -391,7 +391,6 @@ time {
 }
 
 .prose ol li::marker {
-    font-family: var(--font-sans);
     font-size: 0.875em;
     font-variant-numeric: tabular-nums;
 }
@@ -410,7 +409,6 @@ time {
     content: '↗\FE0E';
     display: inline-block;
     margin-left: 0.15em;
-    font-family: var(--font-sans);
     font-size: 0.75em;
     line-height: 1;
     text-decoration-line: none;
@@ -465,9 +463,8 @@ blockquote cite {
 
 .alert-heading {
     margin-bottom: 0.35em;
-    font-family: var(--font-sans);
     font-size: var(--size-ui);
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--heading-color);
 }
@@ -479,11 +476,11 @@ blockquote cite {
 /* ------------------------------------------------------------------- code */
 
 :not(pre) > code {
-    padding: 0.1em 0.3em;
+    padding: 0.12em 0.35em;
     font-size: 0.84em;
     color: var(--heading-color);
     background-color: var(--surface-color);
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
 pre {
@@ -569,15 +566,13 @@ pre code {
 
 /* Sans, not mono: a card alone must not pull in the code font. */
 .repo-card-name {
-    font-family: var(--font-sans);
     font-size: var(--size-ui);
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: 0;
 }
 
 .repo-card-archived {
     margin-left: 0.5em;
-    font-family: var(--font-sans);
     font-size: var(--size-caption);
     color: var(--muted-color);
     white-space: nowrap;
@@ -597,7 +592,6 @@ pre code {
 /* A refreshed count keeps the width of its digits. */
 .repo-card-stats {
     margin-top: var(--space-2);
-    font-family: var(--font-sans);
     font-size: var(--size-caption);
     color: var(--muted-color);
     font-variant-numeric: tabular-nums;
@@ -650,9 +644,8 @@ td {
 
 /* The header rule outweighs the row rules. A 0.5px row rule is a hairline on HiDPI screens and 1px elsewhere. */
 th {
-    font-family: var(--font-sans);
     font-size: var(--size-caption);
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--muted-color);
     border-bottom: 1px solid var(--rule-color);
@@ -719,12 +712,10 @@ details > summary {
 /* The return arrow is a control, not a citation, so it carries no underline. */
 .prose [data-footnote-backref] {
     margin-left: 0.25em;
-    font-family: var(--font-sans);
     color: var(--muted-color);
 }
 
 [data-footnote-ref] {
-    font-family: var(--font-sans);
     font-size: 0.8em;
 }
 

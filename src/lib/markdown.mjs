@@ -164,8 +164,8 @@ function theme(name, dark) {
     name,
     type: dark ? 'dark' : 'light',
     colors: {
-      'editor.foreground': dark ? '#faf9f5' : '#141413',
-      'editor.background': dark ? '#282724' : '#f0eee6',
+      'editor.foreground': dark ? '#f5f5f7' : '#1d1d1f',
+      'editor.background': dark ? '#161618' : '#f5f5f7',
     },
     tokenColors: [
       {
@@ -176,25 +176,25 @@ function theme(name, dark) {
           'entity.name.tag',
           'constant.character.escape',
         ],
-        settings: { foreground: dark ? '#9db9d8' : '#1b365d' },
+        settings: { foreground: dark ? '#2997ff' : '#0066cc' },
       },
       {
         scope: ['string'],
-        settings: { foreground: dark ? '#c2c0b6' : '#504e49' },
+        settings: { foreground: dark ? '#d2d2d7' : '#2c2c2e' },
       },
       {
         scope: ['constant.numeric'],
-        settings: { foreground: dark ? '#d4d3cd' : '#3d3d3a' },
+        settings: { foreground: dark ? '#e5e5ea' : '#1d1d1f' },
       },
       {
         scope: ['comment', 'punctuation.definition.comment'],
-        settings: { foreground: dark ? '#b0aea5' : '#6b6a64' },
+        settings: { foreground: dark ? '#98989d' : '#636366' },
       },
     ],
   }
 }
 
-export const codeThemes = { light: theme('ink-light', false), dark: theme('ink-dark', true) }
+export const codeThemes = { light: theme('site-light', false), dark: theme('site-dark', true) }
 export const codeCaption = {
   name: 'code-caption',
   pre(node) {
