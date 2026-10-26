@@ -637,9 +637,11 @@ math[display='block'] {
 
 /* ------------------------------------------------------------------ tables */
 
-/* The wrapper scrolls so the <table> keeps its role in the accessibility tree. */
+/* The wrapper scrolls so the <table> keeps its role in the accessibility tree;
+   max-content keeps CJK columns from collapsing to one character wide. */
 table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     font-size: var(--size-ui);
     line-height: 1.6;
     border-collapse: collapse;

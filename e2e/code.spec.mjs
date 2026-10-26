@@ -91,6 +91,40 @@ test.describe('keyboard access to scrolling code', () => {
       role: 'region',
     })
   })
+
+  test('wide CJK tables scroll inside their wrapper while narrow tables fill the column', async ({
+    page,
+    open,
+    capture,
+  }) => {
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 844 })
+      await open('/blog/semantic-view-sql-traps/')
+      const state = await page.evaluate(() => {
+        const wrappers = [...document.querySelectorAll('.table-scroll')]
+        const wide = wrappers.at(-1)
+        wide.scrollIntoView({ block: 'center' })
+        return {
+          pageFits: document.documentElement.scrollWidth <= innerWidth,
+          fillsColumn: wrappers.every(
+            (wrapper) => wrapper.querySelector('table').offsetWidth >= wrapper.clientWidth,
+          ),
+          narrowFits: wrappers.some((wrapper) => wrapper.scrollWidth === wrapper.clientWidth),
+          wideScrolls: wide.scrollWidth > wide.clientWidth,
+        }
+      })
+      expect(state).toEqual({
+        pageFits: true,
+        fillsColumn: true,
+        narrowFits: true,
+        wideScrolls: true,
+      })
+      for (const mode of ['light', 'dark']) {
+        await page.emulateMedia({ colorScheme: mode })
+        await capture(page, `table-wide-${width}-${mode}`)
+      }
+    }
+  })
 })
 
 // Every code block gets one copy button inside its top-right corner that stays put while the code
