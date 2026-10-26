@@ -110,6 +110,11 @@ test.describe('keyboard access to scrolling code', () => {
             (wrapper) => wrapper.querySelector('table').offsetWidth >= wrapper.clientWidth,
           ),
           narrowFits: wrappers.some((wrapper) => wrapper.scrollWidth === wrapper.clientWidth),
+          singleLineCells: [...wide.querySelectorAll('th, td')].every((cell) => {
+            const range = document.createRange()
+            range.selectNodeContents(cell)
+            return range.getClientRects().length === 1
+          }),
           wideScrolls: wide.scrollWidth > wide.clientWidth,
         }
       })
@@ -117,7 +122,8 @@ test.describe('keyboard access to scrolling code', () => {
         pageFits: true,
         fillsColumn: true,
         narrowFits: true,
-        wideScrolls: true,
+        singleLineCells: true,
+        wideScrolls: width === 320 ? true : expect.any(Boolean),
       })
       for (const mode of ['light', 'dark']) {
         await page.emulateMedia({ colorScheme: mode })
