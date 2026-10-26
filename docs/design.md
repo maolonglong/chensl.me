@@ -39,12 +39,12 @@ Beyond Kami's light palette, the site adds these chromatic values: the dark-mode
 ## Typography
 
 - The serif stack is Source Serif for the Latin range in `src/lib/latin-range.mjs`, then JinKai. CJK punctuation, curly quotes, the middle dot, and dashes stay outside the Latin range, so they keep JinKai's full-width forms. Share cards use the same stack (`tests/og.test.mjs`).
-- JinKai W04 alone covers weights 400 to 500, synthesized bold is off, and the served Source Serif keeps only that slice of its weight axis.
-- Fonts are self-hosted with `font-display: swap` and content-versioned URLs, without preloads. Code fonts are declared on every page, and the browser loads them only when a page uses them (`tests/fonts.test.mjs`, `e2e/code.spec.mjs`). Repository cards use the sans face, so a card alone never loads the code font.
+- JinKai W04 alone covers weights 400 to 500, font synthesis is off, and the served Source Serif keeps roman and italic subsets for that slice of its weight axis (`tests/fonts.test.mjs`).
+- Fonts are self-hosted with `font-display: swap` and content-versioned URLs, without preloads. Code fonts and the italic Latin serif are declared on every page, and the browser loads them only when a page uses them (`tests/fonts.test.mjs`, `e2e/code.spec.mjs`, `e2e/page-shell.spec.mjs`). Repository cards use the sans face, so a card alone never loads the code font.
 - A cold visit to the home page loads at most 120 KiB of JinKai and 150 KiB of fonts in total, and `/news/` loads cached JinKai slices for its D1 text (`tests/fonts.test.mjs`, `e2e/page-shell.spec.mjs`).
 - The fonts are not under the repository's code license; read [NOTICE.md](../public/fonts/tsanger-jinkai02/NOTICE.md), [Source Serif OFL.txt](../public/fonts/source-serif-4/OFL.txt), and [JetBrains Mono OFL.txt](../public/fonts/jetbrains-mono-2.304/OFL.txt) before you add or change one.
 - Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart.
-- `<em>` stays upright and carries CJK emphasis dots. `<strong>` uses weight 500 in the heading color.
+- `<em>` sets Latin text in Source Serif italic while Chinese stays upright in JinKai (`e2e/page-shell.spec.mjs`). `<strong>` uses weight 500 in the heading color.
 
 ## Components
 

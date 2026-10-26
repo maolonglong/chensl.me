@@ -203,22 +203,33 @@ export async function siteFonts() {
       unicodeRange: unicodeRanges(points),
     })
   }
-  // The vendored Latin file is variable from 200 to 900; the site sets only 400 and 500, so the
-  // served copy keeps that slice of the axis and the Latin range, about 30 KB.
-  const serif = path.join(directory, 'latin-serif.woff2')
+  // The vendored Latin files are variable from 200 to 900; the site sets only 400 and 500, so the
+  // served copies keep that slice of the axis and the Latin range, about 30 KB each.
   const latinText = latinRanges
     .flatMap(([start, end]) => Array.from({ length: end - start + 1 }, (_, i) => start + i))
     .map((point) => String.fromCodePoint(point))
     .join('')
-  await writeFile(
-    serif,
-    await subsetFont(
-      await readFile(
-        path.join(root, 'src/assets/fonts/source-serif-4/SourceSerif4-Latin-wght.woff2'),
-      ),
-      latinText,
-      { targetFormat: 'woff2', variationAxes: { wght: { min: 400, max: 500 } } },
-    ),
+  const serifVariants = await Promise.all(
+    [
+      ['normal', 'latin-serif.woff2', 'SourceSerif4-Latin-wght.woff2'],
+      ['italic', 'latin-serif-italic.woff2', 'SourceSerif4-Italic-Latin-wght.woff2'],
+    ].map(async ([style, target, sourceFile]) => {
+      const file = path.join(directory, target)
+      await writeFile(
+        file,
+        await subsetFont(
+          await readFile(path.join(root, 'src/assets/fonts/source-serif-4', sourceFile)),
+          latinText,
+          { targetFormat: 'woff2', variationAxes: { wght: { min: 400, max: 500 } } },
+        ),
+      )
+      return {
+        src: [file],
+        weight: '400 500',
+        style,
+        unicodeRange: latinUnicodeRange,
+      }
+    }),
   )
   return [
     {
@@ -229,14 +240,7 @@ export async function siteFonts() {
       fallbacks: [],
       optimizedFallbacks: false,
       options: {
-        variants: [
-          {
-            src: [serif],
-            weight: '400 500',
-            style: 'normal',
-            unicodeRange: latinUnicodeRange,
-          },
-        ],
+        variants: serifVariants,
       },
     },
     {

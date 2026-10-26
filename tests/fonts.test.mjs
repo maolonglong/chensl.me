@@ -113,6 +113,16 @@ test('shared layouts declare code fonts without preloading them, and unpublished
     assert.doesNotMatch(html, /rel=["']preload["']/)
   }
   const index = await readFile(path.join(dist, 'index.html'), 'utf8')
+  const serifStyles = [...index.matchAll(/@font-face\s*\{([^}]+)\}/g)]
+    .map(([, face]) => face)
+    .filter((face) => face.includes('Source Serif 4'))
+    .map((face) => {
+      assert.match(face, /font-weight:\s*400 500/)
+      assert.match(face, /unicode-range:\s*U\+/)
+      return face.match(/font-style:\s*(\w+)/)?.[1]
+    })
+    .sort()
+  assert.deepEqual(serifStyles, ['italic', 'normal'])
   const faces = [...index.matchAll(/@font-face\s*\{([^}]+)\}/g)]
     .map(([, face]) => face)
     .filter((face) => face.includes('TsangerJinKai02'))

@@ -8,7 +8,7 @@ The site applied Kami's document defaults to every surface. One face, JinKai, se
 
 ## Decision
 
-- **Two type voices.** Reading text is serif: Source Serif 4 for the Latin range in `src/lib/latin-range.mjs`, then JinKai. Chrome is a system sans: navigation, dates, counts, labels, buttons. `src/lib/fonts.mjs` serves Source Serif as a 30 KB Latin subset with weights 400 to 500. Share cards use the same stack.
+- **Two type voices.** Reading text is serif: Source Serif 4 for the Latin range in `src/lib/latin-range.mjs`, then JinKai. Chrome is a system sans: navigation, dates, counts, labels, buttons. `src/lib/fonts.mjs` serves Source Serif as roman and italic 30 KB Latin subsets with weights 400 to 500. Share cards use the roman subset.
 - **A ladder and a scale.** `src/styles/global.css` defines `--size-*` and `--space-*` tokens. Components use only those steps.
 - **Shell and measure.** Header and footer span `--shell`; each page column is the 40rem reading measure, centred.
 - **Ruled sections.** A section opens with a hairline and a small sans label. Code and notes are parchment fills on an ivory page.
@@ -21,6 +21,8 @@ Article titles and descriptions now appear on the home page, so `src/lib/fonts.m
 ## Alternatives considered
 
 **Keep JinKai for Latin text.** It costs no download, but its Latin glyphs do not match the Chinese strokes, and a technical blog sets Latin in almost every sentence.
+
+**Mark `<em>` with CJK emphasis dots instead of serving an italic Latin subset.** `d497ad4` set `text-emphasis: filled dot` on `em` while JinKai was the only reading face. In Markdown articles, `*...*` wraps Latin journal titles and terms, and `text-emphasis` puts a dot under every Latin letter.
 
 **Switch Chinese body text to a Song face, such as Source Han Serif.** It reads more like print, but JinKai is the site's identity, and a second CJK family would double the font cost.
 

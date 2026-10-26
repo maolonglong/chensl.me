@@ -146,13 +146,6 @@ b {
     color: var(--heading-color);
 }
 
-/* JinKai has no italic and synthesis is off, so emphasis is the CJK dot below the glyph. */
-em {
-    font-style: normal;
-    text-emphasis: filled dot;
-    text-emphasis-position: under right;
-}
-
 a {
     color: var(--link-color);
     text-decoration-line: none;

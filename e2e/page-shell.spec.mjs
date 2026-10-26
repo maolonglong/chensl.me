@@ -200,24 +200,62 @@ test('runtime text outside the build-time subsets loads a JinKai slice', async (
   expect(result.slices.length).toBeLessThanOrEqual(2)
 })
 
-// Code added to a standalone page must work without article metadata or layout flags.
-test('standalone pages load code fonts on demand', async ({ page, open }) => {
+// Code and italic Latin added to a standalone page must work without article metadata or layout
+// flags, and <em> sets italic without CJK emphasis dots.
+test('standalone pages load code and italic Latin fonts on demand', async ({
+  page,
+  open,
+  capture,
+}) => {
   await open('/')
-  const loaded = await page.evaluate(async () => {
+  const state = await page.evaluate(async () => {
+    const italicFace = () =>
+      [...document.fonts].some(
+        (font) =>
+          font.family.includes('Source Serif') &&
+          font.style === 'italic' &&
+          font.status === 'loaded',
+      )
+    const italicBefore = italicFace()
     const code = document.createElement('code')
     code.textContent = 'const answer = 42'
-    document.querySelector('main').append(code)
+    const em = document.createElement('em')
+    em.textContent = 'Human Factors'
+    document.querySelector('main').append(code, em)
     await new Promise(requestAnimationFrame)
     await document.fonts.ready
-    const loaded =
-      getComputedStyle(code).fontFamily.includes('JetBrains') &&
-      [...document.fonts].some(
-        (font) => font.family.includes('JetBrains') && font.status === 'loaded',
-      )
+    const emStyle = getComputedStyle(em)
+    const result = {
+      italicBefore,
+      codeLoaded:
+        getComputedStyle(code).fontFamily.includes('JetBrains') &&
+        [...document.fonts].some(
+          (font) => font.family.includes('JetBrains') && font.status === 'loaded',
+        ),
+      italicLoaded: italicFace(),
+      fontStyle: emStyle.fontStyle,
+      emphasisStyle: emStyle.textEmphasisStyle,
+    }
     code.remove()
-    return loaded
+    em.remove()
+    return result
   })
-  expect(loaded, 'Standalone pages must load code fonts on demand').toBe(true)
+  expect(state).toEqual({
+    italicBefore: false,
+    codeLoaded: true,
+    italicLoaded: true,
+    fontStyle: 'italic',
+    emphasisStyle: 'none',
+  })
+  await open('/blog/terminal-auto-theme/')
+  for (const width of [375, 1280]) {
+    await page.setViewportSize({ width, height: 844 })
+    await page.locator('.footnotes').scrollIntoViewIfNeeded()
+    for (const mode of ['light', 'dark']) {
+      await page.emulateMedia({ colorScheme: mode })
+      await capture(page, `emphasis-${width}-${mode}`)
+    }
+  }
 })
 
 for (const width of [320, 390, 768, 1280]) {
