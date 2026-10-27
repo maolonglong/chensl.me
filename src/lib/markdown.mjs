@@ -164,7 +164,7 @@ function theme(name, dark) {
     name,
     type: dark ? 'dark' : 'light',
     colors: {
-      'editor.foreground': dark ? '#f5f5f7' : '#1d1d1f',
+      'editor.foreground': dark ? '#e0e0e5' : '#2c2c2e',
       'editor.background': dark ? '#161618' : '#f5f5f7',
     },
     tokenColors: [
@@ -178,7 +178,7 @@ function theme(name, dark) {
           'constant.language',
           'constant',
         ],
-        settings: { foreground: dark ? '#5cb0ff' : '#0055b3' },
+        settings: { foreground: dark ? '#feb0dc' : '#a2457e' },
       },
       {
         scope: [
@@ -188,15 +188,15 @@ function theme(name, dark) {
           'support.type',
           'support.class',
         ],
-        settings: { foreground: dark ? '#b4a7f5' : '#4b3c8c' },
+        settings: { foreground: dark ? '#c8c1fe' : '#6c5ab5' },
       },
       {
         scope: ['string', 'constant.other.symbol', 'constant.character.escape'],
-        settings: { foreground: dark ? '#5cc2cf' : '#0b616b' },
+        settings: { foreground: dark ? '#5edbbe' : '#027560' },
       },
       {
         scope: ['comment', 'punctuation.definition.comment'],
-        settings: { foreground: dark ? '#98989d' : '#636366' },
+        settings: { foreground: dark ? '#b9b9be' : '#6e6e73' },
       },
     ],
   }

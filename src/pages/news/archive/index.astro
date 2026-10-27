@@ -15,7 +15,7 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
       <p class="meta">
         <a href="/news/">AI News</a>
       </p>
-      <h1>归档</h1>
+      <h1 class="page-title">归档</h1>
     </header>
     {months.length ? (
       <ul class="months">
@@ -38,11 +38,6 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
   .page-header {
     margin-bottom: var(--space-6);
   }
-  .page-header h1 {
-    margin-bottom: 0;
-    font-size: var(--size-h3);
-    letter-spacing: 0;
-  }
   .page-header > .meta {
     margin: 0 0 var(--space-2);
   }
@@ -50,7 +45,7 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
     margin: 0;
     padding: var(--space-4) 0 0;
     list-style: none;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--rule-color);
   }
   .months li {
     display: flex;

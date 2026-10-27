@@ -14,7 +14,7 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
 <BaseLayout title="AI News" description={newsDescription}>
   <div class="measure">
     <header class="page-header">
-      <h1>AI News</h1>
+      <h1 class="page-title">AI News</h1>
       <!-- prettier-ignore -->
       <p class="meta">每天 AI 圈发生了什么。由 bot 收集整理，作者不逐条审阅。这里显示最新一期，往期在<a href="/news/archive/">归档</a>，也可以<a href="/news/index.xml" type="application/rss+xml">订阅 RSS</a>。</p>
     </header>
@@ -48,17 +48,12 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
   .page-header {
     margin-bottom: var(--space-5);
   }
-  .page-header h1 {
-    margin-bottom: var(--space-2);
-    font-size: var(--size-h3);
-    letter-spacing: 0;
-  }
   .page-header .meta {
     margin: 0;
   }
   .day {
     padding-top: var(--space-5);
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--rule-color);
   }
   .day + .day {
     margin-top: var(--space-7);

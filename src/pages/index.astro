@@ -11,7 +11,7 @@ const recent = posts.slice(0, recentCount)
 <BaseLayout>
   <div class="home measure">
     <section class="hero">
-      <h1>👋 Hi! 我是陈劭珑</h1>
+      <h1 class="page-title">👋 Hi! 我是陈劭珑</h1>
       <!-- prettier-ignore -->
       <p class="lede">目前在 🌏 工作的软件工程师，为了 <span class="nowrap">🏠 🚗 💰</span> 而写代码。代码在 <a href="https://github.com/maolonglong" rel="me">GitHub</a>，偶尔在 <a href="https://x.com/chensl_" rel="me">Twitter</a> 说话。</p>
     </section>
@@ -60,15 +60,9 @@ const recent = posts.slice(0, recentCount)
 </BaseLayout>
 
 <style>
-  .hero h1 {
-    margin-bottom: var(--space-3);
-    font-size: var(--size-h3);
-    line-height: 1.35;
-    letter-spacing: 0;
-  }
   .lede {
     margin: 0;
-    font-size: var(--size-list);
+    font-size: var(--size-body);
     line-height: 1.75;
     color: var(--text-color);
   }
@@ -96,7 +90,7 @@ const recent = posts.slice(0, recentCount)
     gap: var(--space-4);
     margin-bottom: var(--space-4);
     padding-top: var(--space-4);
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--rule-color);
   }
   .section-head .section-label {
     margin: 0;

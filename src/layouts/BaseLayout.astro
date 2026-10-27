@@ -247,7 +247,7 @@ const feed = isNews
     font-size: var(--size-list);
     font-weight: 600;
     line-height: 1.2;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
   .site-title a {
     color: var(--heading-color);
@@ -267,8 +267,8 @@ const feed = isNews
     color: var(--muted-color);
     white-space: nowrap;
   }
+  /* Color alone marks the current page: a weight change would shift the link's width. */
   .nav-link[aria-current] {
-    font-weight: 500;
     color: var(--heading-color);
   }
   @media (hover: hover) {
@@ -307,12 +307,12 @@ const feed = isNews
   @media (hover: hover) {
     .site-header :global(.icon-button:hover) {
       color: var(--heading-color);
-      background-color: var(--surface-color);
+      background-color: var(--fill-color);
     }
   }
   .site-header :global(.icon-button:active) {
     color: var(--heading-color);
-    background-color: var(--surface-color);
+    background-color: var(--fill-color);
     transform: scale(0.92);
   }
   .site-header :global(.icon-button:focus-visible) {
@@ -339,7 +339,7 @@ const feed = isNews
     justify-content: space-between;
     gap: var(--space-3) var(--space-6);
     padding-top: var(--space-4);
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--rule-color);
   }
   .footer-mark {
     margin: 0;

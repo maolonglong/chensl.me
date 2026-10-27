@@ -1,21 +1,21 @@
 main {
-    --color-prettylights-syntax-comment: light-dark(#636366, #98989d);
-    --color-prettylights-syntax-constant: light-dark(#0055b3, #5cb0ff);
-    --color-prettylights-syntax-entity: light-dark(#4b3c8c, #b4a7f5);
-    --color-prettylights-syntax-storage-modifier-import: light-dark(#2c2c2e, #d2d2d7);
-    --color-prettylights-syntax-entity-tag: light-dark(#0055b3, #5cb0ff);
-    --color-prettylights-syntax-keyword: light-dark(#0055b3, #5cb0ff);
-    --color-prettylights-syntax-string: light-dark(#0b616b, #5cc2cf);
+    --color-prettylights-syntax-comment: light-dark(#6e6e73, #b9b9be);
+    --color-prettylights-syntax-constant: light-dark(#a2457e, #feb0dc);
+    --color-prettylights-syntax-entity: light-dark(#6c5ab5, #c8c1fe);
+    --color-prettylights-syntax-storage-modifier-import: light-dark(#2c2c2e, #e0e0e5);
+    --color-prettylights-syntax-entity-tag: light-dark(#a2457e, #feb0dc);
+    --color-prettylights-syntax-keyword: light-dark(#a2457e, #feb0dc);
+    --color-prettylights-syntax-string: light-dark(#027560, #5edbbe);
     --color-prettylights-syntax-variable: light-dark(#1d1d1f, #f5f5f7);
     --color-prettylights-syntax-brackethighlighter-unmatched: light-dark(#b4232c, #f07478);
     --color-prettylights-syntax-invalid-illegal-text: #f5f5f7;
     --color-prettylights-syntax-invalid-illegal-bg: #8c1d27;
     --color-prettylights-syntax-carriage-return-text: #f5f5f7;
     --color-prettylights-syntax-carriage-return-bg: #b4232c;
-    --color-prettylights-syntax-string-regexp: light-dark(#0b616b, #5cc2cf);
-    --color-prettylights-syntax-markup-list: light-dark(#2c2c2e, #d2d2d7);
-    --color-prettylights-syntax-markup-heading: light-dark(#0066cc, #2997ff);
-    --color-prettylights-syntax-markup-italic: light-dark(#2c2c2e, #d2d2d7);
+    --color-prettylights-syntax-string-regexp: light-dark(#027560, #5edbbe);
+    --color-prettylights-syntax-markup-list: light-dark(#2c2c2e, #e0e0e5);
+    --color-prettylights-syntax-markup-heading: light-dark(#0066cc, #78b7ff);
+    --color-prettylights-syntax-markup-italic: light-dark(#2c2c2e, #e0e0e5);
     --color-prettylights-syntax-markup-bold: light-dark(#1d1d1f, #f5f5f7);
     --color-prettylights-syntax-markup-deleted-text: light-dark(#8c1d27, #f5c2c4);
     --color-prettylights-syntax-markup-deleted-bg: light-dark(#f7dfdf, #54252a);
@@ -25,50 +25,50 @@ main {
     --color-prettylights-syntax-markup-changed-bg: light-dark(#eee4c9, #4a3c20);
     --color-prettylights-syntax-markup-ignored-text: light-dark(#ffffff, #d2d2d7);
     --color-prettylights-syntax-markup-ignored-bg: light-dark(#0066cc, #1d3b5c);
-    --color-prettylights-syntax-meta-diff-range: light-dark(#0066cc, #2997ff);
-    --color-prettylights-syntax-brackethighlighter-angle: light-dark(#636366, #98989d);
-    --color-prettylights-syntax-sublimelinter-gutter-mark: light-dark(#636366, #86868b);
-    --color-prettylights-syntax-constant-other-reference-link: light-dark(#0066cc, #2997ff);
+    --color-prettylights-syntax-meta-diff-range: light-dark(#0066cc, #78b7ff);
+    --color-prettylights-syntax-brackethighlighter-angle: light-dark(#6e6e73, #b9b9be);
+    --color-prettylights-syntax-sublimelinter-gutter-mark: light-dark(#6e6e73, #b9b9be);
+    --color-prettylights-syntax-constant-other-reference-link: light-dark(#0066cc, #78b7ff);
     --color-btn-text: light-dark(#1d1d1f, #f5f5f7);
     --color-btn-bg: light-dark(#f5f5f7, #161618);
-    --color-btn-border: light-dark(#e2e2e7, #2c2c2e);
+    --color-btn-border: light-dark(#d2d2d7, #38383a);
     --color-btn-shadow: 0 0 transparent;
     --color-btn-inset-shadow: 0 0 transparent;
-    --color-btn-hover-bg: light-dark(#ebebef, #222225);
-    --color-btn-hover-border: light-dark(#d2d2d7, #636366);
+    --color-btn-hover-bg: light-dark(rgb(118 118 128 / 12%), rgb(118 118 128 / 24%));
+    --color-btn-hover-border: light-dark(#6e6e73, #b9b9be);
     --color-btn-active-bg: light-dark(#d4e8ff, #1d3b5c);
-    --color-btn-active-border: light-dark(#0066cc, #2997ff);
+    --color-btn-active-border: light-dark(#0066cc, #78b7ff);
     --color-btn-selected-bg: light-dark(#d4e8ff, #1d3b5c);
     --color-btn-primary-text: light-dark(#ffffff, #0a0a0c);
-    --color-btn-primary-bg: light-dark(#0066cc, #2997ff);
-    --color-btn-primary-border: light-dark(#0066cc, #2997ff);
-    --color-btn-primary-hover-bg: light-dark(#004499, #66b5ff);
-    --color-btn-primary-hover-border: light-dark(#004499, #66b5ff);
-    --color-btn-primary-selected-bg: light-dark(#0066cc, #2997ff);
+    --color-btn-primary-bg: light-dark(#0066cc, #78b7ff);
+    --color-btn-primary-border: light-dark(#0066cc, #78b7ff);
+    --color-btn-primary-hover-bg: light-dark(#0066cc, #78b7ff);
+    --color-btn-primary-hover-border: light-dark(#0066cc, #78b7ff);
+    --color-btn-primary-selected-bg: light-dark(#0066cc, #78b7ff);
     --color-btn-primary-selected-shadow: 0 0 transparent;
     --color-btn-primary-disabled-text: light-dark(#ffffff, #2c2c2e);
     --color-btn-primary-disabled-bg: light-dark(#86b2e0, #1d4d80);
     --color-btn-primary-disabled-border: light-dark(#86b2e0, #1d4d80);
     --color-action-list-item-default-hover-bg: light-dark(
-        rgb(29 29 31 / 6%),
-        rgb(245 245 247 / 8%)
+        rgb(118 118 128 / 12%),
+        rgb(118 118 128 / 24%)
     );
     --color-segmented-control-bg: light-dark(#f5f5f7, #161618);
     --color-segmented-control-button-bg: light-dark(#ffffff, #0a0a0c);
-    --color-segmented-control-button-selected-border: light-dark(#d2d2d7, #636366);
-    --color-fg-default: light-dark(#2c2c2e, #d2d2d7);
-    --color-fg-muted: light-dark(#636366, #98989d);
-    --color-fg-subtle: light-dark(#636366, #86868b);
+    --color-segmented-control-button-selected-border: light-dark(#6e6e73, #b9b9be);
+    --color-fg-default: light-dark(#2c2c2e, #e0e0e5);
+    --color-fg-muted: light-dark(#6e6e73, #b9b9be);
+    --color-fg-subtle: light-dark(#6e6e73, #b9b9be);
     --color-canvas-default: light-dark(#ffffff, #0a0a0c);
-    --color-canvas-overlay: light-dark(#ffffff, #161618);
+    --color-canvas-overlay: light-dark(#ffffff, #1c1c1e);
     --color-canvas-inset: light-dark(#f5f5f7, #161618);
     --color-canvas-subtle: light-dark(#f5f5f7, #161618);
-    --color-border-default: light-dark(#e2e2e7, #2c2c2e);
-    --color-border-muted: light-dark(#ebebef, #222225);
-    --color-neutral-muted: light-dark(rgb(29 29 31 / 6%), rgb(245 245 247 / 8%));
-    --color-accent-fg: light-dark(#0066cc, #2997ff);
-    --color-accent-emphasis: light-dark(#0066cc, #2997ff);
-    --color-accent-muted: light-dark(rgb(0 102 204 / 30%), rgb(41 151 255 / 35%));
+    --color-border-default: light-dark(#d2d2d7, #38383a);
+    --color-border-muted: light-dark(#e5e5ea, #262628);
+    --color-neutral-muted: light-dark(rgb(118 118 128 / 12%), rgb(118 118 128 / 24%));
+    --color-accent-fg: light-dark(#0066cc, #78b7ff);
+    --color-accent-emphasis: light-dark(#0066cc, #78b7ff);
+    --color-accent-muted: light-dark(rgb(0 102 204 / 30%), rgb(120 183 255 / 35%));
     --color-accent-subtle: light-dark(#d4e8ff, #1d3b5c);
     --color-success-fg: light-dark(#315b3a, #9bc7a0);
     --color-attention-fg: light-dark(#765410, #e3cd9b);
@@ -78,7 +78,7 @@ main {
     --color-danger-muted: light-dark(rgb(180 35 44 / 35%), rgb(240 116 120 / 35%));
     --color-danger-subtle: light-dark(#f7dfdf, #54252a);
     --color-primer-shadow-inset: 0 0 transparent;
-    --color-social-reaction-bg-hover: light-dark(#ebebef, #222225);
+    --color-social-reaction-bg-hover: light-dark(rgb(118 118 128 / 12%), rgb(118 118 128 / 24%));
     --color-social-reaction-bg-reacted-hover: light-dark(#d4e8ff, #1d3b5c);
 }
 

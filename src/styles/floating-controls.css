@@ -22,7 +22,7 @@
     height: 44px;
     padding: 0;
     color: var(--text-color);
-    background-color: light-dark(#ffffff, #161618);
+    background-color: var(--elevated-color);
     border: 1px solid var(--border-color);
     border-radius: 999px;
     box-shadow: var(--shadow-float);
@@ -61,7 +61,7 @@ body:has(.toc-button) .back-to-top {
 
 body:has(#article-toc:popover-open) .toc-button {
     color: var(--heading-color);
-    background-color: var(--surface-color);
+    background-color: var(--fill-color);
 }
 
 .back-to-top:focus-visible,
@@ -72,6 +72,7 @@ body:has(#article-toc:popover-open) .toc-button {
 .back-to-top:active,
 .toc-button:active {
     color: var(--heading-color);
+    background-color: var(--fill-color);
     transform: scale(0.94);
 }
 
@@ -79,7 +80,7 @@ body:has(#article-toc:popover-open) .toc-button {
     .back-to-top:hover,
     .toc-button:hover {
         color: var(--heading-color);
-        background-color: var(--surface-color);
+        background-color: var(--fill-color);
     }
 }
 
@@ -105,7 +106,7 @@ body:has(.toc-button) {
     font-size: var(--size-ui);
     line-height: 1.5;
     color: var(--text-color);
-    background-color: light-dark(#ffffff, #161618);
+    background-color: var(--elevated-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     box-shadow: var(--shadow-float);
@@ -143,10 +144,10 @@ body:has(.toc-button) {
     padding-left: 28px;
 }
 
+/* Current state is a fill plus the heading color, never a weight change that shifts wrapping. */
 .toc a[aria-current] {
-    font-weight: 500;
     color: var(--heading-color);
-    background-color: var(--surface-color);
+    background-color: var(--fill-color);
 }
 
 /* Without popover support nothing hides the closed list, so the button and list stay out. */
@@ -209,7 +210,6 @@ body:has(.toc-button) {
     }
 
     .toc a[aria-current] {
-        font-weight: 500;
         color: var(--heading-color);
         background: none;
     }

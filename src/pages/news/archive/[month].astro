@@ -19,7 +19,7 @@ if (!issues.length) Astro.response.status = 404
         <p class="meta">
           <a href="/news/">AI News</a> · <a href="/news/archive/">归档</a>
         </p>
-        <h1>{month}</h1>
+        <h1 class="page-title">{month}</h1>
       </header>
       <ol class="entries issues">
         {issues.map((issue) => (
@@ -41,7 +41,7 @@ if (!issues.length) Astro.response.status = 404
 ) : (
   <BaseLayout title="没有这个月" notFound>
     <div class="measure">
-      <h1>没有这个月</h1>
+      <h1 class="page-title">没有这个月</h1>
       <p>
         <a href="/news/archive/">返回归档</a>
       </p>
@@ -53,17 +53,12 @@ if (!issues.length) Astro.response.status = 404
   .page-header {
     margin-bottom: var(--space-6);
   }
-  .page-header h1 {
-    margin-bottom: 0;
-    font-size: var(--size-h3);
-    letter-spacing: 0;
-  }
   .page-header > .meta {
     margin: 0 0 var(--space-2);
   }
   .issues {
     padding-top: var(--space-4);
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--rule-color);
   }
   .issues > li {
     padding-block: var(--space-4);
@@ -75,6 +70,6 @@ if (!issues.length) Astro.response.status = 404
     padding-bottom: 0;
   }
   .issues > li + li {
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--rule-color);
   }
 </style>

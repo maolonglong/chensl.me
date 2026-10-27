@@ -6,7 +6,7 @@ Read this before you change layout, styles, fonts, or browser interactions. It s
 
 The site reads like an engineering research publication: optical-white canvas, cool neutral surfaces, crisp hairline rules, and native sans-serif typography inspired by Apple Machine Learning Research and the Apple Human Interface Guidelines. Three ideas carry it ([decision](../.agents/notes/implemented/feature/2026-10-26-apple-sans-editorial-redesign.md)):
 
-- **Hierarchy through weight, scale, and tracking.** System sans-serif (`--font-sans`) sets both reading text and UI chrome; monospace (`--font-mono`) sets code. Headings, section labels, `strong`, and table headers use weight 600, index titles (`.entry-title`) use weight 400 in `--heading-color` at `--size-list` with zero negative tracking so CJK strokes stay crisp, and metadata and secondary copy recede in weight 400 and `--muted-color`.
+- **Hierarchy through weight and scale.** System sans-serif (`--font-sans`) sets both reading text and UI chrome; monospace (`--font-mono`) sets code. Headings, section labels, `strong`, and table headers use weight 600, index titles (`.entry-title`) use weight 400 in `--heading-color` at body size, headings carry `letter-spacing: 0` so CJK strokes stay crisp, and metadata and secondary copy recede in weight 400 and `--muted-color`.
 - **Ruled sections.** A section opens with a hairline and a small sans label (`.section-label`). Hairline rules divide sections and year groups while compact index rows breathe via whitespace; fills and frames are for code, notes, repository cards, and floating controls only.
 - **Optical blue means a link or active control.** Lists of titles, navigation, and news items use the heading color and underline on hover, so `--link-color` stays rare enough to signal an interactive link or active state.
 
@@ -26,19 +26,24 @@ The site reads like an engineering research publication: optical-white canvas, c
 
 Apple Machine Learning Research and the Apple Human Interface Guidelines supply the optical-white canvas, cool neutral surfaces, optical blue link accent, and native sans-serif weight and tracking hierarchy. Neither is a rigid specification. These choices are deliberate:
 
-- **Page and surface fills.** `--background-color` is the optical-white or obsidian-carbon canvas; `--surface-color` is the cool neutral fill for code blocks, notes, and inline code.
+- **Page and surface fills.** `--background-color` is the optical-white or obsidian-carbon canvas; `--surface-color` is the cool neutral fill for code blocks, notes, and inline code; `--elevated-color` is the fill for floating plates and popovers, and `--fill-color` is the translucent gray for hover, pressed, and current states on any of them.
 - **Dark theme.** Dark text uses grayscale smoothing, because light strokes on a dark page look heavier.
-- **Headings, `strong`, and table headers** use weight 600 in the heading color, while compact list titles (`.entry-title`) use weight 400 in the heading color at `--size-list` (`0.9375rem`) with `letter-spacing: 0`.
+- **Headings, `strong`, and table headers** use weight 600 in the heading color, while compact list titles (`.entry-title`) use weight 400 in the heading color at `--size-body` with `letter-spacing: 0`.
 - **List markers** are muted, not optical blue, because `--link-color` means a link or active control.
-- **Code blocks** are a `--surface-color` fill with no border. Token colors in `src/lib/markdown.mjs` use a chroma-capped cool triad (sapphire for keywords and constants, cool indigo for functions and types, deep teal for strings) with matched perceptual contrast against `--surface-color`.
+- **Code blocks** are a `--surface-color` fill with no border. Token colors in `src/lib/markdown.mjs` are three hues at equal perceived weight (magenta for keywords and constants, violet for functions and types, teal for strings) against `--surface-color`, with the keyword hue kept off link blue (`tests/design.test.mjs`).
 
 ## Color
 
-Beyond the core tokens in `src/styles/global.css`, `src/lib/markdown.mjs` and the giscus themes (`src/styles/giscus*.css`) add chroma-capped syntax hues (sapphire, cool indigo, deep teal) and diff/state colors (red, green, amber) for addition, deletion, and warning meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast across every foreground-on-surface pair in `src/styles/global.css`, `src/styles/giscus*.css`, and `codeThemes`.
+Every foreground role clears two floors in each theme: a WCAG ratio floor and a perceptual APCA lightness-contrast floor (`tests/design.test.mjs`). WCAG ratios alone let the dark theme drift weak, so dark values are tuned by perceived contrast, using the method described at <https://earendil.com/posts/system-theme/>.
+
+Roles beyond the core foregrounds in `src/styles/global.css`: `--elevated-color` sits above the surface for floating plates and popovers so their hover fills stay visible on a dark page; `--fill-color` is the one translucent gray for hover, pressed, and current states on any surface; `--border-color` draws quiet dividers (table rows, search-result separators, card and plate frames) while `--rule-color` draws the stronger structural hairlines (section, year, footer, and news-group rules, the table header rule, the search input line, the upvote ring).
+
+`src/lib/markdown.mjs` and the giscus themes (`src/styles/giscus*.css`) add syntax hues (magenta, violet, teal at equal perceived weight) and diff/state colors (red, green, amber) for addition, deletion, and warning meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` checks the WCAG and APCA floors for `src/styles/global.css` and `codeThemes`, and AA contrast for `src/styles/giscus*.css`. Text underlines use `--rule-color`, because a `--border-color` underline disappears on a dark page.
 
 ## Typography
 
-- `--font-sans` sets reading text and UI chrome in the platform's native sans-serif, with `font-synthesis: none` so CJK glyphs never receive synthetic oblique shear.
+- `--font-sans` sets reading text and UI chrome in the platform's native sans-serif, with `font-synthesis: none` so CJK glyphs never receive synthetic oblique shear. `Segoe UI` precedes the CJK fallbacks so Windows Latin text does not fall into YaHei's Latin glyphs.
+- Page titles use `--size-h1` through the shared `.page-title` class; headings carry `letter-spacing: 0`, because negative tracking squeezes CJK glyphs and Safari already applies SF's optical tracking.
 - `--font-mono` sets code in self-hosted `JetBrains Mono` (`src/lib/fonts.mjs`) with `font-display: swap`, content-versioned URLs, and `preload={false}`. Repository cards use `--font-sans`, so a cold visit to a page without `<code>` downloads zero web fonts (`tests/fonts.test.mjs`, `e2e/code.spec.mjs`, `e2e/page-shell.spec.mjs`).
 - Build-time share cards (`src/lib/og-card.mjs`) subset `NotoSansSC-SemiBold.woff2` (`src/assets/fonts/noto-sans-sc/NotoSansSC-SemiBold.woff2`) per card so every card embeds only its own glyphs without shipping the font to the Worker (`tests/og.test.mjs`).
 - The fonts are not under the repository's code license; read [Noto Sans SC OFL.txt](../public/fonts/noto-sans-sc/OFL.txt) and [JetBrains Mono OFL.txt](../public/fonts/jetbrains-mono-2.304/OFL.txt) before you add or change one (`tests/design.test.mjs`).
@@ -57,5 +62,5 @@ Beyond the core tokens in `src/styles/global.css`, `src/lib/markdown.mjs` and th
 - **Repository cards** are a hairline frame with the code block corners and muted text, with no avatar or language color (`e2e/github-cards.spec.mjs`).
 - **Images.** Standalone article images that the column scales down open in a page-colored modal (`e2e/image-zoom.spec.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-26-article-image-zoom.md).
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.
-- **Links** in article text and the footer are underlined; external prose links and AI News items add a north-east arrow. Underline rules set `text-decoration-line` rather than the `text-decoration` shorthand, which resets thickness (`e2e/navigation.spec.mjs`).
+- **Links** in article text and the footer are underlined; link hover adds only the underline, never a second link color. External prose links and AI News items add a north-east arrow. Underline rules set `text-decoration-line` rather than the `text-decoration` shorthand, which resets thickness (`e2e/navigation.spec.mjs`).
 - **Share cards** are 1200×630 PNGs (`scripts/check-site.mjs`). They use the light theme's page, border, rule, and text tokens, with no gradient or shadow. `~chensl` sits at the top left, the title in the middle, and the date or section label with `chensl.me` at the bottom. A title longer than two lines ends with an ellipsis (`tests/og.test.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-17-build-time-share-cards.md).
