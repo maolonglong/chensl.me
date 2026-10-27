@@ -72,17 +72,13 @@ for (const width of [375, 1280]) {
           const row = item.querySelector('.entry-head').getBoundingClientRect()
           const link = item.querySelector('.entry-head a')
           const time = item.querySelector('.entry-head time')
-          const desc = item.querySelector('.post-description')
           const timeBox = time.getBoundingClientRect()
-          const descBox = desc.getBoundingClientRect()
           const rects = [...link.getClientRects()]
           return {
             afterContent: getComputedStyle(link, '::after').content,
             timeRightGap: Math.abs(row.right - timeBox.right),
-            descBelowRow: descBox.top - row.bottom,
-            descMatchesTime:
-              getComputedStyle(desc).fontSize === getComputedStyle(time).fontSize &&
-              getComputedStyle(desc).color === getComputedStyle(time).color,
+            sideBySide: link.getBoundingClientRect().right <= timeBox.left,
+            hasDescription: item.querySelector('.post-description') !== null,
             // iOS WebKit inflates each inline client rect by 3px vertically for tap highlights,
             // groups lines whose gap is under 0.5px, and drops interior lines if they do not overlap.
             tapHighlightContinuous: rects.every(
@@ -101,12 +97,44 @@ for (const width of [375, 1280]) {
       for (const row of layout.rows) {
         expect(row.afterContent).toBe('none')
         expect(row.timeRightGap).toBeLessThanOrEqual(1)
-        expect(row.descBelowRow).toBeGreaterThanOrEqual(2)
-        expect(row.descBelowRow).toBeLessThanOrEqual(8)
-        expect(row.descMatchesTime).toBe(true)
+        expect(row.sideBySide).toBe(true)
+        expect(row.hasDescription).toBe(false)
         expect(row.tapHighlightContinuous).toBe(true)
       }
       await capture(page, `archive-${width}-${mode}`)
+    })
+
+    test(`home layout at ${width}px in ${mode}`, async ({ page, open, capture }) => {
+      await page.setViewportSize({ width, height: 844 })
+      await page.emulateMedia({ colorScheme: mode })
+      await open('/')
+      const layout = await page.evaluate(() => {
+        const rows = [...document.querySelectorAll('.home .entries > li')].map((item) => {
+          const row = item.querySelector('.entry-head').getBoundingClientRect()
+          const link = item.querySelector('.entry-head a')
+          const time = item.querySelector('.entry-head time').getBoundingClientRect()
+          const rects = [...link.getClientRects()]
+          return {
+            timeRightGap: Math.abs(row.right - time.right),
+            sideBySide: link.getBoundingClientRect().right <= time.left,
+            tapHighlightContinuous: rects.every(
+              (rect, index) => index === 0 || rect.top - rects[index - 1].bottom <= 6,
+            ),
+          }
+        })
+        return {
+          rows,
+          hasSummary: document.querySelector('.home .entry-summary') !== null,
+        }
+      })
+      expect(layout.rows.length).toBeGreaterThan(0)
+      expect(layout.hasSummary).toBe(false)
+      for (const row of layout.rows) {
+        expect(row.timeRightGap).toBeLessThanOrEqual(1)
+        expect(row.sideBySide).toBe(true)
+        expect(row.tapHighlightContinuous).toBe(true)
+      }
+      await capture(page, `home-${width}-${mode}`)
     })
   }
 }

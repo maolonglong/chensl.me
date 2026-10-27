@@ -24,12 +24,14 @@ if (!issues.length) Astro.response.status = 404
       <ol class="entries issues">
         {issues.map((issue) => (
           <li>
-            <time class="meta" datetime={issue.date}>
-              {issue.date}
-            </time>
-            <h2 class="entry-title">
-              <a href={newsUrl(issue.date)}>{issue.title}</a>
-            </h2>
+            <div class="entry-head">
+              <h2 class="entry-title">
+                <a href={newsUrl(issue.date)}>{issue.title}</a>
+              </h2>
+              <time class="meta" datetime={issue.date}>
+                {issue.date.slice(5)}
+              </time>
+            </div>
             <NewsTags tags={issueTags(issue)} />
           </li>
         ))}
@@ -49,12 +51,30 @@ if (!issues.length) Astro.response.status = 404
 
 <style>
   .page-header {
-    margin-bottom: var(--space-7);
+    margin-bottom: var(--space-6);
+  }
+  .page-header h1 {
+    margin-bottom: 0;
+    font-size: var(--size-h3);
+    letter-spacing: 0;
   }
   .page-header > .meta {
-    margin: 0 0 var(--space-3);
+    margin: 0 0 var(--space-2);
   }
-  .issues time {
-    display: block;
+  .issues {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-color);
+  }
+  .issues > li {
+    padding-block: var(--space-4);
+  }
+  .issues > li:first-child {
+    padding-top: 0;
+  }
+  .issues > li:last-child {
+    padding-bottom: 0;
+  }
+  .issues > li + li {
+    border-top: 1px solid var(--border-color);
   }
 </style>

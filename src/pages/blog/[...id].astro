@@ -127,7 +127,7 @@ const { creation } = post.data
     padding: var(--space-3) var(--space-4);
     font-size: var(--size-ui);
     line-height: 1.6;
-    color: var(--text-color);
+    color: var(--muted-color);
     background-color: var(--surface-color);
     border-radius: var(--radius);
   }
@@ -140,7 +140,7 @@ const { creation } = post.data
     gap: var(--space-5);
     margin-top: var(--space-7);
     padding-top: var(--space-5);
-    border-top: 1px solid var(--rule-color);
+    border-top: 1px solid var(--border-color);
   }
   .post-nav-link {
     display: flex;
@@ -153,10 +153,12 @@ const { creation } = post.data
     text-align: right;
   }
   .post-nav-title {
-    font-weight: 600;
+    font-size: var(--size-list);
+    font-weight: 400;
     line-height: 1.45;
-    letter-spacing: -0.01em;
-    text-wrap: balance;
+    letter-spacing: 0;
+    text-wrap: pretty;
+    word-break: normal;
   }
   @media (hover: hover) {
     .post-nav-link:hover {
@@ -165,7 +167,7 @@ const { creation } = post.data
     }
     .post-nav-link:hover .post-nav-title {
       text-decoration-line: underline;
-      text-decoration-color: var(--rule-color);
+      text-decoration-color: var(--muted-color);
     }
   }
   .post-nav-link:active {

@@ -1,19 +1,18 @@
 /* ------------------------------------------------------------------ tokens */
 
 :root {
-    --shell: 72rem;
-    --measure: 40rem;
+    --measure: 42rem;
     --gutter: 24px;
     --radius: 8px;
 
     /* One ladder for every size; a component picks a step, never a value between steps. */
     --size-caption: 0.8125rem;
     --size-ui: 0.875rem;
+    --size-list: 0.9375rem;
     --size-body: 1.0625rem;
     --size-h3: 1.25rem;
     --size-h2: 1.5rem;
     --size-h1: clamp(1.875rem, 1.45rem + 1.8vw, 2.375rem);
-    --size-display: clamp(2.25rem, 1.6rem + 2.8vw, 3.25rem);
 
     --space-1: 4px;
     --space-2: 8px;
@@ -39,8 +38,8 @@
     --muted-color: light-dark(#636366, #98989d);
     --link-color: light-dark(#0066cc, #2997ff);
     --link-hover-color: light-dark(#004499, #66b5ff);
-    --border-color: light-dark(#e5e5ea, #2c2c2e);
-    --rule-color: light-dark(#d2d2d7, #38383a);
+    --border-color: light-dark(#ebebef, #222225);
+    --rule-color: light-dark(#e2e2e7, #2c2c2e);
     --selection-color: light-dark(#d4e8ff, #1d3b5c);
     --mark-background-color: light-dark(#e8f2ff, #1e3246);
 
@@ -63,6 +62,7 @@ html {
     font-family: var(--font-sans);
     font-size: 100%;
     font-synthesis: none;
+    text-spacing-trim: trim-start;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
@@ -243,7 +243,7 @@ time {
     }
 }
 
-/* Every page column: the reading measure, centred under the shell-wide header. */
+/* Every page column: the reading measure shared with the header and footer. */
 .measure {
     width: 100%;
     max-width: var(--measure);
@@ -276,14 +276,14 @@ time {
 
 /* A section opens with a hairline and a small label: the page's one structural signature. */
 .section-label {
-    margin: 0 0 var(--space-5);
+    margin: 0 0 var(--space-4);
     padding-top: var(--space-3);
     font-size: var(--size-caption);
     font-weight: 600;
     line-height: 1.4;
     letter-spacing: 0.04em;
-    color: var(--heading-color);
-    border-top: 1px solid var(--rule-color);
+    color: var(--muted-color);
+    border-top: 1px solid var(--border-color);
 }
 
 .section-label a {
@@ -304,27 +304,37 @@ time {
     }
 }
 
-/* An entry list: a title link in the heading color, then its date and summary. */
+/* An entry list: compact index rows with a title link in the heading color and a tabular date. */
 .entries {
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.entries > li + li {
-    margin-top: var(--space-5);
+.entries > li {
+    padding-block: var(--space-2);
+}
+
+.entries > li:first-child {
+    padding-top: 0;
+}
+
+.entries > li:last-child {
+    padding-bottom: 0;
 }
 
 .entry-title {
     min-width: 0;
     margin: 0;
-    font-size: var(--size-body);
-    font-weight: 600;
+    font-size: var(--size-list);
+    font-weight: 400;
     /* Keep multi-line inline client rects within 6px vertically so iOS WebKit's 3px-inflated tap
        highlight rects overlap and merge instead of dropping interior lines in the (0, 0.5px) gap. */
     line-height: 1.45;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     color: var(--heading-color);
+    text-wrap: pretty;
+    word-break: normal;
 }
 
 .entry-title a {
@@ -334,7 +344,7 @@ time {
 @media (hover: hover) {
     .entry-title a:hover {
         color: inherit;
-        text-decoration-color: var(--rule-color);
+        text-decoration-color: var(--muted-color);
     }
 }
 
@@ -369,6 +379,10 @@ time {
 
 .prose > :last-child {
     margin-bottom: 0;
+}
+
+.prose :is(h2, h3, h4, h5, h6) {
+    word-break: normal;
 }
 
 .prose p {
@@ -478,11 +492,11 @@ blockquote cite {
 /* ------------------------------------------------------------------- code */
 
 :not(pre) > code {
-    padding: 0.12em 0.35em;
-    font-size: 0.84em;
+    padding: 0.15em 0.38em;
+    font-size: 0.875em;
     color: var(--heading-color);
     background-color: var(--surface-color);
-    border-radius: 4px;
+    border-radius: 5px;
 }
 
 pre {
@@ -687,7 +701,7 @@ details > summary {
     font-size: var(--size-ui);
     line-height: 1.7;
     color: var(--muted-color);
-    border-top: 1px solid var(--rule-color);
+    border-top: 1px solid var(--border-color);
 }
 
 .footnotes ol {

@@ -175,8 +175,8 @@ const feed = isNews
         <span class="nav-tools">
           <a class="icon-button" href="/search/" aria-label="搜索" aria-current={searchCurrent}>
             <svg
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -199,20 +199,14 @@ const feed = isNews
     </main>
     <footer class="site-footer">
       <div class="footer-row">
-        <p class="footer-mark">
-          <a href="/">{siteTitle}</a>
-          <span>{siteDescription}</span>
-        </p>
+        <p class="footer-mark meta">© 2026 Shaolong Chen</p>
+        <!-- prettier-ignore -->
         <p class="footer-links meta">
-          <a href="/blog/">博客</a>
-          <a href="/news/">AI News</a>
           <a href={feed.href} type="application/rss+xml" set:text={feed.label} />
-          <a href="https://github.com/maolonglong">GitHub</a>
+          <a href="https://github.com/maolonglong" rel="me">GitHub</a>
+          <a href="https://x.com/chensl_" rel="me">Twitter</a>
         </p>
       </div>
-      <p class="footer-credit meta">
-        基于 <a href="https://astro.build">Astro</a> 构建
-      </p>
     </footer>
   </body>
 </html>
@@ -223,7 +217,7 @@ const feed = isNews
   .site-footer {
     box-sizing: border-box;
     width: 100%;
-    max-width: calc(var(--shell) + 2 * var(--gutter));
+    max-width: calc(var(--measure) + 2 * var(--gutter));
     margin-inline: auto;
     padding-inline: var(--gutter);
   }
@@ -246,11 +240,11 @@ const feed = isNews
     justify-content: space-between;
     gap: var(--space-3) var(--space-5);
     padding-block: var(--space-5);
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-7);
   }
   .site-title {
     margin: 0;
-    font-size: var(--size-h3);
+    font-size: var(--size-list);
     font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.01em;
@@ -270,20 +264,17 @@ const feed = isNews
   /* The vertical padding makes a 40 px target without changing the visible spacing. */
   .nav-link {
     padding-block: 10px;
-    color: var(--heading-color);
+    color: var(--muted-color);
     white-space: nowrap;
   }
   .nav-link[aria-current] {
-    text-decoration-line: underline;
-    text-decoration-color: currentColor;
+    font-weight: 500;
+    color: var(--heading-color);
   }
   @media (hover: hover) {
     .nav-link:hover {
       color: var(--heading-color);
-      text-decoration-color: var(--rule-color);
-    }
-    .nav-link[aria-current]:hover {
-      text-decoration-color: currentColor;
+      text-decoration-line: none;
     }
   }
   .nav-tools {
@@ -301,7 +292,7 @@ const feed = isNews
     width: 40px;
     height: 40px;
     padding: 0;
-    color: var(--heading-color);
+    color: var(--muted-color);
     background: transparent;
     border: 0;
     border-radius: 999px;
@@ -310,12 +301,17 @@ const feed = isNews
       background-color 150ms ease-out,
       transform 120ms var(--ease-out);
   }
+  .site-header :global(.icon-button[aria-current]) {
+    color: var(--heading-color);
+  }
   @media (hover: hover) {
     .site-header :global(.icon-button:hover) {
+      color: var(--heading-color);
       background-color: var(--surface-color);
     }
   }
   .site-header :global(.icon-button:active) {
+    color: var(--heading-color);
     background-color: var(--surface-color);
     transform: scale(0.92);
   }
@@ -333,8 +329,8 @@ const feed = isNews
     background: currentColor;
   }
   .site-footer {
-    margin-top: var(--space-9);
-    padding-block: var(--space-6) var(--space-7);
+    margin-top: var(--space-8);
+    padding-block: var(--space-5) var(--space-6);
   }
   .footer-row {
     display: flex;
@@ -342,22 +338,11 @@ const feed = isNews
     align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3) var(--space-6);
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--rule-color);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-color);
   }
   .footer-mark {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--space-1) var(--space-3);
     margin: 0;
-    font-size: var(--size-ui);
-    color: var(--muted-color);
-  }
-  .footer-mark a {
-    font-size: var(--size-body);
-    font-weight: 600;
-    color: var(--heading-color);
   }
   .footer-links {
     display: flex;
@@ -365,20 +350,16 @@ const feed = isNews
     gap: var(--space-1) var(--space-4);
     margin: 0;
   }
-  .footer-credit {
-    margin: var(--space-4) 0 0;
-    font-size: var(--size-caption);
-  }
   @media (max-width: 600px) {
     .site-header {
       padding-block: var(--space-4);
-      margin-bottom: var(--space-7);
+      margin-bottom: var(--space-6);
     }
     .site-header nav {
       gap: var(--space-4);
     }
     .site-footer {
-      margin-top: var(--space-8);
+      margin-top: var(--space-7);
     }
   }
 </style>

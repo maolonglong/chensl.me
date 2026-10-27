@@ -6,13 +6,13 @@ Read this before you change layout, styles, fonts, or browser interactions. It s
 
 The site reads like an engineering research publication: optical-white canvas, cool neutral surfaces, crisp hairline rules, and native sans-serif typography inspired by Apple Machine Learning Research and the Apple Human Interface Guidelines. Three ideas carry it ([decision](../.agents/notes/implemented/feature/2026-10-26-apple-sans-editorial-redesign.md)):
 
-- **Hierarchy through weight, scale, and tracking.** System sans-serif (`--font-sans`) sets both reading text and UI chrome; monospace (`--font-mono`) sets code. Headings, section labels, entry titles, `strong`, and table headers use weight 600 and progressive optical display tracking, while metadata and secondary copy recede in weight 400 and `--muted-color`.
-- **Ruled sections.** A section opens with a hairline and a small sans label (`.section-label`). Rules divide sections and rows; fills and frames are for code, notes, repository cards, and floating controls only.
+- **Hierarchy through weight, scale, and tracking.** System sans-serif (`--font-sans`) sets both reading text and UI chrome; monospace (`--font-mono`) sets code. Headings, section labels, `strong`, and table headers use weight 600, index titles (`.entry-title`) use weight 400 in `--heading-color` at `--size-list` with zero negative tracking so CJK strokes stay crisp, and metadata and secondary copy recede in weight 400 and `--muted-color`.
+- **Ruled sections.** A section opens with a hairline and a small sans label (`.section-label`). Hairline rules divide sections and year groups while compact index rows breathe via whitespace; fills and frames are for code, notes, repository cards, and floating controls only.
 - **Optical blue means a link or active control.** Lists of titles, navigation, and news items use the heading color and underline on hover, so `--link-color` stays rare enough to signal an interactive link or active state.
 
 ## Layout
 
-- The header and the footer span the shell (`--shell`). Every page column is the reading measure (`.measure`), centred under it (`e2e/page-shell.spec.mjs`).
+- The header, the reading column (`.measure`), and the footer share one measure (`--measure`) and one left and right edge (`e2e/page-shell.spec.mjs`).
 - Short pages keep the footer at the bottom of the view (`e2e/page-shell.spec.mjs`).
 - Where the view leaves a margin beside the column, an article's contents sit there as a plain list; elsewhere a corner button opens them as a popover (`e2e/contents.spec.mjs`). The list does not depend on hover.
 
@@ -28,7 +28,7 @@ Apple Machine Learning Research and the Apple Human Interface Guidelines supply 
 
 - **Page and surface fills.** `--background-color` is the optical-white or obsidian-carbon canvas; `--surface-color` is the cool neutral fill for code blocks, notes, and inline code.
 - **Dark theme.** Dark text uses grayscale smoothing, because light strokes on a dark page look heavier.
-- **Headings, entry titles, `strong`, and table headers** use weight 600 in the heading color, with tighter tracking at display sizes and slight positive tracking on small section labels.
+- **Headings, `strong`, and table headers** use weight 600 in the heading color, while compact list titles (`.entry-title`) use weight 400 in the heading color at `--size-list` (`0.9375rem`) with `letter-spacing: 0`.
 - **List markers** are muted, not optical blue, because `--link-color` means a link or active control.
 - **Code blocks** are a `--surface-color` fill with no border. Token colors in `src/lib/markdown.mjs` follow the same cool neutral and optical-blue palette.
 

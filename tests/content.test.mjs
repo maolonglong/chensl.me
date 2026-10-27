@@ -172,11 +172,7 @@ test('drafts and future posts are filtered, dates sort by instants, and giscus r
   const archive = await readFile(path.join(dist, 'blog/index.html'), 'utf8')
   assert.match(home, /👋 Hi! 我是陈劭珑/)
   assert.doesNotMatch(archive, /Secret draft|Future post/)
-  assert.match(
-    archive,
-    /<p class="[^"]*\bpost-description\b[^"]*"[^>]*>A concise description\.<\/p>/,
-  )
-  assert.equal([...archive.matchAll(/<p class="[^"]*\bpost-description\b/g)].length, 1)
+  assert.doesNotMatch(archive, /\bpost-description\b/)
   assert.ok(archive.indexOf('Escaped &lt;title&gt;') < archive.indexOf('Below'))
   assert.ok(archive.indexOf('Below') < archive.indexOf('Older'))
   await assert.rejects(readFile(path.join(dist, 'blog/draft/index.html'), 'utf8'))
