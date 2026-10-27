@@ -135,6 +135,36 @@ test('site styles use the size ladder and do not transition theme colors', () =>
   }
 })
 
+test('theme-color metas and the web manifest match the page background tokens', () => {
+  const css = readFileSync(path.join(root, 'src/styles/global.css'), 'utf8')
+  const [, bgLight, bgDark] = css.match(
+    /--background-color:\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\)/,
+  )
+  const theme = readFileSync(path.join(root, 'src/components/Theme.astro'), 'utf8')
+  for (const [mode, hex] of [
+    ['light', bgLight],
+    ['dark', bgDark],
+  ]) {
+    const meta = theme.match(
+      new RegExp(
+        `<meta[^>]*name="theme-color"[^>]*content="${hex}"[^>]*media="\\(prefers-color-scheme: ${mode}\\)"`,
+      ),
+    )
+    assert.ok(meta, `Theme.astro ${mode} theme-color must equal --background-color ${hex}`)
+  }
+  const manifest = JSON.parse(readFileSync(path.join(root, 'public/site.webmanifest'), 'utf8'))
+  assert.equal(
+    manifest.theme_color,
+    bgLight,
+    'manifest theme_color must equal the light background',
+  )
+  assert.equal(
+    manifest.background_color,
+    bgLight,
+    'manifest background_color must equal the light background',
+  )
+})
+
 test('Noto Sans SC license file preserves Adobe copyright and Reserved Font Name', () => {
   const ofl = readFileSync(path.join(root, 'public/fonts/noto-sans-sc/OFL.txt'), 'utf8')
   assert.match(ofl, /Adobe/)

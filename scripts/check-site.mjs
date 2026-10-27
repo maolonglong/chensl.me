@@ -114,6 +114,26 @@ for (const required of [
   }
 }
 
+// Every web app manifest icon must resolve to a built file; a stale name silently 404s.
+if (outputFiles.has('site.webmanifest')) {
+  const manifest = JSON.parse(await readFile(path.join(outputDir, 'site.webmanifest'), 'utf8'))
+  for (const icon of manifest.icons ?? []) {
+    const src = (icon.src ?? '').split(/[?#]/)[0]
+    let relative
+    try {
+      relative = decodeURIComponent(new URL(src, 'https://site.invalid/').pathname).replace(
+        /^\/+/,
+        '',
+      )
+    } catch {
+      relative = ''
+    }
+    if (!relative || !outputFiles.has(relative)) {
+      errors.push(`site.webmanifest icon ${JSON.stringify(icon.src)} is not a built file`)
+    }
+  }
+}
+
 const htmlFiles = files.filter((file) => file.endsWith('.html'))
 const treeByFile = new Map(
   await Promise.all(htmlFiles.map(async (file) => [file, parseHtml(await readFile(file, 'utf8'))])),

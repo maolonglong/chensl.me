@@ -30,6 +30,12 @@ async function checkerFixture() {
     '<rss version="2.0"><channel><title>x</title><link>https://chensl.me/</link><description>x</description></channel></rss>'
   await write(fixture, 'dist/index.xml', feed)
   await write(fixture, 'dist/llms.txt', '# ~chensl\n\n> Summary\n\n## Articles\n')
+  await write(fixture, 'dist/icon-192.png', await png(192, 192))
+  await write(
+    fixture,
+    'dist/site.webmanifest',
+    JSON.stringify({ icons: [{ src: '/icon-192.png', sizes: '192x192' }] }),
+  )
   const headers = await readFile(path.join(root, 'public/_headers'), 'utf8')
   await write(
     fixture,
@@ -116,6 +122,16 @@ test('site checker rejects broken links, images, share cards, feeds, Pagefind co
   await write(fixture, 'server/chunks/data-layer-content.mjs', 'export {}')
   await write(fixture, 'server/chunks/og.mjs', "import { Renderer } from '@takumi-rs/core'")
   await write(fixture, 'src/data/github-repos.json', JSON.stringify({ 'owner/unused': {} }))
+  await write(
+    fixture,
+    'dist/site.webmanifest',
+    JSON.stringify({
+      icons: [
+        { src: '/icon-192.png', sizes: '192x192' },
+        { src: '/icon-512.png', sizes: '512x512' },
+      ],
+    }),
+  )
 
   const result = run(process.execPath, [checker], fixture)
   assert.equal(result.status, 1, result.stdout)
@@ -140,6 +156,7 @@ test('site checker rejects broken links, images, share cards, feeds, Pagefind co
     /Worker bundle includes the article content store/,
     /Worker bundle includes the share-card renderer/,
     /owner\/unused is in src\/data\/github-repos\.json but no article shows it as a card/,
+    /site\.webmanifest icon "\/icon-512\.png" is not a built file/,
   ]) {
     assert.match(result.stderr, pattern)
   }
