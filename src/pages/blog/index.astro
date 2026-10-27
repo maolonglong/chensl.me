@@ -5,11 +5,10 @@ const posts = await publishedPosts()
 const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(0, 4))
 ---
 
-<BaseLayout title="博客" description="陈劭珑的技术文章：系统性能、Go/Zig/Rust 与 Agent 工程实践">
+<BaseLayout title="博客" description="陈劭珑的技术博客文章归档">
   <div class="measure">
     <header class="page-header">
       <h1>博客</h1>
-      <p class="meta">系统性能、Go/Zig/Rust 与 Agent 工程实践，共 {posts.length} 篇。</p>
     </header>
     {[...years].map(([year, entries]) => (
       <section class="year-group" aria-labelledby={`year-${year}`}>
@@ -27,9 +26,6 @@ const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(
                   {displayDate(post.data.pubDate).slice(5)}
                 </time>
               </div>
-              {post.data.description && (
-                <p class="entry-summary post-description">{post.data.description}</p>
-              )}
             </li>
           ))}
         </ul>
@@ -41,37 +37,41 @@ const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(
 
 <style>
   .page-header {
-    margin-bottom: var(--space-7);
+    margin-bottom: var(--space-6);
   }
-  .page-header .meta {
-    margin: 0;
+  .page-header h1 {
+    margin-bottom: 0;
+    font-size: var(--size-h3);
+    letter-spacing: 0;
   }
   /* The year hangs in its own column so the titles share one left edge. */
   .year-group {
     display: grid;
-    grid-template-columns: 4rem minmax(0, 1fr);
-    column-gap: var(--space-5);
+    grid-template-columns: 3rem minmax(0, 1fr);
+    column-gap: var(--space-4);
     align-items: baseline;
     padding-top: var(--space-5);
-    border-top: 1px solid var(--rule-color);
+    border-top: 1px solid var(--border-color);
   }
   .year-group + .year-group {
-    margin-top: var(--space-7);
+    margin-top: var(--space-5);
   }
   .posts-year {
     margin: 0;
     font-size: var(--size-ui);
-    font-weight: 600;
+    font-weight: 400;
     color: var(--muted-color);
-    letter-spacing: 0.04em;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
   }
   @media (max-width: 600px) {
     .year-group {
       grid-template-columns: minmax(0, 1fr);
-      row-gap: var(--space-4);
+      row-gap: var(--space-3);
+      padding-top: var(--space-4);
     }
     .year-group + .year-group {
-      margin-top: var(--space-6);
+      margin-top: var(--space-4);
     }
   }
 </style>

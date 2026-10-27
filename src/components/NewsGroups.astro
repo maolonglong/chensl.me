@@ -50,10 +50,10 @@ const Item = `h${level + 1}` as 'h3' | 'h4'
   }
   .item-title {
     margin: 0;
-    font-size: var(--size-body);
-    font-weight: 600;
+    font-size: var(--size-list);
+    font-weight: 500;
     line-height: 1.45;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     color: var(--heading-color);
   }
   .item-title a {
@@ -71,7 +71,7 @@ const Item = `h${level + 1}` as 'h3' | 'h4'
   @media (hover: hover) {
     .item-title a:hover {
       color: inherit;
-      text-decoration-color: var(--rule-color);
+      text-decoration-color: var(--muted-color);
     }
     .external:hover::after {
       transform: translate(1px, -1px);
@@ -79,6 +79,8 @@ const Item = `h${level + 1}` as 'h3' | 'h4'
   }
   .item-summary {
     margin: var(--space-1) 0 0;
+    font-size: var(--size-list);
+    line-height: 1.65;
     color: var(--text-color);
   }
 </style>

@@ -46,13 +46,22 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
 
 <style>
   .page-header {
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-5);
+  }
+  .page-header h1 {
+    margin-bottom: var(--space-2);
+    font-size: var(--size-h3);
+    letter-spacing: 0;
   }
   .page-header .meta {
     margin: 0;
   }
+  .day {
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border-color);
+  }
   .day + .day {
-    margin-top: var(--space-8);
+    margin-top: var(--space-7);
   }
   .day-date {
     margin: 0 0 var(--space-2);
@@ -69,14 +78,14 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
   @media (hover: hover) {
     .day-title a:hover {
       color: inherit;
-      text-decoration-color: var(--rule-color);
+      text-decoration-color: var(--muted-color);
     }
   }
   .day-summary {
     margin: var(--space-3) 0 0;
-    font-size: var(--size-h3);
-    line-height: 1.65;
-    color: var(--text-color);
+    font-size: var(--size-body);
+    line-height: 1.75;
+    color: var(--muted-color);
   }
   .older {
     margin: var(--space-8) 0 0;

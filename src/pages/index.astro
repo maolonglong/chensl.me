@@ -13,14 +13,21 @@ const recent = posts.slice(0, recentCount)
     <section class="hero">
       <h1>👋 Hi! 我是陈劭珑</h1>
       <!-- prettier-ignore -->
-      <p class="lede">目前在 🌏 工作的软件工程师，为了 🏠 🚗 💰 而写代码。代码在 <a href="https://github.com/maolonglong" rel="me">GitHub</a>，偶尔在 <a href="https://x.com/chensl_" rel="me">Twitter</a> 说话。</p>
+      <p class="lede">目前在 🌏 工作的软件工程师，为了 <span class="nowrap">🏠 🚗 💰</span> 而写代码。代码在 <a href="https://github.com/maolonglong" rel="me">GitHub</a>，偶尔在 <a href="https://x.com/chensl_" rel="me">Twitter</a> 说话。</p>
     </section>
 
     {recent.length > 0 && (
       <section class="home-section" aria-labelledby="home-posts">
-        <h2 class="section-label" id="home-posts">
-          最近的文章
-        </h2>
+        <div class="section-head">
+          <h2 class="section-label" id="home-posts">
+            最近的文章
+          </h2>
+          {posts.length > recentCount && (
+            <a class="more arrow-link meta" href="/blog/">
+              全部文章
+            </a>
+          )}
+        </div>
         <ol class="entries">
           {recent.map((post) => (
             <li>
@@ -32,93 +39,83 @@ const recent = posts.slice(0, recentCount)
                   {displayDate(post.data.pubDate)}
                 </time>
               </div>
-              {post.data.description && <p class="entry-summary">{post.data.description}</p>}
             </li>
           ))}
         </ol>
-        {posts.length > recentCount && (
-          <p class="more meta">
-            <a class="arrow-link" href="/blog/">
-              全部 {posts.length} 篇文章
-            </a>
-          </p>
-        )}
       </section>
     )}
 
     <section class="home-section" aria-labelledby="home-news">
-      <h2 class="section-label" id="home-news">
-        AI News
-      </h2>
-      <p class="news-teaser">{newsDescription}，由 bot 收集整理，作者不逐条审阅。</p>
-      <p class="more meta">
-        <a class="arrow-link" href="/news/">
+      <div class="section-head">
+        <h2 class="section-label" id="home-news">
+          AI News
+        </h2>
+        <a class="more arrow-link meta" href="/news/">
           读最新一期
         </a>
-      </p>
-    </section>
-
-    <section class="home-section prose" aria-labelledby="home-about">
-      <h2 class="section-label" id="home-about">
-        关于
-      </h2>
-      <p>
-        <strong>我：</strong> 在你眼里，我是一个什么样的人？
-      </p>
-      <blockquote>
-        <p>
-          <strong>ChatGPT：</strong>
-        </p>
-        <p>
-          你喜欢简洁、稳定、可控的东西，但又总忍不住去试试最新的工具。你会认真研究一个工具为什么这样设计，也会在配置文件里纠结一行参数到底该不该留。
-        </p>
-        <p>
-          你有阿婷，有小兜，有很多零碎但珍贵的生活。你会关心家里的网络为什么变慢，也会关心猫为什么拉肚子；会研究
-          Agent 怎么运行，也会认真挑选一份纪念日礼物。
-        </p>
-      </blockquote>
+      </div>
+      <p class="news-teaser">{newsDescription}，由 bot 收集整理，作者不逐条审阅。</p>
     </section>
   </div>
 </BaseLayout>
 
 <style>
   .hero h1 {
-    margin-bottom: var(--space-5);
-    font-size: var(--size-display);
-    line-height: 1.15;
-    letter-spacing: -0.025em;
+    margin-bottom: var(--space-3);
+    font-size: var(--size-h3);
+    line-height: 1.35;
+    letter-spacing: 0;
   }
   .lede {
     margin: 0;
-    font-size: var(--size-h3);
-    line-height: 1.7;
-    letter-spacing: 0;
+    font-size: var(--size-list);
+    line-height: 1.75;
     color: var(--text-color);
   }
+  .nowrap {
+    white-space: nowrap;
+  }
   .lede a {
+    color: var(--heading-color);
     text-decoration-line: underline;
+    text-decoration-color: var(--rule-color);
+  }
+  @media (hover: hover) {
+    .lede a:hover {
+      color: var(--heading-color);
+      text-decoration-color: currentColor;
+    }
   }
   .home-section {
-    margin-top: var(--space-9);
+    margin-top: var(--space-7);
   }
-  .home-section.prose .section-label {
-    margin-top: 0;
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-color);
+  }
+  .section-head .section-label {
+    margin: 0;
+    padding: 0;
+    border-top: 0;
+  }
+  .more {
+    font-size: var(--size-caption);
+    text-decoration-line: none;
   }
   .news-teaser {
     margin: 0;
-  }
-  .more {
-    margin: var(--space-5) 0 0;
+    font-size: var(--size-ui);
+    line-height: 1.65;
+    color: var(--muted-color);
   }
   @media (max-width: 600px) {
     .home-section {
-      margin-top: var(--space-8);
-    }
-    /* A full date beside a title leaves the title too little room on a phone. */
-    .entry-head {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0;
+      margin-top: var(--space-6);
     }
   }
 </style>

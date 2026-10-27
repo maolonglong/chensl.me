@@ -22,8 +22,8 @@
     height: 44px;
     padding: 0;
     color: var(--text-color);
-    background-color: var(--background-color);
-    border: 1px solid var(--rule-color);
+    background-color: light-dark(#ffffff, #161618);
+    border: 1px solid var(--border-color);
     border-radius: 999px;
     box-shadow: var(--shadow-float);
     touch-action: manipulation;
@@ -105,9 +105,9 @@ body:has(.toc-button) {
     font-size: var(--size-ui);
     line-height: 1.5;
     color: var(--text-color);
-    background-color: var(--background-color);
-    border: 1px solid var(--rule-color);
-    border-radius: 10px;
+    background-color: light-dark(#ffffff, #161618);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
     box-shadow: var(--shadow-float);
 }
 
@@ -159,10 +159,10 @@ body:has(.toc-button) {
 
 /*
   A wide view leaves a margin beside the column: the list sits there as plain
-  text, ruled on its left edge, the current entry marked in ink. Author styles
-  outrank the popover's default `display: none`, so it needs no opening. The
-  list is sticky inside a rail that spans the article, not fixed to the view,
-  so a rubber-band bounce at the page edge moves it with the header and text.
+  text, the current entry marked in ink. Author styles outrank the popover's
+  default `display: none`, so it needs no opening. The list is sticky inside a
+  rail that spans the article, not fixed to the view, so a rubber-band bounce at
+  the page edge moves it with the header and text.
 */
 @media (min-width: 76rem) {
     .toc-button {
@@ -177,16 +177,16 @@ body:has(.toc-button) {
         display: block;
         position: absolute;
         top: 0;
-        right: calc(100% + var(--space-7));
+        right: calc(100% + var(--space-6));
         bottom: 0;
-        width: 13rem;
+        width: 11rem;
     }
 
     .toc {
         position: sticky;
         inset: 8rem auto auto auto;
         display: block;
-        width: 13rem;
+        width: 11rem;
         max-height: calc(100dvh - 12rem);
         padding: 0;
         overflow-y: auto;
@@ -199,32 +199,19 @@ body:has(.toc-button) {
         scrollbar-width: none;
     }
 
-    .toc > ul {
-        border-left: 1px solid var(--border-color);
-    }
-
     .toc a {
-        position: relative;
-        padding: 5px 0 5px var(--space-4);
+        padding: 4px 0;
         border-radius: 0;
     }
 
     .toc ul ul a {
-        padding-left: calc(var(--space-4) + 0.85rem);
+        padding-left: 0.85rem;
     }
 
     .toc a[aria-current] {
+        font-weight: 500;
+        color: var(--heading-color);
         background: none;
-    }
-
-    .toc a[aria-current]::before {
-        content: '';
-        position: absolute;
-        top: 5px;
-        bottom: 5px;
-        left: -1px;
-        width: 1px;
-        background-color: var(--heading-color);
     }
 
     @media (hover: hover) {

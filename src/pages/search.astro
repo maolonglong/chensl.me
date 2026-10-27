@@ -191,11 +191,11 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   .search-input {
     box-sizing: border-box;
     width: 100%;
-    min-height: 56px;
+    min-height: 48px;
     padding: var(--space-2) 0;
     font: inherit;
-    font-size: var(--size-h2);
-    letter-spacing: -0.015em;
+    font-size: var(--size-h3);
+    letter-spacing: 0;
     color: var(--heading-color);
     background: transparent;
     border: 0;
@@ -224,6 +224,18 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   }
   .search-results {
     margin-top: var(--space-6);
+  }
+  .search-results :global(> li) {
+    padding-block: var(--space-4);
+  }
+  .search-results :global(> li:first-child) {
+    padding-top: 0;
+  }
+  .search-results :global(> li:last-child) {
+    padding-bottom: 0;
+  }
+  .search-results :global(> li + li) {
+    border-top: 1px solid var(--border-color);
   }
   .search-results :global(.search-meta) {
     margin: var(--space-1) 0 0;
