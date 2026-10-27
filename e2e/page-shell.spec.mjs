@@ -75,6 +75,7 @@ for (const width of [375, 1280]) {
           const desc = item.querySelector('.post-description')
           const timeBox = time.getBoundingClientRect()
           const descBox = desc.getBoundingClientRect()
+          const rects = [...link.getClientRects()]
           return {
             afterContent: getComputedStyle(link, '::after').content,
             timeRightGap: Math.abs(row.right - timeBox.right),
@@ -82,6 +83,11 @@ for (const width of [375, 1280]) {
             descMatchesTime:
               getComputedStyle(desc).fontSize === getComputedStyle(time).fontSize &&
               getComputedStyle(desc).color === getComputedStyle(time).color,
+            // iOS WebKit inflates each inline client rect by 3px vertically for tap highlights,
+            // groups lines whose gap is under 0.5px, and drops interior lines if they do not overlap.
+            tapHighlightContinuous: rects.every(
+              (rect, index) => index === 0 || rect.top - rects[index - 1].bottom <= 6,
+            ),
           }
         })
         return {
@@ -98,6 +104,7 @@ for (const width of [375, 1280]) {
         expect(row.descBelowRow).toBeGreaterThanOrEqual(2)
         expect(row.descBelowRow).toBeLessThanOrEqual(8)
         expect(row.descMatchesTime).toBe(true)
+        expect(row.tapHighlightContinuous).toBe(true)
       }
       await capture(page, `archive-${width}-${mode}`)
     })
