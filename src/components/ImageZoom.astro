@@ -66,10 +66,13 @@
       const finish = () => {
         closing = false
         animation = undefined
-        backdropAnimation = undefined
         activeSource = undefined
         if (source) delete source.dataset.zoomed
         if (dialog?.open) dialog.close()
+        // The close fade holds its end frame until the dialog hides; left in place it would pin
+        // the next open transparent.
+        backdropAnimation?.cancel()
+        backdropAnimation = undefined
         source?.focus({ preventScroll: true })
       }
       if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {

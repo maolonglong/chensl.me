@@ -32,6 +32,34 @@ test('articles without images do not mount image zoom controls', async ({ page, 
   expect(count).toBe(0)
 })
 
+for (const reducedMotion of ['no-preference', 'reduce']) {
+  test(`a reopened zoom keeps its backdrop (${reducedMotion})`, async ({ page, open }) => {
+    await page.setViewportSize({ width: 1280, height: 844 })
+    await page.emulateMedia({ reducedMotion })
+    await open('/blog/2023-review/')
+    const dialog = page.locator('dialog.image-zoom')
+    const first = page.locator('.prose img[data-zoomable]').first()
+    const backdrop = () =>
+      dialog.evaluate((element) => ({
+        animations: element.getAnimations().length,
+        // A leftover close animation would pin the fill transparent on the next open.
+        alpha: Number(
+          getComputedStyle(element).backgroundColor.match(/\/\s*([\d.]+)\s*\)$/)?.[1] ?? 1,
+        ),
+        transparent: getComputedStyle(element).backgroundColor === 'rgba(0, 0, 0, 0)',
+      }))
+    for (const round of [1, 2]) {
+      await first.scrollIntoViewIfNeeded()
+      await first.click()
+      await expect
+        .poll(backdrop, { message: `open ${round} settles on the translucent fill` })
+        .toEqual({ animations: 0, alpha: 0.92, transparent: false })
+      await dialog.click()
+      await dialog.waitFor({ state: 'hidden' })
+    }
+  })
+}
+
 test('desktop only marks shrunken standalone images as zoomable and fits them to the viewport', async ({
   page,
   open,
