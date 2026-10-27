@@ -30,11 +30,11 @@ Apple Machine Learning Research and the Apple Human Interface Guidelines supply 
 - **Dark theme.** Dark text uses grayscale smoothing, because light strokes on a dark page look heavier.
 - **Headings, `strong`, and table headers** use weight 600 in the heading color, while compact list titles (`.entry-title`) use weight 400 in the heading color at `--size-list` (`0.9375rem`) with `letter-spacing: 0`.
 - **List markers** are muted, not optical blue, because `--link-color` means a link or active control.
-- **Code blocks** are a `--surface-color` fill with no border. Token colors in `src/lib/markdown.mjs` follow the same cool neutral and optical-blue palette.
+- **Code blocks** are a `--surface-color` fill with no border. Token colors in `src/lib/markdown.mjs` use a chroma-capped cool triad (sapphire for keywords and constants, cool indigo for functions and types, deep teal for strings) with matched perceptual contrast against `--surface-color`.
 
 ## Color
 
-Beyond the core tokens in `src/styles/global.css`, the giscus themes (`src/styles/giscus*.css`) add red, green, and amber diff and state colors for addition, deletion, and warning meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast for the giscus themes and for code comments.
+Beyond the core tokens in `src/styles/global.css`, `src/lib/markdown.mjs` and the giscus themes (`src/styles/giscus*.css`) add chroma-capped syntax hues (sapphire, cool indigo, deep teal) and diff/state colors (red, green, amber) for addition, deletion, and warning meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` requires AA contrast across every foreground-on-surface pair in `src/styles/global.css`, `src/styles/giscus*.css`, and `codeThemes`.
 
 ## Typography
 
