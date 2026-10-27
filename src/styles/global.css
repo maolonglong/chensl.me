@@ -320,7 +320,9 @@ time {
     margin: 0;
     font-size: var(--size-body);
     font-weight: 600;
-    line-height: 1.55;
+    /* Keep multi-line inline client rects within 6px vertically so iOS WebKit's 3px-inflated tap
+       highlight rects overlap and merge instead of dropping interior lines in the (0, 0.5px) gap. */
+    line-height: 1.45;
     letter-spacing: -0.01em;
     color: var(--heading-color);
 }
