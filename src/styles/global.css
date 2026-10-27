@@ -65,8 +65,12 @@ html {
     font-size: 100%;
     font-synthesis: none;
     text-spacing-trim: trim-start;
+    /* Browsers ship `no-autospace` as the initial value; `normal` restores CJK–Latin spacing
+       where the text lacks a manual space, without doubling spaces already written. */
+    text-autospace: normal;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    accent-color: var(--link-color);
 }
 
 body {
@@ -212,6 +216,13 @@ samp {
     font-family: var(--font-mono);
     font-variant-ligatures: none;
     letter-spacing: 0;
+    /* Auto spacing would insert gaps the monospace grid does not expect. */
+    text-autospace: no-autospace;
+}
+
+input,
+textarea {
+    caret-color: var(--link-color);
 }
 
 cite {
@@ -540,6 +551,8 @@ pre code {
 .table-scroll {
     margin-block: 1.75em;
     overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule-color) transparent;
 }
 
 .math-scroll:focus-visible,
@@ -815,6 +828,8 @@ details > summary {
 
     .footnotes li:target,
     [data-footnote-ref]:target {
+        /* The mark is a state marker, not a fade: it appears whole. */
+        transition-property: none !important;
         background-color: var(--mark-background-color);
         box-shadow: 0 0 0 var(--target-ring) var(--mark-background-color);
     }
@@ -828,8 +843,6 @@ details > summary {
     }
 
     pre {
-        /* The mark is a state marker, not a fade: it appears whole. */
-        transition-property: none !important;
         font-size: var(--size-caption);
     }
 }

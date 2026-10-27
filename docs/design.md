@@ -49,6 +49,7 @@ Roles beyond the core foregrounds in `src/styles/global.css`: `--elevated-color`
 - The fonts are not under the repository's code license; read [Noto Sans SC OFL.txt](../public/fonts/noto-sans-sc/OFL.txt) and [JetBrains Mono OFL.txt](../public/fonts/jetbrains-mono-2.304/OFL.txt) before you add or change one (`tests/design.test.mjs`).
 - Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart.
 - `<em>` sets Latin text in native italic without CJK emphasis dots (`e2e/page-shell.spec.mjs`). `<strong>` uses weight 600 in the heading color.
+- `text-autospace: normal` restores CJK–Latin spacing where the text lacks a manual space, because bot-written AI News text does not hand-set them; explicit spaces in articles gain nothing extra. Code stays `no-autospace` so the monospace grid keeps its cells.
 
 ## Components
 
