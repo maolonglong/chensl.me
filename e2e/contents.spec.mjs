@@ -206,6 +206,8 @@ test.describe('with a touch screen', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await open('/blog/dockertest/')
     await page.locator('.toc-button').click()
+    // The plate scales in from its button; the touch targets are measured at the end state.
+    await expect(page.locator('#article-toc')).toHaveCSS('transform', 'none')
     const heights = await page
       .locator('#article-toc a')
       .evaluateAll((links) => links.map((link) => link.getBoundingClientRect().height))

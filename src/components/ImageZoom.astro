@@ -28,6 +28,7 @@
     let activeSource: HTMLImageElement | undefined
     let closing = false
     let animation: Animation | undefined
+    let backdropAnimation: Animation | undefined
 
     const computeZoomSize = (img: HTMLImageElement, sourceRect: DOMRect) => {
       const naturalW = intrinsicWidth(img)
@@ -60,36 +61,55 @@
       if (!dialog?.open || closing) return
       closing = true
       animation?.cancel()
+      backdropAnimation?.cancel()
       const source = activeSource
       const finish = () => {
         closing = false
         animation = undefined
+        backdropAnimation = undefined
         activeSource = undefined
         if (source) delete source.dataset.zoomed
         if (dialog?.open) dialog.close()
         source?.focus({ preventScroll: true })
       }
-      if (source && target && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
-        const sourceRect = source.getBoundingClientRect()
-        const targetRect = target.getBoundingClientRect()
-        if (targetRect.width > 0 && targetRect.height > 0 && sourceRect.width > 0) {
-          const dx = sourceRect.left - targetRect.left
-          const dy = sourceRect.top - targetRect.top
-          const sx = sourceRect.width / targetRect.width
-          const sy = sourceRect.height / targetRect.height
-          animation = target.animate(
-            [
-              { transform: 'none' },
-              { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
-            ],
-            { duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
-          )
-          animation.onfinish = finish
-          animation.oncancel = () => {
-            closing = false
+      if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+        if (source && target) {
+          const sourceRect = source.getBoundingClientRect()
+          const targetRect = target.getBoundingClientRect()
+          if (targetRect.width > 0 && targetRect.height > 0 && sourceRect.width > 0) {
+            const dx = sourceRect.left - targetRect.left
+            const dy = sourceRect.top - targetRect.top
+            const sx = sourceRect.width / targetRect.width
+            const sy = sourceRect.height / targetRect.height
+            animation = target.animate(
+              [
+                { transform: 'none' },
+                { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
+              ],
+              { duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+            )
+            animation.onfinish = finish
+            animation.oncancel = () => {
+              closing = false
+            }
+            backdropAnimation = dialog.animate(
+              [{}, { backgroundColor: 'transparent', backdropFilter: 'blur(0px)' }],
+              { duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' },
+            )
+            return
           }
-          return
         }
+      } else {
+        backdropAnimation = dialog.animate([{ opacity: 1 }, { opacity: 0 }], {
+          duration: 120,
+          easing: 'ease-out',
+          fill: 'forwards',
+        })
+        backdropAnimation.onfinish = finish
+        backdropAnimation.oncancel = () => {
+          closing = false
+        }
+        return
       }
       finish()
     }
@@ -153,6 +173,7 @@
       if (!isZoomable(img) || dialog?.open) return
       ensureDialog()
       animation?.cancel()
+      backdropAnimation?.cancel()
       closing = false
       const sourceRect = img.getBoundingClientRect()
       const { width, height } = computeZoomSize(img, sourceRect)
@@ -190,6 +211,16 @@
             { duration: 220, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
           )
         }
+        // An empty end keyframe lands on the rule's own translucent fill and blur.
+        backdropAnimation = dialog!.animate(
+          [{ backgroundColor: 'transparent', backdropFilter: 'blur(0px)' }, {}],
+          { duration: 220, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+        )
+      } else {
+        backdropAnimation = dialog!.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: 150,
+          easing: 'ease-out',
+        })
       }
     }
 
@@ -270,6 +301,12 @@
   }
   .image-zoom::backdrop {
     background: transparent;
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .image-zoom[open] {
+      background-color: var(--background-color);
+      backdrop-filter: none;
+    }
   }
   .image-zoom:focus-visible {
     outline: none;

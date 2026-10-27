@@ -125,3 +125,20 @@ test('back-to-top returns to the top within a second and focuses the site title'
     'hands keyboard focus to the site title': back.focused,
   })
 })
+
+// Reduced motion keeps state fades and drops movement: the control still transitions opacity but
+// its transform snaps.
+test('reduced motion keeps opacity fades and drops transform transitions', async ({
+  page,
+  open,
+}) => {
+  await open('/blog/dockertest/')
+  const properties = () =>
+    page.evaluate(() => getComputedStyle(document.querySelector('.back-to-top')).transitionProperty)
+  await expect
+    .poll(properties, { message: 'no-preference includes the press transform' })
+    .toContain('transform')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect.poll(properties).not.toContain('transform')
+  await expect.poll(properties).toContain('opacity')
+})

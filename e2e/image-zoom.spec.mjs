@@ -88,6 +88,8 @@ test('desktop only marks shrunken standalone images as zoomable and fits them to
 
   // Keyboard: Escape closes and restores focus to the image; Enter reopens; wheel closes.
   await page.keyboard.press('Escape')
+  // Reduced motion still crossfades the dialog out, so the close lands a beat after Escape.
+  await page.locator('dialog.image-zoom').waitFor({ state: 'hidden' })
   const afterEscape = await page.evaluate(probeZoom)
   expectAll('/blog/2023-review/ after Escape', afterEscape, {
     'dialog closes on Escape': !afterEscape.open,
@@ -97,6 +99,7 @@ test('desktop only marks shrunken standalone images as zoomable and fits them to
   await page.keyboard.press('Enter')
   expect((await page.evaluate(probeZoom)).open).toBe(true)
   await page.mouse.wheel(0, 120)
+  await page.locator('dialog.image-zoom').waitFor({ state: 'hidden' })
   expect((await page.evaluate(probeZoom)).open).toBe(false)
 })
 
@@ -123,6 +126,7 @@ test.describe('on a touch screen', () => {
         overlayOpened.dialogScrollWidth > overlayOpened.dialogClientWidth,
     })
     await page.locator('dialog.image-zoom').click()
+    await page.locator('dialog.image-zoom').waitFor({ state: 'hidden' })
     expect((await page.evaluate(probeZoom)).open).toBe(false)
 
     // Wide screenshot on mobile zooms past 2x column width and pans horizontally.
@@ -147,6 +151,7 @@ test.describe('on a touch screen', () => {
     await capture(page, 'image-zoom-mobile-dark')
 
     await page.locator('dialog.image-zoom').click()
+    await page.locator('dialog.image-zoom').waitFor({ state: 'hidden' })
     expect((await page.evaluate(probeZoom)).open).toBe(false)
   })
 })

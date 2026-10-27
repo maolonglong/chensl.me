@@ -26,21 +26,30 @@ test('theme cycles, persists across navigation and follows the OS', async ({
   ]) {
     await page.locator('[data-theme-toggle]').click()
     await expect(page.locator('[data-theme-toggle]')).toHaveAttribute('data-theme-switched', '')
-    expect((await theme(page)).mode).toBe(mode)
-    expect((await theme(page)).scheme).toBe(scheme)
+    // A click runs the theme change inside a view transition, so the mode lands a frame later.
+    await expect.poll(async () => (await theme(page)).mode).toBe(mode)
+    await expect.poll(async () => (await theme(page)).scheme).toBe(scheme)
   }
   const lightBackground = (await theme(page)).background
   await page.emulateMedia({ colorScheme: 'dark' })
   await settle(page)
   expect((await theme(page)).background, 'Auto follows the OS').not.toBe(lightBackground)
   await page.locator('[data-theme-toggle]').click()
-  expect((await theme(page)).background, 'Forced light overrides a dark OS').toBe(lightBackground)
+  await expect
+    .poll(async () => (await theme(page)).background, {
+      message: 'Forced light overrides a dark OS',
+    })
+    .toBe(lightBackground)
   await open('/')
   expect((await theme(page)).mode, 'Forced theme persists across navigation').toBe('light')
   await page.locator('[data-theme-toggle]').click()
   await page.emulateMedia({ colorScheme: 'light' })
   await settle(page)
-  expect((await theme(page)).scheme, 'Forced dark overrides a light OS').toBe('dark')
+  await expect
+    .poll(async () => (await theme(page)).scheme, {
+      message: 'Forced dark overrides a light OS',
+    })
+    .toBe('dark')
 })
 
 for (const width of [1280, 390]) {
@@ -110,6 +119,6 @@ test.describe('on a touch screen', () => {
     })
     await open('/')
     await page.locator('[data-theme-toggle]').click()
-    expect((await theme(page)).mode).toBe('light')
+    await expect.poll(async () => (await theme(page)).mode).toBe('light')
   })
 })

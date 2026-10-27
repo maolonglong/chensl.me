@@ -799,13 +799,17 @@ details > summary {
 
 /* ------------------------------------------------------------------ motion */
 
-/* One switch for every transition. Keyframe animations opt in under no-preference instead, so a
-   state that an animation reveals, such as the footnote mark, can stay static. */
+/* Reduced motion keeps the fades that carry state meaning—opacity, colors, visibility, and
+   discrete properties—while transforms and other movement snap instead of animating. Keyframe
+   animations still run only under no-preference, so a state an animation reveals, such as the
+   footnote mark, stays static. */
 @media (prefers-reduced-motion: reduce) {
     *,
     ::before,
     ::after {
-        transition-duration: 0s !important;
+        transition-property:
+            opacity, color, background-color, border-color, text-decoration-color, visibility,
+            display, overlay !important;
         scroll-behavior: auto !important;
     }
 
@@ -824,6 +828,8 @@ details > summary {
     }
 
     pre {
+        /* The mark is a state marker, not a fade: it appears whole. */
+        transition-property: none !important;
         font-size: var(--size-caption);
     }
 }

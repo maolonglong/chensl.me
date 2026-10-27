@@ -19,7 +19,7 @@ The site reads like an engineering research publication: optical-white canvas, c
 ## Interaction
 
 - Every control works with a keyboard, has a visible focus ring and an accessible name. Floating buttons, contents entries in the popover, and in-page controls like the upvote are 44 px targets; the header tools are 40 px circles that never overlap (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`, `e2e/navigation.spec.mjs`).
-- Hover affordances sit behind `@media (hover: hover)`, and every pressable control moves on press. `prefers-reduced-motion: reduce` zeroes every transition in `src/styles/global.css`; keyframe animations run only under `no-preference` (`e2e/footnotes.spec.mjs`).
+- Hover affordances sit behind `@media (hover: hover)`, and every pressable control moves on press. `prefers-reduced-motion: reduce` keeps opacity and color fades in `src/styles/global.css`—they carry state meaning—while transforms and other movement snap instead of animating; keyframe animations run only under `no-preference` (`e2e/back-to-top.spec.mjs`, `e2e/footnotes.spec.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-27-reduced-motion-keeps-fades.md).
 - A link that leads to more of the same (`.arrow-link`) ends with an arrow that steps forward on hover. It is the one signature motion.
 
 ## Apple editorial references
@@ -52,7 +52,7 @@ Roles beyond the core foregrounds in `src/styles/global.css`: `--elevated-color`
 
 ## Components
 
-- **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails (`e2e/appearance.spec.mjs`).
+- **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails. A click crossfades the whole page between themes; system and storage changes apply at once (`e2e/appearance.spec.mjs`).
 - **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
 - **Article header.** The date, length, reading time, and creation label share one sans metadata line. A stale notice is a quiet surface note below it (`e2e/page-shell.spec.mjs`, `e2e/reading-time.spec.mjs`).
 - **Article end.** The upvote, then the earlier and later articles, then the comments under a section label.

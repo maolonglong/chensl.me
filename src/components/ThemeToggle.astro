@@ -26,6 +26,9 @@
 </button>
 
 <script>
+  // iOS Safari matches :active only when a touch listener exists on the document.
+  document.addEventListener('touchstart', () => {}, { passive: true })
+
   type Mode = 'auto' | 'light' | 'dark'
   const storageKey = 'color-theme'
   const modes: Mode[] = ['auto', 'light', 'dark']
@@ -56,7 +59,9 @@
       if (mode === 'auto') localStorage.removeItem(storageKey)
       else localStorage.setItem(storageKey, mode)
     } catch {}
-    applyTheme()
+    // A click gets an opacity crossfade between themes; system and storage changes apply at once.
+    if ('startViewTransition' in document) document.startViewTransition(applyTheme)
+    else applyTheme()
   })
   systemTheme.addEventListener('change', () => {
     if (mode === 'auto') applyTheme()
@@ -70,6 +75,11 @@
 
 <style>
   /* The box comes from .icon-button in BaseLayout. */
+  :global(::view-transition-old(root)),
+  :global(::view-transition-new(root)) {
+    animation-duration: 200ms;
+    animation-timing-function: ease;
+  }
   .theme-toggle {
     visibility: hidden;
   }

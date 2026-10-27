@@ -118,16 +118,37 @@ body:has(.toc-button) {
     list-style: none;
 }
 
-@keyframes toc-popover-in {
-    from {
+/*
+  Below the wide-mode breakpoint the list is a popover: it enters and exits as one plate,
+  scaling from the corner button that opened it. The rail mode above 76rem gets none of this.
+*/
+@media (width < 76rem) {
+    .toc {
+        transform-origin: bottom right;
         opacity: 0;
-        transform: translateY(5px);
+        transform: scale(0.96) translateY(4px);
+        transition:
+            opacity 120ms var(--ease-out),
+            transform 120ms var(--ease-out),
+            display 120ms allow-discrete,
+            overlay 120ms allow-discrete;
     }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-    .toc:popover-open > ul {
-        animation: toc-popover-in 160ms var(--ease-out);
+    .toc:popover-open {
+        opacity: 1;
+        transform: none;
+        transition:
+            opacity 160ms var(--ease-out),
+            transform 160ms var(--ease-out),
+            display 160ms allow-discrete,
+            overlay 160ms allow-discrete;
+    }
+
+    @starting-style {
+        .toc:popover-open {
+            opacity: 0;
+            transform: scale(0.96) translateY(4px);
+        }
     }
 }
 
