@@ -47,14 +47,58 @@ test('giscus themes meet AA contrast for reading and controls', () => {
   assert.doesNotMatch(giscusLight, /light-dark\(#f5f4ed,/)
 })
 
-test('code comments meet AA contrast on the code fill', () => {
-  for (const [mode, theme] of Object.entries(codeThemes)) {
-    const comment = theme.tokenColors.find(({ scope }) => scope.includes('comment')).settings
-    const ratio = contrast(comment.foreground, theme.colors['editor.background'])
-    assert.ok(
-      ratio >= 4.5,
-      `${mode}: comment ${comment.foreground} on the code fill: ${ratio.toFixed(2)}:1`,
+test('site tokens meet contrast rules across every surface they appear on', () => {
+  const css = readFileSync(path.join(root, 'src/styles/global.css'), 'utf8')
+  for (const [index, mode] of ['light', 'dark'].entries()) {
+    const tokens = Object.fromEntries(
+      [...css.matchAll(/--([\w-]+):\s*light-dark\((#[a-f\d]{6}),\s*(#[a-f\d]{6})\);/g)].map(
+        ([, name, light, dark]) => [name, [light, dark][index]],
+      ),
     )
+    const rules = [
+      { token: 'heading-color', on: ['background-color', 'surface-color'], min: 10 },
+      {
+        token: 'text-color',
+        on: ['background-color', 'surface-color', 'mark-background-color'],
+        min: 7,
+      },
+      { token: 'muted-color', on: ['background-color', 'surface-color'], min: 4.5 },
+      { token: 'link-color', on: ['background-color', 'surface-color'], min: 4.5 },
+    ]
+    for (const { token, on, min } of rules) {
+      for (const surface of on) {
+        const ratio = contrast(tokens[token], tokens[surface])
+        assert.ok(
+          ratio >= min,
+          `${mode}: ${token} (${tokens[token]}) on ${surface} (${tokens[surface]}): ${ratio.toFixed(2)}:1 < ${min}:1`,
+        )
+      }
+    }
+  }
+})
+
+test('code tokens meet AA contrast on the code fill and distinguish core syntax roles', () => {
+  for (const [mode, theme] of Object.entries(codeThemes)) {
+    const bg = theme.colors['editor.background']
+    const fg = theme.colors['editor.foreground']
+    assert.ok(contrast(fg, bg) >= 12, `${mode}: editor.foreground ${fg} on ${bg}`)
+    for (const { scope, settings } of theme.tokenColors) {
+      const ratio = contrast(settings.foreground, bg)
+      assert.ok(
+        ratio >= 4.5,
+        `${mode}: ${scope[0]} ${settings.foreground} on the code fill ${bg}: ${ratio.toFixed(2)}:1`,
+      )
+    }
+    const colorFor = (role) =>
+      theme.tokenColors.find(({ scope }) => scope.includes(role))?.settings.foreground
+    const roles = ['keyword', 'string', 'entity.name.function', 'comment']
+    for (const role of roles) {
+      const color = colorFor(role)
+      assert.ok(color, `${mode}: missing token role ${role}`)
+      assert.notEqual(color, fg, `${mode}: ${role} (${color}) must differ from editor.foreground`)
+    }
+    const unique = new Set(roles.map(colorFor))
+    assert.equal(unique.size, roles.length, `${mode}: core syntax roles must have distinct colors`)
   }
 })
 

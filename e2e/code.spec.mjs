@@ -40,8 +40,15 @@ for (const [route, hasInlineCode] of [
 }
 
 // Scoped article styles must reach rendered Markdown in both color schemes.
-test('syntax colors match Shiki in light and dark', async ({ page, open }) => {
+test('syntax colors match Shiki in light and dark', async ({ page, open, capture }) => {
+  await page.setViewportSize({ width: 1280, height: 844 })
   await open('/blog/dockertest/')
+  await page.evaluate(() => {
+    document
+      .querySelector('.astro-code[data-language="go"]')
+      ?.closest('.code-block')
+      ?.scrollIntoView({ block: 'center' })
+  })
   for (const scheme of ['light', 'dark']) {
     const colors = await page.evaluate((scheme) => {
       document.documentElement.dataset.theme = scheme
@@ -62,6 +69,7 @@ test('syntax colors match Shiki in light and dark', async ({ page, open }) => {
     expect(colors.tokens, `${scheme}: highlighted tokens`).toBeGreaterThan(0)
     expect(colors.matches, `${scheme}: syntax colors must match Shiki`).toBe(true)
     expect(colors.line).toBe('inline-block')
+    await capture(page, `code-block-1280-${scheme}`)
   }
 })
 
