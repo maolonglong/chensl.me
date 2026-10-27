@@ -189,6 +189,16 @@ test('an alert marker followed by inline markup leaves no empty text node', () =
   )
 })
 
+test('emphasis closes across fullwidth punctuation before CJK text', async () => {
+  const { dist } = await behaviorFixture()
+  const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')
+  assert.match(
+    html,
+    /<strong>Closed：<\/strong>程序按既定逻辑运行，<strong>加粗<\/strong>混排 Latin 文本。/,
+  )
+  assert.doesNotMatch(html, /\*\*/)
+})
+
 test('TeX math renders to native MathML in pages and RSS', async () => {
   const { dist } = await behaviorFixture()
   const html = await readFile(path.join(dist, 'blog/render/index.html'), 'utf8')

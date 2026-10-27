@@ -124,6 +124,8 @@ echo plain
 
 Inline $a^2 - b_1 \\le \\alpha$ math.
 
+**Closed：**程序按既定逻辑运行，**加粗**混排 Latin 文本。
+
 $$
 f(x) = \\frac{1}{2}
 $$
