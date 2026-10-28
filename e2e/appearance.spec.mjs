@@ -50,6 +50,16 @@ test('theme cycles, persists across navigation and follows the OS', async ({
       message: 'Forced dark overrides a light OS',
     })
     .toBe('dark')
+
+  await page.emulateMedia({ contrast: 'more' })
+  await settle(page)
+  const highContrast = await page.evaluate(() => ({
+    muted: getComputedStyle(document.querySelector('.meta')).color,
+    body: getComputedStyle(document.body).color,
+  }))
+  expect(highContrast.muted, 'prefers-contrast: more raises muted text to body contrast').toBe(
+    highContrast.body,
+  )
 })
 
 for (const width of [1280, 390]) {

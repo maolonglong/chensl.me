@@ -321,7 +321,7 @@
   .image-zoom::backdrop {
     background: transparent;
   }
-  @media (prefers-reduced-transparency: reduce) {
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
     .image-zoom[open] {
       background-color: var(--background-color);
       backdrop-filter: none;

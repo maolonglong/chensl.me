@@ -58,11 +58,19 @@
     color-scheme: dark;
 }
 
+@media (prefers-contrast: more) {
+    :root {
+        --muted-color: var(--text-color);
+        --border-color: var(--rule-color);
+    }
+}
+
 /* -------------------------------------------------------------------- base */
 
 html {
     font-family: var(--font-sans);
     font-size: 100%;
+    font-optical-sizing: auto;
     font-synthesis: none;
     text-spacing-trim: trim-start;
     /* Browsers ship `no-autospace` as the initial value; `normal` restores CJK–Latin spacing

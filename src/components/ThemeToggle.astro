@@ -88,28 +88,20 @@
   }
   .theme-toggle [data-theme-icon] {
     display: none;
+    transform-origin: 12px 12px;
+    transition:
+      opacity 160ms ease-out,
+      transform 160ms var(--ease-out);
   }
   .theme-toggle[data-theme-mode='auto'] [data-theme-icon='auto'],
   .theme-toggle[data-theme-mode='light'] [data-theme-icon='light'],
   .theme-toggle[data-theme-mode='dark'] [data-theme-icon='dark'] {
     display: inline;
   }
-  @keyframes theme-icon-in {
-    from {
+  @starting-style {
+    .theme-toggle[data-theme-switched] [data-theme-icon] {
       opacity: 0;
-      transform: scale(0.75) rotate(-20deg);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) rotate(0deg);
-    }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .theme-toggle[data-theme-switched][data-theme-mode='auto'] [data-theme-icon='auto'],
-    .theme-toggle[data-theme-switched][data-theme-mode='light'] [data-theme-icon='light'],
-    .theme-toggle[data-theme-switched][data-theme-mode='dark'] [data-theme-icon='dark'] {
-      transform-origin: 12px 12px;
-      animation: theme-icon-in 200ms var(--ease-out);
+      transform: scale(0.88) rotate(-12deg);
     }
   }
 </style>
