@@ -59,9 +59,19 @@ body:has(.toc-button) .back-to-top {
     display: contents;
 }
 
+/*
+  --fill-color is translucent, so floating plates layer it over --elevated-color with a gradient
+  instead of replacing background-color; otherwise text scrolling beneath shows through the button.
+*/
 body:has(#article-toc:popover-open) .toc-button {
     color: var(--heading-color);
-    background-color: var(--fill-color);
+    background-image: linear-gradient(var(--fill-color), var(--fill-color));
+}
+
+body:has(#article-toc:popover-open) .back-to-top {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .back-to-top:focus-visible,
@@ -72,7 +82,7 @@ body:has(#article-toc:popover-open) .toc-button {
 .back-to-top:active,
 .toc-button:active {
     color: var(--heading-color);
-    background-color: var(--fill-color);
+    background-image: linear-gradient(var(--fill-color), var(--fill-color));
     transform: scale(0.94);
 }
 
@@ -80,7 +90,7 @@ body:has(#article-toc:popover-open) .toc-button {
     .back-to-top:hover,
     .toc-button:hover {
         color: var(--heading-color);
-        background-color: var(--fill-color);
+        background-image: linear-gradient(var(--fill-color), var(--fill-color));
     }
 }
 
@@ -93,13 +103,13 @@ body:has(.toc-button) {
     padding-bottom: calc(2 * 44px + var(--gutter) + 2 * var(--space-2));
 }
 
-/* The popover opens above both buttons and scrolls within the rest of the view. */
+/* The popover anchors directly above the contents button and hides back-to-top while open. */
 .toc {
     position: fixed;
-    inset: auto var(--gutter) calc(var(--gutter) + 2 * 44px + 2 * var(--space-2)) auto;
+    inset: auto var(--gutter) calc(var(--gutter) + 44px + var(--space-2)) auto;
     box-sizing: border-box;
     width: min(18rem, 100% - 2 * var(--gutter));
-    max-height: calc(100% - 2 * var(--gutter) - 2 * (44px + var(--space-2)));
+    max-height: calc(100% - 2 * var(--gutter) - (44px + var(--space-2)));
     margin: 0;
     padding: var(--space-2);
     overflow-y: auto;

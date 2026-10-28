@@ -115,6 +115,7 @@ test.describe('on a touch screen', () => {
       expect(
         await page.evaluate(() => document.querySelector('#article-toc').matches(':popover-open')),
       ).toBe(true)
+      await expect(page.locator('#article-toc')).toHaveCSS('opacity', '1')
       await capture(page, 'no-script-toc')
     })
   })

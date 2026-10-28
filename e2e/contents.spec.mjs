@@ -14,6 +14,7 @@ function probeContents() {
     getComputedStyle(element).visibility === 'visible'
   const list = document.querySelector('#article-toc')
   const button = document.querySelector('.toc-button')
+  const backToTop = document.querySelector('.back-to-top')
   const open = !!list && list.matches(':popover-open')
   // A fixed control can still be painted over by positioned content later in the page; hit-test it.
   const onTop = (element) => {
@@ -27,7 +28,9 @@ function probeContents() {
     rail: shown(list) && !open ? box(list) : null,
     panel: open ? box(list) : null,
     button: shown(button) ? box(button) : null,
-    backToTop: box(document.querySelector('.back-to-top')),
+    buttonOpaque: button ? !getComputedStyle(button).backgroundColor.startsWith('rgba(') : true,
+    backToTop: box(backToTop),
+    backToTopShown: shown(backToTop),
     listOnTop: onTop(list),
     buttonOnTop: onTop(button),
     column: box(document.querySelector('.post')),
@@ -135,10 +138,14 @@ test('a pointer in a view without a margin opens the contents from the button', 
     'button paints on top': rest.buttonOnTop,
   })
   await page.locator('.toc-button').click()
+  await expect(page.locator('#article-toc')).toHaveCSS('transform', 'none')
   const opened = await measure(page)
   expectAll('/blog/dockertest/ at 1024px opened', opened, {
     'contents sit inside the view': inside(opened.panel, opened),
     'contents clear the button': apart(opened.panel, opened.button),
+    'contents anchor directly above the button':
+      opened.button.top - opened.panel.bottom >= 7 && opened.button.top - opened.panel.bottom <= 9,
+    'button plate stays opaque when open': opened.buttonOpaque,
   })
   await page.keyboard.press('Escape')
   expect((await measure(page)).panel).toBeNull()
@@ -185,11 +192,16 @@ test.describe('with a touch screen', () => {
         'button clears the comments': apart(end.button, end.comments),
       })
       await page.locator('.toc-button').click()
+      await expect(page.locator('#article-toc')).toHaveCSS('transform', 'none')
       const opened = await measure(page)
       expectAll(`${label} opened`, opened, {
         'contents sit inside the view': inside(opened.panel, opened),
         'contents clear the button': apart(opened.panel, opened.button),
-        'contents clear back-to-top': apart(opened.panel, opened.backToTop),
+        'contents anchor directly above the button':
+          opened.button.top - opened.panel.bottom >= 7 &&
+          opened.button.top - opened.panel.bottom <= 9,
+        'back-to-top hides while contents are open': !opened.backToTopShown,
+        'button plate stays opaque when open': opened.buttonOpaque,
         'the current entry is marked': opened.current.includes(opened.last),
       })
       await page.locator(secondEntry).click()
