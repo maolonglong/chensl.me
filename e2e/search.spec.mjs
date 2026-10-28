@@ -54,6 +54,7 @@ const results = (page) => page.locator('.search-results > li')
 test.describe('search page', () => {
   test('finds articles by keyword through the static index', async ({ open, page }) => {
     await open('/search/')
+    await expect(page.getByRole('searchbox')).toBeFocused()
     for (const [query, slug] of [
       ['无锁队列', 'lock-free-queue'],
       ['函数式编程', 'functional-programming'],
@@ -67,6 +68,9 @@ test.describe('search page', () => {
         new RegExp(`^/blog/${slug}/$`),
       )
       await expect(results(page).first(), query).toContainText('文章')
+      await expect(results(page).first().locator('.search-snippet mark').first(), query).toHaveText(
+        new RegExp(query, 'i'),
+      )
     }
     await expect(page).toHaveURL(/\?q=gobreak$/)
   })
@@ -177,6 +181,7 @@ test.describe('search page', () => {
       await expect(hit, query).toHaveCount(1)
       await expect(hit).toContainText(`AI News · ${date}`)
       await expect(hit.locator('.search-snippet')).toContainText(`${word} 发布`)
+      await expect(hit.locator('.search-snippet mark').first()).toHaveText(query)
     }
   })
 

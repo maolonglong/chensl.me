@@ -59,6 +59,9 @@ const Item = `h${level + 1}` as 'h3' | 'h4'
   .item-title a {
     color: inherit;
   }
+  .item-title a:active {
+    opacity: 0.65;
+  }
   /* Every item leaves the site, so the title carries the same arrow as an external prose link. */
   .external::after {
     content: '↗\FE0E' / '';

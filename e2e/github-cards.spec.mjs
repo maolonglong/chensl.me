@@ -37,6 +37,9 @@ function probeCards() {
         style.borderTopStyle === 'solid' &&
         style.borderRadius === code.borderRadius,
       underline: style.textDecorationLine,
+      arrow: getComputedStyle(card.querySelector('.repo-card-name'), '::after').content.includes(
+        '↗',
+      ),
       inColumn: box(link).left >= prose.left && box(link).right <= prose.right,
       height: box(link).height,
     }
@@ -85,6 +88,7 @@ test.describe('GitHub card refresh', () => {
         expectAll(`gobreaker card at ${width}px in ${mode}`, initial, {
           'has a hairline frame with the code block corners': initial.frame,
           'has no underline at rest': initial.underline === 'none',
+          'carries an external link arrow': initial.arrow,
           'stays inside the column': initial.inColumn,
           'is a 44 px touch target': initial.height >= 44,
           'clips the description to two lines': initial.descriptionLines <= 2,

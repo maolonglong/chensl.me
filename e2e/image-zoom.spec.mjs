@@ -60,6 +60,36 @@ for (const reducedMotion of ['no-preference', 'reduce']) {
   })
 }
 
+test('interrupting an opening zoom reverses from the mid-flight box instead of jumping to full size', async ({
+  page,
+  open,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 844 })
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await open('/blog/2023-review/')
+  const first = page.locator('.prose img[data-zoomable]').first()
+  await first.scrollIntoViewIfNeeded()
+  const interrupted = await first.evaluate((img) => {
+    const sourceWidth = img.getBoundingClientRect().width
+    img.click()
+    const dialog = document.querySelector('dialog.image-zoom')
+    const target = dialog.querySelector('.image-zoom-target')
+    const [openAnim] = target.getAnimations()
+    openAnim.currentTime = 40
+    const midWidth = target.getBoundingClientRect().width
+    const fullWidth = target.offsetWidth
+    dialog.dispatchEvent(new Event('cancel', { cancelable: true }))
+    const [closeAnim] = target.getAnimations()
+    closeAnim.currentTime = 0
+    const closeStartWidth = target.getBoundingClientRect().width
+    return { sourceWidth, midWidth, fullWidth, closeStartWidth }
+  })
+  expect(interrupted.midWidth).toBeGreaterThan(interrupted.sourceWidth)
+  expect(interrupted.midWidth).toBeLessThan(interrupted.fullWidth - 40)
+  expect(Math.abs(interrupted.closeStartWidth - interrupted.midWidth)).toBeLessThanOrEqual(2)
+  await page.locator('dialog.image-zoom').waitFor({ state: 'hidden' })
+})
+
 test('desktop only marks shrunken standalone images as zoomable and fits them to the viewport', async ({
   page,
   open,

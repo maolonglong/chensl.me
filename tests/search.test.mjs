@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { articleQuery, cleanQuery, fuse, normalizeQuery } from '../src/lib/search-fuse.ts'
+import {
+  articleQuery,
+  cleanQuery,
+  fuse,
+  normalizeQuery,
+  snippetParts,
+} from '../src/lib/search-fuse.ts'
 import {
   clipSnippet,
   hanPairs,
@@ -76,4 +82,20 @@ test('reciprocal rank fusion interleaves article and news lists by rank', () => 
     ]).map(({ url }) => url),
     ['/blog/a/', '/news/1/', '/blog/b/', '/news/2/'],
   )
+})
+
+test('snippetParts splits matched query terms case-insensitively without altering text', () => {
+  assert.deepEqual(snippetParts('基于 CAS 的无锁队列实现', '无锁队列'), [
+    { text: '基于 CAS 的', mark: false },
+    { text: '无锁队列', mark: true },
+    { text: '实现', mark: false },
+  ])
+  assert.deepEqual(snippetParts('Sony/Gobreaker 源码解析 (C++)', 'gobreak C++'), [
+    { text: 'Sony/', mark: false },
+    { text: 'Gobreak', mark: true },
+    { text: 'er 源码解析 (', mark: false },
+    { text: 'C++', mark: true },
+    { text: ')', mark: false },
+  ])
+  assert.deepEqual(snippetParts('纯文本摘要', ''), [{ text: '纯文本摘要', mark: false }])
 })

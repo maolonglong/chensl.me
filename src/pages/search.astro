@@ -38,6 +38,7 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
     cleanQuery,
     fuse,
     maxQueryLength,
+    snippetParts,
     type SearchHit,
   } from '../lib/search-fuse'
 
@@ -67,7 +68,10 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
     (pagefind ??= import(/* @vite-ignore */ pagefindPath) as Promise<Pagefind>)
 
   const plainText = (html: string) =>
-    new DOMParser().parseFromString(html, 'text/html').body.textContent ?? ''
+    (new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '').replaceAll(
+      '\u200B',
+      '',
+    )
 
   // Pagefind indexes each Han character as its own token, and articleQuery spaces Han runs and
   // quotes runs of two or more characters so 智能体 does not match articles that only contain its
@@ -101,7 +105,7 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
     return response.json()
   }
 
-  function render(hits: SearchHit[]) {
+  function render(hits: SearchHit[], query: string) {
     list.replaceChildren(
       ...hits.map((hit) => {
         const item = document.createElement('li')
@@ -118,7 +122,15 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
         if (hit.snippet) {
           const snippet = document.createElement('p')
           snippet.className = 'search-snippet entry-summary'
-          snippet.textContent = hit.snippet
+          for (const part of snippetParts(hit.snippet, query)) {
+            if (part.mark) {
+              const mark = document.createElement('mark')
+              mark.textContent = part.text
+              snippet.append(mark)
+            } else {
+              snippet.append(part.text)
+            }
+          }
           item.append(snippet)
         }
         return item
@@ -142,7 +154,7 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
     if (articles.status === 'fulfilled') lists.push(articles.value)
     if (server.status === 'fulfilled') lists.push(server.value.news)
     const hits = fuse(lists).slice(0, resultLimit * 2)
-    render(hits)
+    render(hits, query)
     const degraded = articles.status === 'rejected' || server.status === 'rejected'
     status.textContent =
       (hits.length ? `找到 ${hits.length} 条结果` : '没有找到相关内容') +
@@ -183,6 +195,8 @@ Astro.csp?.insertScriptResource("'wasm-unsafe-eval'")
   if (initial) {
     input.value = initial
     search(initial)
+  } else {
+    input.focus()
   }
 </script>
 

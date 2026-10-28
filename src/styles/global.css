@@ -340,6 +340,15 @@ a.arrow-link {
     }
 }
 
+a.arrow-link:active {
+    color: var(--heading-color);
+    opacity: 0.65;
+}
+
+.arrow-link:active::after {
+    transform: translateX(4px);
+}
+
 /* An entry list: compact index rows with a title link in the heading color and a tabular date. */
 .entries {
     margin: 0;
@@ -625,6 +634,17 @@ pre code {
     letter-spacing: 0;
 }
 
+.repo-card-name::after {
+    content: '↗\FE0E' / '';
+    display: inline-block;
+    margin-left: 0.2em;
+    font-size: 0.75em;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--muted-color);
+    transition: transform 150ms var(--ease-out);
+}
+
 .repo-card-archived {
     margin-left: 0.5em;
     font-size: var(--size-caption);
@@ -660,6 +680,10 @@ pre code {
 
     .prose .repo-card a:hover .repo-card-name {
         text-decoration-line: underline;
+    }
+
+    .prose .repo-card a:hover .repo-card-name::after {
+        transform: translate(1px, -1px);
     }
 }
 
@@ -724,6 +748,10 @@ td:last-child {
 details > summary {
     color: var(--link-color);
     cursor: pointer;
+}
+
+details > summary:active {
+    opacity: 0.65;
 }
 
 .prose details {

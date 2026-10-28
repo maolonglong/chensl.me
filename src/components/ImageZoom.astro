@@ -60,6 +60,16 @@
     const closeZoom = () => {
       if (!dialog?.open || closing) return
       closing = true
+      // Read the live presentation geometry before cancelling in-flight open animations so an
+      // interrupted open reverses from its current on-screen position instead of jumping to the end.
+      const fromRect = target?.getBoundingClientRect()
+      const dialogStyle = getComputedStyle(dialog)
+      const backdropStart = {
+        backgroundColor: dialogStyle.backgroundColor,
+        backdropFilter:
+          dialogStyle.backdropFilter === 'none' ? 'blur(0px)' : dialogStyle.backdropFilter,
+      }
+      const startOpacity = dialogStyle.opacity
       animation?.cancel()
       backdropAnimation?.cancel()
       const source = activeSource
@@ -76,17 +86,23 @@
         source?.focus({ preventScroll: true })
       }
       if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
-        if (source && target) {
+        if (source && target && fromRect) {
           const sourceRect = source.getBoundingClientRect()
           const targetRect = target.getBoundingClientRect()
           if (targetRect.width > 0 && targetRect.height > 0 && sourceRect.width > 0) {
+            const startDx = fromRect.left - targetRect.left
+            const startDy = fromRect.top - targetRect.top
+            const startSx = fromRect.width / targetRect.width
+            const startSy = fromRect.height / targetRect.height
             const dx = sourceRect.left - targetRect.left
             const dy = sourceRect.top - targetRect.top
             const sx = sourceRect.width / targetRect.width
             const sy = sourceRect.height / targetRect.height
             animation = target.animate(
               [
-                { transform: 'none' },
+                {
+                  transform: `translate(${startDx}px, ${startDy}px) scale(${startSx}, ${startSy})`,
+                },
                 { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
               ],
               { duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
@@ -96,14 +112,14 @@
               closing = false
             }
             backdropAnimation = dialog.animate(
-              [{}, { backgroundColor: 'transparent', backdropFilter: 'blur(0px)' }],
+              [backdropStart, { backgroundColor: 'transparent', backdropFilter: 'blur(0px)' }],
               { duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' },
             )
             return
           }
         }
       } else {
-        backdropAnimation = dialog.animate([{ opacity: 1 }, { opacity: 0 }], {
+        backdropAnimation = dialog.animate([{ opacity: startOpacity }, { opacity: 0 }], {
           duration: 120,
           easing: 'ease-out',
           fill: 'forwards',

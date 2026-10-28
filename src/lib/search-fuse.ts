@@ -60,3 +60,29 @@ export function fuse<T extends { url: string }>(lists: T[][], k = rrfK): T[] {
   }
   return [...scored.values()].sort((a, b) => b.score - a.score).map(({ hit }) => hit)
 }
+
+// Splits a plain-text snippet into unmarked and marked runs for the query terms so the page can
+// build <mark> nodes with DOM APIs instead of innerHTML.
+export function snippetParts(
+  snippet: string,
+  rawQuery: string,
+): Array<{ text: string; mark: boolean }> {
+  const terms = [...new Set(cleanQuery(rawQuery).split(' ').filter(Boolean))].sort(
+    (a, b) => b.length - a.length,
+  )
+  if (!snippet || !terms.length) return snippet ? [{ text: snippet, mark: false }] : []
+  const pattern = new RegExp(
+    `(${terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
+    'giu',
+  )
+  const parts: Array<{ text: string; mark: boolean }> = []
+  let lastIndex = 0
+  for (const match of snippet.matchAll(pattern)) {
+    const index = match.index ?? 0
+    if (index > lastIndex) parts.push({ text: snippet.slice(lastIndex, index), mark: false })
+    parts.push({ text: match[0], mark: true })
+    lastIndex = index + match[0].length
+  }
+  if (lastIndex < snippet.length) parts.push({ text: snippet.slice(lastIndex), mark: false })
+  return parts
+}

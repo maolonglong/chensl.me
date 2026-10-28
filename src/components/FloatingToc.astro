@@ -86,6 +86,16 @@ for (const heading of headings) {
           if (event.matches && list.matches(':popover-open')) list.hidePopover()
         })
         spy()
+        list.addEventListener('toggle', (event) => {
+          if (
+            (event as ToggleEvent).newState === 'open' &&
+            current &&
+            list.scrollHeight > list.clientHeight
+          ) {
+            list.scrollTop =
+              current.link.offsetTop - list.clientHeight / 2 + current.link.offsetHeight / 2
+          }
+        })
         list.addEventListener('click', (event) => {
           if (!(event.target instanceof Element) || !event.target.closest('a')) return
           if (list.matches(':popover-open')) list.hidePopover()
