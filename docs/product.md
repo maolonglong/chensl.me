@@ -53,7 +53,7 @@ AI News is a public section: what happened in AI each day. `e2e/news.spec.mjs` g
 - **Pages.** `/news/` shows the latest issue, grouped by tag in first-appearance order, with links to the archive. `/news/<date>/` shows one issue the same way. `/news/archive/` lists the months; `/news/archive/<YYYY-MM>/` lists that month's issues with their tags.
 - **Writes.** A bot publishes through `POST /api/news/` with no draft step. Each changed write adds a version and the newest is shown; a repeated write changes nothing. Issues are never deleted.
 - **Retraction.** `POST /api/news/retract/` hides a day from the pages and feed, and can restore it.
-- **Display.** A tag names a vendor or a tool, such as OpenAI or DeepSeek, and keeps its capitalization. Issues are plain text: markup shows as text, and items link only to `http` or `https` URLs. Edge caching can delay a new issue by a few minutes.
+- **Display.** A tag names a vendor or a tool, such as OpenAI or DeepSeek, and keeps its capitalization. Issues are plain text: markup shows as text, and items link only to `http` or `https` URLs. A linked title opens in a new tab ([decision](../.agents/notes/implemented/feature/2026-10-29-news-sources-open-in-a-new-tab.md)). Edge caching can delay a new issue by a few minutes.
 - **Review.** The author does not review each item; the index page says so ([decision](../.agents/notes/implemented/feature/2026-10-16-bot-written-news-on-d1.md)).
 
 ## Comments

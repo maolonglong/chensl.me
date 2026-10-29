@@ -18,8 +18,12 @@ const Item = `h${level + 1}` as 'h3' | 'h4'
         <li>
           <Item class="item-title">
             {isWebUrl(item.url) ? (
-              <a class="external" href={item.url} rel="noopener noreferrer">
-                {item.title}
+              // The issue is a list to return to, so each source opens beside it.
+              <a class="external" href={item.url} target="_blank" rel="noopener noreferrer">
+                {
+                  // No whitespace text node, so the title line gains no gap. The accessible name still separates the phrase.
+                  [item.title, <span class="visually-hidden">（新标签页打开）</span>]
+                }
               </a>
             ) : (
               item.title

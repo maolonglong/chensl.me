@@ -202,17 +202,48 @@ test.describe('news pages', () => {
     expect(response.headers()['cache-control']).toMatch(/\bs-maxage=86400\b/)
     expect(response.headers()['cache-tag']).toBe(`news,news-${date}`)
     await expect(page.locator('h1')).toHaveText('<b>今日</b> AI News')
-    const link = page.locator('main .items a').first()
-    await expect(link).toHaveText('<img src=x onerror=alert(1)>新模型发布')
+    const links = page.locator('main .items a')
+    const link = links.first()
     await expect(link).toHaveAttribute('href', 'https://example.com/post?a=1&b=2')
+    await expect(link).toHaveAttribute('target', '_blank')
+    await expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    await expect(link).toHaveAccessibleName(
+      '<img src=x onerror=alert(1)>新模型发布 （新标签页打开）',
+    )
+    // The phrase is in the name, and the clip keeps it off the title line.
+    const hint = link.locator('.visually-hidden')
+    const hintBox = await hint.boundingBox()
+    expect(hintBox?.width ?? 99).toBeLessThanOrEqual(1)
+    expect(hintBox?.height ?? 99).toBeLessThanOrEqual(1)
+    await expect(links).toHaveText([
+      '<img src=x onerror=alert(1)>新模型发布（新标签页打开）',
+      'Codex 更新（新标签页打开）',
+      'Gemini 更新（新标签页打开）',
+      'pi 发布（新标签页打开）',
+    ])
     await expect(page.locator('main img')).toHaveCount(0)
     await expect(page.locator('nav a[href="/news/"]')).toHaveAttribute('aria-current', 'location')
+
+    // The source must not replace the issue. example.com is fulfilled so the check needs no network.
+    await page.context().route('https://example.com/**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: '<!doctype html><title>source</title>',
+      }),
+    )
+    const source = page.waitForEvent('popup')
+    await link.click()
+    const popup = await source
+    await expect(popup).toHaveURL('https://example.com/post?a=1&b=2')
+    await expect(page).toHaveURL(new RegExp(`/news/${date}/$`))
+    await popup.close()
 
     // Tags group in the order they first appear, and keep their capitalization.
     await expect(page.locator('main .group-tag')).toHaveText(['OpenAI', 'Google', 'pi'])
     await expect(page.locator('main .group').first().locator('.item-title')).toHaveText([
-      '<img src=x onerror=alert(1)>新模型发布',
-      'Codex 更新',
+      '<img src=x onerror=alert(1)>新模型发布（新标签页打开）',
+      'Codex 更新（新标签页打开）',
     ])
     await expect(page.locator('nav a[href="/news/"]')).toHaveText('AI News')
   })
@@ -366,6 +397,9 @@ test.describe('news pages', () => {
     // The item HTML is escaped once for XML; the stored markup is escaped once more as text.
     expect(xml).toContain('&amp;lt;img src=x onerror=alert(1)&amp;gt;新模型发布')
     expect(xml).not.toContain('<img')
+    // A feed app chooses the tab. The page's new-tab hint stays on the page.
+    expect(xml).not.toContain('_blank')
+    expect(xml).not.toContain('新标签页打开')
     expect(xml).toContain('<title>~chensl AI News</title>')
     expect(xml).toContain('<category>OpenAI</category>')
     expect(xml).toContain('[OpenAI]')
