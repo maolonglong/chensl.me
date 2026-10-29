@@ -19,7 +19,7 @@ chensl.me is a personal site and blog. Astro prerenders the pages to static asse
 | --- | --- |
 | change how the site builds, serves, or runs scripts, or touch the CSP | [Architecture](docs/architecture.md) |
 | change what readers see or rely on: pages, articles, feeds, exports, upvotes, comments | [Product](docs/product.md) |
-| change layout, styles, fonts, or browser interactions | [Design](docs/design.md) |
+| change the column, the frame, type, color, or a control's motion | [Design](docs/design.md) |
 | add or change a test, or choose the checks for a change | [Testing](docs/testing.md) |
 | remove, replace, or reintroduce something, or propose a simplification | [Agent Notes](.agents/notes/AGENTS.md): search them for the topic first |
 | write a document, an Agent Note, or a skill | [Documentation standard](docs/AGENTS.md) |

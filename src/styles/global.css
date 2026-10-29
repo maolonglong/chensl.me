@@ -543,6 +543,7 @@ blockquote cite {
 
 /* ------------------------------------------------------------------- code */
 
+/* Tighter than --radius: the card radius turns a short token into a pill. */
 :not(pre) > code {
     padding: 0.15em 0.38em;
     font-size: 0.875em;
