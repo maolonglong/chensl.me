@@ -75,7 +75,7 @@ const { creation } = post.data
   <div class="post-end measure">
     <Upvote postId={post.id} />
     {(earlier || later) && (
-      <nav class="post-nav ruled" aria-label="相邻文章">
+      <nav class="post-nav" aria-label="相邻文章">
         {earlier && (
           <a class="post-nav-link" href={postUrl(earlier)} rel="prev">
             <span class="meta">上一篇</span>

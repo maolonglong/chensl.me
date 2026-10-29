@@ -188,7 +188,7 @@ const feed = isNews
               d="M232 436C320 442 366 400 362 330C360 302 342 290 320 290C298 290 282 308 282 328C282 348 298 362 314 360C326 358 332 348 328 340"
             />
           </svg>
-          <span class="site-name">{siteTitle}</span>
+          {siteTitle}
         </a>
       </p>
       <nav aria-label="主导航">
@@ -224,7 +224,7 @@ const feed = isNews
       <slot />
     </main>
     <footer class="site-footer">
-      <div class="footer-row ruled">
+      <div class="footer-row">
         <p class="footer-mark meta">© 2026 Shaolong Chen</p>
         <!-- prettier-ignore -->
         <p class="footer-links meta">
@@ -259,18 +259,14 @@ const feed = isNews
     color: var(--background-color);
     background: var(--link-color);
   }
-  /* The masthead rule is a content-box background, so it spans the column and not the gutters;
-     the cat and the nav stand on it, and the cat's outline touches it. */
   .site-header {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: var(--space-3) var(--space-5);
-    padding-block: var(--space-5) 0;
+    padding-block: var(--space-5);
     margin-bottom: var(--space-7);
-    background: linear-gradient(var(--rule-color), var(--rule-color)) left bottom / 100% 1px
-      no-repeat content-box;
   }
   .site-title {
     margin: 0;
@@ -281,18 +277,13 @@ const feed = isNews
   }
   .site-title a {
     display: flex;
-    align-items: flex-end;
-    min-height: 40px;
+    align-items: center;
     gap: var(--space-2);
     color: var(--heading-color);
     text-decoration-line: none;
   }
   .site-cat {
     flex: none;
-  }
-  /* The link is as tall as the 40 px nav targets, so the name centers on their row. */
-  .site-name {
-    align-self: center;
   }
   .site-header nav {
     display: flex;
@@ -397,7 +388,7 @@ const feed = isNews
   }
   @media (max-width: 600px) {
     .site-header {
-      padding-block: var(--space-4) 0;
+      padding-block: var(--space-4);
       margin-bottom: var(--space-6);
     }
     .site-header nav {

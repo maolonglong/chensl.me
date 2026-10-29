@@ -4,19 +4,19 @@ Read this before you change layout, styles, fonts, or browser interactions. It s
 
 ## Intent
 
-The site reads like an engineering research publication: optical-white canvas, cool neutral surfaces, crisp hairline rules, and native sans-serif typography inspired by Apple Machine Learning Research and the Apple Human Interface Guidelines. Three ideas carry it ([decision](../.agents/notes/implemented/feature/2026-10-26-apple-sans-editorial-redesign.md)):
+The site reads like an engineering research publication: optical-white canvas, cool neutral surfaces, generous whitespace, and native sans-serif typography inspired by Apple Machine Learning Research and the Apple Human Interface Guidelines. Three ideas carry it ([decision](../.agents/notes/implemented/feature/2026-10-26-apple-sans-editorial-redesign.md)):
 
 - **Hierarchy through weight and scale.** System sans-serif (`--font-sans`) sets both reading text and UI chrome; monospace (`--font-mono`) sets code. Headings, section labels, `strong`, and table headers use weight 600, index titles (`.entry-title`) use weight 400 in `--heading-color` at body size, headings carry `letter-spacing: 0` so CJK strokes stay crisp, and metadata and secondary copy recede in weight 400 and `--muted-color`.
-- **Ruled sections.** A section opens with a hairline and a small sans label (`.section-label`). Each section rule is a dimension line: a short tick hangs from each end (`.section-label`, `.footnotes`, `.ruled`). Rules divide sections and year groups while compact index rows breathe via whitespace; fills and frames are for code, notes, repository cards, and floating controls only.
+- **Sections by whitespace.** A section opens with a small sans label (`.section-label`); the space above it, not a rule, sets it apart, and compact index rows breathe the same way. Fills and frames are for code, notes, repository cards, and floating controls only (`e2e/page-shell.spec.mjs`). [Decision](../.agents/notes/implemented/simplification/2026-10-29-whitespace-sections.md).
 - **Optical blue means a link or active control.** Lists of titles, navigation, and news items use the heading color and underline on hover, so `--link-color` stays rare enough to signal an interactive link or active state.
 
-The reading column stays calm, and the frame around it carries the site's own marks: the masthead cat, dimension-line rules, and the article margin apparatus ([decision](../.agents/notes/implemented/feature/2026-10-29-frame-signature.md)).
+The reading column stays calm, and the frame around it carries the site's own marks: the masthead cat and the article margin apparatus ([decision](../.agents/notes/implemented/feature/2026-10-29-frame-signature.md)).
 
 ## Layout
 
 - The header, the reading column (`.measure`), and the footer share one measure (`--measure`) and one left and right edge (`e2e/page-shell.spec.mjs`).
 - Short pages keep the footer at the bottom of the view (`e2e/page-shell.spec.mjs`).
-- The site icon's sleeping cat lies on the masthead rule beside the site name; the rule spans the column, not the gutters (`e2e/page-shell.spec.mjs`).
+- The site icon's sleeping cat is the masthead logo, beside the site name (`e2e/page-shell.spec.mjs`).
 - Where the view leaves a margin beside the column, an article's contents sit there as a plain list, below the article metadata; elsewhere a corner button opens them as a popover (`e2e/contents.spec.mjs`). The list does not depend on hover.
 
 ## Interaction
@@ -39,7 +39,7 @@ Apple Machine Learning Research and the Apple Human Interface Guidelines supply 
 
 Every foreground role clears two floors in each theme: a WCAG ratio floor and a perceptual APCA lightness-contrast floor (`tests/design.test.mjs`). WCAG ratios alone let the dark theme drift weak, so dark values are tuned by perceived contrast, using the method described at <https://earendil.com/posts/system-theme/>.
 
-Roles beyond the core foregrounds in `src/styles/global.css`: `--elevated-color` sits above the surface for floating plates and popovers so their hover fills stay visible on a dark page; `--fill-color` is the one translucent gray for hover, pressed, and current states on any surface; `--border-color` draws quiet dividers (table rows, search-result separators, card and plate frames) while `--rule-color` draws the stronger structural hairlines (section, year, footer, and news-group rules, the table header rule, the search input line, the upvote ring).
+Roles beyond the core foregrounds in `src/styles/global.css`: `--elevated-color` sits above the surface for floating plates and popovers so their hover fills stay visible on a dark page; `--fill-color` is the one translucent gray for hover, pressed, and current states on any surface; `--border-color` draws quiet dividers (table rows, search-result separators, card and plate frames) while `--rule-color` draws the stronger hairlines that remain (the article `hr`, the table header rule, the blockquote line, the search input line, the upvote ring).
 
 `src/lib/markdown.mjs` and the giscus themes (`src/styles/giscus*.css`) add syntax hues (magenta, violet, teal at equal perceived weight) and diff/state colors (red, green, amber) for addition, deletion, and warning meaning. Add a new chromatic value here with its reason before you use it. `tests/design.test.mjs` checks the WCAG and APCA floors for `src/styles/global.css` and `codeThemes`, and AA contrast for `src/styles/giscus*.css`. Text underlines use `--rule-color`, because a `--border-color` underline disappears on a dark page.
 

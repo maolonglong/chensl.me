@@ -178,31 +178,55 @@ for (const width of [375, 1280]) {
   })
 }
 
-// The site icon's sleeping cat lies on the masthead rule, beside the site name.
+// The site icon's sleeping cat is the masthead logo: decorative, beside the name, on the name's line.
+// Whitespace, not a rule, separates the header from the page.
 for (const width of [390, 1280]) {
-  test(`masthead cat sleeps on the header rule at ${width}px`, async ({ page, open }) => {
+  test(`masthead cat sits beside the site name at ${width}px`, async ({ page, open }) => {
     await page.setViewportSize({ width, height: 844 })
     await open('/')
     const masthead = await page.evaluate(() => {
       const header = document.querySelector('.site-header')
-      const cat = header.querySelector('.site-title svg')
-      // The rule is a content-box background so it spans the column, not the gutters.
+      const link = header.querySelector('.site-title a')
+      const svg = link.querySelector('svg')
+      const cat = svg?.getBoundingClientRect()
+      const name = document.createRange()
+      name.selectNodeContents(link)
+      if (svg) name.setStartAfter(svg)
+      const text = name.getBoundingClientRect()
+      const style = getComputedStyle(header)
       return {
-        hidden: cat?.getAttribute('aria-hidden'),
-        rule: getComputedStyle(header).backgroundImage,
-        gap: cat
-          ? header.getBoundingClientRect().bottom - cat.getBoundingClientRect().bottom
-          : null,
+        hidden: svg?.getAttribute('aria-hidden'),
+        beside: !!cat && cat.right <= text.left,
+        centered: !!cat && Math.abs(cat.top + cat.height / 2 - (text.top + text.height / 2)) <= 2,
+        ruleless: style.backgroundImage === 'none' && style.borderBottomStyle === 'none',
       }
     })
     expectAll(`masthead at ${width}px`, masthead, {
       'cat is decorative': masthead.hidden === 'true',
-      'header ends in a hairline': masthead.rule.includes('gradient'),
-      'cat rests on the rule': masthead.gap !== null && masthead.gap >= 0 && masthead.gap <= 1,
+      'cat sits left of the name': masthead.beside,
+      'cat centers on the name': masthead.centered,
+      'header draws no rule': masthead.ruleless,
     })
     await expect(page.getByRole('link', { name: '~chensl', exact: true })).toBeVisible()
   })
 }
+
+// Sections, year groups, and the footer stand apart by whitespace; no structural rule divides them.
+test('page structure draws no section rules', async ({ page, open }) => {
+  for (const path of ['/', '/blog/', '/blog/harness-engineering/']) {
+    await open(path)
+    const ruled = await page.evaluate(() =>
+      [
+        ...document.querySelectorAll(
+          '.section-label, .section-head, .year-group, .post-nav, .footnotes, .footer-row',
+        ),
+      ]
+        .filter((element) => getComputedStyle(element).borderTopStyle !== 'none')
+        .map((element) => element.className),
+    )
+    expect(ruled, path).toEqual([])
+  }
+})
 
 test('CSP blocks untrusted inline scripts and event handlers', async ({ page, open }) => {
   await open('/')

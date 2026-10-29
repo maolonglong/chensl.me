@@ -18,7 +18,7 @@ const recent = posts.slice(0, recentCount)
 
     {recent.length > 0 && (
       <section class="home-section" aria-labelledby="home-posts">
-        <div class="section-head ruled">
+        <div class="section-head">
           <h2 class="section-label" id="home-posts">
             最近的文章
           </h2>
@@ -46,7 +46,7 @@ const recent = posts.slice(0, recentCount)
     )}
 
     <section class="home-section" aria-labelledby="home-news">
-      <div class="section-head ruled">
+      <div class="section-head">
         <h2 class="section-label" id="home-news">
           AI News
         </h2>
@@ -94,8 +94,6 @@ const recent = posts.slice(0, recentCount)
   .section-head .section-label {
     margin: 0;
     padding: 0;
-    border-top: 0;
-    background: none;
   }
   .more {
     font-size: var(--size-caption);

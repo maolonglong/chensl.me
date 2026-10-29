@@ -20,7 +20,7 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
     </header>
     {issues.length ? (
       issues.map((issue) => (
-        <article class="day ruled">
+        <article class="day">
           <p class="meta day-date">
             <time datetime={issue.date}>{issue.date}</time>
           </p>

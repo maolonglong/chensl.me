@@ -18,7 +18,7 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
       <h1 class="page-title">归档</h1>
     </header>
     {months.length ? (
-      <ul class="months ruled">
+      <ul class="months">
         {months.map(({ month, count }) => (
           <li>
             <a href={`/news/archive/${month}/`}>
