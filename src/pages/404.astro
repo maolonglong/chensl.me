@@ -7,7 +7,8 @@ import BaseLayout from '../layouts/BaseLayout.astro'
     <p class="code meta">404</p>
     <h1 class="page-title">这个页面不存在。</h1>
     <p class="kaomoji" aria-hidden="true">
-      ʕノ•ᴥ•ʔノ ︵ ┻━┻
+      <span class="flip">(╯°□°)╯︵</span>
+      <span class="table">┻━┻</span>
     </p>
     <p class="links meta">
       <a class="arrow-link" href="/">
@@ -30,15 +31,25 @@ import BaseLayout from '../layouts/BaseLayout.astro'
     margin: 0 0 var(--space-2);
     letter-spacing: 0.08em;
   }
-  /* A system monospace draws ┻━┻ as one table and costs no font download. */
+  /*
+    SF Mono does not join ┻━┻, and ノ is not in that face, so the bear form
+    falls apart. The system sans draws this table flip as one piece, with no
+    extra font. The table stays on one line; the figure may wrap ahead of it
+    so a zoomed narrow view does not scroll sideways.
+  */
   .kaomoji {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 0.35em;
     margin: var(--space-5) 0 var(--space-7);
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-sans);
     font-size: var(--size-h2);
     line-height: 1.3;
     letter-spacing: 0;
     color: var(--muted-color);
-    overflow-wrap: anywhere;
+  }
+  .table {
+    white-space: nowrap;
   }
   .links {
     display: flex;

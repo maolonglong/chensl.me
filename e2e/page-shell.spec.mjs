@@ -331,6 +331,28 @@ test('standalone pages load code fonts on demand and set italic without emphasis
   }
 })
 
+test('the 404 table flip stays in the column when text is enlarged', async ({ page, open }) => {
+  await page.setViewportSize({ width: 320, height: 844 })
+  await open('/404.html')
+  const kaomoji = page.locator('.kaomoji')
+  await expect(kaomoji).toHaveText('(╯°□°)╯︵ ┻━┻')
+  const layout = await kaomoji.evaluate((element) => {
+    document.documentElement.style.fontSize = '200%'
+    const font = getComputedStyle(element).fontFamily
+    const table = element.querySelector('.table').getBoundingClientRect()
+    return {
+      sans: font.includes('PingFang SC'),
+      fits: document.documentElement.scrollWidth <= innerWidth,
+      table: table.width > 0 && table.right <= innerWidth,
+    }
+  })
+  expectAll('404 table flip at 320px / 200%', layout, {
+    'uses the system sans': layout.sans,
+    'does not widen the page': layout.fits,
+    'keeps the table inside the view': layout.table,
+  })
+})
+
 for (const width of [320, 390, 768, 1280]) {
   test(`page shell fits and aligns at ${width}px`, async ({ page, open }) => {
     await page.setViewportSize({ width, height: 844 })
