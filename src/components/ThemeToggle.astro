@@ -78,7 +78,8 @@
   :global(::view-transition-old(root)),
   :global(::view-transition-new(root)) {
     animation-duration: 200ms;
-    animation-timing-function: ease;
+    /* The keyword `ease` starts slow on the frame the reader is watching. */
+    animation-timing-function: var(--ease-out);
   }
   .theme-toggle {
     visibility: hidden;

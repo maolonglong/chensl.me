@@ -203,6 +203,14 @@ test('site styles use the size ladder and do not transition theme colors', () =>
   }
 })
 
+test('the theme crossfade uses the shared ease-out', () => {
+  const source = readFileSync(path.join(root, 'src/components/ThemeToggle.astro'), 'utf8')
+  assert.match(
+    source,
+    /::view-transition-old\(root\)[\s\S]*?animation-timing-function:\s*var\(--ease-out\)/,
+  )
+})
+
 test('pressed controls shrink subtly, to no less than 0.95', () => {
   const files = [
     path.join(root, 'src/styles/global.css'),
