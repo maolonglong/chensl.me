@@ -8,7 +8,6 @@ function probe() {
   return {
     visible: !!button && getComputedStyle(button).visibility === 'visible',
     button: box('.back-to-top'),
-    column: box('.post'),
     footer: box('body > footer'),
     comments: box('.comments'),
     width: innerWidth,
@@ -16,8 +15,9 @@ function probe() {
   }
 }
 
-// The button waits a screen down, then floats clear of the footer, the comments, and, when there
-// is room, the text column.
+// The button waits a screen down, then floats in the view corner, clear of the footer and the
+// comments. When a contents button exists, back-to-top sits above it. The corner does not move
+// when the window crosses 76rem.
 for (const width of [320, 390, 768, 1280]) {
   test(`back-to-top hides at the top and floats clear at ${width}px`, async ({
     page,
@@ -37,7 +37,6 @@ for (const width of [320, 390, 768, 1280]) {
       await settle(page)
       const end = await page.evaluate(probe)
       const button = end.button
-      const besideColumn = button?.left >= end.column.right
       expectAll(`/blog/dockertest/ back-to-top at ${width}px / ${size}`, end, {
         'hidden at the top': !top.visible,
         'visible at the bottom': end.visible,
@@ -45,11 +44,8 @@ for (const width of [320, 390, 768, 1280]) {
           inside(button, end) && button.width >= 44 && button.height >= 44,
         'clear of the footer': !!button && apart(button, end.footer),
         'clear of the comments': !!button && apart(button, end.comments),
-        // Without room beside the column, the button holds the corner of the view.
-        'in the corner or beside the column':
-          besideColumn || Math.abs(end.width - button?.right - 24) <= 4,
-        ...(width === 1280 &&
-          size === '100%' && { 'beside the column when there is room': besideColumn }),
+        // --gutter is 20px below 600px and 24px above it. The 4px band covers both.
+        'holds the view corner': Math.abs(end.width - button?.right - 24) <= 4,
       })
     }
   })

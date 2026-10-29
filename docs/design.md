@@ -19,10 +19,10 @@ The column is the document.
 
 ## Frame
 
-The frame is the masthead, the footer, and the article margin ([decision](../.agents/notes/implemented/feature/2026-10-29-frame-signature.md)).
+The frame is the masthead, the footer, and the corner controls ([masthead](../.agents/notes/implemented/feature/2026-10-29-frame-signature.md), [article header and contents](../.agents/notes/implemented/simplification/2026-10-29-article-meta-under-title.md)).
 
 - The site icon's sleeping cat is the masthead logo, 22px beside the site name, centered on the name's line (`e2e/page-shell.spec.mjs`).
-- Where the view leaves a margin beside the column, an article's contents sit there as a plain list, below the article metadata; elsewhere a corner button opens them. The list works without hover (`e2e/contents.spec.mjs`).
+- An article's contents open from a corner button at every width. The button holds the view corner, and back-to-top sits above it. The list works without hover (`e2e/contents.spec.mjs`).
 - Every control works with a keyboard, has a visible focus ring and an accessible name. Floating buttons, contents entries in the popover, and in-page controls like the upvote are 44 px targets; the header tools are 40 px circles that never overlap (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`, `e2e/navigation.spec.mjs`).
 - Hover affordances sit behind `@media (hover: hover)`. Text acknowledges a press by opacity. A bounded control acknowledges a press by shrinking, to no less than `scale(0.95)`, on `--ease-out` (`tests/design.test.mjs`). The theme crossfade uses that same curve (`tests/design.test.mjs`). `prefers-reduced-motion: reduce` keeps opacity and color fades in `src/styles/global.css`—they carry state meaning—while transforms and other movement snap instead of animating; keyframe animations run only under `no-preference` (`e2e/back-to-top.spec.mjs`, `e2e/footnotes.spec.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-27-reduced-motion-keeps-fades.md).
 - A link that leads to more of the same (`.arrow-link`) ends with an arrow that steps forward on hover. That step is the one motion that is not press feedback.
@@ -50,7 +50,7 @@ Every foreground role clears two floors in each theme: a WCAG ratio floor and a 
 
 - **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails. A click crossfades the whole page between themes on `--ease-out`; system and storage changes apply at once (`e2e/appearance.spec.mjs`, `tests/design.test.mjs`).
 - **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
-- **Article header.** The date, length, reading time, and creation label share one sans metadata line. Where the view leaves a margin beside the column, the line stacks there instead, one fact per line, level with the title. A stale notice is a quiet surface note below it (`e2e/page-shell.spec.mjs`, `e2e/reading-time.spec.mjs`).
+- **Article header.** The date, length, reading time, and creation label share one sans metadata line under the title at every width. A stale notice is a quiet surface note below it (`e2e/page-shell.spec.mjs`, `e2e/reading-time.spec.mjs`).
 - **Article end.** The upvote, then the earlier and later articles, then the comments under a section label.
 - **Search** is one ruled input line and a result list: title, type and date, excerpt. Filters and suggestions stay out of it.
 - **Icons** are inline SVG, not font glyphs or an icon library.

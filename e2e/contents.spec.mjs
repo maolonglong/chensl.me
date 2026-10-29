@@ -1,7 +1,7 @@
 import { apart, expect, expectAll, inside, test } from './site.mjs'
 
-// The article's one contents list: a plain list in the margin beside the column where the view
-// leaves room, and a popover behind a button in back-to-top's corner everywhere else.
+// The article's one contents list is a corner button at every width. The list is a popover
+// anchored above that button. Back-to-top shares the corner and sits above the button.
 const firstEntry = '#article-toc > ul > li:first-child > a'
 const secondEntry = '#article-toc > ul > li:nth-child(2) > a'
 
@@ -31,10 +31,7 @@ function probeContents() {
     buttonOpaque: button ? !getComputedStyle(button).backgroundColor.startsWith('rgba(') : true,
     backToTop: box(backToTop),
     backToTopShown: shown(backToTop),
-    listOnTop: onTop(list),
     buttonOnTop: onTop(button),
-    column: box(document.querySelector('.post')),
-    meta: box(document.querySelector('.post-meta')),
     footer: box(document.querySelector('body > footer')),
     comments: box(document.querySelector('.comments')),
     current: [...document.querySelectorAll('#article-toc [aria-current]')].map((a) =>
@@ -62,21 +59,37 @@ async function measure(page, action) {
 }
 
 for (const width of [1280, 1440]) {
-  test(`contents list in the margin at ${width}px`, async ({ page, open }) => {
+  test(`contents button at ${width}px`, async ({ page, open }) => {
     await page.setViewportSize({ width, height: 844 })
     await open('/blog/dockertest/')
-    const label = `/blog/dockertest/ contents list at ${width}px`
+    const label = `/blog/dockertest/ contents button at ${width}px`
     const rest = await measure(page, () => scrollTo(0, 0))
     expectAll(label, rest, {
-      'list sits inside the view': inside(rest.rail, rest),
-      'list paints on top': rest.listOnTop,
-      'no contents button beside the list': !rest.button,
-      'list clears the column': rest.rail?.right <= rest.column.left - 23,
-      'list clears back-to-top': apart(rest.rail, rest.backToTop),
+      'list stays closed until the button opens it': !rest.rail && !rest.panel,
+      'button sits inside the view': inside(rest.button, rest),
+      'button paints on top': rest.buttonOnTop,
+      'button holds the view corner': Math.abs(rest.width - rest.button?.right - 24) <= 4,
+      'button lines up with back-to-top': Math.abs(rest.button?.right - rest.backToTop.right) <= 1,
+      "button sits below back-to-top's place": rest.button?.top - rest.backToTop.bottom >= 7,
     })
-    if (!rest.rail) return
+    if (!rest.button) return
+
+    await page.locator('.toc-button').click()
+    await expect(page.locator('#article-toc')).toHaveCSS('transform', 'none')
+    const opened = await measure(page)
+    expectAll(`${label} opened`, opened, {
+      'contents sit inside the view': inside(opened.panel, opened),
+      'contents clear the button': apart(opened.panel, opened.button),
+      'contents anchor directly above the button':
+        opened.button.top - opened.panel.bottom >= 7 &&
+        opened.button.top - opened.panel.bottom <= 9,
+      'back-to-top hides while contents are open': !opened.backToTopShown,
+      'button plate stays opaque when open': opened.buttonOpaque,
+    })
 
     // The Dockertest H2 is followed at once by an H3; arriving at the H2 must still mark the H2.
+    // The spy runs while the popover is closed.
+    await page.keyboard.press('Escape')
     const section = await measure(page, () =>
       document.getElementById('dockertest').scrollIntoView(),
     )
@@ -87,56 +100,32 @@ for (const width of [1280, 1440]) {
     expect
       .soft(end.current, `${label}: the last entry is current at the bottom of the page`)
       .toEqual([end.last])
+    expectAll(`${label} at the bottom`, end, {
+      'button clears the footer': apart(end.button, end.footer),
+      'button clears the comments': apart(end.button, end.comments),
+    })
 
-    // The keyboard reaches the list, and Enter jumps to the heading.
+    // The keyboard reaches the list, and Enter jumps to the heading and closes the popover.
     await measure(page, () => scrollTo(0, 0))
+    await page.locator('.toc-button').click()
+    await expect(page.locator('#article-toc')).toHaveCSS('transform', 'none')
     await page.locator(firstEntry).focus()
     await page.keyboard.press('Enter')
     const jumped = await measure(page)
     expectAll(`${label} after Enter`, jumped, {
       'URL points at the first heading': jumped.hash === jumped.first,
       'heading sits at the top': Math.abs(jumped.targetTop) <= 1,
-      'list stays in the margin':
-        jumped.rail?.left === rest.rail.left && inside(jumped.rail, jumped),
+      'contents close': !jumped.panel,
     })
   })
 }
 
-// A list fixed to the view stays put while a trackpad bounce at the page edge drags the header
-// down, and stacks the two. Playwright cannot emulate that bounce, so the test pins what keeps the
-// list with the page: it starts level with the article, holds below the header while reading, and
-// ends with the article.
-test('the margin list travels with the page instead of staying fixed to the view', async ({
-  page,
-  open,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 844 })
-  await open('/blog/dockertest/')
-  const label = '/blog/dockertest/ margin list'
-  const rest = await measure(page, () => scrollTo(0, 0))
-  expectAll(label, rest, {
-    'list starts below the metadata, near the top of the article':
-      rest.rail?.top >= rest.meta.bottom + 16 && rest.rail?.top - rest.column.top <= 160,
-  })
-  const reading = await measure(page, () => scrollTo(0, 1500))
-  expectAll(`${label} while reading`, reading, {
-    'list holds 8rem below the top of the view': Math.abs(reading.rail?.top - 128) <= 1,
-  })
-  const end = await measure(page, () => scrollTo(0, document.documentElement.scrollHeight))
-  expectAll(`${label} at the bottom`, end, {
-    'list ends with the article, above the footer': end.rail?.bottom <= end.footer.top,
-  })
-})
-
-test('a pointer in a view without a margin opens the contents from the button', async ({
-  page,
-  open,
-}) => {
+test('widening the view keeps the open contents anchored to the button', async ({ page, open }) => {
   await page.setViewportSize({ width: 1024, height: 768 })
   await open('/blog/dockertest/')
   const rest = await measure(page, () => scrollTo(0, 0))
   expectAll('/blog/dockertest/ at 1024px', rest, {
-    'no list before the button opens it': !rest.rail,
+    'list stays closed until the button opens it': !rest.rail && !rest.panel,
     'button paints on top': rest.buttonOnTop,
   })
   await page.locator('.toc-button').click()
@@ -153,12 +142,16 @@ test('a pointer in a view without a margin opens the contents from the button', 
   expect((await measure(page)).panel).toBeNull()
 
   await page.locator('.toc-button').click()
+  await expect(page.locator('#article-toc')).toHaveCSS('transform', 'none')
   await page.setViewportSize({ width: 1280, height: 768 })
   const widened = await measure(page)
   expectAll('/blog/dockertest/ widened to 1280px with popover open', widened, {
-    'popover closes when the margin rail appears': !widened.panel,
-    'list sits in the margin':
-      widened.rail?.left >= 24 && widened.rail?.right <= widened.column.left - 23,
+    'popover stays open': !!widened.panel,
+    'button stays in the corner': Math.abs(widened.width - widened.button?.right - 24) <= 4,
+    'contents stay anchored above the button':
+      widened.button &&
+      widened.button.top - widened.panel.bottom >= 7 &&
+      widened.button.top - widened.panel.bottom <= 9,
   })
 })
 
@@ -179,7 +172,7 @@ test.describe('with a touch screen', () => {
       // The button holds the corner from the start; back-to-top joins above it later, so neither ever moves.
       const rest = await measure(page, () => scrollTo(0, 0))
       expectAll(label, rest, {
-        'no rail below 76rem': !rest.rail,
+        'list stays closed until the button opens it': !rest.rail && !rest.panel,
         'button sits inside the view': inside(rest.button, rest),
         'button paints on top': rest.buttonOnTop,
         'button lines up with back-to-top':
@@ -238,7 +231,7 @@ test('a short article floats no contents and keeps back-to-top in the corner', a
   await open('/blog/lock-free-queue/')
   const short = await measure(page, () => scrollTo(0, document.documentElement.scrollHeight))
   expectAll('/blog/lock-free-queue/', short, {
-    'no contents rail': !short.rail,
+    'no contents list': !short.rail && !short.panel,
     'no contents button': !short.button,
     'back-to-top keeps the corner': short.height - short.backToTop.bottom <= 24,
   })

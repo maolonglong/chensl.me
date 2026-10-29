@@ -40,12 +40,10 @@ for (const width of [375, 1280]) {
       await open('/blog/overlayfs/')
       const notice = page.locator('.post-notice')
       await expect(notice).toBeVisible()
-      // A quiet note under the header line: upright text in the body color, close below the element
-      // above it in the column. A wide view moves the metadata to the margin, so that is the title.
+      // A quiet note under the metadata line: upright text, close below that line.
       const style = await notice.evaluate((element) => {
         const notice = getComputedStyle(element)
-        let above = element.previousElementSibling
-        while (getComputedStyle(above).position === 'absolute') above = above.previousElementSibling
+        const above = element.previousElementSibling
         return {
           fontStyle: notice.fontStyle,
           whiteSpace: notice.whiteSpace,
@@ -140,8 +138,7 @@ for (const width of [375, 1280]) {
   }
 }
 
-// The margin is the article's apparatus: where the view leaves one, the metadata stacks there level
-// with the title, one fact per line, and the column holds only the text.
+// Date, length, reading time, and the creation label stay one line under the title at every width.
 for (const width of [375, 1280]) {
   test(`article metadata at ${width}px`, async ({ page, open }) => {
     await page.setViewportSize({ width, height: 844 })
@@ -155,26 +152,18 @@ for (const width of [375, 1280]) {
         title: box(document.querySelector('.post-header h1')),
         meta: box(meta),
         tops: parts.map((part) => Math.round(part.top)),
-        separatorsShown: [...meta.querySelectorAll('[aria-hidden]')].some(
+        separatorsShown: [...meta.querySelectorAll('[aria-hidden]')].every(
           (separator) => separator.getClientRects().length > 0,
         ),
       }
     })
     const { column, title, meta, tops } = layout
-    if (width >= 1216) {
-      expectAll(`metadata at ${width}px`, layout, {
-        'sits in the margin left of the column': meta.right <= column.left - 16 && meta.left >= 0,
-        'starts level with the title': Math.abs(tops[0] - title.top) <= 16,
-        'one fact per line': tops.every((top, index) => index === 0 || top > tops[index - 1]),
-        'drops the inline separators': !layout.separatorsShown,
-      })
-    } else {
-      expectAll(`metadata at ${width}px`, layout, {
-        'sits in the column under the title':
-          meta.left >= column.left - 1 && meta.top >= title.bottom,
-        'keeps one line': tops.every((top) => top === tops[0]),
-      })
-    }
+    expectAll(`metadata at ${width}px`, layout, {
+      'sits in the column under the title':
+        meta.left >= column.left - 1 && meta.right <= column.right + 1 && meta.top >= title.bottom,
+      'keeps one line': tops.every((top) => top === tops[0]),
+      'keeps the inline separators': layout.separatorsShown,
+    })
   })
 }
 

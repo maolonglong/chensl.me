@@ -29,26 +29,24 @@ for (const heading of headings) {
         <path d="M4 6h16M4 12h16M4 18h10" />
       </svg>
     </button>
-    <div class="toc-rail">
-      <nav id="article-toc" class="toc" popover aria-label="目录">
-        <ul>
-          {groups.map((group) => (
-            <li>
-              <a href={`#${group.heading.slug}`}>{group.heading.text}</a>
-              {group.children.length > 0 && (
-                <ul>
-                  {group.children.map((heading) => (
-                    <li>
-                      <a href={`#${heading.slug}`}>{heading.text}</a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+    <nav id="article-toc" class="toc" popover aria-label="目录">
+      <ul>
+        {groups.map((group) => (
+          <li>
+            <a href={`#${group.heading.slug}`}>{group.heading.text}</a>
+            {group.children.length > 0 && (
+              <ul>
+                {group.children.map((heading) => (
+                  <li>
+                    <a href={`#${heading.slug}`}>{heading.text}</a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
     <script>
       ;(() => {
         const list = document.querySelector<HTMLElement>('#article-toc')
@@ -82,9 +80,6 @@ for (const heading of headings) {
         }
         window.addEventListener('scroll', schedule, { passive: true })
         window.addEventListener('resize', schedule)
-        window.matchMedia('(min-width: 76rem)').addEventListener('change', (event) => {
-          if (event.matches && list.matches(':popover-open')) list.hidePopover()
-        })
         spy()
         list.addEventListener('toggle', (event) => {
           if (

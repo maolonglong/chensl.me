@@ -19,7 +19,7 @@ Retire the warm paper palette, Tsanger JinKai, Source Serif 4, and the bundled d
 
 ## Consequences
 
-The repository drops 38 MB of JinKai TTFs, the Noto Sans SC slice table, `bf0f92c:src/lib/latin-range.mjs`, and the build-time font-slicing pipeline; a single 4.1 MB `NotoSansSC-SemiBold.woff2` in `src/assets/fonts/noto-sans-sc/` serves build-time share cards. Pages render immediately in the platform's native sans-serif with zero layout shift and zero CJK font transfer, including runtime D1 text on `/news/`. This note supersedes the earlier JinKai subsetting, slicing, W04-only, and warm-paper editorial redesign notes. The marks that the frame carries on top of this palette and type (the masthead cat and the article margin apparatus) belong to [the frame signature note](2026-10-29-frame-signature.md).
+The repository drops 38 MB of JinKai TTFs, the Noto Sans SC slice table, `bf0f92c:src/lib/latin-range.mjs`, and the build-time font-slicing pipeline; a single 4.1 MB `NotoSansSC-SemiBold.woff2` in `src/assets/fonts/noto-sans-sc/` serves build-time share cards. Pages render immediately in the platform's native sans-serif with zero layout shift and zero CJK font transfer, including runtime D1 text on `/news/`. This note supersedes the earlier JinKai subsetting, slicing, W04-only, and warm-paper editorial redesign notes. The masthead cat that the frame carries on top of this palette and type belongs to [the frame signature note](2026-10-29-frame-signature.md). The article header and the contents button belong to [the article header note](../simplification/2026-10-29-article-meta-under-title.md).
 
 ## Alternatives Considered
 

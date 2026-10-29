@@ -2,8 +2,7 @@
   Article controls. Back-to-top and the contents button share one lane at the
   bottom right: 44px plates in the page color, so text scrolling beneath never
   shows through. The contents button holds the corner and back-to-top sits
-  above it, so neither moves. Where the margin beside the column has room, the
-  contents list leaves the popover and stays on screen as a plain list.
+  above it, at every width, so neither moves.
 */
 .back-to-top,
 .toc-button,
@@ -55,10 +54,6 @@ body:has(.toc-button) .back-to-top {
     bottom: calc(var(--gutter) + 44px + var(--space-2));
 }
 
-.toc-rail {
-    display: contents;
-}
-
 /*
   --fill-color is translucent, so floating plates layer it over --elevated-color with a gradient
   instead of replacing background-color; otherwise text scrolling beneath shows through the button.
@@ -103,7 +98,8 @@ body:has(.toc-button) {
     padding-bottom: calc(2 * 44px + var(--gutter) + 2 * var(--space-2));
 }
 
-/* The popover anchors directly above the contents button and hides back-to-top while open. */
+/* The popover anchors directly above the contents button and hides back-to-top while open.
+   It enters and exits as one plate, scaling from the corner button. */
 .toc {
     position: fixed;
     inset: auto var(--gutter) calc(var(--gutter) + 44px + var(--space-2)) auto;
@@ -120,6 +116,14 @@ body:has(.toc-button) {
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     box-shadow: var(--shadow-float);
+    transform-origin: bottom right;
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+    transition:
+        opacity 120ms var(--ease-out),
+        transform 120ms var(--ease-out),
+        display 120ms allow-discrete,
+        overlay 120ms allow-discrete;
 }
 
 .toc ul {
@@ -128,37 +132,20 @@ body:has(.toc-button) {
     list-style: none;
 }
 
-/*
-  Below the wide-mode breakpoint the list is a popover: it enters and exits as one plate,
-  scaling from the corner button that opened it. The rail mode above 76rem gets none of this.
-*/
-@media (width < 76rem) {
-    .toc {
-        transform-origin: bottom right;
+.toc:popover-open {
+    opacity: 1;
+    transform: none;
+    transition:
+        opacity 160ms var(--ease-out),
+        transform 160ms var(--ease-out),
+        display 160ms allow-discrete,
+        overlay 160ms allow-discrete;
+}
+
+@starting-style {
+    .toc:popover-open {
         opacity: 0;
         transform: scale(0.96) translateY(4px);
-        transition:
-            opacity 120ms var(--ease-out),
-            transform 120ms var(--ease-out),
-            display 120ms allow-discrete,
-            overlay 120ms allow-discrete;
-    }
-
-    .toc:popover-open {
-        opacity: 1;
-        transform: none;
-        transition:
-            opacity 160ms var(--ease-out),
-            transform 160ms var(--ease-out),
-            display 160ms allow-discrete,
-            overlay 160ms allow-discrete;
-    }
-
-    @starting-style {
-        .toc:popover-open {
-            opacity: 0;
-            transform: scale(0.96) translateY(4px);
-        }
     }
 }
 
@@ -187,91 +174,6 @@ body:has(.toc-button) {
     .toc-button,
     .toc {
         display: none;
-    }
-}
-
-/*
-  A wide view leaves a margin beside the column: the list sits there as plain
-  text, the current entry marked in ink. Author styles outrank the popover's
-  default `display: none`, so it needs no opening. The list is sticky inside a
-  rail that spans the article, not fixed to the view, so a rubber-band bounce at
-  the page edge moves it with the header and text.
-*/
-@media (min-width: 76rem) {
-    .toc-button {
-        display: none;
-    }
-
-    .post {
-        position: relative;
-    }
-
-    /* The article metadata stacks at the top of this margin (src/pages/blog/[...id].astro): its
-       offset plus four 1.5-leading lines, then a section gap. */
-    .toc-rail {
-        display: block;
-        position: absolute;
-        top: calc(var(--space-3) + 4 * 1.5 * var(--size-ui) + var(--space-6));
-        right: calc(100% + var(--space-6));
-        bottom: 0;
-        width: 11rem;
-    }
-
-    .toc {
-        position: sticky;
-        inset: 8rem auto auto auto;
-        display: block;
-        width: 11rem;
-        max-height: calc(100dvh - 12rem);
-        padding: 0;
-        overflow-y: auto;
-        font-size: var(--size-caption);
-        line-height: 1.55;
-        background: none;
-        border: 0;
-        border-radius: 0;
-        box-shadow: none;
-        scrollbar-width: none;
-    }
-
-    .toc a {
-        padding: 4px 0 4px var(--space-3);
-        border-left: 1.5px solid transparent;
-        border-radius: 0;
-        transition: border-color 150ms ease-out;
-    }
-
-    .toc ul ul a {
-        padding-left: calc(var(--space-3) + 0.85rem);
-    }
-
-    .toc a[aria-current] {
-        color: var(--heading-color);
-        background: none;
-        border-left-color: var(--heading-color);
-    }
-
-    .toc a:active {
-        color: var(--heading-color);
-        background: none;
-        opacity: 0.65;
-    }
-
-    @media (hover: hover) {
-        .toc a:hover {
-            color: var(--heading-color);
-        }
-    }
-
-    .back-to-top,
-    body:has(.toc-button) .back-to-top {
-        right: max(var(--gutter), 50% - var(--measure) / 2 - 44px - var(--space-7));
-        bottom: var(--gutter);
-    }
-
-    /* The contents button hides at this width, so only back-to-top's lane needs clearance. */
-    body:has(.toc-button) {
-        padding-bottom: calc(44px + var(--gutter) + var(--space-2));
     }
 }
 
