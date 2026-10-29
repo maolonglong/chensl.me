@@ -15,3 +15,6 @@ node_modules/
 # Playwright output
 /playwright-report/
 /test-results/
+
+# Throwaway design explorations (HTML prototypes, not site source)
+/designs/
