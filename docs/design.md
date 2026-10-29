@@ -14,7 +14,7 @@ The column is the document.
 
 - The header, the column (`.measure`), and the footer share one measure and one left and right edge. Short pages keep the footer at the bottom of the view (`e2e/page-shell.spec.mjs`).
 - **Type.** `--font-sans` sets reading text and chrome; `--font-mono` sets code. Headings, section labels, `strong`, and table headers use weight 600. Index titles (`.entry-title`) use weight 400 in `--heading-color` at body size. Headings use `letter-spacing: 0`, because negative tracking squeezes CJK glyphs and Safari already applies SF's optical tracking. Metadata and secondary copy recede in weight 400 and `--muted-color`.
-- **Sections.** A section opens with space and a `.section-label`, and that label is the section's heading. Compact index rows use the same space. Code, notes, repository cards, and floating controls are the surfaces that take a fill or a frame (`e2e/page-shell.spec.mjs`). [Decision](../.agents/notes/implemented/simplification/2026-10-29-whitespace-sections.md).
+- **Sections.** A section opens with space and a `.section-label`, and that label is the section's heading. That opening is looser than an index row, and a wrapping title keeps its date on the first line. Code, notes, repository cards, and floating controls are the surfaces that take a fill or a frame (`e2e/page-shell.spec.mjs`). [Decision](../.agents/notes/implemented/simplification/2026-10-29-whitespace-sections.md). [Rhythm](../.agents/notes/implemented/feature/2026-10-29-reading-rhythm.md).
 - **Blue.** `--link-color` marks a link or an active control, so lists of titles, navigation, and news items use the heading color and underline on hover. List markers use `--muted-color` for the same reason.
 
 ## Frame
@@ -42,7 +42,7 @@ Every foreground role clears two floors in each theme: a WCAG ratio floor and a 
 - `--font-mono` sets code in self-hosted `JetBrains Mono` (`src/lib/fonts.mjs`) with `font-display: swap`, content-versioned URLs, and `preload={false}`. Repository cards use `--font-sans`, so a cold visit to a page without `<code>` downloads zero web fonts (`tests/fonts.test.mjs`, `e2e/code.spec.mjs`, `e2e/page-shell.spec.mjs`).
 - Build-time share cards (`src/lib/og-card.mjs`) subset `NotoSansSC-SemiBold.woff2` (`src/assets/fonts/noto-sans-sc/NotoSansSC-SemiBold.woff2`) per card so every card embeds only its own glyphs without shipping the font to the Worker (`tests/og.test.mjs`).
 - The fonts are not under the repository's code license; read [Noto Sans SC OFL.txt](../public/fonts/noto-sans-sc/OFL.txt) and [JetBrains Mono OFL.txt](../public/fonts/jetbrains-mono-2.304/OFL.txt) before you add or change one (`tests/design.test.mjs`).
-- Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart.
+- Every heading level is at least as large as the article body (`e2e/page-shell.spec.mjs`). At equal size, weight, color, and more space above than below set the heading apart (`e2e/page-shell.spec.mjs`).
 - `<em>` sets Latin text in native italic without CJK emphasis dots (`e2e/page-shell.spec.mjs`).
 - `text-autospace: normal` restores CJK–Latin spacing where the text lacks a manual space, because bot-written AI News text does not hand-set them; explicit spaces in articles gain nothing extra. Code stays `no-autospace` so the monospace grid keeps its cells.
 
@@ -55,7 +55,7 @@ Every foreground role clears two floors in each theme: a WCAG ratio floor and a 
 - **Search** is one ruled input line and a result list: title, type and date, excerpt. Filters and suggestions stay out of it.
 - **Icons** are inline SVG, not font glyphs or an icon library.
 - **Site icon.** A sleeping cat, hand-drawn in `scripts/icons/` (`scripts/build-icons.mjs`). The masthead inlines the same drawing in `src/layouts/BaseLayout.astro`; change both together.
-- **Code.** Code blocks are a `--surface-color` fill. Inline code uses a tighter corner than `--radius`, so a short token stays a chip. Captions carry no `title` attribute on the code wrapper, which would add a tooltip.
+- **Code.** Code blocks are a `--surface-color` fill. The copy control stays visible in the block's corner (`e2e/code.spec.mjs`). Inline code uses a tighter corner than `--radius`, so a short token stays a chip. Captions carry no `title` attribute on the code wrapper, which would add a tooltip.
 - **Repository cards** show the name, description, and counts in a hairline frame with the code block corners and muted text (`e2e/github-cards.spec.mjs`). An avatar or a language color would add a second signal the counts do not need.
 - **Images.** Standalone article images that the column scales down open in a page-colored modal (`e2e/image-zoom.spec.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-26-article-image-zoom.md).
 - **Links** in article text and the footer are underlined; link hover adds only the underline, never a second link color. External prose links and AI News items add a north-east arrow. Underline rules set `text-decoration-line` rather than the `text-decoration` shorthand, which resets thickness (`e2e/navigation.spec.mjs`).

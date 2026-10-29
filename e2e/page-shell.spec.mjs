@@ -404,6 +404,113 @@ for (const width of [320, 390, 768, 1280]) {
   })
 }
 
+// Sections open with more air than an index row. Home and the archive share `.entries`.
+for (const width of [375, 1280]) {
+  test(`reading rhythm at ${width}px`, async ({ page, open }) => {
+    await page.setViewportSize({ width, height: 844 })
+    await open('/')
+    const home = await page.evaluate(
+      (read) => {
+        const px = (name) =>
+          Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name))
+        const titles = [...document.querySelectorAll('.home .entry-title')].map((title) =>
+          title.getBoundingClientRect(),
+        )
+        const lede = document.querySelector('.lede').getBoundingClientRect()
+        const label = document.querySelector('#home-posts').getBoundingClientRect()
+        return {
+          sectionGap: label.top - lede.bottom,
+          rowGap: titles[1].top - titles[0].bottom,
+          opening: px(read) + px('--space-4'),
+          row: 2 * px('--space-1'),
+        }
+      },
+      width >= 600 ? '--space-8' : '--space-7',
+    )
+    expectAll(`home rhythm at ${width}px`, home, {
+      'a section opens looser than a row': home.sectionGap > home.rowGap * 2,
+      'the opening matches the section tokens': Math.abs(home.sectionGap - home.opening) <= 1,
+      'a row matches two steps of --space-1': Math.abs(home.rowGap - home.row) <= 1,
+    })
+
+    await open('/blog/')
+    const archive = await page.evaluate(
+      (read) => {
+        const px = (name) =>
+          Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name))
+        const group = document.querySelector('.year-group')
+        const year = group.querySelector('.posts-year').getBoundingClientRect()
+        const title = document.querySelector('.page-title').getBoundingClientRect()
+        const firstTitle = group.querySelector('.entry-title').getBoundingClientRect()
+        // Wide years share the first title's baseline, so the year box sits below the content edge.
+        const contentTop = Math.min(year.top, firstTitle.top)
+        const list = [...document.querySelectorAll('.blog-posts')].find(
+          (posts) => posts.querySelectorAll('.entry-title').length >= 2,
+        )
+        const rows = [...list.querySelectorAll('.entry-title')].map((entry) =>
+          entry.getBoundingClientRect(),
+        )
+        return {
+          opening: contentTop - title.bottom,
+          expectedOpening: px('--space-6') + px(read),
+          rowGap: rows[1].top - rows[0].bottom,
+          row: 2 * px('--space-1'),
+        }
+      },
+      width >= 600 ? '--space-6' : '--space-5',
+    )
+    expectAll(`archive rhythm at ${width}px`, archive, {
+      'a year opens looser than a row': archive.opening > archive.rowGap * 2,
+      'the year opening matches the section tokens':
+        Math.abs(archive.opening - archive.expectedOpening) <= 1,
+      'a row matches two steps of --space-1': Math.abs(archive.rowGap - archive.row) <= 1,
+    })
+  })
+}
+
+test('a wrapped index title keeps the date on its first line', async ({ page, open }) => {
+  await page.setViewportSize({ width: 320, height: 844 })
+  for (const path of ['/', '/blog/']) {
+    await open(path)
+    const locked = await page.evaluate(() =>
+      [...document.querySelectorAll('.entry-head')].map((row) => {
+        const link = row.querySelector('a')
+        const time = row.querySelector('time').getBoundingClientRect()
+        const lines = [...link.getClientRects()]
+        const center = (time.top + time.bottom) / 2
+        const first = lines[0]
+        return {
+          lines: lines.length,
+          onFirstLine: !!first && center >= first.top - 2 && center <= first.bottom + 2,
+        }
+      }),
+    )
+    const wrapped = locked.filter((row) => row.lines >= 2)
+    expect(wrapped.length, `${path} needs a wrapped title at 320px`).toBeGreaterThan(0)
+    for (const row of wrapped) expect(row.onFirstLine).toBe(true)
+  }
+})
+
+test('an article heading leaves more space above than below', async ({ page, open }) => {
+  await open('/blog/dockertest/')
+  const rhythm = await page.evaluate(() =>
+    ['h2', 'h3'].map((tag) => {
+      const heading = [...document.querySelectorAll(`.prose ${tag}`)].find(
+        (element) => Number.parseFloat(getComputedStyle(element).marginTop) > 0,
+      )
+      const style = getComputedStyle(heading)
+      return {
+        tag,
+        top: Number.parseFloat(style.marginTop),
+        bottom: Number.parseFloat(style.marginBottom),
+      }
+    }),
+  )
+  for (const heading of rhythm) {
+    expect(heading.top, `${heading.tag} space above`).toBeGreaterThan(heading.bottom * 4)
+  }
+})
+
 test('every heading level outranks the article body size', async ({ page, open }) => {
   await open('/blog/dockertest/')
   const [body, h2, h3, ...deep] = await page.evaluate(() =>

@@ -142,8 +142,8 @@ test.describe('keyboard access to scrolling code', () => {
 })
 
 // Every code block gets one copy button inside its top-right corner that stays put while the code
-// scrolls, and a wide first line can always be scrolled out from under it. Hover-capable pointers
-// reveal the button on hover; touch screens always show it.
+// scrolls, and a wide first line can always be scrolled out from under it. The button stays
+// visible; a hover only strengthens it.
 for (const hasTouch of [false, true]) {
   test.describe(hasTouch ? 'on a touch screen' : 'with a hovering pointer', () => {
     test.use({ hasTouch, viewport: { width: 320, height: 844 } })
@@ -197,13 +197,10 @@ for (const hasTouch of [false, true]) {
       })
 
       const button = page.locator('.code-copy').first()
-      await expect(button).toHaveCSS('opacity', hasTouch ? '0.75' : '0')
+      await expect(button).toHaveCSS('opacity', '0.75')
       if (!hasTouch) {
-        await page
-          .locator('.code-block')
-          .first()
-          .hover({ position: { x: 16, y: 16 } })
-        await expect(button).toHaveCSS('opacity', '0.75')
+        await button.hover()
+        await expect(button).toHaveCSS('opacity', '1')
       }
 
       // "已复制" is announced only after the browser accepts the write to the real clipboard.

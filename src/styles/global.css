@@ -130,13 +130,13 @@ h1 {
   a narrow gap below binds it to its own text.
 */
 h2 {
-    margin: 2.25em 0 0.75em;
+    margin: 3em 0 0.5em;
     font-size: var(--size-h2);
     line-height: 1.3;
 }
 
 h3 {
-    margin: 2em 0 0.5em;
+    margin: 2.75em 0 0.5em;
     font-size: var(--size-h3);
     line-height: 1.35;
 }
@@ -144,7 +144,7 @@ h3 {
 h4,
 h5,
 h6 {
-    margin: 1.75em 0 0.5em;
+    margin: 2em 0 0.5em;
     font-size: var(--size-body);
     line-height: 1.45;
 }
@@ -364,7 +364,7 @@ a.arrow-link:active {
 }
 
 .entries > li {
-    padding-block: var(--space-3);
+    padding-block: var(--space-1);
 }
 
 .entries > li:first-child {
@@ -411,6 +411,7 @@ a.arrow-link:active {
     color: var(--muted-color);
 }
 
+/* `baseline` is the first baseline, so a wrapped title keeps the date on its first line. */
 .entry-head {
     display: flex;
     align-items: baseline;
