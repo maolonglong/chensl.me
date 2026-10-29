@@ -3,6 +3,15 @@ allowBuilds:
   sharp: true
   workerd: true
 
+# Published 2026-10-28, inside pnpm's 24-hour window. wrangler 4.155.0 is the
+# latest 4.x that satisfies @cloudflare/vite-plugin 1.65.0 (peer ^4.152.0),
+# which @astrojs/cloudflare 14.3.4 resolves. miniflare is that wrangler's
+# dependency. workers-types 5.20261028.1 meets its peer ^5.20261023.1.
+minimumReleaseAgeExclude:
+  - '@cloudflare/workers-types@5.20261028.1'
+  - miniflare@5.20261023.2-beta
+  - wrangler@4.155.0
+
 overrides:
   # Miniflare pins an affected sharp release (GHSA-wq5f-xc86-pv6w).
   'sharp@<0.35.5': 0.35.5
