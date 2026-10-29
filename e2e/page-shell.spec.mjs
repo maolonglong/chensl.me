@@ -472,8 +472,10 @@ test('a wrapped index title keeps the date on its first line', async ({ page, op
   await page.setViewportSize({ width: 320, height: 844 })
   for (const path of ['/', '/blog/']) {
     await open(path)
-    const locked = await page.evaluate(() =>
-      [...document.querySelectorAll('.entry-head')].map((row) => {
+    const locked = await page.evaluate(() => {
+      // Article titles are short, so the first row gets a title long enough to wrap at 320px.
+      document.querySelector('.entry-head a').append('，再加一段足够长的文字让标题在窄屏上换行')
+      return [...document.querySelectorAll('.entry-head')].map((row) => {
         const link = row.querySelector('a')
         const time = row.querySelector('time').getBoundingClientRect()
         const lines = [...link.getClientRects()]
@@ -483,8 +485,8 @@ test('a wrapped index title keeps the date on its first line', async ({ page, op
           lines: lines.length,
           onFirstLine: !!first && center >= first.top - 2 && center <= first.bottom + 2,
         }
-      }),
-    )
+      })
+    })
     const wrapped = locked.filter((row) => row.lines >= 2)
     expect(wrapped.length, `${path} needs a wrapped title at 320px`).toBeGreaterThan(0)
     for (const row of wrapped) expect(row.onFirstLine).toBe(true)
