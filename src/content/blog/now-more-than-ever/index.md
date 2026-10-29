@@ -1,5 +1,5 @@
 ---
-title: 把代码仓库改成 Agent 也能看懂的样子：从 Ron Minsky 的 Bug Bash 演讲说起
+title: 把仓库改得适合 Agent
 description: Jane Street 的 Ron Minsky 在 Bug Bash 2026 上聊了类型、expect test、代码评审和形式化验证。这些老派工程手段放在一起，刚好回答了怎么把代码仓库改得更适合 Agent。
 pubDate: 2026-10-26T20:30:00+08:00
 draft: false
@@ -10,7 +10,7 @@ creation:
 
 > 本文整理自 Jane Street 的 Ron Minsky 在 Antithesis 主办的 Bug Bash 2026 上的演讲 [Now more than ever: building reliable software in the age of agents](https://www.youtube.com/watch?v=rUYP4C29yCw)（2026-05-14 发布，时长 1:06:19）。观点归演讲者所有，文中截图来自演讲视频，概括和取舍是我做的，细节请以原视频为准。
 
-怎么让 Agent 把代码写对？我在[《Harness：让 Agent 的工作可以验证》](/blog/harness-engineering/)里写过一个结论：问题多半不在提示词，而在仓库自己有没有一套可读、可操作、可验证的环境。Jane Street 的 Ron Minsky 在 Bug Bash 2026 上的这场演讲，恰好从编程语言和日常工程实践的角度，把这套环境拆成了几件很具体的事。
+怎么让 Agent 把代码写对？我在[《Agent ≠ Harness》](/blog/harness-engineering/)里写过一个结论：问题多半不在提示词，而在仓库自己有没有一套可读、可操作、可验证的环境。Jane Street 的 Ron Minsky 在 Bug Bash 2026 上的这场演讲，恰好从编程语言和日常工程实践的角度，把这套环境拆成了几件很具体的事。
 
 演讲标题叫 “Now More Than Ever”。Ron 开场先自嘲了一句：每当世界剧变，总有些上了年纪的人跳出来说，我念叨了一辈子的那些老道理，现在比以往任何时候都重要。他承认自己要讲的就是这种演讲。
 
