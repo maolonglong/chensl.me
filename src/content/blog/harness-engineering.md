@@ -1,5 +1,5 @@
 ---
-title: Harness：让 Agent 的工作可以验证
+title: Agent ≠ Harness
 description: 同一套模型换个环境就变笨，问题多半不在模型，而在项目有没有可验证的工程环境。
 pubDate: 2026-08-07T16:56:00+08:00
 draft: false
