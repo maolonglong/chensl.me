@@ -206,10 +206,12 @@ body:has(.toc-button) {
         position: relative;
     }
 
+    /* The article metadata stacks at the top of this margin (src/pages/blog/[...id].astro): its
+       offset plus four 1.5-leading lines, then a section gap. */
     .toc-rail {
         display: block;
         position: absolute;
-        top: 0;
+        top: calc(var(--space-3) + 4 * 1.5 * var(--size-ui) + var(--space-6));
         right: calc(100% + var(--space-6));
         bottom: 0;
         width: 11rem;

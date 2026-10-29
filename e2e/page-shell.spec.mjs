@@ -40,15 +40,16 @@ for (const width of [375, 1280]) {
       await open('/blog/overlayfs/')
       const notice = page.locator('.post-notice')
       await expect(notice).toBeVisible()
-      // A quiet note under the metadata: upright text in the body color, close below the header line.
+      // A quiet note under the header line: upright text in the body color, close below the element
+      // above it in the column. A wide view moves the metadata to the margin, so that is the title.
       const style = await notice.evaluate((element) => {
         const notice = getComputedStyle(element)
+        let above = element.previousElementSibling
+        while (getComputedStyle(above).position === 'absolute') above = above.previousElementSibling
         return {
           fontStyle: notice.fontStyle,
           whiteSpace: notice.whiteSpace,
-          gap:
-            element.getBoundingClientRect().top -
-            element.previousElementSibling.getBoundingClientRect().bottom,
+          gap: element.getBoundingClientRect().top - above.getBoundingClientRect().bottom,
         }
       })
       expect(style.fontStyle).toBe('normal')
@@ -137,6 +138,70 @@ for (const width of [375, 1280]) {
       await capture(page, `home-${width}-${mode}`)
     })
   }
+}
+
+// The margin is the article's apparatus: where the view leaves one, the metadata stacks there level
+// with the title, one fact per line, and the column holds only the text.
+for (const width of [375, 1280]) {
+  test(`article metadata at ${width}px`, async ({ page, open }) => {
+    await page.setViewportSize({ width, height: 844 })
+    await open('/blog/harness-engineering/')
+    const layout = await page.evaluate(() => {
+      const box = (element) => element.getBoundingClientRect()
+      const meta = document.querySelector('.post-meta')
+      const parts = [...meta.querySelectorAll(':scope > :not([aria-hidden])')].map(box)
+      return {
+        column: box(document.querySelector('.post')),
+        title: box(document.querySelector('.post-header h1')),
+        meta: box(meta),
+        tops: parts.map((part) => Math.round(part.top)),
+        separatorsShown: [...meta.querySelectorAll('[aria-hidden]')].some(
+          (separator) => separator.getClientRects().length > 0,
+        ),
+      }
+    })
+    const { column, title, meta, tops } = layout
+    if (width >= 1216) {
+      expectAll(`metadata at ${width}px`, layout, {
+        'sits in the margin left of the column': meta.right <= column.left - 16 && meta.left >= 0,
+        'starts level with the title': Math.abs(tops[0] - title.top) <= 16,
+        'one fact per line': tops.every((top, index) => index === 0 || top > tops[index - 1]),
+        'drops the inline separators': !layout.separatorsShown,
+      })
+    } else {
+      expectAll(`metadata at ${width}px`, layout, {
+        'sits in the column under the title':
+          meta.left >= column.left - 1 && meta.top >= title.bottom,
+        'keeps one line': tops.every((top) => top === tops[0]),
+      })
+    }
+  })
+}
+
+// The site icon's sleeping cat lies on the masthead rule, beside the site name.
+for (const width of [390, 1280]) {
+  test(`masthead cat sleeps on the header rule at ${width}px`, async ({ page, open }) => {
+    await page.setViewportSize({ width, height: 844 })
+    await open('/')
+    const masthead = await page.evaluate(() => {
+      const header = document.querySelector('.site-header')
+      const cat = header.querySelector('.site-title svg')
+      // The rule is a content-box background so it spans the column, not the gutters.
+      return {
+        hidden: cat?.getAttribute('aria-hidden'),
+        rule: getComputedStyle(header).backgroundImage,
+        gap: cat
+          ? header.getBoundingClientRect().bottom - cat.getBoundingClientRect().bottom
+          : null,
+      }
+    })
+    expectAll(`masthead at ${width}px`, masthead, {
+      'cat is decorative': masthead.hidden === 'true',
+      'header ends in a hairline': masthead.rule.includes('gradient'),
+      'cat rests on the rule': masthead.gap !== null && masthead.gap >= 0 && masthead.gap <= 1,
+    })
+    await expect(page.getByRole('link', { name: '~chensl', exact: true })).toBeVisible()
+  })
 }
 
 test('CSP blocks untrusted inline scripts and event handlers', async ({ page, open }) => {

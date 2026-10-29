@@ -314,7 +314,24 @@ time {
     line-height: 1.4;
     letter-spacing: 0.04em;
     color: var(--muted-color);
+}
+
+/* Section rules are dimension lines, as in an engineering drawing: a short tick hangs from each end
+   to bound the span the section covers. The ticks are backgrounds, so they need no pseudo-element
+   and never shift the content. */
+.section-label,
+.footnotes,
+.ruled {
     border-top: 1px solid var(--rule-color);
+    background-image:
+        linear-gradient(var(--muted-color), var(--muted-color)),
+        linear-gradient(var(--muted-color), var(--muted-color));
+    background-position:
+        left top,
+        right top;
+    background-size: 1px 7px;
+    background-repeat: no-repeat;
+    background-origin: border-box;
 }
 
 .section-label a {
@@ -775,7 +792,6 @@ details > summary:active {
     font-size: var(--size-ui);
     line-height: 1.7;
     color: var(--muted-color);
-    border-top: 1px solid var(--rule-color);
 }
 
 .footnotes ol {

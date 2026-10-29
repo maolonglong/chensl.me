@@ -7,14 +7,17 @@ Read this before you change layout, styles, fonts, or browser interactions. It s
 The site reads like an engineering research publication: optical-white canvas, cool neutral surfaces, crisp hairline rules, and native sans-serif typography inspired by Apple Machine Learning Research and the Apple Human Interface Guidelines. Three ideas carry it ([decision](../.agents/notes/implemented/feature/2026-10-26-apple-sans-editorial-redesign.md)):
 
 - **Hierarchy through weight and scale.** System sans-serif (`--font-sans`) sets both reading text and UI chrome; monospace (`--font-mono`) sets code. Headings, section labels, `strong`, and table headers use weight 600, index titles (`.entry-title`) use weight 400 in `--heading-color` at body size, headings carry `letter-spacing: 0` so CJK strokes stay crisp, and metadata and secondary copy recede in weight 400 and `--muted-color`.
-- **Ruled sections.** A section opens with a hairline and a small sans label (`.section-label`). Hairline rules divide sections and year groups while compact index rows breathe via whitespace; fills and frames are for code, notes, repository cards, and floating controls only.
+- **Ruled sections.** A section opens with a hairline and a small sans label (`.section-label`). Each section rule is a dimension line: a short tick hangs from each end (`.section-label`, `.footnotes`, `.ruled`). Rules divide sections and year groups while compact index rows breathe via whitespace; fills and frames are for code, notes, repository cards, and floating controls only.
 - **Optical blue means a link or active control.** Lists of titles, navigation, and news items use the heading color and underline on hover, so `--link-color` stays rare enough to signal an interactive link or active state.
+
+The reading column stays calm, and the frame around it carries the site's own marks: the masthead cat, dimension-line rules, and the article margin apparatus ([decision](../.agents/notes/implemented/feature/2026-10-29-frame-signature.md)).
 
 ## Layout
 
 - The header, the reading column (`.measure`), and the footer share one measure (`--measure`) and one left and right edge (`e2e/page-shell.spec.mjs`).
 - Short pages keep the footer at the bottom of the view (`e2e/page-shell.spec.mjs`).
-- Where the view leaves a margin beside the column, an article's contents sit there as a plain list; elsewhere a corner button opens them as a popover (`e2e/contents.spec.mjs`). The list does not depend on hover.
+- The site icon's sleeping cat lies on the masthead rule beside the site name; the rule spans the column, not the gutters (`e2e/page-shell.spec.mjs`).
+- Where the view leaves a margin beside the column, an article's contents sit there as a plain list, below the article metadata; elsewhere a corner button opens them as a popover (`e2e/contents.spec.mjs`). The list does not depend on hover.
 
 ## Interaction
 
@@ -55,11 +58,11 @@ Roles beyond the core foregrounds in `src/styles/global.css`: `--elevated-color`
 
 - **Theme.** The toggle cycles auto, light, and dark. Auto follows the OS. The choice persists, and the page still switches when storage fails. A click crossfades the whole page between themes; system and storage changes apply at once (`e2e/appearance.spec.mjs`).
 - **Scroll boxes.** Code, tables, and display math scroll inside focusable, labelled wrappers, so the page never scrolls sideways. The `<table>` itself never becomes the scroll box, because that removes its table role (`tests/markdown.test.mjs`, `e2e/code.spec.mjs`).
-- **Article header.** The date, length, reading time, and creation label share one sans metadata line. A stale notice is a quiet surface note below it (`e2e/page-shell.spec.mjs`, `e2e/reading-time.spec.mjs`).
+- **Article header.** The date, length, reading time, and creation label share one sans metadata line. Where the view leaves a margin beside the column, the line stacks there instead, one fact per line, level with the title. A stale notice is a quiet surface note below it (`e2e/page-shell.spec.mjs`, `e2e/reading-time.spec.mjs`).
 - **Article end.** The upvote, then the earlier and later articles, then the comments under a section label.
 - **Search** is one ruled input line and a result list: title, type and date, excerpt. No filters or suggestions.
 - **Icons** are inline SVG, not font glyphs or an icon library.
-- **Site icon.** A sleeping cat, hand-drawn in `scripts/icons/` (`scripts/build-icons.mjs`).
+- **Site icon.** A sleeping cat, hand-drawn in `scripts/icons/` (`scripts/build-icons.mjs`). The masthead inlines the same drawing in `src/layouts/BaseLayout.astro`; change both together.
 - **Repository cards** are a hairline frame with the code block corners and muted text, with no avatar or language color (`e2e/github-cards.spec.mjs`).
 - **Images.** Standalone article images that the column scales down open in a page-colored modal (`e2e/image-zoom.spec.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-26-article-image-zoom.md).
 - **Code captions** carry no `title` attribute on the code wrapper, which would add a tooltip.

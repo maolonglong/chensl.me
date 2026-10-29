@@ -34,6 +34,7 @@ function probeContents() {
     listOnTop: onTop(list),
     buttonOnTop: onTop(button),
     column: box(document.querySelector('.post')),
+    meta: box(document.querySelector('.post-meta')),
     footer: box(document.querySelector('body > footer')),
     comments: box(document.querySelector('.comments')),
     current: [...document.querySelectorAll('#article-toc [aria-current]')].map((a) =>
@@ -114,7 +115,8 @@ test('the margin list travels with the page instead of staying fixed to the view
   const label = '/blog/dockertest/ margin list'
   const rest = await measure(page, () => scrollTo(0, 0))
   expectAll(label, rest, {
-    'list starts level with the article': Math.abs(rest.rail?.top - rest.column.top) <= 1,
+    'list starts below the metadata, near the top of the article':
+      rest.rail?.top >= rest.meta.bottom + 16 && rest.rail?.top - rest.column.top <= 160,
   })
   const reading = await measure(page, () => scrollTo(0, 1500))
   expectAll(`${label} while reading`, reading, {

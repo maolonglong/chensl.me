@@ -75,7 +75,7 @@ const { creation } = post.data
   <div class="post-end measure">
     <Upvote postId={post.id} />
     {(earlier || later) && (
-      <nav class="post-nav" aria-label="相邻文章">
+      <nav class="post-nav ruled" aria-label="相邻文章">
         {earlier && (
           <a class="post-nav-link" href={postUrl(earlier)} rel="prev">
             <span class="meta">上一篇</span>
@@ -118,6 +118,27 @@ const { creation } = post.data
   .post-meta > :not([aria-hidden]) {
     white-space: nowrap;
   }
+  /* A wide view leaves a margin beside the column: the metadata stacks there level with the title,
+     one fact per line, as the article's apparatus. It shares the contents rail's width and text edge,
+     and floating-controls.css starts that rail below at most four lines of it. */
+  @media (min-width: 76rem) {
+    .post-header {
+      position: relative;
+    }
+    .post-meta {
+      position: absolute;
+      top: var(--space-3);
+      right: calc(100% + var(--space-6));
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      width: 11rem;
+      padding-left: calc(var(--space-3) + 1.5px);
+    }
+    .post-meta > [aria-hidden] {
+      display: none;
+    }
+  }
   .post-creation-note {
     margin: var(--space-2) 0 0;
     overflow-wrap: anywhere;
@@ -140,7 +161,6 @@ const { creation } = post.data
     gap: var(--space-5);
     margin-top: var(--space-7);
     padding-top: var(--space-5);
-    border-top: 1px solid var(--rule-color);
   }
   .post-nav-link {
     display: flex;

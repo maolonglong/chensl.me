@@ -20,7 +20,7 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
     </header>
     {issues.length ? (
       issues.map((issue) => (
-        <article class="day">
+        <article class="day ruled">
           <p class="meta day-date">
             <time datetime={issue.date}>{issue.date}</time>
           </p>
@@ -53,7 +53,6 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
   }
   .day {
     padding-top: var(--space-5);
-    border-top: 1px solid var(--rule-color);
   }
   .day + .day {
     margin-top: var(--space-7);

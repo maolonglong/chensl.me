@@ -21,7 +21,7 @@ if (!issues.length) Astro.response.status = 404
         </p>
         <h1 class="page-title">{month}</h1>
       </header>
-      <ol class="entries issues">
+      <ol class="entries issues ruled">
         {issues.map((issue) => (
           <li>
             <div class="entry-head">
@@ -58,7 +58,6 @@ if (!issues.length) Astro.response.status = 404
   }
   .issues {
     padding-top: var(--space-4);
-    border-top: 1px solid var(--rule-color);
   }
   .issues > li {
     padding-block: var(--space-4);

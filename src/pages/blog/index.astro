@@ -11,7 +11,7 @@ const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(
       <h1 class="page-title">博客</h1>
     </header>
     {[...years].map(([year, entries]) => (
-      <section class="year-group" aria-labelledby={`year-${year}`}>
+      <section class="year-group ruled" aria-labelledby={`year-${year}`}>
         <h2 class="posts-year" id={`year-${year}`}>
           {year}
         </h2>
@@ -46,7 +46,6 @@ const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(
     column-gap: var(--space-4);
     align-items: baseline;
     padding-top: var(--space-5);
-    border-top: 1px solid var(--rule-color);
   }
   .year-group + .year-group {
     margin-top: var(--space-5);

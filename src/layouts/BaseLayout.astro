@@ -163,7 +163,33 @@ const feed = isNews
     </a>
     <header class="site-header">
       <p class="site-title">
-        <a href="/">{siteTitle}</a>
+        <a href="/">
+          {/* The site icon from scripts/icons/cat.svg; edit both together. */}
+          <svg
+            class="site-cat"
+            width="32"
+            height="32"
+            viewBox="84 70 344 392"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              vector-effect="non-scaling-stroke"
+              d="M386 212C383 180 369 155 350 140L346 78L303 110C278 101 250 101 225 113L185 78L181 128A164 164 0 1 0 418 246C415 230 404 216 386 212"
+            />
+            <path vector-effect="non-scaling-stroke" d="M228 191Q256 216 284 191" />
+            <path
+              vector-effect="non-scaling-stroke"
+              d="M232 436C320 442 366 400 362 330C360 302 342 290 320 290C298 290 282 308 282 328C282 348 298 362 314 360C326 358 332 348 328 340"
+            />
+          </svg>
+          <span class="site-name">{siteTitle}</span>
+        </a>
       </p>
       <nav aria-label="主导航">
         <a class="nav-link" href="/blog/" aria-current={blogCurrent}>
@@ -198,7 +224,7 @@ const feed = isNews
       <slot />
     </main>
     <footer class="site-footer">
-      <div class="footer-row">
+      <div class="footer-row ruled">
         <p class="footer-mark meta">© 2026 Shaolong Chen</p>
         <!-- prettier-ignore -->
         <p class="footer-links meta">
@@ -233,14 +259,18 @@ const feed = isNews
     color: var(--background-color);
     background: var(--link-color);
   }
+  /* The masthead rule is a content-box background, so it spans the column and not the gutters;
+     the cat and the nav stand on it, and the cat's outline touches it. */
   .site-header {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     gap: var(--space-3) var(--space-5);
-    padding-block: var(--space-5);
+    padding-block: var(--space-5) 0;
     margin-bottom: var(--space-7);
+    background: linear-gradient(var(--rule-color), var(--rule-color)) left bottom / 100% 1px
+      no-repeat content-box;
   }
   .site-title {
     margin: 0;
@@ -250,8 +280,19 @@ const feed = isNews
     letter-spacing: 0;
   }
   .site-title a {
+    display: flex;
+    align-items: flex-end;
+    min-height: 40px;
+    gap: var(--space-2);
     color: var(--heading-color);
     text-decoration-line: none;
+  }
+  .site-cat {
+    flex: none;
+  }
+  /* The link is as tall as the 40 px nav targets, so the name centers on their row. */
+  .site-name {
+    align-self: center;
   }
   .site-header nav {
     display: flex;
@@ -344,7 +385,6 @@ const feed = isNews
     justify-content: space-between;
     gap: var(--space-3) var(--space-6);
     padding-top: var(--space-4);
-    border-top: 1px solid var(--rule-color);
   }
   .footer-mark {
     margin: 0;
@@ -357,7 +397,7 @@ const feed = isNews
   }
   @media (max-width: 600px) {
     .site-header {
-      padding-block: var(--space-4);
+      padding-block: var(--space-4) 0;
       margin-bottom: var(--space-6);
     }
     .site-header nav {
