@@ -179,7 +179,7 @@ for (const width of [375, 1280]) {
 }
 
 // The site icon's sleeping cat is the masthead logo: decorative, beside the name, on the name's line.
-// Whitespace, not a rule, separates the header from the page.
+// The drawing is 22px so it stays with the 15px name. Whitespace, not a rule, separates the header from the page.
 for (const width of [390, 1280]) {
   test(`masthead cat sits beside the site name at ${width}px`, async ({ page, open }) => {
     await page.setViewportSize({ width, height: 844 })
@@ -198,6 +198,7 @@ for (const width of [390, 1280]) {
         hidden: svg?.getAttribute('aria-hidden'),
         beside: !!cat && cat.right <= text.left,
         centered: !!cat && Math.abs(cat.top + cat.height / 2 - (text.top + text.height / 2)) <= 2,
+        fitted: !!cat && Math.abs(cat.width - 22) <= 0.5 && Math.abs(cat.height - 22) <= 0.5,
         ruleless: style.backgroundImage === 'none' && style.borderBottomStyle === 'none',
       }
     })
@@ -205,6 +206,7 @@ for (const width of [390, 1280]) {
       'cat is decorative': masthead.hidden === 'true',
       'cat sits left of the name': masthead.beside,
       'cat centers on the name': masthead.centered,
+      'cat is 22px': masthead.fitted,
       'header draws no rule': masthead.ruleless,
     })
     await expect(page.getByRole('link', { name: '~chensl', exact: true })).toBeVisible()
