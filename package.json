@@ -17,7 +17,7 @@
     "check": "pnpm format:check && pnpm lint && pnpm cf:types && astro check && astro build && node --test tests/*.test.mjs && node scripts/check-site.mjs dist/client"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.12",
     "@astrojs/cloudflare": "14.3.4",
     "@astrojs/markdown-remark": "7.3.3",
     "@astrojs/rss": "4.0.19",
