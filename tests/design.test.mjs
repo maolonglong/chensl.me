@@ -203,6 +203,27 @@ test('site styles use the size ladder and do not transition theme colors', () =>
   }
 })
 
+test('pressed controls shrink subtly, to no less than 0.95', () => {
+  const files = [
+    path.join(root, 'src/styles/global.css'),
+    path.join(root, 'src/styles/floating-controls.css'),
+    ...walk(path.join(root, 'src')).filter((file) => file.endsWith('.astro')),
+  ]
+  for (const file of files) {
+    const rel = path.relative(root, file)
+    const content = readFileSync(file, 'utf8')
+    for (const [, selector, body] of content.matchAll(/([^{}]*:active[^{}]*)\{([^{}]*)\}/g)) {
+      for (const [, value] of body.matchAll(/scale\(([\d.]+)\)/g)) {
+        const scale = Number(value)
+        assert.ok(
+          scale >= 0.95 && scale < 1,
+          `${rel}: ${selector.trim()} presses to scale(${value})`,
+        )
+      }
+    }
+  }
+})
+
 test('theme-color metas and the web manifest match the page background tokens', () => {
   const css = readFileSync(path.join(root, 'src/styles/global.css'), 'utf8')
   const [, bgLight, bgDark] = css.match(

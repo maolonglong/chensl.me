@@ -19,7 +19,7 @@ The site reads like an engineering research publication: optical-white canvas, c
 ## Interaction
 
 - Every control works with a keyboard, has a visible focus ring and an accessible name. Floating buttons, contents entries in the popover, and in-page controls like the upvote are 44 px targets; the header tools are 40 px circles that never overlap (`e2e/contents.spec.mjs`, `e2e/back-to-top.spec.mjs`, `e2e/navigation.spec.mjs`).
-- Hover affordances sit behind `@media (hover: hover)`, and every pressable control moves on press. `prefers-reduced-motion: reduce` keeps opacity and color fades in `src/styles/global.css`—they carry state meaning—while transforms and other movement snap instead of animating; keyframe animations run only under `no-preference` (`e2e/back-to-top.spec.mjs`, `e2e/footnotes.spec.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-27-reduced-motion-keeps-fades.md).
+- Hover affordances sit behind `@media (hover: hover)`, and every pressable control moves on press. A press that scales shrinks the control to no less than `scale(0.95)`, so the feedback stays a nudge (`tests/design.test.mjs`). `prefers-reduced-motion: reduce` keeps opacity and color fades in `src/styles/global.css`—they carry state meaning—while transforms and other movement snap instead of animating; keyframe animations run only under `no-preference` (`e2e/back-to-top.spec.mjs`, `e2e/footnotes.spec.mjs`). [Decision](../.agents/notes/implemented/feature/2026-10-27-reduced-motion-keeps-fades.md).
 - A link that leads to more of the same (`.arrow-link`) ends with an arrow that steps forward on hover. It is the one signature motion.
 
 ## Apple editorial references

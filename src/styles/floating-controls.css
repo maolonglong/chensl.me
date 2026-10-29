@@ -83,7 +83,7 @@ body:has(#article-toc:popover-open) .back-to-top {
 .toc-button:active {
     color: var(--heading-color);
     background-image: linear-gradient(var(--fill-color), var(--fill-color));
-    transform: scale(0.94);
+    transform: scale(0.95);
 }
 
 @media (hover: hover) {
