@@ -50,8 +50,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0
       harfbuzzjs:
-        specifier: 1.6.2
-        version: 1.6.2
+        specifier: 1.6.4
+        version: 1.6.4
       oxlint:
         specifier: 1.86.0
         version: 1.86.0
@@ -1857,8 +1857,8 @@ packages:
   h3@1.15.11:
     resolution: {integrity: sha512-L3THSe2MPeBwgIZVSH5zLdBBU90TOxarvhK9d04IDY2AmVS8j2Jz2LIWtwsGOU3lu2I5jCN7FNvVfY2+XyF+mg==}
 
-  harfbuzzjs@1.6.2:
-    resolution: {integrity: sha512-95c1vWuzoHjM19d5fQgPbz1wcv1pTa0UM9dZrdPgSMUEVuSwuzeVPkq6UhHHw3jLOkE9AYzzTP8XQkRBpPYpEg==}
+  harfbuzzjs@1.6.4:
+    resolution: {integrity: sha512-T/PyfhVt1gGR2Tkf5KJUj1DQFkVBXHw552lS1iLEEDhV1Lukb3eq1pk2ov85kgbT2YUiZtJBTak9w+M7YgzUEQ==}
 
   hast-util-from-html@2.0.3:
     resolution: {integrity: sha512-CUSRHXyKjzHov8yKsQjGOElXy/3EKpyX56ELnkHH34vDVw1N1XSQ1ZcAvTyAPtGqLTuKP/uxM+aLkSPqF/EtMw==}
@@ -4639,7 +4639,7 @@ snapshots:
       ufo: 1.6.4
       uncrypto: 0.1.3
 
-  harfbuzzjs@1.6.2: {}
+  harfbuzzjs@1.6.4: {}
 
   hast-util-from-html@2.0.3:
     dependencies:
@@ -5975,7 +5975,7 @@ snapshots:
   subset-font@2.9.0:
     dependencies:
       fontverter: 2.0.0
-      harfbuzzjs: 1.6.2
+      harfbuzzjs: 1.6.4
       p-limit: 3.1.0
 
   suf-log@2.5.3:
