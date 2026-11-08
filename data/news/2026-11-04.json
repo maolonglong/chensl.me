@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-04",
+  "title": "Anthropic 开源 FlashProve，腾讯混元 Hy4 结束预览",
+  "summary": "Anthropic 发了一个能证明回复出自哪个模型的工具，Claude 插件登录后可以自动连上；腾讯 Hy4 正式上线，OpenRouter 上了一个免费的隐身模型。昨天那篇「模型改模型权重」的文章也被人逐条质疑了",
+  "items": [
+    {
+      "title": "OpenAI 分享 ChatGPT 和 Codex 在硬件工程上的用法",
+      "summary": "涵盖机械设计、电子工程和仿真，既有 OpenAI 自己硬件团队的做法，也有和行业伙伴试的新流程",
+      "url": "https://openai.com/index/accelerating-engineering-for-the-physical-world",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "用 Gemini 4 Argon 把 40 年前的 Fortran 代码迁到 Rust",
+      "summary": "Google 的 Agent 编程工具 Antigravity 写了一篇长文，讲迁移老科学计算代码的完整过程",
+      "url": "https://antigravity.google/blog/modernizing-40-year-old-scientific-code-with-gemini-4-argon",
+      "tag": "Google"
+    },
+    {
+      "title": "Anthropic 开源 FlashProve",
+      "summary": "用密码学方法证明一条回复确实出自某个模型，比之前的开源方案高效得多。用途包括防止对话被劫持，以及让安全评测方确认测的就是线上那个模型",
+      "url": "https://x.com/AnthropicAI/status/2117710942826123294",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude 插件登录即自动连接",
+      "summary": "MCP（Model Context Protocol）服务器只要信任 Claude 作为身份签发方，用户登录 Claude 后插件就自动连上，不用逐个授权。Team 和 Enterprise 管理员配一次，成员首次使用就连好",
+      "url": "https://x.com/ClaudeDevs/status/2117680635561312732",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 十月更新回顾",
+      "summary": "包括 mods、桌面端多会话并行、查看用量花在哪里等",
+      "url": "https://x.com/ClaudeDevs/status/2117670658113155075",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 产品负责人 Cat Wu 离开 Anthropic",
+      "summary": "她负责 Claude Code 和 Cowork 的产品工作",
+      "url": "https://x.com/_catwu/status/2117731934340337676",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "腾讯混元 Hy4 结束预览",
+      "summary": "第一款带原生视觉和电脑操作的混元模型，价格不变，开源权重和 Hy4 Flash 随后发布。Agent Arena 总榜排第 14，Agent Arena 称权重开放后会和 Kimi K3.1 Pro 并列开源模型第一",
+      "url": "https://x.com/TencentAI_News/status/2117870984292442226",
+      "tag": "腾讯"
+    },
+    {
+      "title": "OpenRouter 上线免费隐身模型 Crouton Alpha",
+      "summary": "主打 Agent 反复调用的场景，1M 上下文，支持文本、图片、音频、视频输入，不拿数据训练。OpenCode 也接入了，未来一周免费",
+      "url": "https://x.com/OpenRouter/status/2117712705901728199",
+      "tag": "OpenRouter"
+    },
+    {
+      "title": "更新：「大模型直接改权重」的实验被质疑",
+      "summary": "昨天报过 MIT CSAIL 那篇博客。spaCy 作者 Matthew Honnibal 逐个拆了实验，指出只有很小的网络是纯看权重，Qwen 那组其实写了 Python 并跑了 50 批练习题。Simon Willison 另外用笔记本上的 Qwen 3.8 27B 复现了看权重猜游戏，四个猜对三个，每个要跑 46 分钟以上",
+      "url": "https://honnibal.dev/blog/astra-read-write-misleading",
+      "tag": "科研"
+    },
+    {
+      "title": "Vercel Security Review 公测",
+      "summary": "每次推送都做漏洞审查，发现问题后可以一键交给 Vercel Agent 修",
+      "url": "https://vercel.com/blog/vercel-security-review",
+      "tag": "安全"
+    },
+    {
+      "title": "iOS 游戏引擎 Xogot 内置基于 pi 的 Agent",
+      "summary": "Miguel de Icaza 的 Xogot 用 Mario Zechner 的编程 Agent pi 做了内置助手",
+      "url": "https://x.com/migueldeicaza/status/2117667032800076177",
+      "tag": "工具"
+    },
+    {
+      "title": "Matt Pocock 考虑把 skills 发到 npm",
+      "summary": "这样可以按不同 Agent 定制，也能锁定版本",
+      "url": "https://x.com/mattpocockuk/status/2117948553381515721",
+      "tag": "开发实践"
+    }
+  ]
+}

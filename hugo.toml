@@ -1,0 +1,58 @@
+baseURL = 'https://chensl.me/'
+locale = 'zh-CN'
+title = '~chensl'
+timeZone = 'Asia/Shanghai'
+hasCJKLanguage = true
+enableRobotsTXT = true
+disableKinds = ['taxonomy', 'term']
+
+[params]
+description = '陈劭珑的个人网站与技术博客'
+newsTitle = '~chensl AI News'
+newsDescription = '每天 AI 圈发生了什么：模型、产品和工具的动态摘要'
+
+[frontmatter]
+date = ['pubDate', 'date', ':default']
+lastmod = ['updatedDate', 'lastmod', ':git', 'pubDate', 'date']
+
+[outputs]
+home = ['html', 'rss']
+section = ['html']
+page = ['html']
+
+[[menus.main]]
+name = '首页'
+pageRef = '/'
+weight = 10
+
+[[menus.main]]
+name = '博客'
+pageRef = '/blog'
+weight = 20
+
+[[menus.main]]
+name = 'AI News'
+pageRef = '/news'
+weight = 30
+
+[markup.goldmark.extensions.cjk]
+enable = true
+eastAsianLineBreaks = true
+escapedSpace = true
+
+[markup.goldmark.extensions.passthrough]
+enable = true
+
+[markup.goldmark.extensions.passthrough.delimiters]
+block = [['$$', '$$']]
+inline = [['$', '$']]
+
+[markup.goldmark.parser]
+wrapStandAloneImageWithinParagraph = false
+
+# Articles are the author's own; 1brc-in-zig.md uses <details>.
+[markup.goldmark.renderer]
+unsafe = true
+
+[markup.highlight]
+noClasses = false

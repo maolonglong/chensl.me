@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-18",
+  "title": "OpenCode 遭入侵，DeepSeek 搜索 API 定下收费时间",
+  "summary": "周末 OpenAI、Google、Anthropic 没有新发布，OpenCode 披露安全事件，DeepSeek 写明 Agent 自动搜索 11 月起收费，Replit 把 OpenAI 定为 Agent 首选，Google Research 开源的 Harness² 在 X 上传开",
+  "items": [
+    {
+      "title": "OpenCode 披露安全事件",
+      "summary": "官方称前一晚遭遇一次与大规模蒸馏攻击有关的入侵，1.4% 的 OpenCode Console 用户受影响，都是接了外部模型服务商的用户，已逐一发邮件，没收到邮件就没受影响",
+      "url": "https://x.com/opencode/status/2111519637049319818",
+      "tag": "OpenCode"
+    },
+    {
+      "title": "DeepSeek 搜索 API 公布免费期",
+      "summary": "上期报过 Search 与 Fetch API 上线，新进展是文档写明：经 DeepSeek Harness、Claude Code 或 Codex 调用 DeepSeek API 时，服务端自动发起的搜索目前免费，北京时间 11 月 1 日零点起按每千次 0.75 美元收费",
+      "url": "https://api-docs.deepseek.com/guides/search/",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "Replit 把 OpenAI 定为 Agent 首选",
+      "summary": "CEO Amjad Masad 澄清 TechCrunch Disrupt 上的说法：Replit Agent 默认用 OpenAI 模型，理由是性能、成本和合作关系，用户仍可选 Anthropic 等其他模型",
+      "url": "https://x.com/amasad/status/2111494912562888939",
+      "tag": "Replit"
+    },
+    {
+      "title": "Google Research 开源 Harness²",
+      "summary": "不改模型权重，自动改进 Agent 外层的提示词、工具、记忆和技能，论文称 GLM-5 和 Gemini 3.5 Flash 在 WorkBuddy-Bench 上最高提升 11.5 分；代码 10 月初已发，这两天在 X 上传开",
+      "url": "https://github.com/google-research/harness2",
+      "tag": "Google"
+    },
+    {
+      "title": "Odyssey 把果蝇大脑放进世界模型",
+      "summary": "官方演示把果蝇大脑接进自家世界模型 Odyssey-3，果蝇在模型生成的模拟世界里自己飞行",
+      "url": "https://x.com/odysseyml/status/2111589148146749616",
+      "tag": "Odyssey"
+    },
+    {
+      "title": "GitHub Copilot app 支持罗技 MX Keypad",
+      "summary": "常用提示词可以映射到实体按键上，也能用按键启动或恢复 Agent 任务",
+      "url": "https://x.com/github/status/2111515160766550057",
+      "tag": "GitHub"
+    },
+    {
+      "title": "OpenAI Devs 整理社区周末项目",
+      "summary": "汇总社区用 OpenAI 工具做的项目，附复刻方法",
+      "url": "https://x.com/OpenAIDevs/status/2111585491237650691",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "pi-durable 下周支持 serverless 休眠",
+      "summary": "pi 作者 Mario Zechner 说下周会在 Cloudflare Durable Objects、Vercel 这类 serverless 平台上支持休眠，并加上遥测",
+      "url": "https://x.com/badlogicgames/status/2111595722806300811",
+      "tag": "工具"
+    },
+    {
+      "title": "Agent 30 小时合并近 400 个性能 PR",
+      "summary": "开发者 Julius 说他的 Agent 专攻网页性能，另一个线程流式输出时渲染次数少了 86%，JS CPU 占用最多降 35%，堆内存约小 10%，下一步做移动端",
+      "url": "https://x.com/jullerino/status/2111698488753078321",
+      "tag": "工具"
+    }
+  ]
+}

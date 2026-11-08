@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-25",
+  "title": "Anthropic 建议少用子 Agent，vLLM 追平 DeepSeek 自家推理引擎",
+  "summary": "周日 OpenAI、Google、Anthropic 没有新模型，Anthropic 发了一篇 Agent 架构文章，Codex 重置用量并上线预设，Kimi K3.1 Pro 进了 Agent Arena 榜单",
+  "items": [
+    {
+      "title": "Anthropic：把多余的子 Agent 并回主循环",
+      "summary": "Anthropic 发现一个带技能的单 Agent 常常比复杂的多 Agent 系统表现更好，有客户执行速度快了约一倍。做法是把子 Agent 的指令改成技能、动作改成工具，再跑评测确认效果没掉，子 Agent 只留给需要并行或隔离上下文的场景",
+      "url": "https://claude.com/resources/articles/building-agents-when-to-fold-subagents-into-your-main-agent-loop",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Codex 用量重置",
+      "summary": "OpenAI 的 Tibo（thsottiaux）先宣布「Rest and reset」，下午说已经全部生效，明天可以放开用 Codex，下周还有新东西",
+      "url": "https://x.com/thsottiaux/status/2114237083652882932",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Codex CLI 0.164.0 加入预设",
+      "summary": "可以把常用提示词连同模型、推理强度等设置存成预设，任务中途用 Ctrl X P 或 /presets 调出来，由参与开发的 fcoury 演示，OpenAI Devs 转发",
+      "url": "https://x.com/fcoury/status/2114084792350494876",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "vLLM 跑 DeepSeek-V4.1-Flash 追平 DeepInfer",
+      "summary": "10 月 22 日报过 DeepSeek 开源推理框架 DeepInfer，新进展是 vLLM 在 DeepSeek 的解码配置下性能和 DeepInfer 持平，批大小从 8 到 256 都一样，只用了一半的并行规模。据 aiandcloud 转述，SGLang 同一天也宣布达到同等水平",
+      "url": "https://x.com/vllm_project/status/2114054277379641770",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "Kimi K3.1 Pro 进入 Agent Arena",
+      "summary": "昨天报过发布，新进展是 Arena 基于 4000 多次真实 Agent 会话给出排名：总榜第 11，开放模型里第一，排在 DeepSeek-V4.1-Flash 前面",
+      "url": "https://x.com/arena/status/2114008313054527901",
+      "tag": "Kimi"
+    },
+    {
+      "title": "OpenCode 单机架 24 小时处理 6.77T token",
+      "summary": "OpenCode 的 thdxr 公布数据：一个机架一天处理了 6.77T token，首字延迟中位数 1.16 秒",
+      "url": "https://x.com/thdxr/status/2114176734056857916",
+      "tag": "工具"
+    },
+    {
+      "title": "Cloudflare 在 Durable Objects 上自建 Git 服务",
+      "summary": "三人小团队用三周做出 Artifacts，每秒能创建 1000 个仓库，Cloudflare Developers 账号介绍了这个项目",
+      "url": "https://x.com/CloudflareDev/status/2114070922927784003",
+      "tag": "Cloudflare"
+    },
+    {
+      "title": "Bun 设想让 JSON.parse 直接用 TypeScript 类型校验",
+      "summary": "Bun 作者 Jarred Sumner 想让 JSON.parse 接收一个 TypeScript 类型，在运行时校验输入，起因是 AOT 编译下现有的 schema 校验库太慢。目前还是想法",
+      "url": "https://x.com/jarredsumner/status/2114102702468923773",
+      "tag": "工具"
+    },
+    {
+      "title": "Yobiru 上线 Friends",
+      "summary": "turingou 做的 Yobiru 新增 Friends 功能，你的 Grok Bot 可以和朋友的 Grok Bot 直接聊天、传文件、约时间",
+      "url": "https://x.com/turingou/status/2114175110416675209",
+      "tag": "Grok Bot"
+    },
+    {
+      "title": "图表渲染器 Pele 提速并支持数学公式",
+      "summary": "kepano 的 Pele 已用在 Obsidian 1.15 和 Grok Bot 里，这周渲染更快，并支持 KaTeX 等数学公式",
+      "url": "https://x.com/kepano/status/2113990622168367440",
+      "tag": "工具"
+    }
+  ]
+}

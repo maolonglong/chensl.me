@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-05",
+  "title": "OpenAI 发 ChatGPT Images 2.6，并一次修了 948 个 Linux 提权漏洞",
+  "summary": "OpenAI 今天把图像模型升到 2.6，同时公开用自动化流水线修了 948 个 Linux 本地提权漏洞；Kimi K3.1 Pro 开放权重，Gemini 的电脑操作工具正式可用，Claude Code 后台子 Agent 也更省额度了",
+  "items": [
+    {
+      "title": "ChatGPT Images 2.6 上线",
+      "summary": "支持 GIF 和参考图，ChatGPT 与 Codex 全档位可用。API 新增 GPT-Image-2.6 Flare 和 Sunburst，出图快约 50%；Arena 文生图榜上 Sunburst（Medium）排第 2",
+      "url": "https://openai.com/index/introducing-images-2-6/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "自动化流水线一次修 948 个 Linux 提权漏洞",
+      "summary": "OpenAI 用尚未发布的网络安全模型，从发现、复现到写补丁全自动，共验证并生成 948 个本地提权漏洞的补丁，API 花费约 120 万美元，平均每个约 1279 美元，正在和 Linux 维护者一起提交",
+      "url": "https://openai.com/index/a-thousand-fewer-paths-to-root",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 收购 Pierre",
+      "summary": "Pierre 的开源开发工具已在 Codex 里用着，收购后打算一起把 Git 工作流做成面向 Agent 时代的形态，开源项目会继续开源",
+      "url": "https://openai.com/index/openai-to-acquire-pierre/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "GPT-Live 外呼电话 API 正式可用",
+      "summary": "Live 语音 Agent 可经任意 SIP 中继外呼，支持高清语音和按键音（DTMF）",
+      "url": "https://developers.openai.com/api/docs/guides/voice-sip#place-an-outbound-call",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "更新：Cat Wu 加入 OpenAI",
+      "summary": "昨天离开 Anthropic 的 Claude Code 产品负责人，去 OpenAI 带 Core Products 的产品管理，和 Tibo 一起做 Agent 产品",
+      "url": "https://x.com/_catwu/status/2118137612577968402",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Gemini API 电脑操作工具正式可用",
+      "summary": "从预览转正式，接口无破坏性变更，面向浏览器、手机和桌面 Agent",
+      "url": "https://aistudio.google.com/docs/computer-use",
+      "tag": "Google"
+    },
+    {
+      "title": "Gemini 3.8 Flash TTS 支持音色微调",
+      "summary": "Voice Remixing 上线 Google AI Studio 和 Gemini API，可用提示词调整现成或自定义音色的音色、音高、语速和口音",
+      "url": "https://x.com/Google/status/2118027058794148099",
+      "tag": "Google"
+    },
+    {
+      "title": "Claude Code 后台子 Agent 更省额度",
+      "summary": "子 Agent 每 30 秒更新状态，以前每次重读整段对话，现在由 Haiku 5.5 根据短笔记来写，单次更新花费约降 99%",
+      "url": "https://x.com/ClaudeDevs/status/2118063143167693011",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Anthropic 解出细菌穹窿体首个 3D 结构",
+      "summary": "生物团队借助 Claude 找到并解析来自噬菌体的 vault 粒子结构，这是已知首个原核侧穹窿体三维结构，功能仍未知",
+      "url": "https://www.anthropic.com/research/investigating-vault-particles-with-claude",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Kimi K3.1 Pro 开放权重",
+      "summary": "Moonshot 放出旗舰模型权重，总参数 2.8T、激活约 104B，上下文 100 万 token。Agent Arena 称其在开源模型中排第 1，长任务净提升 5.1%",
+      "url": "https://huggingface.co/moonshotai/Kimi-K3.1-Pro",
+      "tag": "Kimi"
+    },
+    {
+      "title": "百度开源 ERNIE 5.5 Flash Base",
+      "summary": "稀疏 MoE 基座模型，总参数 280B、每 token 激活 14B，预训练约 33.5T token，上下文最长 100 万，直接放出预训练权重，未经中后期训练",
+      "url": "https://x.com/Baidu_Inc/status/2118265920665587935",
+      "tag": "百度"
+    }
+  ]
+}

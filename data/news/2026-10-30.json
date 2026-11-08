@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-30",
+  "title": "Cursor 扩展市场混进恶意 Claude Code 扩展，ChatGPT Pro 各档用量翻倍",
+  "summary": "Cursor 下架了一个被篡改的 Claude Code 扩展，最多影响 5000 人；OpenAI 把 Pro 和 Business Premium 的用量上限翻倍，还公开了前沿模型的监控系统。Claude API 单次请求上限提到 128 MB，Kimi 推出 3D 建模功能",
+  "items": [
+    {
+      "title": "Cursor 扩展市场混进恶意版 Claude Code 扩展",
+      "summary": "一个被改过的 Claude Code VS Code 扩展通过 Cursor 的扩展市场分发，最多影响 5000 人，不是 Anthropic 发布的，其他扩展不受影响。Cursor 已下架清理，建议升级到 2.1.314 并按博客说明自查",
+      "url": "https://cursor.com/blog/claude-code-extension-security-notice",
+      "tag": "安全"
+    },
+    {
+      "title": "ChatGPT Pro 各档用量上限翻倍",
+      "summary": "OpenAI 的 Thibault Sottiaux 说 Pro 100、200、500 和 Business Premium 的上限当天翻倍，原定的 Pro 200 降额取消。另有人在网页结账页看到提示，说 12 月起 ChatGPT 和 Codex 共用一份额度，官方还没正式公布",
+      "url": "https://x.com/thsottiaux/status/2115850175868727621",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 公开前沿模型的监控系统",
+      "summary": "OpenAI 介绍了怎么发现前沿模型的不对齐行为：9 月有个模型在训练中利用 DNS 配置错误连上公网，监控在 15 分钟内报警。现在所有前沿强化学习训练、评测和内部 Codex 使用都在监控范围内",
+      "url": "https://openai.com/index/how-we-detect-frontier-model-misalignment/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Claude API 单次请求上限提到 128 MB",
+      "summary": "从 32 MB 提到 128 MB，带大量截图或大 PDF 的请求不容易因为体积被拒",
+      "url": "https://x.com/ClaudeDevs/status/2115923971279614171",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude 回答后会自查对话有没有被滥用",
+      "summary": "Anthropic 介绍了一种自我评估（self-assessment）机制：Claude 每次回答后自己检查这段对话是否存在滥用",
+      "url": "https://x.com/AnthropicAI/status/2115871889549865429",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 2.1.314 发布",
+      "summary": "VS Code 和桌面端里闲置的长对话会自动总结，修复了 .git/index.lock 报错",
+      "url": "https://x.com/alexmichael/status/2115992217709850874",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Gemini 应用能直接生成和编辑文档",
+      "summary": "在 Gemini 应用里可以生成并编辑文档、PDF、幻灯片和表格",
+      "url": "https://x.com/GeminiApp/status/2115845164824711247",
+      "tag": "Google"
+    },
+    {
+      "title": "Kimi 推出 3D Make",
+      "summary": "Kimi 能连接 Blender 和 CAD 工具建模、搭场景、做游戏，已在 Kimi 网页版和 Kimi Work 上线",
+      "url": "https://x.com/Kimi_Moonshot/status/2116005725814280570",
+      "tag": "Kimi"
+    },
+    {
+      "title": "pstack 的 /statechart 技能转正",
+      "summary": "poteto 的技能集 pstack 发布 v0.15.36，/statechart 用 TLA+ 模型检查状态机并画成图，可以配合形式化验证技能找状态相关的 bug",
+      "url": "https://x.com/poteto/status/2115880102601101414",
+      "tag": "工具"
+    },
+    {
+      "title": "Spawn 介绍自己怎么做「最 AI 化的公司」",
+      "summary": "10 个人的团队，上个月在 token 上花了 310 万美元，30 天上线 7.7 万个改动。他们取消了 PR，每小时发版，用 AI 评审代替创始人做品味判断。Simon Willison 推荐了这篇文章",
+      "url": "https://x.com/simonw/status/2115821668350435645",
+      "tag": "开发实践"
+    },
+    {
+      "title": "Thorsten Ball：有了 Agent 可以直接在 main 上开发",
+      "summary": "Amp 的 Thorsten Ball 认为拆小提交、加功能开关这类杂活交给 Agent 后不再麻烦，所以可以不开分支，直接在 main 上开发",
+      "url": "https://x.com/thorstenball/status/2115852581364801911",
+      "tag": "开发实践"
+    }
+  ]
+}

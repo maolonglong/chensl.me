@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-20",
+  "title": "DeepSeek 开源推理框架 DeepInfer，Anthropic 免费给开源项目扫漏洞",
+  "summary": "DeepSeek 放出线上用的推理框架，Anthropic 推出面向关键开源项目的免费漏洞扫描，OpenAI 说新模型更擅长 COBOL 这类老语言，阿里通义开源电脑操作 Agent 底座",
+  "items": [
+    {
+      "title": "DeepSeek 开源推理框架 DeepInfer",
+      "summary": "就是线上跑 DeepSeek V4.1 Flash 的那套，Apache-2.0 许可，带分布式推理、投机解码、结构化输出和批次不变推理，支持英伟达和昇腾。同时开源了和官方 API 行为一致的编解码组件 deepseek-recipe。vLLM 官方回应说 DeepInfer 最初主要基于 vLLM 构建",
+      "url": "https://x.com/deepseek_ai/status/2112476496283775135",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "Anthropic 推出 OSS Scanner",
+      "summary": "关键开源项目可以申请免费的定期漏洞扫描，用的是 Anthropic 最强的模型，每个发现都附概念验证（PoC），能修的附补丁。入选项目跳过人工复核，扫完直接收报告",
+      "url": "https://x.com/ClaudeDevs/status/2112299602510749992",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 2.1.304",
+      "summary": "自动模式加了引导设置，恢复高成本会话前会先提醒",
+      "url": "https://github.com/anthropics/claude-code/releases/tag/v2.1.304",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "OpenAI 说新模型更会写 COBOL、Fortran 这类老语言",
+      "summary": "重点是读懂几十年前的业务逻辑，帮银行和政府迁移老系统。OpenAI 还在征集下一步该支持哪些语言和流程",
+      "url": "https://openai.com/index/low-resource-programming-languages",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Codex 又重置了一次用量额度",
+      "summary": "OpenAI 的 Tibo（thsottiaux）宣布再次重置 Codex 额度。开发者 Geoffrey Huntley 贴出数据，说重置后频繁遇到模型容量不足的报错",
+      "url": "https://x.com/thsottiaux/status/2112432076767289678",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "阿里通义开源 OpenGCUA",
+      "summary": "电脑操作 Agent 的开源底座，让模型写代码去操作界面、调 API、跑 shell。附 8 个前沿模型的评测轨迹、macOS 真机测试框架预览版和跨设备 SDK（软件开发工具包），模型权重下一版才放",
+      "url": "https://github.com/Tongyi-MAI/OpenGCUA",
+      "tag": "阿里"
+    },
+    {
+      "title": "VoidZero 发布 tsrs",
+      "summary": "用 Rust 移植的 TypeScript 编译器，和 TypeScript 团队合作，不是分叉。官方称比 TS 7.0 快最多 8 倍，内存少约 70%，能编成 WebAssembly（WASM）在浏览器和 Workers 上跑，之后会并入 Oxc",
+      "url": "https://x.com/voidzerodev/status/2112531443591020965",
+      "tag": "工具"
+    },
+    {
+      "title": "Amp 语音输入提速",
+      "summary": "Amp 的 sqs 说语音输入快了 20% 到 40%",
+      "url": "https://x.com/sqs/status/2112444178663895338",
+      "tag": "工具"
+    },
+    {
+      "title": "T3 Code 能把仓库挪到另一台机器",
+      "summary": "Theo 演示两下就能把仓库挪到别的机器接着干，被 .gitignore 忽略的 .env 也会一起带过去",
+      "url": "https://x.com/theo/status/2112496667236905046",
+      "tag": "工具"
+    },
+    {
+      "title": "更新：pi-durable 休眠已合进主分支",
+      "summary": "上期报过 pi-durable 下周支持 serverless 休眠，新进展是 badlogicgames 说休眠和遥测都已合进 main，工具也快能休眠了",
+      "url": "https://x.com/badlogicgames/status/2112339320107364370",
+      "tag": "工具"
+    },
+    {
+      "title": "Grok Bot 可以设成 iPhone 操作按钮",
+      "summary": "按住操作按钮直接语音对话，需要 iPhone 15 Pro 以上机型和 1.16 版，在设置的操作按钮里选快捷指令，再选 Grok Bot 的开始语音聊天",
+      "url": "https://x.com/bot/status/2112252507762368684",
+      "tag": "Grok Bot"
+    },
+    {
+      "title": "一篇给编程写的悼词",
+      "summary": "Simon Willison 转了这篇文章，讲 Agent 让喜欢解题的程序员失去了什么",
+      "url": "https://simonwillison.net/2026/Oct/19/my-obituary-for-programming/",
+      "tag": "文章"
+    }
+  ]
+}

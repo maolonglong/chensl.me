@@ -1,0 +1,5 @@
+{{- $r := partial "resolve-destination.html" . -}}
+{{- $href := .Destination -}}
+{{- with $r.target }}{{ $href = print .RelPermalink $r.suffix }}{{ end -}}
+<a href="{{ $href }}"{{ with .Title }} title="{{ . }}"{{ end }}>{{ .Text }}</a>
+{{- /* chomp trailing newline */ -}}

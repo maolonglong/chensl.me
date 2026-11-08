@@ -1,0 +1,231 @@
+/*
+  Visual design follows the default theme of Bear Blog by Herman Martinus
+  (https://bearblog.dev). Written from scratch for this site; no Bear Blog
+  source code is included.
+*/
+
+:root {
+  color-scheme: light dark;
+  --width: 720px;
+  --font-main: Verdana, "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --background-color: #fff;
+  --heading-color: #222;
+  --text-color: #444;
+  --link-color: #3273dc;
+  --visited-color: #7048b8;
+  --code-background-color: #f2f2f2;
+  --code-color: #222;
+  --blockquote-color: #222;
+  --code-comment: #666;
+  --code-string: #2a5db0;
+  --code-number: #7048b8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #01242e;
+    --heading-color: #eee;
+    --text-color: #ddd;
+    --link-color: #8cc2dd;
+    --visited-color: #b39ddb;
+    --code-background-color: #000;
+    --code-color: #ddd;
+    --blockquote-color: #ccc;
+    --code-comment: #999;
+    --code-string: #8cc2dd;
+    --code-number: #c3b1e1;
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-main);
+  margin: auto;
+  padding: 20px;
+  max-width: var(--width);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading-color);
+  text-wrap: balance;
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+strong, b {
+  color: var(--heading-color);
+}
+
+/* CJK fonts have no italic glyphs; browsers would slant them artificially. */
+i, cite, address, dfn {
+  font-style: normal;
+}
+
+header .title {
+  display: block;
+  margin: 0.67em 0;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--heading-color);
+}
+
+header .title:hover {
+  text-decoration: none;
+}
+
+nav a {
+  margin-right: 8px;
+}
+
+main {
+  line-height: 1.75;
+}
+
+main p {
+  text-wrap: pretty;
+}
+
+/* Links in prose need more than color: link and body text contrast is low. */
+main a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+time {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  padding: 2px;
+  background-color: var(--code-background-color);
+  color: var(--code-color);
+  border-radius: 3px;
+}
+
+pre {
+  line-height: 1.25;
+  tab-size: 4;
+}
+
+pre code {
+  padding: 0;
+  background: none;
+}
+
+.highlight, main > pre {
+  padding: 1px 15px;
+  margin-block: 1em;
+  background-color: var(--code-background-color);
+  color: var(--code-color);
+  border-radius: 3px;
+  overflow-x: auto;
+}
+
+blockquote {
+  margin-inline: 0;
+  padding-left: 20px;
+  border-left: 1px solid #999;
+  color: var(--blockquote-color);
+}
+
+hr {
+  border: 0;
+  border-top: 1px dashed;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+figure {
+  margin: 1em 0;
+}
+
+figcaption {
+  font-size: small;
+  text-align: center;
+}
+
+table {
+  width: 100%;
+}
+
+footer {
+  padding: 25px 0;
+  text-align: center;
+}
+
+ul.blog-posts {
+  list-style-type: none;
+  padding: unset;
+}
+
+ul.blog-posts li {
+  display: flex;
+}
+
+ul.blog-posts li span {
+  flex: 0 0 8.125rem;
+}
+
+ul.blog-posts a {
+  text-decoration: none;
+}
+
+ul.blog-posts a:hover {
+  text-decoration: underline;
+}
+
+ul.blog-posts a:visited {
+  color: var(--visited-color);
+}
+
+/* Syntax highlighting: Chroma classes, two accent colors from the site palette. */
+.chroma :is(.c, .ch, .cm, .c1, .cs, .cp, .cpf) {
+  color: var(--code-comment);
+}
+
+.chroma :is(.s, .sa, .sb, .sc, .dl, .sd, .s2, .se, .sh, .sx, .s1) {
+  color: var(--code-string);
+}
+
+.chroma :is(.m, .mb, .mf, .mh, .mi, .il, .mo, .kc) {
+  color: var(--code-number);
+}
+
+.chroma :is(.k, .kd, .kn, .kp, .kr, .kt) {
+  font-weight: bold;
+}
+
+.chroma :is(.ln, .lnt) {
+  margin-right: 0.4em;
+  padding: 0 0.4em;
+  color: var(--code-comment);
+  user-select: none;
+}
+
+.chroma .hl {
+  display: block;
+  background-color: rgb(128 128 128 / 0.15);
+}

@@ -1,0 +1,28 @@
+{{- $isPost := and .IsPage (eq .Section "blog") -}}
+{{- $title := cond .IsHome site.Title (printf "%s – %s" .Title site.Title) -}}
+{{- $description := .Description -}}
+{{- if and (not $description) .IsPage -}}
+  {{- $description = .Summary | plainify | htmlUnescape | strings.TrimSpace | truncate 140 -}}
+{{- end -}}
+{{- $description = or $description site.Params.description -}}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{{ $title }}</title>
+<meta name="description" content="{{ $description }}">
+<link rel="canonical" href="{{ .Permalink }}">
+{{- with site.Home.OutputFormats.Get "rss" }}
+<link rel="alternate" type="{{ .MediaType.Type }}" href="{{ .Permalink }}" title="{{ site.Title }}">
+{{- end }}
+<meta property="og:site_name" content="{{ site.Title }}">
+<meta property="og:title" content="{{ cond .IsHome site.Title .Title }}">
+<meta property="og:description" content="{{ $description }}">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:type" content="{{ cond $isPost "article" "website" }}">
+{{- if $isPost }}
+<meta property="article:published_time" content="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}">
+{{- end }}
+<meta name="twitter:card" content="summary">
+{{- with resources.Get "css/main.css" | css.Build (dict "minify" (not hugo.IsDevelopment)) }}
+<style>{{ .Content | safeCSS }}</style>
+{{- end }}

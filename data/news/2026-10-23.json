@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-23",
+  "title": "Anthropic 用 Claude 做大规模形式化验证，Agent Skills 并入 Agentic AI Foundation",
+  "summary": "Claude 应用下周起默认 auto mode，OpenAI 推出 Decisions API，MiniMax M3.1 Flash 开放权重",
+  "items": [
+    {
+      "title": "Anthropic 用 Claude 做大规模形式化验证",
+      "summary": "Frontier Red Team 和 Theorem 合作，几周内在 123 个 OSS-Fuzz 开源库的 239 个入口上，证明编译后的 RISC-V 程序在 64 MB 以内的任意输入下都不会崩溃，过程中修了多年没被发现的 bug。Theorem 还放出一个 Claude skill，可以拿来验证自己的代码",
+      "url": "https://www.anthropic.com/research/formal-verification",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Agent Skills 捐给 Agentic AI Foundation",
+      "summary": "Anthropic 把 Agent Skills 标准捐给 MCP 所在的同一个基金会。按 Claude Devs 的说法，自 2025 年 12 月以来已有 70 多个 Agent 平台接入，包括 ChatGPT、Cursor、GitHub Copilot 和 VS Code",
+      "url": "https://x.com/ClaudeDevs/status/2113328526413996100",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude 应用下周起默认 auto mode",
+      "summary": "Pro、Max 和 Team 套餐的网页版、桌面端和手机端会话不再逐步等你批准，改由自动检查拦下有风险的操作，随时可以切回手动",
+      "url": "https://x.com/claudeai/status/2113360845409583307",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude 在 Google Cloud 上正式可用",
+      "summary": "由 Anthropic 托管，包含 Managed Agents 和 Opus 5.5 快速模式。上期报过 OpenAI 模型进入 Google Cloud，这次轮到 Claude",
+      "url": "https://x.com/claudeai/status/2113380122468454765",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "OpenAI Decisions API 正式可用",
+      "summary": "用来分类文本和图片、评估输入、决定下一步怎么走，不用生成完整回复，所以更快也更便宜，适合放在 Agent 的分支判断里",
+      "url": "https://x.com/OpenAIDevs/status/2113346642787086538",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenResponses 加入 Linux 基金会",
+      "summary": "OpenAI 的 Tibo（thsottiaux）说，OpenResponses 已加入 Linux 基金会",
+      "url": "https://x.com/thsottiaux/status/2113492187770175603",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 请外部机构检查内部监控系统",
+      "summary": "METR 和 Redwood Research 进入 OpenAI 内部做了三周嵌入式评估，检查它用来监控模型的系统",
+      "url": "https://x.com/OpenAI/status/2113298833392496746",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Gemini 能参考你的 Google 地图记录",
+      "summary": "经你允许后，Gemini 的 Personal Intelligence 可以结合 Google 地图里的搜索和收藏地点，以及 Google 日历，给出当天的推荐",
+      "url": "https://x.com/GeminiApp/status/2113343041805127839",
+      "tag": "Google"
+    },
+    {
+      "title": "更新：MiniMax M3.1 Flash 开放权重",
+      "summary": "10 月 19 日报过发布，新进展是权重开放了：总参数 428B，每个 token 激活 23B，MiniMax 公布的 DeepSWE v1.1 成绩是 73.7%。vLLM 首日支持",
+      "url": "https://x.com/MiniMax_AI/status/2113436864904610008",
+      "tag": "MiniMax"
+    },
+    {
+      "title": "Kimi 预告新模型",
+      "summary": "Kimi 发了一段预告视频，模型评测平台 Arena 也说 Kimi 的新模型快来了，具体信息还没公布",
+      "url": "https://x.com/Kimi_Moonshot/status/2113445757185606062",
+      "tag": "Kimi"
+    },
+    {
+      "title": "TanStack AI 1.0 稳定版发布",
+      "summary": "TanStack 的 AI 工具库到了 1.0",
+      "url": "https://x.com/tan_stack/status/2113571142539878687",
+      "tag": "工具"
+    },
+    {
+      "title": "Amp 支持通过 Microsoft Foundry 自带密钥",
+      "summary": "Amp 的 sqs 说，现在可以用自己在 Microsoft Foundry 上的密钥来跑 Amp",
+      "url": "https://x.com/sqs/status/2113574152720580756",
+      "tag": "工具"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-28",
+  "title": "Google DeepMind 发布世界模型 Genie 4，Artificial Analysis 智能指数升级到 v5",
+  "summary": "Genie 4 能用自然语言实时改场景，第一次带环境音和能对话的人物；Artificial Analysis 新版智能指数里 Claude Opus 5.5 暂列第一。Anthropic 公布 Claude 参与新药研发的进展，OpenCode 2.0 两周做到 100 万日活",
+  "items": [
+    {
+      "title": "Google DeepMind 发布世界模型 Genie 4",
+      "summary": "可以用自然语言实时改天气、换镜头、加东西，第一次带环境音和能实时对话的人物，剧情由 Gemini 负责规划和跟踪。现在只开放给受信测试者，之后会给 Google AI Ultra 订阅者（Project Genie），也会第一次进 Gemini API 和 AI Studio",
+      "url": "https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/",
+      "tag": "Google"
+    },
+    {
+      "title": "Gemini 应用能检测 Google AI 生成的内容",
+      "summary": "上传图片、视频或音频，Gemini 应用会用 SynthID 水印判断它是不是用 Google 的 AI 生成的。只能识别 Google 自家模型的产物",
+      "url": "https://x.com/GeminiApp/status/2115171788812669225",
+      "tag": "Google"
+    },
+    {
+      "title": "ChatGPT 全套餐支持 iCloud 邮件和日历",
+      "summary": "ChatGPT 所有套餐都能接 iCloud 邮件和日历插件",
+      "url": "https://x.com/ChatGPT/status/2115139248458191070",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "更新：杨-米尔斯成果成立外部工作组核查",
+      "summary": "昨天报过 OpenAI 称内部模型证明了杨-米尔斯理论的存在性。新进展是加州大学圣塔芭芭拉分校的卡弗里理论物理研究所（KITP）发布杨-米尔斯工作组声明，这个科学合作组负责解读这项 AI 成果，OpenAI 官方账号转发了。结论仍待核查",
+      "url": "https://x.com/KITP_UCSB/status/2115236165330846045",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Anthropic 公布 Claude 参与新药研发的进展",
+      "summary": "Anthropic 和六家做新药的机构合作了几个月，自己也开始做药物发现。据 alexmichael 的整理，最快 2028 年底进入人体临床试验",
+      "url": "https://x.com/AnthropicAI/status/2115178675050307942",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Anthropic 和美国总务管理局扩大合作",
+      "summary": "美国各级政府通过总务管理局（General Services Administration，GSA）用 Claude 可以打六折",
+      "url": "https://x.com/AnthropicAI/status/2115207004293853358",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 2.1.312 发布",
+      "summary": "据 alexmichael 整理，云端 routine 可以选推理强度；读了大文件的开头之后，不会再覆盖整个 CLAUDE.md",
+      "url": "https://x.com/alexmichael/status/2115178989870260590",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Artificial Analysis 智能指数升级到 v5",
+      "summary": "第三方评测机构 Artificial Analysis 把 60% 的题换成私有测试集，更难针对性刷分。按它的榜单，Claude Opus 5.5 以 58 分领先，GPT-6 Astra 57、GPT-6.1 Sol 55，Gemini 4 Argon 50；开源模型和第一名的差距从 3 分拉大到 12 分",
+      "url": "https://x.com/ArtificialAnlys/status/2115265133467635877",
+      "tag": "评测"
+    },
+    {
+      "title": "OpenCode 2.0 两周做到 100 万日活",
+      "summary": "OpenCode 的 thdxr 公布了这个数字，同时提醒开源模型和前沿模型的差距还很大",
+      "url": "https://x.com/thdxr/status/2115235637339054109",
+      "tag": "工具"
+    },
+    {
+      "title": "Matt Pocock：给 Agent 造一个「成功黑洞」",
+      "summary": "以前靠好用的 API、测试和 lint 把人引到正确的路上，但约束不能太严，人会烦。Agent 不会烦，约束可以拉满，让它根本走不偏",
+      "url": "https://x.com/mattpocockuk/status/2115368342898848021",
+      "tag": "开发实践"
+    },
+    {
+      "title": "Anthropic 平台工程负责人谈多 Agent 协作的难题",
+      "summary": "宝玉（dotey）整理了 Katelyn Lesse 的分享：上千个 Agent 一起干活时，还有四个难题要靠程序员解决",
+      "url": "https://x.com/dotey/status/2115229306490126432",
+      "tag": "开发实践"
+    }
+  ]
+}

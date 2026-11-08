@@ -1,0 +1,27 @@
+{{- /*
+Builds one page per AI News issue from data/news/<YYYY-MM-DD>.json, written by the news bot.
+The bot is not reviewed, so every field is validated here and treated as plain text in templates;
+an invalid issue fails the build and the previous deployment stays live.
+*/ -}}
+{{- $tagRE := `^[\p{L}\p{N}](?:[\p{L}\p{N} .+&_-]*[\p{L}\p{N}+])?$` -}}
+{{- range $key, $issue := hugo.Data.news -}}
+  {{- $file := printf "data/news/%s.json" $key -}}
+  {{- if not (findRE `^\d{4}-\d{2}-\d{2}$` $key) }}{{ errorf "%s: file name must be YYYY-MM-DD" $file }}{{ end -}}
+  {{- if ne $issue.date $key }}{{ errorf "%s: date %q does not match the file name" $file $issue.date }}{{ end -}}
+  {{- if not (and $issue.title $issue.summary) }}{{ errorf "%s: title and summary are required" $file }}{{ end -}}
+  {{- if not $issue.items }}{{ errorf "%s: items must not be empty" $file }}{{ end -}}
+  {{- range $i, $item := $issue.items -}}
+    {{- if not (and $item.title $item.summary $item.url $item.tag) }}{{ errorf "%s: item %d needs title, summary, url, and tag" $file $i }}{{ end -}}
+    {{- $u := urls.Parse $item.url -}}
+    {{- if not (in (slice "http" "https") $u.Scheme) }}{{ errorf "%s: item %d url must use http or https" $file $i }}{{ end -}}
+    {{- if not (findRE $tagRE $item.tag) }}{{ errorf "%s: item %d has an invalid tag %q" $file $i $item.tag }}{{ end -}}
+  {{- end -}}
+  {{- $.AddPage (dict
+    "kind" "page"
+    "path" $key
+    "title" $issue.title
+    "dates" (dict "date" (time.AsTime $key))
+    "params" (dict "summary" $issue.summary "items" $issue.items)
+    "content" (dict "mediaType" "text/markdown" "value" "")
+  ) -}}
+{{- end -}}

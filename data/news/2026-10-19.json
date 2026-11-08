@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-19",
+  "title": "MiniMax 发布 M3.1 Flash，OpenAI 为 OpenCode 受影响用户退款",
+  "summary": "OpenAI、Google、Anthropic 今天没有新模型，MiniMax 揭晓匿名模型 Space Bunny 就是 M3.1 Flash，OpenAI 退还 OpenCode 安全事件中被刷掉的 API 额度，Anthropic 拿出股份成立公益基金",
+  "items": [
+    {
+      "title": "MiniMax 发布 M3.1 Flash",
+      "summary": "此前登上多个榜单、累计处理超过 200 万亿 token 的匿名模型 Space Bunny 就是它的早期版本。官方称 DeepSWE 编程评测 74%，成本是 M3 的三分之一，速度是 3 倍，API 每百万 token 输入 0.15 美元、输出 0.60 美元，权重 10 月 23 日放出",
+      "url": "https://x.com/MiniMax_AI/status/2112150867868541221",
+      "tag": "MiniMax"
+    },
+    {
+      "title": "OpenCode 限时免费提供 M3.1 Flash",
+      "summary": "OpenCode 称 Space Bunny 在自家平台连续 12 天排第一，共处理 106 万亿 token，正式版接下来 3 天免费",
+      "url": "https://x.com/opencode/status/2112156205938626954",
+      "tag": "MiniMax"
+    },
+    {
+      "title": "更新：OpenAI 为 OpenCode 受影响用户退款",
+      "summary": "上期报过 OpenCode 遭入侵，新进展是 OpenAI 的 Tibo（thsottiaux）说，已和 OpenCode 一起让同为 OpenAI API 客户的受影响用户恢复使用，攻击中被刷掉的额度全部退回，做安全防御的团队还可申请 Daybreak Blue 权限",
+      "url": "https://x.com/thsottiaux/status/2112034063934742720",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Codex 桌面应用可编辑旧消息",
+      "summary": "Tibo 说桌面应用现在可以修改线程里之前发过的消息，这是用户呼声很高的功能",
+      "url": "https://x.com/thsottiaux/status/2111990254408434095",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Anthropic 成立 Public Benefit Fund",
+      "summary": "新的全资子公司，先放入 5% 股份，公司估值每比基准涨 50%，董事会可酌情再加最多 2%。算上联合创始人承诺捐出 80% 股权等安排，官方称约 20% 股份将用于公益",
+      "url": "https://www.anthropic.com/news/public-benefit-fund",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "DeepSeek V4.1 Flash 新 checkpoint 有了本地版",
+      "summary": "Redis 作者 antirez 放出 V4.1 Flash 新 checkpoint 的 DwarfStar GGUF 文件（GGUF 是本地推理常用的模型格式），他说光 token 效率的提升就值得升级",
+      "url": "https://x.com/antirez/status/2112135784140603700",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "GitHub 用开源 AI 安全 Agent 找出 24 个安卓漏洞",
+      "summary": "GitHub Security Lab 用开源 Agent 跑定向任务流，找到的漏洞里有一款下载量千万的导航应用泄露位置，博客附了在自己项目上运行的方法",
+      "url": "https://github.blog/security/how-we-found-24-android-vulnerabilities-using-our-open-source-ai-security-agent/",
+      "tag": "GitHub"
+    },
+    {
+      "title": "pstack 新增形式化验证技能",
+      "summary": "Grok Bot 团队的 poteto 在 v0.15.27 加入 /create-formal-verification-skill（测试版），按你想验证的性质生成技能和验证套件，例如用 TLA+ 给并发状态机建模，或在 Rust 里用 kani 查未定义行为，作者说已用它找出几个 bug",
+      "url": "https://x.com/poteto/status/2111926622278521253",
+      "tag": "工具"
+    },
+    {
+      "title": "多数 Codex 用户也在用 Claude Code",
+      "summary": "Theo 说过去两周 T3 Code 里用过 Codex 的用户，超过六成也用了 Claude Code，数据只来自 T3 Code 一家",
+      "url": "https://x.com/theo/status/2112035326625730981",
+      "tag": "工具"
+    },
+    {
+      "title": "腾讯开源 Octop 1.0.2",
+      "summary": "自托管的 AI 工作区，每人有独立的 Agent、记忆和工作区。新版加了团队模式，多个 Agent 先分工再给出一个答案，还支持跨机器调用别的电脑上的文件和环境",
+      "url": "https://x.com/TencentAI_News/status/2112115861301649834",
+      "tag": "腾讯"
+    },
+    {
+      "title": "Durable Objects 的 SQLite 单行上限提到 8MB",
+      "summary": "开发者 Matt Carey 发现，Cloudflare Durable Objects 里 SQLite 单行大小上限已提高到 8MB",
+      "url": "https://x.com/mattzcarey/status/2112141476574474255",
+      "tag": "Cloudflare"
+    },
+    {
+      "title": "用 Fisher 信息解释强化学习后训练为何更新稀疏",
+      "summary": "论文用对角 Fisher 信息说明，几乎不影响输出概率的参数梯度更小，而且训练前就能挑出来。在 Qwen3-1.7B 上只更新 Fisher 选出的 0.1% 参数，就能拿回完整强化学习（RL）训练 85.2% 的提升",
+      "url": "https://alphaxiv.org/abs/2609.36262",
+      "tag": "研究"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-17",
+  "title": "DeepSeek 发布 V4.1 Flash，OpenAI 升级 Astra Pro 多 Agent",
+  "summary": "DeepSeek 上线 V4.1 Flash-1017 并开放 Search 与 Fetch API，OpenAI 给 GPT-6 Astra Pro 加了多 Agent 并行，Anthropic 公开 Claude Code 代码审查做法，Reflection 开源 Beam",
+  "items": [
+    {
+      "title": "GPT-6 Astra Pro 支持多 Agent 并行",
+      "summary": "ChatGPT 里响应更快，插件和工具用得更好，多个 Agent 可并行拆做同一任务，进度可点开查看，现已向 Pro 用户开放",
+      "url": "https://x.com/OpenAI/status/2111192259073094035",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 工程师用 Codex 清理死代码",
+      "summary": "可从 Slack 找死代码候选，对照线上监控确认后起草清理 PR，官方写了维护 GPT-6 系列软件的做法",
+      "url": "https://developers.openai.com/blog/maintaining-software-with-the-gpt-6-family",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Claude Code 团队讲代码审查",
+      "summary": "Claude 写了约九成 Claude Code 代码，六到九月合并的 PR 翻倍多，回滚比例降了四成多，文章讲了审查流程怎么改",
+      "url": "https://claude.dev/blog/solving-code-review-at-anthropic/",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 每轮改用 gzip 上传",
+      "summary": "会话压缩后更快到达模型，回复更早开始，云端会话在你打字时就开始启动",
+      "url": "https://x.com/ClaudeDevs/status/2111209208012210409",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Gemini Agent 从零打通 Minecraft",
+      "summary": "四个 Gemini 4 Argon Agent 只靠代码和文字，在沙箱里写了 2783 个程序，27 小时无人工干预通关",
+      "url": "https://x.com/GoogleDeepMind/status/2111127991401247033",
+      "tag": "Google DeepMind"
+    },
+    {
+      "title": "DeepSeek 发布 V4.1 Flash-1017",
+      "summary": "官方称跑分更高、完成更快、输出更短，网页、App 和 API 已上线，并针对 DeepSeek Harness、腾讯 CodeBuddy 等编程工具做了优化，权重已开源",
+      "url": "https://x.com/deepseek_ai/status/2111375640717033777",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "DeepSeek 开放 Search 与 Fetch API",
+      "summary": "自研搜索引擎支撑，每个端点每千次调用 0.75 美元，也可经服务端工具在对话里调用",
+      "url": "https://x.com/deepseek_ai/status/2111375650414309859",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "Reflection 开源 Beam",
+      "summary": "501B 总参数、23B 激活，Apache 2.0 许可，Artificial Analysis 智能指数 30，美国开源权重模型中排第二",
+      "url": "https://x.com/ArtificialAnlys/status/2111087606759030831",
+      "tag": "Reflection"
+    },
+    {
+      "title": "OpenCode 限时免费提供 Beam",
+      "summary": "支持 100 万上下文，限时免费，权重已可在多平台下载",
+      "url": "https://x.com/opencode/status/2111208605860892696",
+      "tag": "Reflection"
+    },
+    {
+      "title": "Cursor 云端 Agent 可生成交互式 canvas",
+      "summary": "做仪表盘或报告时，Agent 可边做边生成可分享给团队的链接",
+      "url": "https://x.com/cursor_ai/status/2111193957527146711",
+      "tag": "Cursor"
+    },
+    {
+      "title": "Elorian 发布 Glimpse",
+      "summary": "首个视觉推理模型，面向多角度和动态画面，官方称在公开视觉推理评测上接近 Astra",
+      "url": "https://x.com/AndrewDai/status/2111142161584628060",
+      "tag": "Elorian"
+    },
+    {
+      "title": "Magpie 可精简 Claude 系统提示词",
+      "summary": "新增开关后每个请求约少付 1K token，下个版本发布",
+      "url": "https://x.com/yetone/status/2111178943604953551",
+      "tag": "工具"
+    }
+  ]
+}

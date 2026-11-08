@@ -1,0 +1,4 @@
+{{- /* Usage: {{< recent-posts 5 >}} */ -}}
+{{- $limit := int (.Get 0 | default 5) -}}
+{{- $posts := (where site.RegularPages "Section" "blog").ByDate.Reverse -}}
+{{- partial "post-list.html" (first $limit $posts) -}}

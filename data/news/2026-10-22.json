@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-22",
+  "title": "Anthropic 推出主动型 Agent 应用 Claude Duet，OpenAI 模型挖出 PHP 严重漏洞",
+  "summary": "Claude Duet 开放研究预览，Claude API 发了 2023 年以来第一个正式版本；OpenAI 牵头修复 PHP 漏洞，模型和 Codex 进入 Google Cloud",
+  "items": [
+    {
+      "title": "Anthropic 开放 Claude Duet 研究预览",
+      "summary": "一个主动型 Agent 应用：自己找出需要你处理的事，你走开后接着干活，替你操作前先问你。基于 Claude Opus 5.5，沿用账号里的记忆、技能和已连接的应用，目前只对美国 Pro 和 Max 用户开放候补",
+      "url": "https://claude.com/product/claude-duet",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude API 发布 2026-10-21 版本",
+      "summary": "这是 2023 年以来第一个正式 API 版本。Anthropic 说以后会更常发版，方便开发者在新模型要求之前先处理破坏性变更，2023-06-01 版本不废弃",
+      "url": "https://x.com/ClaudeDevs/status/2113013247209021918",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Security 改成持续扫描",
+      "summary": "仓库连上一次后先深扫，之后代码有变动就重扫，让结果跟上代码现状。目前在 Claude Enterprise 公测",
+      "url": "https://x.com/claudeai/status/2112962248218148878",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "OpenAI 模型帮忙挖出 PHP 严重漏洞",
+      "summary": "这是 OpenAI 的 Patch the Planet 计划的成果，OpenAI 牵头维护者和安全研究者花了两个月准备修复，PHP 已发安全版本。OpenAI 还放出一个 Codex skill，帮网站自查是否受影响",
+      "url": "https://thephp.foundation/blog/2026/10/21/todays-php-security-release-and-how-were-strengthening-php-security/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 模型进入 Google Cloud",
+      "summary": "前沿模型和 Codex 的 Agent 工作流上架 Google Cloud 的 Model Garden，企业可以直接在 Google Cloud 里调用",
+      "url": "https://openai.com/index/openai-models-google-cloud/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "GPT-Rosalind 给出一条新药研究线索",
+      "summary": "OpenAI 说这个生命科学模型在小鼠脑数据里发现，罕见神经退行性疾病 Perry 综合征相关基因 DCTN1 被破坏后，胆固醇转运相关基因的表达会变化，提出恢复胆固醇转运或许能保护神经元。这只是待验证的假设",
+      "url": "https://x.com/OpenAI/status/2112899854569762936",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 讲解 ChatGPT 广告系统怎么搭",
+      "summary": "OpenAI Developers 发文介绍 LLM（大语言模型）编排器、检索、排序和竞价工具怎么配合，并说广告不影响回答本身",
+      "url": "https://x.com/OpenAIDevs/status/2112962753682198969",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Sundar Pichai 谈 Gemini 4 Argon 和算力紧张",
+      "summary": "Google CEO 接受记者 Alex Heath 采访，聊 Gemini 4 Argon 更大范围上线后的反响、还想改进的地方和个人 Agent 计划，并说 Google 的算力也不够用",
+      "url": "https://x.com/sundarpichai/status/2112945705757315307",
+      "tag": "Google"
+    },
+    {
+      "title": "Amp 的 orbs 支持自托管",
+      "summary": "个人和团队自托管都免费",
+      "url": "https://ampcode.com/news/self-hosted-orbs",
+      "tag": "工具"
+    },
+    {
+      "title": "Amp 可接入 GitHub Copilot 订阅",
+      "summary": "Amp 的 sqs 说，现在能用已有的 GitHub Copilot 订阅来跑 Amp",
+      "url": "https://x.com/sqs/status/2113126346113339404",
+      "tag": "工具"
+    },
+    {
+      "title": "Hugging Face 发布 Carbon-X",
+      "summary": "一个把 DNA 和自然语言放在一起的 14B 参数模型",
+      "url": "https://x.com/_lewtun/status/2113214040516268126",
+      "tag": "Hugging Face"
+    },
+    {
+      "title": "Railway 发布安全事件披露",
+      "summary": "云部署平台 Railway 公开了 10 月 21 日的安全事件说明，用 Railway 的项目值得读一下",
+      "url": "https://blog.railway.com/p/security-disclosure-wednesday-october-21st",
+      "tag": "安全"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{{- $issues := first 20 .RegularPages.ByDate.Reverse -}}
+{{- $rfc822 := "Mon, 02 Jan 2006 15:04:05 -0700" -}}
+{{- printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ site.Params.newsTitle }}</title>
+    <link>{{ .Permalink }}</link>
+    <description>{{ site.Params.newsDescription }}</description>
+    <language>{{ site.Language.Locale }}</language>
+    {{- with .OutputFormats.Get "rss" }}
+    {{ printf "<atom:link href=%q rel=\"self\" type=%q />" .Permalink .MediaType.Type | safeHTML }}
+    {{- end }}
+    {{- range $issues }}
+    {{- $body := printf "<p>%s</p>%s" (.Params.summary | htmlEscape) (partial "news-items.html" .Params.items) }}
+    <item>
+      <title>{{ .Title }}</title>
+      <link>{{ .Permalink }}</link>
+      <guid>{{ .Permalink }}</guid>
+      <pubDate>{{ .Date.Format $rfc822 | safeHTML }}</pubDate>
+      {{- $tags := slice }}{{ range .Params.items }}{{ if not (in $tags .tag) }}{{ $tags = $tags | append .tag }}{{ end }}{{ end }}
+      {{- range $tags }}
+      <category>{{ . }}</category>
+      {{- end }}
+      <description>{{ $body | transform.XMLEscape | safeHTML }}</description>
+    </item>
+    {{- end }}
+  </channel>
+</rss>

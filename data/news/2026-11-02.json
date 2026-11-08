@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-02",
+  "title": "SemiAnalysis 发布 Agent 基准 GDPx，Codex 28 天连发收官",
+  "summary": "今天三大厂都没有新发布。SemiAnalysis 的新基准里最好的模型也只拿到 12%，Gemini 4 Carbon 的成本表现被点名；Codex 团队的 28 天连发以一次额度重置收尾。其余多是开发者实践和工具更新",
+  "items": [
+    {
+      "title": "SemiAnalysis 发布 Agent 基准 GDPx",
+      "summary": "GDPx 测 Agent 在经济价值最高的一批行业里能做多少真实工作，SemiAnalysis 说最好的模型也只拿到 12%。Sundar Pichai 转发时点名了 Gemini 4 Carbon 的成本曲线，SemiAnalysis 的 Dylan Patel 也说 Carbon 在几个领域表现很强，但能力分布不均",
+      "url": "https://x.com/SemiAnalysis_/status/2117075900575477855",
+      "tag": "Google"
+    },
+    {
+      "title": "Codex 团队 28 天连发收官",
+      "summary": "OpenAI 的 Tibo 10 月初承诺 28 天里每天要么发一项改进、要么重置一次用量额度，第 28 天又是一次额度重置。Alex 整理的清单一共 38 项，包括 GPT-6.1 Terra 等 2 个新模型和 14 次额度重置，还有 GPT-6.1 Sol 的 50 万上下文、ChatGPT 控制 Chrome 等",
+      "url": "https://x.com/alexmichael/status/2117045484304875943",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Karpathy 用 Claude 两小时做出 HackerTube",
+      "summary": "他让 Claude 从 Hacker News 20 年的 4300 万条评论里筛出 6454 个反复被推荐的视频，做成一个不用登录的视频站。用的是 Claude Code 桌面端和 Opus 5.5，前后约两小时。他只手动建了 API 密钥、开了服务器、买了域名，部署和加固都交给 Claude，评论分析数据也打包公开了",
+      "url": "https://x.com/karpathy/status/2116957135661945283",
+      "tag": "开发实践"
+    },
+    {
+      "title": "《数学已经变了》：数学界该怎么应对 AI 论文",
+      "summary": "Terry Tao 的博客刊出数学家 Frank Calegari 的客座文章，起因是 OpenAI 10 月 6 日放出 700 多篇数学论文。他认为 AI 已经能在很多领域做出重要贡献，这批论文想法很好但写得很差、署名也不合学界规矩，有些还是错的；与其抱怨大公司，数学界更该改自己能管的招聘、发表和培养学生",
+      "url": "https://terrytao.wordpress.com/2026/11/01/mathematics-has-changed-lets-act-like-it/",
+      "tag": "科研"
+    },
+    {
+      "title": "更新：MiniMax M3.1 Flash 有了社区量化版",
+      "summary": "10 月 23 日报过 M3.1 Flash 开放权重，这次的新进展是社区量化版本陆续出来，MiniMax 官方逐一致谢。比如 Unsloth 的 2 比特 GGUF 只有 143.9 GB，还有 Apple Silicon 上的 MLX 量化、AMD Instinct 上的 MXFP4，有人在 4 张 RTX 3090 上跑了起来",
+      "url": "https://x.com/MiniMax_AI/status/2116996123164569606",
+      "tag": "MiniMax"
+    },
+    {
+      "title": "DeepSeek 表态每代模型都会支持 pi 等主流 harness",
+      "summary": "DeepSeek 的 Tianyi Cui 说，团队相信模型要能在各种 harness（驱动 Agent 的外壳程序）里都好用，每一代模型都会好好支持 pi 等主流 harness。前一天 Armin Ronacher 刚推荐过 DeepSeek 介绍 Super-agent 原型的文章",
+      "url": "https://x.com/tianyi/status/2117064134961631414",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "Pi v1.5.0 发布",
+      "summary": "这个编程 Agent 接入了 GPT-6.1 Terra，在 Codex 上有 50 万上下文；大工具调用改成增量解析，流式输出更快；扩展更新后能显示改动日志",
+      "url": "https://x.com/PiChangelog/status/2117212378417000547",
+      "tag": "工具"
+    },
+    {
+      "title": "Amp 一句提示词干了 52 分钟，重建两本书的老网站",
+      "summary": "Thorsten Ball 随手给 Amp 发了一句话，让它把两本书 10 年前用 Ruby 写的网站换到现代技术栈。Amp 干了 52 分钟，迁到 Astro，适配了手机，还自己去 Hacker News 和 Goodreads 找了读者评价",
+      "url": "https://x.com/thorstenball/status/2117147179265433866",
+      "tag": "工具"
+    },
+    {
+      "title": "Vercel Labs 推出 agent-desktop",
+      "summary": "Vercel Labs 十月汇总里的新项目，让任何编程 Agent 都能在 macOS、Windows 和 Linux 上操作电脑。同期还有用 TypeScript 写的 TypeScript 7 编译器 tsc-ts",
+      "url": "https://x.com/ctatedev/status/2116945207967261176",
+      "tag": "工具"
+    },
+    {
+      "title": "Jarred Sumner 让 Claude 做性能优化时常说的话",
+      "summary": "Bun 作者分享的几句提示词：按面向数据的设计重写，把哈希表换成扁平数组、指针换成数组下标，考虑数组结构体，还有一句「缓存是给慢设计打补丁，删掉所有缓存，重新设计让它变快」",
+      "url": "https://x.com/jarredsumner/status/2117037940031496252",
+      "tag": "开发实践"
+    },
+    {
+      "title": "OpenCode 的 GitHub 分诊跑在一个长期会话里",
+      "summary": "OpenCode 的 dax 说，因为是同一个长期会话，它会把活派给以前处理过类似问题的子 Agent，于是自然长出了专门处理某类问题的子 Agent",
+      "url": "https://x.com/thdxr/status/2116979661188321541",
+      "tag": "开发实践"
+    },
+    {
+      "title": "NVIDIA 提出弹性潜在循环",
+      "summary": "NVIDIA 的论文让同一个模型靠多循环几次换精度。论文报告 4B 模型循环一次时和普通 Transformer 只差 0.52%，循环四次平均准确率提高 7.25%",
+      "url": "https://www.alphaxiv.org/abs/2610.12582",
+      "tag": "NVIDIA"
+    }
+  ]
+}

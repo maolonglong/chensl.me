@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-01",
+  "title": "DeepSeek 开源 Super-agent 研究原型，ChatGPT 的 HTML 预览曾能被用来盗号",
+  "summary": "DeepSeek 放出能自己接活、开 PR 的编程 Agent 原型；安全团队披露 ChatGPT HTML 预览的沙箱漏洞，OpenAI 已修复。周末大厂没有新模型，工具圈更热闹，Matt Pocock 在重做 Sandcastle，Magpie 改为直接驱动 Claude Code 界面",
+  "items": [
+    {
+      "title": "DeepSeek 开源 Super-agent 研究原型",
+      "summary": "dsh-superagent 盯着一个 GitHub 仓库（也可以接飞书），有人派活就开一个独立会话去做，做完在原对话里回复，比如开一个 PR。官方写明是研究原型、不是正式产品，MIT 协议，建仓一天多已有 5000 多星",
+      "url": "https://github.com/deepseek-ai/dsh-superagent-prototype",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "ChatGPT HTML 预览的沙箱漏洞",
+      "summary": "Parameter Labs 发现，借 ChatGPT 绘图用的 MathLive 库和 YouTube 的一个接口，可以绕过 HTML 预览的沙箱。别人点开一个分享链接，就可能被盗走私人数据。OpenAI 已修复并发了 5000 美元赏金，Simon Willison 觉得给少了",
+      "url": "https://simonwillison.net/2026/Oct/31/how-we-took-over-chatgpt-accounts/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 将支持 robots.txt 里的通用 AI 训练偏好",
+      "summary": "网站可以在 robots.txt 里写一条通用声明，同时告诉多家 AI 厂商要不要拿自己的内容训练模型，不用再给每家爬虫分别写规则。这个信号出自 IETF（互联网工程任务组）的 AI Preferences 工作组，OpenAI 计划未来几个月内落地，原有的爬虫设置照旧有效",
+      "url": "https://openai.com/index/helping-websites-express-ai-training-preferences",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Google DeepMind 的 PlanAssist 推广到 12 个英国地方议会",
+      "summary": "PlanAssist 基于 Gemini，帮英国政府的规划官员审住宅改建申请。Google DeepMind 说它最多能把审一份申请的时间缩短 58%",
+      "url": "https://x.com/GoogleDeepMind/status/2116524000977285321",
+      "tag": "Google"
+    },
+    {
+      "title": "Matt Pocock 在重做 Sandcastle v1",
+      "summary": "新定位是帮人搭自己的「软件工厂」：内置 Claude Code、Codex 等 6 种 harness（驱动 Agent 的外壳程序），能接 Daytona、Vercel、E2B 等沙箱。他技能仓库里的每个技能都会变成一个能直接调用的函数，比如 CodeReview()。目前还在征求意见",
+      "url": "https://x.com/mattpocockuk/status/2116805878187794740",
+      "tag": "工具"
+    },
+    {
+      "title": "更新：Magpie 改为直接驱动 Claude Code 界面",
+      "summary": "之前报过 yetone 的 Magpie，这次的新变化是 Claude Code 提供方不再走 claude -p，而是直接驱动终端界面。起因是有人发现 claude -p 在 5 小时窗口下要多耗约两倍 token，改了之后额度消耗和手动用一样。旧方式仍可切回",
+      "url": "https://x.com/yetone/status/2116525328390823955",
+      "tag": "工具"
+    },
+    {
+      "title": "Mario Zechner 发布 pi-schema",
+      "summary": "pi 的作者让 Agent 反复迭代优化出来的 JSON Schema 构建和校验库，不依赖 eval，任何 JavaScript 环境都能跑，主打快、准、占内存少",
+      "url": "https://x.com/badlogicgames/status/2116653884362097081",
+      "tag": "工具"
+    },
+    {
+      "title": "Surge iOS 6 Beta 内置 MCP 服务器",
+      "summary": "Surge iOS 6 上了 TestFlight，界面按 iOS 26 重做，还内置了 MCP（模型上下文协议）服务器，让 AI Agent 能直接操作 Surge。MCP 服务器要有效的更新订阅才能用",
+      "url": "https://x.com/nssurge/status/2116530752938737785",
+      "tag": "工具"
+    },
+    {
+      "title": "Browser Use 推出 BU Ultrafast",
+      "summary": "Browser Use 说这是目前最快、最便宜的网页 Agent，中位任务耗时 14.4 秒，演示视频里 25 个任务一共花了 0.126 美元。速度和价格是官方自己的说法",
+      "url": "https://x.com/browser_use/status/2116618331734344103",
+      "tag": "工具"
+    },
+    {
+      "title": "Bun AOT 编译的实测数据",
+      "summary": "之前报过 Bun 的 AOT（预先编译）计划，这次 Jarred Sumner 给了实测：一个用 Express 和 node:sqlite 写的 REST API，内存少 40%，CPU 低 14%，也没有 JIT 预热",
+      "url": "https://x.com/jarredsumner/status/2116679973448945762",
+      "tag": "工具"
+    },
+    {
+      "title": "OpenCode 的 token 花费是工资的两倍",
+      "summary": "OpenCode 的 thdxr 说，按现在的 token 价格，团队的 token 花费是工资的两倍，25 个人的产出接近以前 75 人的团队，但没有大团队的管理负担",
+      "url": "https://x.com/thdxr/status/2116527005801873662",
+      "tag": "开发实践"
+    }
+  ]
+}

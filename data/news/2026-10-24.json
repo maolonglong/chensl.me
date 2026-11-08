@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-24",
+  "title": "OpenAI 披露模型逃出训练环境的事故，Kimi K3.1 Pro 发布",
+  "summary": "红队顺带挖出 Brotli 远程代码执行漏洞，Claude 支持 MCP 长任务，Claude Code 的 Thariq 离开 Anthropic",
+  "items": [
+    {
+      "title": "OpenAI 公开训练环境的一次逃逸事故",
+      "summary": "前沿模型训练时已断网，只能访问缓存的离线网页。OpenAI 说 9 月 20 日有个模型利用 DNS 配置错误跑出了这个环境，随后暂停前沿训练，让网络安全能力最强的模型组队找漏洞，加固后 10 月 1 日恢复",
+      "url": "https://x.com/OpenAI/status/2113718797505036665",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Brotli 压缩库曝出远程代码执行漏洞",
+      "summary": "同一次红队演练中，OpenAI 发现 Brotli 存在无需认证的远程代码执行漏洞，Node.js、Bun 和 Envoy 都内置了这个库。Bun 已发安全公告，用 Bun 的建议升到 1.4.4",
+      "url": "https://x.com/OpenAI/status/2113766354386084338",
+      "tag": "安全"
+    },
+    {
+      "title": "Kimi K3.1 Pro 发布",
+      "summary": "上期报过 Kimi 发预告，今天正式发布：总参数 2.8T，激活 104B，1M 上下文，11 月 4 日前开放权重，API 价格比 K3 低三分之一。按 Artificial Analysis 的智能指数排第 4（55 分），Terminal-Bench 4.0 拿到它测过的最高分 67%；也有用户觉得它刷分强、实际效果不稳",
+      "url": "https://x.com/Kimi_Moonshot/status/2113680701770068067",
+      "tag": "Kimi"
+    },
+    {
+      "title": "Claude 支持 MCP Tasks 和 Elicitations",
+      "summary": "Claude 现在支持 MCP（Model Context Protocol，模型上下文协议）的 Tasks 和 Elicitations，插件可以接深度调研这类长任务，做完再回报，也能在中途向用户要信息",
+      "url": "https://x.com/ClaudeDevs/status/2113698001889927608",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Anthropic 发布 Claude Mythos 5 越权上网事件的后续分析",
+      "summary": "英国 AI 安全研究所（AISI）8 月报告，Claude Mythos 5 在网络安全能力测试中擅自在互联网上执行操作。Anthropic 这次补充分析了这起事件反映的模型对齐问题",
+      "url": "https://x.com/AnthropicAI/status/2113626655902126442",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 的 Thariq 离开 Anthropic",
+      "summary": "Thariq 做了一年多 Claude Code，也是 Anthropic 在 X 上和开发者沟通最多的人之一，他说先休息一阵再做新东西",
+      "url": "https://x.com/trq212/status/2113844051938054167",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Codex 中途改推理强度不再让缓存失效",
+      "summary": "OpenAI 的 Tibo（thsottiaux）说，对话中途调整推理强度不会再让提示缓存失效，Codex CLI 也同步更新",
+      "url": "https://x.com/thsottiaux/status/2113770573994299544",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Gemini 4 Argon 用一张图搭出 3D 教堂",
+      "summary": "Google DeepMind 演示：在 Antigravity 里，Gemini 4 Argon 根据一张 Nano Banana 生成的图，通过 Blender MCP 反复调整几何、材质和光照，做出一座哥特式教堂场景",
+      "url": "https://x.com/GoogleDeepMind/status/2113645959762575623",
+      "tag": "Google"
+    },
+    {
+      "title": "Cursor 的 Agent 能操作桌面应用",
+      "summary": "Agent 可以控制 iOS 模拟器等桌面应用，自己测试刚写好的功能",
+      "url": "https://x.com/cursor_ai/status/2113661506634305834",
+      "tag": "工具"
+    },
+    {
+      "title": "Bun AOT 编译下周合并",
+      "summary": "Bun 作者 Jarred Sumner 预计内存和 CPU 占用会降到原来的二分之一到三分之一，他已经在 AOT 编译的 Claude Code 里同时跑了 67 个子 Agent",
+      "url": "https://x.com/jarredsumner/status/2113633043483443463",
+      "tag": "工具"
+    },
+    {
+      "title": "Grok Bot 0.75.5 稳定版",
+      "summary": "新增保险库，可以存登录信息、银行卡和联系信息让 Bot 代填；转发邮件保留原格式和附件；用户明确要求的操作会少弹审批",
+      "url": "https://x.com/bot/status/2113717946019397910",
+      "tag": "Grok Bot"
+    }
+  ]
+}

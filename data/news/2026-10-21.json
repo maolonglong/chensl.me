@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-21",
+  "title": "OpenAI 提示缓存延长到 12 小时，Vercel 让 Agent 持久运行",
+  "summary": "OpenAI API 可选 12 小时提示缓存并收购 Orchestra Bio，Vercel 推出能跑几个月的 durable-harness，eMudhra 证书事故波及内置 CA 的开源工具",
+  "items": [
+    {
+      "title": "OpenAI API 可选 12 小时提示缓存",
+      "summary": "共享的指令、工具和上下文能缓存更久，请求隔几小时也按缓存价计费。OpenAI 的 Tibo（thsottiaux）补充说，Codex 和 Work 的登录用户缓存一直保留，隔几小时回到旧对话也能命中",
+      "url": "https://x.com/OpenAIDevs/status/2112603916076781778",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 收购 Orchestra Bio",
+      "summary": "这家公司做的是帮药企协调新药研发流程的平台，会并进 OpenAI 的生命科学模型和工具系列 Rosalind，金额没公开",
+      "url": "https://openai.com/index/openai-to-acquire-orchestra-bio",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "ChatGPT 支持团队任务",
+      "summary": "可以让 ChatGPT 定期自动汇总这周发了什么、卡在哪，队友能查看结果并调整下次要覆盖的内容",
+      "url": "https://x.com/OpenAIDevs/status/2112565702552940794",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "更新：Codex 额度掉得快的原因找到了",
+      "summary": "上期报过 Codex 重置额度，新进展是 Tibo 说周末约 4 万个账号的用量限额和所选套餐对不上，所以额度消耗偏快",
+      "url": "https://x.com/thsottiaux/status/2112592264686149749",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Gemini 4 Argon 上线 72 小时处理约 25 万亿 token",
+      "summary": "Google 的 Logan Kilpatrick 公布的数字，他说市场对智能的需求还被低估",
+      "url": "https://x.com/OfficialLoganK/status/2112767157746688480",
+      "tag": "Google"
+    },
+    {
+      "title": "Google 开源 TorchTPU",
+      "summary": "让 PyTorch 原生跑在 TPU（张量处理单元）上",
+      "url": "https://github.com/google-pytorch/torch_tpu",
+      "tag": "Google"
+    },
+    {
+      "title": "Claude 帮忙设计蝎毒抗毒蛋白",
+      "summary": "Anthropic 科学博客的新文章，讲用 Claude 设计针对蝎毒神经毒素的蛋白结合物，官方说这是寻找新疗法的早期一步",
+      "url": "https://x.com/AnthropicAI/status/2112579251555721573",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Vercel 推出 durable-harness",
+      "summary": "Pi、OpenCode、Codex、Claude Code 这些 Agent harness 可以放到 Vercel 上持久运行，出错后自动接着跑，时长从几小时到几个月。Vercel CEO Guillermo Rauch 说它开源，不绑运行时",
+      "url": "https://vercel.com/blog/making-every-harness-durable",
+      "tag": "工具"
+    },
+    {
+      "title": "eMudhra 证书事故，内置 CA 的工具要更新",
+      "summary": "eMudhra 有 8 张中间证书用了弱密钥，Cloudflare 正在部署缓解措施。uv 作者 Charlie Marsh 提醒，certifi 这类内置 CA（证书颁发机构）列表的开源项目都受影响，uv 0.13.4 和 mise 2026.10.17 已更新",
+      "url": "https://blog.cloudflare.com/emudhra-certificate-compromise/",
+      "tag": "安全"
+    },
+    {
+      "title": "TypeScript 7.1 Beta 发布",
+      "summary": "新的 content mapper 让 tsc 能直接给 .vue、.md 这类文件做类型检查",
+      "url": "https://x.com/typescript/status/2112610990202507582",
+      "tag": "工具"
+    },
+    {
+      "title": "Amp 可在敏感 MCP 工具前固定确认",
+      "summary": "Amp 的 sqs 说，调用转账、发邮件这类 MCP（模型上下文协议）工具前，现在可以设成每次先问你",
+      "url": "https://x.com/sqs/status/2112777759563174061",
+      "tag": "工具"
+    },
+    {
+      "title": "Perplexity Computer 能在 Mac 上本地跑",
+      "summary": "模型和 Agent 都在本机运行，不走云端",
+      "url": "https://x.com/perplexity_ai/status/2112571597798461920",
+      "tag": "Perplexity"
+    }
+  ]
+}

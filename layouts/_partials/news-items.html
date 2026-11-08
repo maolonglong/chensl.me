@@ -1,0 +1,12 @@
+{{- /* Items grouped by tag, in the order each tag first appears. Context: the items slice. */ -}}
+{{- $tags := slice -}}
+{{- range . }}{{ if not (in $tags .tag) }}{{ $tags = $tags | append .tag }}{{ end }}{{ end -}}
+{{- $items := . -}}
+{{- range $tags }}
+<h2>{{ . }}</h2>
+<ul>
+  {{- range where $items "tag" . }}
+  <li><a href="{{ .url }}">{{ .title }}</a>：{{ .summary }}</li>
+  {{- end }}
+</ul>
+{{- end }}

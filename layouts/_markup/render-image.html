@@ -1,0 +1,24 @@
+{{- $r := partial "resolve-destination.html" . -}}
+{{- $src := .Destination -}}
+{{- $width := 0 -}}
+{{- $height := 0 -}}
+{{- with $r.target -}}
+  {{- $src = print .RelPermalink $r.suffix -}}
+  {{- if reflect.IsImageResourceProcessable . -}}
+    {{- $width = .Width -}}
+    {{- $height = .Height -}}
+  {{- end -}}
+{{- end -}}
+{{- /* The first image is likely above the fold; lazy-loading it would delay rendering. */ -}}
+{{- $loading := cond (eq .Ordinal 0) "eager" "lazy" -}}
+{{- if .IsBlock -}}
+<figure>
+  <img src="{{ $src }}" alt="{{ .PlainText }}"{{ with $width }} width="{{ . }}"{{ end }}{{ with $height }} height="{{ . }}"{{ end }} loading="{{ $loading }}" decoding="async">
+  {{- with .Title }}
+  <figcaption>{{ . }}</figcaption>
+  {{- end }}
+</figure>
+{{- else -}}
+<img src="{{ $src }}" alt="{{ .PlainText }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ with $width }} width="{{ . }}"{{ end }}{{ with $height }} height="{{ . }}"{{ end }} loading="{{ $loading }}" decoding="async">
+{{- end -}}
+{{- /* chomp trailing newline */ -}}

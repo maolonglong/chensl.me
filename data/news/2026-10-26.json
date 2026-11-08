@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-26",
+  "title": "Anthropic 提交 IPO 招股书，数学家评 OpenAI 的流体爆破论文",
+  "summary": "OpenAI、Google、Anthropic 今天都没有新模型，Anthropic 向美国证券交易委员会提交上市申请，PDE 学者认可 OpenAI 的 Navier-Stokes 论文，Kimi 为 K3.1 Pro 限流道歉并补发额度",
+  "items": [
+    {
+      "title": "Anthropic 提交 S-1 上市申请",
+      "summary": "Anthropic 宣布已向美国证券交易委员会（SEC）提交 S-1 注册声明，为拟议中的首次公开募股（IPO）做准备。声明目前还没生效",
+      "url": "https://x.com/AnthropicAI/status/2114705042817110293",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "PDE 学者评 OpenAI 的 Navier-Stokes 爆破论文",
+      "summary": "偏微分方程（PDE）学者 Scott Armstrong 说，这篇论文让流体自身的不稳定性产生振荡，从背景剪切里吸取能量，再由此造出塌缩的光滑涡，这种做法以前没人用过。他说已有几组 PDE 专家基本读懂了，OpenAI 总裁 Greg Brockman 转发了他的评价",
+      "url": "https://x.com/scottnarmstrong/status/2114412308185100522",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "换了 harness 后 Gemini 4 Argon 排名上升",
+      "summary": "评测者 wenhaocha1 复查运行记录时发现，Pi 的 harness 在 20% 的运行里一碰到回退（比如安全类任务）就直接结束。换成 Google Antigravity 的 harness 重跑后，Argon 超过 Astra，只排在 Opus 5.5 后面。同一个模型，换个 harness 名次就差很多",
+      "url": "https://x.com/wenhaocha1/status/2114559544156205413",
+      "tag": "Google"
+    },
+    {
+      "title": "更新：Kimi 为 K3.1 Pro 订阅限流道歉",
+      "summary": "前两期报过 K3.1 Pro 发布和上榜，新进展是官方承认订阅限流和额度消耗过快是自己的问题，给所有订阅用户一次性恢复 25% 的月额度。Kimi Code CLI 和桌面版也针对 K3.1 Pro 优化了子 Agent 调度",
+      "url": "https://x.com/Kimi_Moonshot/status/2114450610724708492",
+      "tag": "Kimi"
+    },
+    {
+      "title": "MiniMax 开源 Agent 基础设施 OpenAgentCore",
+      "summary": "项目放在 MiniMax 的 GitHub 组织下：对外只给一套标准 API，对内 harness、模型、沙箱和文件系统都做成协议，可以随时换，免得业务被绑在某一家的实现上",
+      "url": "https://github.com/MiniMax-AI/OpenAgentCore",
+      "tag": "MiniMax"
+    },
+    {
+      "title": "BOSS 直聘南北阁发布 Nanbeige4.3-33B",
+      "summary": "BOSS 直聘的大模型实验室南北阁发布 33B 稠密模型，重点优化 Agent 能力，官方定位是教师模型。博主 karminski3 的对比图里，它的 Agent 分数比 Qwen3.8-27B 高，写代码能力弱一些",
+      "url": "https://x.com/karminski3/status/2114545217407963524",
+      "tag": "南北阁"
+    },
+    {
+      "title": "JetBrains 开源 agentic IDE ThinkRail",
+      "summary": "据 vikingmute 介绍，ThinkRail 在 Pi 外面套了 Monaco 编辑器、终端和 diff 视图，主打用一个 SPEC.md 记录项目状态，不额外塞提示词，真正干活的还是 Pi",
+      "url": "https://x.com/vikingmute/status/2114532351464308958",
+      "tag": "工具"
+    },
+    {
+      "title": "OpenCode 周活增速创新高",
+      "summary": "OpenCode 的 thdxr 说，最近两周周活跃用户的增速是有史以来最高的，没有给具体数字",
+      "url": "https://x.com/thdxr/status/2114380729643851963",
+      "tag": "工具"
+    },
+    {
+      "title": "magpie 网关 504 故障复盘",
+      "summary": "yetone 公开 10 月 25 日到 26 日的故障报告：本地脱敏模型在一把全局锁里做最长 3 分钟的同步 I/O，所有请求都排在后面。他也写了自己的错：测试只用假服务，一天发了二十多个版本。v0.1.1566 已修复",
+      "url": "https://x.com/yetone/status/2114619355023437892",
+      "tag": "工具"
+    },
+    {
+      "title": "Yaron Minsky 谈怎么把代码库改得适合 Agent",
+      "summary": "poteto 推荐这场演讲：类型是 Agent 最好的反馈之一，用类型让非法状态无法表示；多用属性测试、模糊测试、确定性模拟和 expect 测试；形式化方法以前太贵，有了 Agent 之后值得重新算账",
+      "url": "https://x.com/poteto/status/2114626630429913383",
+      "tag": "开发实践"
+    }
+  ]
+}

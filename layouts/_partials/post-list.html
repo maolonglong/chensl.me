@@ -1,0 +1,10 @@
+<ul class="blog-posts">
+  {{- range . }}
+  <li>
+    <span>{{ partial "date.html" .Date }}</span>
+    <a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
+  </li>
+  {{- else }}
+  <li>还没有文章</li>
+  {{- end }}
+</ul>

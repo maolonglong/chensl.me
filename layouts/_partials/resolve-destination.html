@@ -1,0 +1,34 @@
+{{- /*
+Resolves the destination of a Markdown link or image to a page or resource.
+Context: the render hook context. Returns a dict:
+  target: the resolved page or resource, or nil
+  suffix: "?query#fragment" to append to the target's permalink
+Warns on unresolved internal destinations so broken links fail the build check.
+*/ -}}
+{{- $u := urls.Parse .Destination -}}
+{{- $target := false -}}
+{{- $suffix := "" -}}
+{{- if not $u.IsAbs -}}
+  {{- with $u.RawQuery }}{{ $suffix = printf "?%s" . }}{{ end -}}
+  {{- with $u.Fragment }}{{ $suffix = printf "%s#%s" $suffix . }}{{ end -}}
+  {{- with $u.Path -}}
+    {{- $path := strings.TrimPrefix "./" . -}}
+    {{- $pagePath := strings.TrimSuffix "/" $path -}}
+    {{- /* Markdown authors write URL-relative paths ("../other/"), resolved against the page itself;
+      Page.GetPage resolves relative paths against the page's parent, so try the URL form first. */ -}}
+    {{- $urlPath := cond (strings.HasPrefix $path "/") $pagePath (path.Join $.PageInner.Path $pagePath) -}}
+    {{- $target = or
+      ($.PageInner.Resources.Get $path)
+      ($.PageInner.GetPage $urlPath)
+      ($.PageInner.GetPage $pagePath)
+      (resources.Get $path)
+    -}}
+    {{- $isStaticFile := and (strings.HasPrefix $path "/") (os.FileExists (path.Join "static" $path)) -}}
+    {{- if and (not $target) (not $isStaticFile) -}}
+      {{- warnf "%s: cannot resolve destination %q" $.Position $.Destination -}}
+    {{- end -}}
+  {{- else -}}
+    {{- $target = .PageInner -}}
+  {{- end -}}
+{{- end -}}
+{{- return dict "target" $target "suffix" $suffix -}}

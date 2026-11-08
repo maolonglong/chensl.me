@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-03",
+  "title": "OpenAI 公开自研 Git 后端 Pando，Claude API 支持服务端会话",
+  "summary": "OpenAI 讲了内部怎么扛住工程师和 Agent 的 Git 流量，还发了一个日常事务基准；Anthropic 的 Messages API 能在服务端保存会话，S-1 也补上了第三季度数据。其余是一篇模型改模型权重的实验文章和几条 Agent 安全实践",
+  "items": [
+    {
+      "title": "OpenAI 自研 Git 后端 Pando",
+      "summary": "工程师和 Agent 照常用 git，推送延迟降了约 80%，每天分发近 1PB 的 Git 数据。OpenAI 总裁 Greg Brockman 说在考虑对外提供",
+      "url": "https://openai.com/index/scaling-git-at-openai",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Claude Messages API 支持服务端会话（公测）",
+      "summary": "对话缓存在服务端，之后每轮只需发新消息和上一条消息的 ID，首字返回更快，做 Agent 时不用每轮都传完整上下文",
+      "url": "https://x.com/ClaudeDevs/status/2117332449382510884",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "更新：Anthropic 递交 S-1/A，补上第三季度数据",
+      "summary": "10 月 26 日报过 Anthropic 提交上市申请，这次修订版新增了第三季度财务数据。据 CNBC 报道，Q3 收入 169.6 亿美元，环比增长 47%（Q2 是 144%），季度净亏损 232.9 亿美元，算力和基础设施承诺约 8954 亿美元，发行价区间还没填",
+      "url": "https://www.cnbc.com/2026/11/02/anthropic-ant-s-1-quarter-financials.html",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "OpenAI 发布 LifeVal 基准",
+      "summary": "按几千名 ChatGPT 用户的反馈，测模型帮人处理找托育、办政务、理财这类日常事务的能力",
+      "url": "https://x.com/OpenAI/status/2117307611338997846",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 提高漏洞赏金，预告下一轮安全冲刺",
+      "summary": "下一轮内部安全冲刺会和 Cathedral Systems 合作，同时提高漏洞赏金金额",
+      "url": "https://openai.com/index/preparing-our-next-security-sprint-to-harden-openai",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "让大模型直接改另一个模型的权重",
+      "summary": "MIT CSAIL（麻省理工计算机科学与人工智能实验室）的一篇博客里，GPT-6 Astra 不训练、不算梯度，只改了 Qwen3.5-0.8B 0.016% 的权重，MATH-500 从 7.9% 升到 48.1%。前提是允许试跑 50 次，换到 Gemma 3 270M 上没有提升，结果目前是作者自己报的",
+      "url": "https://rikiyat.github.io/blog/weight-space-programming/",
+      "tag": "科研"
+    },
+    {
+      "title": "DeepSeek Harness 推出 Creator Mode",
+      "summary": "可以把想法直接做成 DeepSeek Harness 的插件",
+      "url": "https://x.com/DeepSeekHarness/status/2117256196227019194",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "Hydrogen-1.0：基于 GLM-5.3 的科研模型",
+      "summary": "Deep Principle 在智谱 GLM-5.3 上后训练出科研模型 Hydrogen-1.0，权重开放",
+      "url": "https://x.com/ZixuanLi_/status/2117276777538257274",
+      "tag": "开源模型"
+    },
+    {
+      "title": "poteto：对抗式审查基本是在浪费 token",
+      "summary": "pstack 作者 poteto 认为这些 token 不如花在实测和形式化验证上，已经让 pstack 少用 interrogate 技能，以后可能直接删掉。Amp 的 Thorsten Ball 附和说「给我无可辩驳的证据，证明它能跑」",
+      "url": "https://x.com/poteto/status/2117437607940681849",
+      "tag": "开发实践"
+    },
+    {
+      "title": "Replit：员工电脑上的 Agent 正在变成系统性风险",
+      "summary": "Replit 的安全建议是把 Agent 放到隔离的托管云环境里跑。Replit CEO Amjad Masad 还提到，据报道高盛已限制使用 Claude Code",
+      "url": "https://x.com/lhchavez/status/2117496522656841766",
+      "tag": "安全"
+    },
+    {
+      "title": "Vercel 构建时自动拦截恶意 npm 包",
+      "summary": "已知的恶意 npm 包会在安装脚本运行前就被挡掉，不用额外配置",
+      "url": "https://vercel.com/changelog/blocking-malicious-npm-packages-before-and-during-installation",
+      "tag": "安全"
+    },
+    {
+      "title": "textjs：在浏览器开发者工具里用 OpenCode",
+      "summary": "adamdotdev 把编程 Agent OpenCode 改成在浏览器控制台里通过 console.log 运行",
+      "url": "https://x.com/adamdotdev/status/2117348728046846376",
+      "tag": "工具"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{{ define "main" }}
+  <h1>{{ .Title }}</h1>
+  <p>{{ partial "date.html" .Date }}</p>
+  <p>{{ .Params.summary }}</p>
+  {{ partial "news-items.html" .Params.items }}
+{{ end }}

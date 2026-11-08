@@ -1,0 +1,14 @@
+[tools]
+hugo = "0.169.0"
+
+[tasks.dev]
+description = "Local preview with drafts"
+run = "hugo server --buildDrafts"
+
+[tasks.build]
+description = "Production build into public/"
+run = "hugo build --panicOnWarning --cleanDestinationDir"
+
+[tasks.check]
+description = "Build the fixture site and assert on the output"
+run = "bash scripts/check.sh"

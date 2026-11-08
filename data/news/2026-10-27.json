@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-27",
+  "title": "OpenAI 发布 GPT-6.1 Terra，OpenAI 和 Anthropic 都说模型推翻了指数时间假设",
+  "summary": "OpenAI 推出主打操作电脑的 GPT-6.1 Terra，并称内部模型拿下三项科学成果；Anthropic 研究员贴出只署名 Claude 的论文，结论同样是推翻指数时间假设，两边都还没经过同行评审。Cursor 推出 Agent SDK",
+  "items": [
+    {
+      "title": "OpenAI 发布 GPT-6.1 Terra",
+      "summary": "定位在 Sol 和 Luna 之间，主打操作电脑，ChatGPT Plus 及以上、Codex 和 API 都能用。API 每百万 token 输入 1 美元、输出 5 美元，比旧版 Terra 便宜一半。OpenAI 说在测专业软件操作的 Agents' Last Exam 上，Terra 和 Astra 水平相当、完成任务快 3 倍以上；深度研究和复杂代码仍建议用 Sol 或 Astra",
+      "url": "https://x.com/OpenAI/status/2114780711664398349",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 称内部模型拿下三项科学成果",
+      "summary": "OpenAI 总裁 Greg Brockman 说，内部模型推翻了指数时间假设（Exponential Time Hypothesis，ETH），证明了杨-米尔斯理论的存在性，还把 Kakeya 猜想推广到所有维度，都用 Lean 做了形式化检查。这次请外部专家牵头核查，还没有经过同行评审",
+      "url": "https://x.com/gdb/status/2114837059462627533",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Anthropic 研究员贴出只署名 Claude 的论文",
+      "summary": "Anthropic 研究员 alpoge 发布的论文作者只写了 Claude，结论同样是推翻指数时间假设。他说核心算法也是 10 月 16 日找到的，生成过程用了 1400 万输出 token。同样还没有经过同行评审",
+      "url": "https://x.com/__alpoge__/status/2114930095009968506",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude for Nonprofits 新增插件",
+      "summary": "Anthropic 说已有超过 2.5 万家非营利组织在用 Claude，大多是本地小团队。新插件是和约 30 家机构一起做的，提供筹款、营销和招聘相关的技能，会参考各团队自己的情况和 AI 使用规范",
+      "url": "https://x.com/claudeai/status/2114780227465338985",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Cursor 推出 Agent SDK",
+      "summary": "用代码定义 Agent：prompt 写在 Markdown 里，工具用 TypeScript 写。可以部署到 Cursor 托管的环境，也能自己运行，自带评测，方便判断每次改动让 Agent 变好还是变坏",
+      "url": "https://x.com/cursor_ai/status/2114793714531102901",
+      "tag": "Cursor"
+    },
+    {
+      "title": "Cursor 上线 DeepSeek V4.1 Flash",
+      "summary": "Cursor 官方说，DeepSeek V4.1 Flash 的每个推理档位在它自家的 CursorBench 上都处于成本前沿，每个任务花 0.60 到 0.98 美元",
+      "url": "https://x.com/cursor_ai/status/2114839997568405608",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "Kimi K3.1 Pro 在 OpenDesign Arena 排第一",
+      "summary": "前几期报过 K3.1 Pro 发布和限流，新进展是设计评测 OpenDesign Arena 的结果：它在 21 个模型里排第一，略高于 GPT-6.1 Sol，交付率 93%，代价是更贵、更慢。排名只代表这一项设计评测",
+      "url": "https://x.com/OpenDesignHQ/status/2115021820462268589",
+      "tag": "Kimi"
+    },
+    {
+      "title": "rauchg 复现 Agent 借 CPU 隐蔽通信",
+      "summary": "Vercel CEO Guillermo Rauch 做了 cpu-chat，复现 OpenAI 提到的 Agent 借 CPU 隐蔽通信的做法。他说 OpenAI 和 Anthropic 的模型都拒绝做这件事，开源模型做成了",
+      "url": "https://x.com/rauchg/status/2114770919436808572",
+      "tag": "安全"
+    },
+    {
+      "title": "Bun AOT 新增 --trim",
+      "summary": "Bun 作者 Jarred Sumner 说，用了 Bun.serve 的 macOS 二进制加上 --trim 后，体积从 89 MB 降到 25 MB。Bun 官方另外宣布，计划把大部分 C 和 C++ 依赖换成自己的 Rust 实现，先从 libarchive 开始",
+      "url": "https://x.com/jarredsumner/status/2114835395271901667",
+      "tag": "工具"
+    },
+    {
+      "title": "OpenCode 桌面版支持插件",
+      "summary": "据 OpenCode 的 thdxr 介绍，一个插件包可以同时带 server、终端界面和桌面插件。他还提到，Agent 能通过 OpenCode 自己的 API 查当前 session 的历史，找回上下文压缩时丢掉的内容",
+      "url": "https://x.com/thdxr/status/2115047360417960154",
+      "tag": "工具"
+    },
+    {
+      "title": "Manus 的 AI 原生团队改造实践",
+      "summary": "宝玉（dotey）推荐并整理了要点：工程基建先给 Agent 开接口；对 Agent 只给目标、要证据，比如录屏和审查机器人；一个人同时开十几个 session，人均每月 token 花费约 1 万美元",
+      "url": "https://x.com/dotey/status/2114929079975563269",
+      "tag": "开发实践"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-06",
+  "title": "OpenAI 发布 GPT-6 Cyber，Gemini Omni 1.2 Flash 上线",
+  "summary": "OpenAI 公开了昨天修 Linux 漏洞用的网络安全模型，Google 更新视频模型，Claude 开始试个人理财，Thinking Machines 发了新的小模型",
+  "items": [
+    {
+      "title": "更新：OpenAI 发布 GPT-6 Cyber",
+      "summary": "新进展是模型正式公开：昨天修 948 个 Linux 提权漏洞用的就是它。Mozilla、Palo Alto Networks、Cisco 等安全团队已在用，目前只开放给部分 Daybreak Red 客户。Greg Brockman 说训练时重点让模型守住运营方划定的范围，并预告 11 月 12 日是「cyber day」",
+      "url": "https://x.com/OpenAI/status/2118390190246879554",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 与摩根大通达成战略合作",
+      "summary": "合作重点是网络安全",
+      "url": "https://x.com/gdb/status/2118410818933203038",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI API 推出 Private Safety Processing",
+      "summary": "安全审查的记录留在客户自己的环境里",
+      "url": "https://x.com/OpenAIDevs/status/2118386439675420743",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 对数据中心所在社区作出新承诺",
+      "summary": "针对 AI 基础设施所在的社区作出承诺，并提出政策建议",
+      "url": "https://x.com/OpenAINewsroom/status/2118435446913159514",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Gemini Omni 1.2 Flash 上线",
+      "summary": "视频最长 15 秒，可以多轮对话修改视频，镜头更好控制，画面漂移更少，价格比 1.1 低 30%。AI Studio、Gemini API 和 Gemini 应用都已可用",
+      "url": "https://x.com/OfficialLoganK/status/2118390838434693281",
+      "tag": "Google"
+    },
+    {
+      "title": "Claude 推出个人理财功能（美国 Beta）",
+      "summary": "连上用户自己选的账户后，可以用日常语言问余额和交易记录。只读权限，Claude 不能转账，也不提供理财建议",
+      "url": "https://x.com/claudeai/status/2118403114890137895",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Thinking Machines 发布 Inkling 2 Small",
+      "summary": "Artificial Analysis 智能指数 31 分，比上一代明显提高，已可在 Tinker 上微调和推理，权重稍后放出。John Schulman 说早期检查点会在训练和评测中绕过护栏，发布前专门做了一轮对齐",
+      "url": "https://x.com/thinkymachines/status/2118489527362912566",
+      "tag": "Thinking Machines"
+    },
+    {
+      "title": "OpenDesign 评测：混元 Hy4 接近 GPT-6.1 Sol",
+      "summary": "在第三方 OpenDesign 设计评测里，腾讯混元 Hy4 只比 GPT-6.1 Sol 低 0.1 分，估算成本低约四成",
+      "url": "https://x.com/tuturetom/status/2118645111622181270",
+      "tag": "腾讯"
+    },
+    {
+      "title": "Hugging Face 发布 MoE 训练手册",
+      "summary": "《The Ultimate MoE Training Handbook》讲混合专家（MoE）模型训练，约 7 万词，基于 80 万 GPU 小时的实验",
+      "url": "https://x.com/Thom_Wolf/status/2118432475730882627",
+      "tag": "Hugging Face"
+    },
+    {
+      "title": "Cursor 可以直接部署线上应用",
+      "summary": "描述想要的工具，Cursor 会写代码、建数据库、跑安全检查并部署，生成可分享的链接，不再只停在 localhost",
+      "url": "https://x.com/cursor_ai/status/2118458629091426304",
+      "tag": "工具"
+    }
+  ]
+}

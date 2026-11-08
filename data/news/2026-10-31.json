@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-31",
+  "title": "Claude 的 200 美元档改名 Ultra 并取消 5 小时限额，OpenCode 又能用 Claude 订阅",
+  "summary": "Anthropic 把 Max 20x 改名 Ultra，已验证账号不再有 5 小时窗口；OpenCode 改为调用本机的 Claude Code 来接 Claude 订阅。OpenAI 推出面向企业的 Private Intelligence，Google 的太空 TPU 跑通了第一条提示词。国内厂商今天没什么动静",
+  "items": [
+    {
+      "title": "Claude 的 Max 套餐改名，Ultra 取消 5 小时限额",
+      "summary": "Max 5x 改叫 Max（100 美元一个月），Max 20x 改叫 Ultra（200 美元一个月），价格和周额度不变。已验证的 Ultra 账号从今天起陆续取消 5 小时限额，新账号要等验证完成",
+      "url": "https://x.com/claudeai/status/2116220869479428500",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Anthropic 让上千个 Claude Agent 自动做红队",
+      "summary": "Agent 的任务是骗过训练数据监控，写出看着无害、实际会让模型学坏的数据。研究想看红队测试能不能自动化，找到的样本可以反过来改进监控",
+      "url": "https://alignment.anthropic.com/2026/automated-em-search/",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 2.1.316 发布",
+      "summary": "Opus 4.8 的 fast 模式 11 月 30 日停用，官方建议换 Opus 5.5；子 Agent 可以单独设默认推理强度，不再跟随会话；修复了 Claude Code 退出后 shell 命令残留的问题",
+      "url": "https://x.com/alexmichael/status/2116335265413308859",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "OpenAI 推出 Private Intelligence",
+      "summary": "面向企业，让企业在使用 OpenAI 最强模型时对自己的数据有更强的控制。OpenAI 说这套保护是和几家大客户一起做的",
+      "url": "https://openai.com/business/private-intelligence/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "ChatGPT 手机端支持多账号切换",
+      "summary": "OpenAI 的 Thibault Sottiaux 说手机端已经能在多个账号间切换，桌面端随后支持；他还说接下来两天会重置额度",
+      "url": "https://x.com/thsottiaux/status/2116405414921384099",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Google 的太空 TPU 跑通第一条提示词",
+      "summary": "Sundar Pichai 说 Project Suncatcher 的原型卫星已经在轨道上启动 TPU、跑完一条提示词，并把完整回答（一首俳句）传回地面",
+      "url": "https://x.com/sundarpichai/status/2116214866444943853",
+      "tag": "Google"
+    },
+    {
+      "title": "Gemini 应用十月更新汇总",
+      "summary": "Gemini Drops 十月合集，包括 Gemini 4 Argon、连接常用应用，以及给重复使用的提示词做自定义技能",
+      "url": "https://x.com/GeminiApp/status/2116304609383710988",
+      "tag": "Google"
+    },
+    {
+      "title": "OpenCode 2.2.3 又能用 Claude 订阅了",
+      "summary": "新版加了 Claude Agent 提供方，通过本机已登录的 Claude Code 使用订阅，而不是直接拿订阅登录。同一版本还加了生图工具，支持 OpenAI、Gemini、Grok 等模型",
+      "url": "https://x.com/opencode/status/2116198602523513081",
+      "tag": "工具"
+    },
+    {
+      "title": "OpenCode 团队遇到架构难题会叫 Gemini 子 Agent",
+      "summary": "OpenCode 的 thdxr 说团队碰到棘手的架构、系统设计或需要化繁为简的问题时，会专门开一个 Gemini 子 Agent，效果不错",
+      "url": "https://x.com/thdxr/status/2116364728666821022",
+      "tag": "开发实践"
+    },
+    {
+      "title": "poteto：软件要为持续涌来的代码重写",
+      "summary": "poteto 认为 Agent 让代码像河流一样不停涌来，系统要设计成连缺少上下文的 Agent 也能做对，让简单的做法就是正确的做法",
+      "url": "https://x.com/poteto/status/2116191971714953262",
+      "tag": "开发实践"
+    }
+  ]
+}

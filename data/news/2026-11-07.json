@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-07",
+  "title": "Anthropic 讲清 Agent 记忆，DeepMind 用 Agent 找出 RSA 弱点",
+  "summary": "Anthropic 公开了 Claude 记忆与 dreaming 的做法，Google DeepMind 用 Agent 在旧式 1024 位 RSA 上发现两处弱点，OpenAI 推出湿实验评测并更新图像榜表现，Meta 把 Muse Wonder 能力带进产品和 Spaces",
+  "items": [
+    {
+      "title": "Anthropic 讲清 Claude 的记忆与 dreaming",
+      "summary": "工程博客把 Agent 记忆拆成笔记、预测和层级几块，并说明 dreaming 怎样在会话之间整理学到的东西、纠正错误、下次更快找到。做 Agent 的值得细看",
+      "url": "https://www.anthropic.com/research/components-of-agent-memory",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 云端会话自动配环境",
+      "summary": "Pro、Max、Ultra 用户把仓库丢进云端会话，Claude 自己判断要装哪些依赖、开哪些网络权限、需要哪些 API key，配好后保存下次复用。key 加密保存，Claude 看不到明文",
+      "url": "https://x.com/ClaudeDevs/status/2118795192090386454",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "DeepMind 用 Agent 找出 1024 位 RSA 的两处弱点",
+      "summary": "在人引导下，模型发现了旧式 1024 位 RSA 加密系统的两个重大弱点，一块和数字签名填充有关，一块降低批量分解同类密钥的平均成本。现代常用的 2048 位及以上密钥不受影响",
+      "url": "https://x.com/GoogleDeepMind/status/2118755418675765656",
+      "tag": "Google DeepMind"
+    },
+    {
+      "title": "OpenAI 推出 BioBasicsBench",
+      "summary": "和生物技术公司 Ligo 一起做了 100 个真实湿实验任务，测 Agent 能不能读懂原始实验数据、发现错误，以及判断证据够不够下结论。高推理档下 GPT-6 Astra 平均拿到 66.7% 的分数，高于 GPT-5.6 Sol 的 43.8%",
+      "url": "https://openai.com/index/measuring-how-ai-agents-handle-wet-lab-science/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 与 Frontier Model Forum 发布网络越狱评级框架",
+      "summary": "用来判断绕过 AI 安全护栏何时会造成严重网络危害，方便各方用同一套办法比较越狱严重程度，并优先加强防护",
+      "url": "https://www.frontiermodelforum.org/updates/introducing-the-fmf-jailbreak-rating-framework-for-frontier-cyber-threats/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI Developers 插件新增 Showcase，可领 API 额度",
+      "summary": "ChatGPT Pro 和 Business 用户可以在账单设置里领 API 额度，用来抵自己应用的调用费",
+      "url": "https://x.com/OpenAIDevs/status/2118856544733532452",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "更新：GPT Image 2.6 拿下 Artificial Analysis 两个图像榜前两名",
+      "summary": "新进展是第三方 Artificial Analysis 的文生图和图片编辑榜上，GPT Image 2.6 的 Flare 和 Sunburst 分占前两名。Flare 比上一代快近一倍，Sunburst 更慢但质量最高；模型现在也能直接生成 GIF",
+      "url": "https://x.com/ArtificialAnlys/status/2118851088111865983",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Meta 把 Muse Wonder 专项能力带进 Muse 和 Meta AI",
+      "summary": "用 Muse Wonder 训练的专项模型带来 Active Memory 和 Active Focus，官方称关键信息遗忘减少到约四成，约束变化时恢复能力提高约 67%。同期 Muse 上线 Spaces，聊天里描述需求就能生成并持续更新应用空间",
+      "url": "https://x.com/AIatMeta/status/2118768974779634084",
+      "tag": "Meta"
+    },
+    {
+      "title": "OpenCode Browse 上线",
+      "summary": "让 Agent 直接操作你自己的浏览器，带着已有的标签页、登录态和扩展，数据留在本机，不用把账号交给云端 Agent。任何 Agent 都能接，Agent 和浏览器还可以在不同机器上",
+      "url": "https://x.com/opencode/status/2118895128152621153",
+      "tag": "工具"
+    },
+    {
+      "title": "Amp 推出 Windows 实验版",
+      "summary": "Sourcegraph 的 Amp 放出 Windows 实验版，欢迎试用报 bug。同期 macOS 版更新包从约 13MB 降到约 150KB",
+      "url": "https://x.com/sqs/status/2119006263443124697",
+      "tag": "工具"
+    }
+  ]
+}

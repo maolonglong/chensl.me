@@ -1,30 +1,45 @@
-# AGENTS.md
+# chensl.me
 
-chensl.me is a personal site and blog. Astro prerenders the pages to static assets on Cloudflare Workers. The Worker runs the upvote Actions, the bot-written AI News (`/news/`), `/api/search/`, and `/api/github/repos/`. This file holds the standing orders and the map. Facts live in the documents it links.
+Personal site, built with Hugo from scratch (no theme), served as static assets by a Cloudflare Worker. Visual design follows Bear Blog's default theme.
 
-## Standing orders
+## Approval
 
-- **Approval.** Local builds, previews, local D1 migrations, `pnpm exec wrangler deploy --dry-run`, and E2E runs against disposable local data need no approval. Ask before every change to shared state: a push to `main` (it deploys production), a remote D1 migration, a manual deployment, or a Cloudflare resource or dashboard change. One approval covers one action.
-- **Production bindings.** A version preview URL uses the production D1. Send remote test writes only to Workers Previews, with approval.
-- **Content.** Articles in `src/content/blog/` keep the author's words, emojis, dates, and credits. File and directory names are article URLs, and Astro's default heading and footnote anchors are fragment URLs, so both stay stable. `/index.xml` is the only article feed.
-- **Source.** Edit source files, including `public/`. `dist/`, `.astro/`, `.wrangler/`, and `node_modules/` are generated.
-- **Skills.** Third-party skills change only through `npx skills`, committed together with `skills-lock.json`. Project skills are the folders in `.agents/skills/` that `skills-lock.json` does not list; edit them by hand, and link each one from `.claude/skills/`.
-- **Decisions.** When a change chooses between real options, removes something, or rejects a proposal, write or update an Agent Note in the same commit ([when to write one](.agents/notes/AGENTS.md#when-to-write-one)).
-- **Comments.** A code comment states a contract or a surprising reason, not what the code does.
-- **Documents.** Each fact has one home. A change to documented behavior updates that home in the same commit. Before you write any document, read the [documentation standard](docs/AGENTS.md).
+A push to `main` deploys production through Cloudflare Workers Builds. Ask before every push to `main` and every Cloudflare change.
 
-## Map
+## Hard rules
 
-| Before you… | Read |
-| --- | --- |
-| change how the site builds, serves, or runs scripts, or touch the CSP | [Architecture](docs/architecture.md) |
-| change what readers see or rely on: pages, articles, feeds, exports, upvotes, comments | [Product](docs/product.md) |
-| change the column, the frame, type, color, or a control's motion | [Design](docs/design.md) |
-| add or change a test, or choose the checks for a change | [Testing](docs/testing.md) |
-| remove, replace, or reintroduce something, or propose a simplification | [Agent Notes](.agents/notes/AGENTS.md): search them for the topic first |
-| write a document, an Agent Note, or a skill | [Documentation standard](docs/AGENTS.md) |
+- No JavaScript in generated pages. `mise run check` fails on any `<script`.
+- No tags or categories: `disableKinds = ['taxonomy', 'term']`. Do not add taxonomies.
+- No italic styling: CJK fonts have no italic glyphs.
 
-## Done
+## Commands
 
-- Run the checks that [Testing](docs/testing.md#evidence-for-each-change) names for each surface you changed. Report each check you ran with its result, and each check you skipped with the reason.
-- Commits follow Conventional Commits: `<type>(scope): <imperative summary>`, with an optional scope, at most 72 characters, and no trailing period. The body explains why, the verification that actually ran, and the material limits.
+Hugo is pinned in `mise.toml`. Always run Hugo through mise.
+
+- `mise run dev`: local preview with drafts.
+- `mise run build`: production build into `public/`.
+- `mise run check`: build `tests/fixtures/content` into `tmp/check/public` and assert on the output. Report: `tmp/check/report.txt`. Run it after every template, CSS, or config change.
+
+## Layout
+
+- `layouts/baseof.html`: shared page shell. `home.html`: home page. `section.html`: `/blog/` list. `blog/page.html`: posts (with date). `page.html`: standalone pages such as `/now/` (no date, not in RSS).
+- `layouts/home.rss.xml`: the only feed (`/index.xml`). It contains blog posts only, with full content. Hugo makes RSS URLs absolute automatically.
+- `layouts/_partials/resolve-destination.html`: resolves Markdown link and image destinations for the render hooks. An unresolved internal destination logs a warning, and `--panicOnWarning` turns it into a build failure.
+- `assets/css/main.css`: the only stylesheet. It is inlined into `<style>` by `css.Build`. Syntax highlighting uses Chroma classes (`markup.highlight.noClasses = false`) with colors from CSS variables. There is no Chroma stylesheet.
+
+## AI News
+
+A bot commits `data/news/<YYYY-MM-DD>.json` to `main`; each commit deploys. `content/news/_content.gotmpl` validates every issue and builds `/news/<date>/`; an invalid issue fails the build, and the previous deployment stays live. Issue text is plain text. `/news/index.xml` is the news feed; `/index.xml` holds articles only. Retract an issue by deleting its file.
+
+## Deployment
+
+`build.sh` is the Workers Builds build command: it downloads the Hugo version from `mise.toml`. `wrangler.jsonc` serves `public/` as static assets; `static/_headers` sets the security headers.
+
+## Writing content
+
+- Post: `content/blog/<slug>/index.md`, with images in the same directory. The directory name is the URL slug.
+- Standalone page: `content/<name>.md`. Add it to `[[menus.main]]` in `hugo.toml` to show it in the nav.
+- Home recent-post list: `{{< recent-posts 5 >}}`.
+- Link to other posts with URL-relative paths (`../other-post/`) or site paths (`/blog/other-post/`).
+- An image on its own line with a title becomes `<figure>` with `<figcaption>`: `![alt](photo.jpg "caption")`.
+- Emphasis next to CJK punctuation needs escaped spaces: `一段\ **“强调”**\ 文字`.

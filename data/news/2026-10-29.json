@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-29",
+  "title": "Google 发布 Gemini 4 Carbon，ChatGPT Pro 和 Business 订阅送 API 额度",
+  "summary": "Gemini 4 Carbon 在 Artificial Analysis 智能指数 v5 上排第一，但暂时只开放给少数网络安全防御方；OpenAI 给 Pro 和 Business 订阅者每月最多 500 美元 API 额度。Kimi 接上 Gmail 和 Google 日历，Amp 的 Agent 能按需开 Mac",
+  "items": [
+    {
+      "title": "Google 发布 Gemini 4 Carbon",
+      "summary": "Google 称这是它最强的模型，主打网络安全和长时间自主任务，自主编程能力也有明显提升。离 Gemini 4 Argon 只隔两周，目前只开放给 Fairwind 计划里的部分网络安全防御方，之后再扩大范围",
+      "url": "https://x.com/GoogleAI/status/2115489593818816591",
+      "tag": "Google"
+    },
+    {
+      "title": "Gemini 4 Carbon 在 Artificial Analysis 智能指数 v5 排第一",
+      "summary": "第三方评测机构 Artificial Analysis 给出 59 分，比 Claude Opus 5.5 高 1 分；在它的编程 Agent 指数上，Carbon 配 Antigravity CLI 得 59 分，仅次于 Claude Code 配 Opus 5.5 的 62 分。标准价每百万 token 输入 4 美元、输出 20 美元，上下文 100 万 token，上线期间打五折",
+      "url": "https://x.com/ArtificialAnlys/status/2115494553780367384",
+      "tag": "Google"
+    },
+    {
+      "title": "ChatGPT Pro 和 Business 订阅者每月可领 API 额度",
+      "summary": "符合条件的订阅者每月最多能领 500 美元 API 额度，用来做应用和 Agent",
+      "url": "https://x.com/OpenAIDevs/status/2115583698074755078",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "可以发短信给 ChatGPT 的 dot 派活了",
+      "summary": "通过 iMessage 或 RCS 发文字、照片或语音给 dot，让它接手任务或盯着某件事，有进展它会主动发短信回来。目前只对美国的 Pro 用户预览",
+      "url": "https://x.com/ChatGPT/status/2115496387613786374",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Claude for Legal 上线现成的工具库",
+      "summary": "合同审查、监管动态扫描、引文核查等现成示例，可以加上自己的文档和连接器，再分享给公司里的其他人",
+      "url": "https://x.com/claudeai/status/2115467192276025500",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "犹他州试用 Claude Code 的结果",
+      "summary": "Claude Code 负责人 Boris Cherny 转述：犹他州给 10 个州政府部门的 34 名开发者试用四周，80% 在 30 分钟内配好环境，71% 说省下了 20 小时以上",
+      "url": "https://x.com/bcherny/status/2115491259381072269",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Kimi 接入 Gmail、Google Drive 和 Google 日历",
+      "summary": "授权后可以让 Kimi 总结邮件、在 Drive 里找文件、按日历安排一天",
+      "url": "https://x.com/Kimi_Moonshot/status/2115777746639196376",
+      "tag": "Kimi"
+    },
+    {
+      "title": "Grok API 支持在请求里写 guidelines",
+      "summary": "文本请求可以加 guidelines 字段，细调 Grok 对特定内容类别的处理方式，所有 API 用户都能用",
+      "url": "https://x.com/grok/status/2115584612122718296",
+      "tag": "xAI"
+    },
+    {
+      "title": "Amp 的 Agent 能按需开 Mac 了",
+      "summary": "Amp 推出 macOS 卫星机，Agent 可以开一台 Mac 来构建、测试和运行 iOS 和 macOS 应用，正在陆续上线",
+      "url": "https://x.com/thorstenball/status/2115687904324563196",
+      "tag": "工具"
+    },
+    {
+      "title": "Matt Pocock 修了技能在 Codex 里的子 Agent 问题",
+      "summary": "Codex 的子 Agent 多半会继承父 Agent 的上下文，代码审查、按规格实现这类依赖干净上下文的技能会受影响，他在 skills 仓库里发了修复",
+      "url": "https://x.com/mattpocockuk/status/2115751897558614073",
+      "tag": "开发实践"
+    }
+  ]
+}
