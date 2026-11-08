@@ -15,4 +15,7 @@ fetch "hugo_${version}_checksums.txt"
 (cd "$dir" && grep " ${asset}\$" "hugo_${version}_checksums.txt" | sha256sum -c -)
 
 tar -xzf "$dir/$asset" -C "$dir" hugo
+export PATH="$dir:$PATH"
+bash scripts/check.sh
 "$dir/hugo" build --panicOnWarning --cleanDestinationDir
+bash scripts/check-output.sh public

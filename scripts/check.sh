@@ -31,10 +31,18 @@ code="$out/blog/code-sample/index.html"
 feed="$out/index.xml"
 html_files=$(find "$out" -name '*.html')
 
-check "no <script> in any output file" \
-  "! grep -rqi '<script' '$out'"
-check "no taxonomy pages (/tags/, /categories/)" \
-  "[ ! -e '$out/tags' ] && [ ! -e '$out/categories' ]"
+check "fixture output satisfies deployment constraints" "bash scripts/check-output.sh '$out'"
+bad_output="$root/tmp/check/bad-output"
+rm -rf "$bad_output" && mkdir -p "$bad_output"
+check "deployment rejects an empty output directory" \
+  "! bash scripts/check-output.sh '$bad_output' > '$root/tmp/check/empty-output.log' 2>&1 && grep -q 'missing home page' '$root/tmp/check/empty-output.log'"
+printf '<h1>Test</h1><script>alert(1)</script>' > "$bad_output/index.html"
+check "deployment rejects scripts in output" \
+  "! bash scripts/check-output.sh '$bad_output' > '$root/tmp/check/script-output.log' 2>&1 && grep -q 'output contains a script' '$root/tmp/check/script-output.log'"
+printf '<h1>Test</h1>' > "$bad_output/index.html"
+mkdir -p "$bad_output/tags"
+check "deployment rejects taxonomy output" \
+  "! bash scripts/check-output.sh '$bad_output' > '$root/tmp/check/taxonomy-output.log' 2>&1 && grep -q 'output contains taxonomy pages' '$root/tmp/check/taxonomy-output.log'"
 
 for f in $html_files; do
   n=$({ grep -o '<h1' "$f" || true; } | wc -l | tr -d ' ')
@@ -78,6 +86,12 @@ check "RSS image and link URLs are absolute" \
 
 news="$out/news/2026-11-07/index.html"
 news_feed="$out/news/index.xml"
+for page in index.html blog/index.html blog/code-sample/index.html now/index.html news/index.html news/2026-11-07/index.html; do
+  expected=/index.xml
+  case "$page" in news/*) expected=/news/index.xml ;; esac
+  check "correct RSS discovery and subscription in $page" \
+    "grep -q '<link rel=\"alternate\" .*href=\"https://chensl.me$expected\"' '$out/$page' && grep -q '<a href=\"$expected\">RSS</a>' '$out/$page'"
+done
 check "news issue page exists at /news/<date>/" "[ -f '$news' ]"
 check "news items grouped by tag in first-appearance order" \
   "[ \$(grep -n '<h2>OpenAI</h2>' '$news' | cut -d: -f1) -lt \$(grep -n '<h2>DeepSeek</h2>' '$news' | cut -d: -f1) ] && [ \$(grep -c '<h2>OpenAI</h2>' '$news') -eq 1 ]"
@@ -93,6 +107,12 @@ rm -rf "$bad_data" && mkdir -p "$bad_data/news"
 printf '{"date":"2026-01-01","title":"t","summary":"s","items":[{"title":"t","summary":"s","url":"javascript:alert(1)","tag":"X"}]}' > "$bad_data/news/2026-01-01.json"
 check "news item with a non-http URL fails the build" \
   "! HUGO_DATADIR='$bad_data' hugo build -c '$site' -d '$root/tmp/check/bad-public' > /dev/null 2>&1"
+
+for url in https:example.com/report https:///report https://:443/report; do
+  printf '{"date":"2026-01-01","title":"t","summary":"s","items":[{"title":"t","summary":"s","url":"%s","tag":"X"}]}' "$url" > "$bad_data/news/2026-01-01.json"
+  check "news URL without a hostname fails: $url" \
+    "! HUGO_DATADIR='$bad_data' hugo build -c '$site' -d '$root/tmp/check/bad-public' > '$root/tmp/check/bad-url.log' 2>&1 && grep -q 'url must have a hostname' '$root/tmp/check/bad-url.log'"
+done
 
 # Negative case: a broken internal link must fail the build.
 broken="$root/tmp/check/broken-content"

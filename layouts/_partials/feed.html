@@ -1,0 +1,3 @@
+{{- $page := site.Home -}}
+{{- if eq .Section "news" }}{{ $page = .CurrentSection }}{{ end -}}
+{{- return ($page.OutputFormats.Get "rss") -}}

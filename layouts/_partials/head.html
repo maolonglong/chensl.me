@@ -11,7 +11,7 @@
 <title>{{ $title }}</title>
 <meta name="description" content="{{ $description }}">
 <link rel="canonical" href="{{ .Permalink }}">
-{{- with site.Home.OutputFormats.Get "rss" }}
+{{- with partial "feed.html" . }}
 <link rel="alternate" type="{{ .MediaType.Type }}" href="{{ .Permalink }}" title="{{ site.Title }}">
 {{- end }}
 <meta property="og:site_name" content="{{ site.Title }}">

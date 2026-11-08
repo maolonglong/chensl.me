@@ -14,6 +14,7 @@ an invalid issue fails the build and the previous deployment stays live.
     {{- if not (and $item.title $item.summary $item.url $item.tag) }}{{ errorf "%s: item %d needs title, summary, url, and tag" $file $i }}{{ end -}}
     {{- $u := urls.Parse $item.url -}}
     {{- if not (in (slice "http" "https") $u.Scheme) }}{{ errorf "%s: item %d url must use http or https" $file $i }}{{ end -}}
+    {{- if not $u.Hostname }}{{ errorf "%s: item %d url must have a hostname" $file $i }}{{ end -}}
     {{- if not (findRE $tagRE $item.tag) }}{{ errorf "%s: item %d has an invalid tag %q" $file $i $item.tag }}{{ end -}}
   {{- end -}}
   {{- $.AddPage (dict
