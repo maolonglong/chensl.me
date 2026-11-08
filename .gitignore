@@ -4,14 +4,4 @@
 .hugo_build.lock
 .wrangler/
 .DS_Store
-
-# Leftovers from the Astro site; delete locally when convenient.
-/node_modules/
-/dist/
-/.astro/
-/playwright-report/
-/test-results/
 /designs/
-.dev.vars*
-.env*
-worker-configuration.d.ts
