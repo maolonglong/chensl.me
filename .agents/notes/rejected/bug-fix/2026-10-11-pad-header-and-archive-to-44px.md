@@ -12,4 +12,4 @@ Give each header link a 44 px box, and give each archive row a 44 px minimum hei
 
 ## Alternatives considered
 
-**Leave the text spacing.** This is what remains. The padded layout was built, and the owner rejected it after seeing the archive and header: the extra space looked wrong. Contents and back-to-top still use the 44 px target.
+**Leave the text spacing.** This is what remains. The padded layout was built, and the owner rejected it after seeing the archive and header: the extra space looked wrong. Contents entries keep the 44 px target.

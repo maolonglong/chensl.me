@@ -24,11 +24,8 @@ import { giscusThemes } from '../lib/assets'
       light: new URL(section.dataset.lightTheme!, window.location.origin).href,
       dark: new URL(section.dataset.darkTheme!, window.location.origin).href,
     }
-    const resolvedTheme = (): 'light' | 'dark' => {
-      const { theme } = document.documentElement.dataset
-      if (theme === 'light' || theme === 'dark') return theme
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    }
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+    const resolvedTheme = (): 'light' | 'dark' => (systemTheme.matches ? 'dark' : 'light')
     const script = document.createElement('script')
     script.src = 'https://giscus.app/client.js'
     script.async = true
@@ -57,7 +54,7 @@ import { giscusThemes } from '../lib/assets'
         'https://giscus.app',
       )
     }
-    window.addEventListener('site-theme-change', () => syncTheme(resolvedTheme()))
+    systemTheme.addEventListener('change', () => syncTheme(resolvedTheme()))
     const container = section.querySelector<HTMLElement>('.giscus')!
     container.addEventListener(
       'load',

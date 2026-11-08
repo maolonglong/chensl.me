@@ -22,17 +22,6 @@ export default defineConfig({
     // /search/ is an empty form until a visitor types a query, so crawlers get nothing from it.
     sitemap({ filter: (page) => new URL(page).pathname !== '/search/' }),
     {
-      name: 'theme-bootstrap',
-      hooks: {
-        'astro:config:setup'({ injectScript }) {
-          injectScript(
-            'head-inline',
-            readFileSync(new URL('./src/scripts/theme-bootstrap.js', import.meta.url), 'utf8'),
-          )
-        },
-      },
-    },
-    {
       // Article keyword search for /search/. Only elements marked data-pagefind-body are indexed,
       // which are the article pages; the selectors drop article chrome that is not the article's
       // own text. Adjacent Han characters get a zero-width space in memory so build-time Jieba and

@@ -377,7 +377,6 @@ for (const width of [320, 390, 768, 1280]) {
             navWrapped: nav.top >= title.bottom && Math.abs(nav.left - main.left) <= 1,
             footerGap: Math.round(innerHeight - footer.bottom),
             footerOffset: Math.round(footer.left + inset - main.left),
-            backToTop: document.querySelectorAll('.back-to-top').length,
             floatingContents: document.querySelectorAll('#article-toc, .toc-button').length,
           }
           document.documentElement.style.fontSize = ''
@@ -385,7 +384,7 @@ for (const width of [320, 390, 768, 1280]) {
         }, size)
         const article = pathname === '/blog/dockertest/'
         expectAll(`${pathname} at ${width}px / ${size}`, layout, {
-          'header shows every control': layout.controls >= 5,
+          'header shows every control': layout.controls >= 4,
           'header controls fit the view': layout.fits,
           'page does not scroll sideways': layout.page <= layout.width,
           // Header, page shell, and footer share one left edge and one right edge.
@@ -394,8 +393,6 @@ for (const width of [320, 390, 768, 1280]) {
           'footer on the column edge': Math.abs(layout.footerOffset) <= 1,
           // A short page keeps its footer at the bottom of the viewport instead of mid-screen.
           'footer at the viewport bottom': layout.footerGap <= 64,
-          // Only articles are long enough to need a way back up.
-          'back-to-top on articles only': layout.backToTop === (article ? 1 : 0),
           // Only an article with enough headings carries the contents: one list and its button.
           'contents on articles with headings only': layout.floatingContents === (article ? 2 : 0),
         })

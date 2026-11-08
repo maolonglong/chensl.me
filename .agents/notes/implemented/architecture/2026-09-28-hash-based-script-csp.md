@@ -4,11 +4,11 @@ Status: implemented
 
 ## Problem
 
-The site allowed inline script execution, so an injected inline script or event handler would run. The pre-paint theme bootstrap had to stay inline, because it must run before the first paint.
+The site allowed inline script execution, so an injected inline script or event handler would run.
 
 ## Decision
 
-An inline script runs only when Astro hashes it, and an external script runs only from a source in the meta policy's `script-src`. A component `<script>` is bundled and hashed. The theme bootstrap, `src/scripts/theme-bootstrap.js`, is injected through `injectScript('head-inline')` in `astro.config.mjs`, so Astro emits the CSP before any executable script and hashes the exact emitted bytes.
+An inline script runs only when Astro hashes it, and an external script runs only from a source in the meta policy's `script-src`. A component `<script>` is bundled and hashed; no head-inline script remains, so Astro emits the CSP before any executable script and hashes the exact emitted bytes.
 
 Two policies apply independently, and a browser enforces both:
 

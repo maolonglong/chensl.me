@@ -50,14 +50,6 @@
     color-scheme: light dark;
 }
 
-:root[data-theme='light'] {
-    color-scheme: light;
-}
-
-:root[data-theme='dark'] {
-    color-scheme: dark;
-}
-
 @media (prefers-contrast: more) {
     :root {
         --muted-color: var(--text-color);
@@ -262,13 +254,8 @@ time {
 
 /* Light text on a dark page looks heavier than the same weight in ink; grayscale smoothing
    restores the stroke weight the light theme shows. */
-:root[data-theme='dark'] body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) body {
+    body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }

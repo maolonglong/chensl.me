@@ -15,7 +15,7 @@ test('the header links the sections, and the site title links home', async ({ op
     '/news/',
     '/search/',
   ])
-  await expect(page.getByRole('navigation', { name: '主导航' }).getByRole('button')).toHaveCount(1)
+  await expect(page.getByRole('navigation', { name: '主导航' }).getByRole('button')).toHaveCount(0)
 })
 
 test('the footer links the article feed', async ({ open, page }) => {
@@ -61,41 +61,25 @@ test('the search icon is a named link that marks the search page as current', as
   }
 })
 
-// The search icon and the theme toggle are 40 px round tools side by side; each one owns its
-// whole circle, so a tap never lands on the neighbor.
+// The search icon is a 40 px round tool; the whole circle is the link, so a tap never misses it.
 for (const width of [320, 390, 1280]) {
-  test(`the search icon and the theme toggle own separate 40px targets at ${width}px`, async ({
-    open,
-    page,
-  }) => {
+  test(`the search icon is a 40px target at ${width}px`, async ({ open, page }) => {
     await page.setViewportSize({ width, height: 844 })
     await open('/')
     const result = await page.evaluate(() => {
-      const nav = document.querySelector('header nav')
-      const controls = {
-        search: nav.querySelector('a[href="/search/"]'),
-        theme: document.querySelector('[data-theme-toggle]'),
-      }
-      return Object.fromEntries(
-        Object.entries(controls).map(([name, control]) => {
-          const box = control.getBoundingClientRect()
-          const missed = []
-          // The tools are round, so sample a cross inside the circle.
-          for (const dx of [box.width / 2 - 14, box.width / 2, box.width / 2 + 14])
-            for (const dy of [box.height / 2 - 14, box.height / 2, box.height / 2 + 14]) {
-              const hit = document
-                .elementFromPoint(box.left + dx, box.top + dy)
-                ?.closest('a, button')
-              if (hit !== control) missed.push([dx, dy])
-            }
-          return [name, { width: box.width, height: box.height, missed }]
-        }),
-      )
+      const control = document.querySelector('header nav').querySelector('a[href="/search/"]')
+      const box = control.getBoundingClientRect()
+      const missed = []
+      // The tool is round, so sample a cross inside the circle.
+      for (const dx of [box.width / 2 - 14, box.width / 2, box.width / 2 + 14])
+        for (const dy of [box.height / 2 - 14, box.height / 2, box.height / 2 + 14]) {
+          const hit = document.elementFromPoint(box.left + dx, box.top + dy)?.closest('a, button')
+          if (hit !== control) missed.push([dx, dy])
+        }
+      return { width: box.width, height: box.height, missed }
     })
-    for (const control of Object.values(result)) {
-      expect(control.width).toBeGreaterThanOrEqual(40)
-      expect(control.height).toBeGreaterThanOrEqual(40)
-      expect(control.missed).toEqual([])
-    }
+    expect(result.width).toBeGreaterThanOrEqual(40)
+    expect(result.height).toBeGreaterThanOrEqual(40)
+    expect(result.missed).toEqual([])
   })
 }

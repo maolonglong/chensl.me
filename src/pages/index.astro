@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { displayDate, postUrl, publishedPosts } from '../lib/posts'
-import { newsDescription } from '../lib/site.mjs'
 
 const recentCount = 5
 const posts = await publishedPosts()
@@ -44,18 +43,6 @@ const recent = posts.slice(0, recentCount)
         </ol>
       </section>
     )}
-
-    <section class="home-section" aria-labelledby="home-news">
-      <div class="section-head">
-        <h2 class="section-label" id="home-news">
-          AI News
-        </h2>
-        <a class="more arrow-link meta" href="/news/">
-          读最新一期
-        </a>
-      </div>
-      <p class="news-teaser">{newsDescription}，由 bot 收集整理，作者不逐条审阅。</p>
-    </section>
   </div>
 </BaseLayout>
 
@@ -98,12 +85,6 @@ const recent = posts.slice(0, recentCount)
   .more {
     font-size: var(--size-caption);
     text-decoration-line: none;
-  }
-  .news-teaser {
-    margin: 0;
-    font-size: var(--size-ui);
-    line-height: 1.65;
-    color: var(--muted-color);
   }
   @media (max-width: 600px) {
     .home-section {

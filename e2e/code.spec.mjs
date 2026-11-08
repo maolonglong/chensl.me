@@ -50,8 +50,8 @@ test('syntax colors match Shiki in light and dark', async ({ page, open, capture
       ?.scrollIntoView({ block: 'center' })
   })
   for (const scheme of ['light', 'dark']) {
+    await page.emulateMedia({ colorScheme: scheme })
     const colors = await page.evaluate((scheme) => {
-      document.documentElement.dataset.theme = scheme
       const tokens = [...document.querySelectorAll('.astro-code span[style]')]
       const probe = document.createElement('span')
       document.body.append(probe)

@@ -22,7 +22,7 @@ A rubric of traps: lessons from incidents that review must catch again. Each tra
 
 | Diff touches | Surface |
 | --- | --- |
-| `astro.config.mjs` `security`, `public/_headers`, `src/scripts/theme-bootstrap.js`, `src/components/Theme.astro`, any `<script>` or handler | CSP |
+| `astro.config.mjs` `security`, `public/_headers`, `src/components/Theme.astro`, any `<script>` or handler | CSP |
 | `src/actions/`, `src/middleware.ts`, `src/components/Upvote.astro`, `migrations/0001_votes.sql`, `wrangler.jsonc` bindings | Upvotes |
 | `src/lib/news*`, `src/pages/news/`, `src/pages/api/`, `src/components/News*`, `migrations/news/` | AI News |
 | `src/worker.ts`, `src/lib/search*`, `src/pages/search.astro` | Search |

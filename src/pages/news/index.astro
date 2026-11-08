@@ -15,8 +15,7 @@ Astro.response.headers.set('Cache-Control', newsCacheControl)
   <div class="measure">
     <header class="page-header">
       <h1 class="page-title">AI News</h1>
-      <!-- prettier-ignore -->
-      <p class="meta">每天 AI 圈发生了什么。由 bot 收集整理，作者不逐条审阅。这里显示最新一期，往期在<a href="/news/archive/">归档</a>，也可以<a href="/news/index.xml" type="application/rss+xml">订阅 RSS</a>。</p>
+      <p class="meta">每天 AI 圈发生了什么。由 bot 收集整理，作者不逐条审阅。</p>
     </header>
     {issues.length ? (
       issues.map((issue) => (

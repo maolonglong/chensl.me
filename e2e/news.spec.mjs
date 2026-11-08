@@ -265,11 +265,11 @@ test.describe('news pages', () => {
     await expect(days).toHaveCount(1)
     await expect(days.locator('h2 a')).toHaveAttribute('href', `/news/${newest}/`)
     await expect(days.locator('.group-tag')).toHaveText(['OpenAI', 'Google', 'pi'])
-    // Older issues are one click away: in the introduction and after the issue.
+    // Older issues are one click away after the issue.
     const archive = page.locator('main a[href="/news/archive/"]')
-    await expect(archive).toHaveCount(2)
-    await expect(archive.last()).toHaveText('查看往期日报')
-    await archive.last().click()
+    await expect(archive).toHaveCount(1)
+    await expect(archive).toHaveText('查看往期日报')
+    await archive.click()
     await expect(page).toHaveURL(/\/news\/archive\/$/)
   })
 

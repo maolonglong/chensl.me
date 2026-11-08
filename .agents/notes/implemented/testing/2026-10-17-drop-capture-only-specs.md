@@ -10,7 +10,7 @@ A later cut found two leftovers. The touch "contents popover" spec opened the pa
 
 ## Decision
 
-A browser spec asserts behavior that a reader can observe. The suite keeps no spec whose only result is a screenshot. `e2e/appearance.spec.mjs` keeps the specs that assert: the theme cycle and its persistence, a wide formula scrolling inside its wrapper, native contents without page scripts, and a theme switch when storage throws. Copy success and failure live in `e2e/code.spec.mjs`, and the open contents panel lives in `e2e/contents.spec.mjs`. Contents geometry stays in `e2e/contents.spec.mjs`. Font loading stays in `tests/fonts.test.mjs` and `e2e/page-shell.spec.mjs`.
+A browser spec asserts behavior that a reader can observe. The suite keeps no spec whose only result is a screenshot. `e2e/appearance.spec.mjs` keeps the specs that assert: the page follows the OS color scheme, a wide formula scrolls inside its wrapper, native contents open without page scripts, and `prefers-contrast` raises muted text. Copy success and failure live in `e2e/code.spec.mjs`, and the open contents panel lives in `e2e/contents.spec.mjs`. Contents geometry stays in `e2e/contents.spec.mjs`. Font loading stays in `tests/fonts.test.mjs` and `e2e/page-shell.spec.mjs`.
 
 The same cut removed search assertions in `tests/search.test.mjs` that restated implementation constants and loop counts before [keyword-only search](../simplification/2026-10-24-keyword-only-search.md) removed the embedding layer.
 

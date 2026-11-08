@@ -82,9 +82,9 @@ Bot-written AI News issues live in the `NEWS` D1 database (`migrations/news/`) (
 
 - **Architecture Invariant:** The endpoint is a closed set, not an open proxy: it serves only keys present in `src/data/github-repos.json` and returns 404 for any other repository before touching the network.
 
-### `src/components/`, `src/scripts/theme-bootstrap.js`, `src/styles/`
+### `src/components/`, `src/styles/`
 
-Each component in `src/components/` owns its scoped styles and compiled browser script. `src/styles/global.css` holds design tokens, the shared chrome classes (`.measure`, `.meta`, `.section-label`, `.entries`), and `.prose` rules; `src/styles/floating-controls.css` holds the article's contents list, its button, and back-to-top. `src/scripts/theme-bootstrap.js` runs inline in `<head>` before first paint (`astro.config.mjs` reads it at startup, so restart `pnpm dev` after editing it).
+Each component in `src/components/` owns its scoped styles and compiled browser script. `src/styles/global.css` holds design tokens, the shared chrome classes (`.measure`, `.meta`, `.section-label`, `.entries`), and `.prose` rules; `src/styles/floating-controls.css` holds the article's contents list and its button.
 
 - **Architecture Invariant:** Pages require no JavaScript to read. When scripts do not run, the contents list opens via its native popover, script-only buttons stay hidden, and build-time stale notices remain visible (`e2e/appearance.spec.mjs`, `e2e/page-shell.spec.mjs`).
 

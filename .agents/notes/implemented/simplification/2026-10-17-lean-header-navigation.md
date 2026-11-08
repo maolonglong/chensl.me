@@ -8,7 +8,7 @@ The header listed 首页, 博客, AI News, 搜索, and RSS as text links, then t
 
 ## Decision
 
-The header holds the site title, which links home, the 博客 and AI News links, a search icon, and the theme toggle. The search icon is a link named 搜索 and styled like the theme toggle. The article feed link moves to the footer of every page. AI News pages link the news feed in the footer instead, which matches the feed that their head advertises. The head feed links for autodiscovery do not change.
+The header holds the site title, which links home, the 博客 and AI News links, and a search icon. The search icon is a link named 搜索. The article feed link moves to the footer of every page. AI News pages link the news feed in the footer instead, which matches the feed that their head advertises. The head feed links for autodiscovery do not change.
 
 `e2e/navigation.spec.mjs` pins the header links, the current mark and the 40 px target of the search icon, and the footer feed link. `scripts/check-site.mjs` requires the footer feed link on every prerendered page, and `e2e/news.spec.mjs` requires the news feed link on the AI News pages.
 
@@ -18,13 +18,13 @@ The header holds the site title, which links home, the 博客 and AI News links,
 
 **Show RSS as an icon in the header.** It saves width, but it keeps a one-time action in the header beside the controls that a reader uses on every visit.
 
-**Keep 搜索 as a text link.** It reads as a third section, but search is a tool, like the theme toggle. An icon beside the toggle groups the two tools and shortens the header.
+**Keep 搜索 as a text link.** It reads as a third section, but search is a tool, not a section. An icon shortens the header.
 
 **Pad the header links to 44 px.** The owner rejected this layout ([note](../../rejected/bug-fix/2026-10-11-pad-header-and-archive-to-44px.md)). The header links keep their text spacing.
 
 ## Consequences
 
-No header item is current on the home page. The two tools are 40 px circles side by side ([redesign](../feature/2026-10-26-apple-sans-editorial-redesign.md)), and the text links keep their spacing. A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
+No header item is current on the home page. The search tool is a 40 px circle ([redesign](../feature/2026-10-26-apple-sans-editorial-redesign.md)), and the text links keep their spacing. The theme toggle later left the header ([follow the system theme](2026-11-08-follow-the-system-theme.md)). A reader who looks for the feed in the header finds it in the footer or through feed autodiscovery.
 
 ## Reopen when
 

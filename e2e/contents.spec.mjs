@@ -1,7 +1,7 @@
 import { apart, expect, expectAll, inside, test } from './site.mjs'
 
 // The article's one contents list is a corner button at every width. The list is a popover
-// anchored above that button. Back-to-top shares the corner and sits above the button.
+// anchored above that button.
 const firstEntry = '#article-toc > ul > li:first-child > a'
 const secondEntry = '#article-toc > ul > li:nth-child(2) > a'
 
@@ -14,7 +14,6 @@ function probeContents() {
     getComputedStyle(element).visibility === 'visible'
   const list = document.querySelector('#article-toc')
   const button = document.querySelector('.toc-button')
-  const backToTop = document.querySelector('.back-to-top')
   const open = !!list && list.matches(':popover-open')
   // A fixed control can still be painted over by positioned content later in the page; hit-test it.
   const onTop = (element) => {
@@ -29,8 +28,6 @@ function probeContents() {
     panel: open ? box(list) : null,
     button: shown(button) ? box(button) : null,
     buttonOpaque: button ? !getComputedStyle(button).backgroundColor.startsWith('rgba(') : true,
-    backToTop: box(backToTop),
-    backToTopShown: shown(backToTop),
     buttonOnTop: onTop(button),
     footer: box(document.querySelector('body > footer')),
     comments: box(document.querySelector('.comments')),
@@ -69,8 +66,6 @@ for (const width of [1280, 1440]) {
       'button sits inside the view': inside(rest.button, rest),
       'button paints on top': rest.buttonOnTop,
       'button holds the view corner': Math.abs(rest.width - rest.button?.right - 24) <= 4,
-      'button lines up with back-to-top': Math.abs(rest.button?.right - rest.backToTop.right) <= 1,
-      "button sits below back-to-top's place": rest.button?.top - rest.backToTop.bottom >= 7,
     })
     if (!rest.button) return
 
@@ -83,7 +78,6 @@ for (const width of [1280, 1440]) {
       'contents anchor directly above the button':
         opened.button.top - opened.panel.bottom >= 7 &&
         opened.button.top - opened.panel.bottom <= 9,
-      'back-to-top hides while contents are open': !opened.backToTopShown,
       'button plate stays opaque when open': opened.buttonOpaque,
     })
 
@@ -169,15 +163,12 @@ test.describe('with a touch screen', () => {
       await open('/blog/dockertest/')
       await page.evaluate((size) => (document.documentElement.style.fontSize = size), size)
       const label = `/blog/dockertest/ contents button at ${width}px / ${size}`
-      // The button holds the corner from the start; back-to-top joins above it later, so neither ever moves.
       const rest = await measure(page, () => scrollTo(0, 0))
       expectAll(label, rest, {
         'list stays closed until the button opens it': !rest.rail && !rest.panel,
         'button sits inside the view': inside(rest.button, rest),
         'button paints on top': rest.buttonOnTop,
-        'button lines up with back-to-top':
-          Math.abs(rest.button?.right - rest.backToTop.right) <= 1,
-        "button sits below back-to-top's place": rest.button?.top - rest.backToTop.bottom >= 7,
+        'button holds the view corner': Math.abs(rest.width - rest.button?.right - 24) <= 4,
         'page does not scroll sideways': rest.page <= rest.width,
       })
       if (!rest.button) return
@@ -195,7 +186,6 @@ test.describe('with a touch screen', () => {
         'contents anchor directly above the button':
           opened.button.top - opened.panel.bottom >= 7 &&
           opened.button.top - opened.panel.bottom <= 9,
-        'back-to-top hides while contents are open': !opened.backToTopShown,
         'button plate stays opaque when open': opened.buttonOpaque,
         'the current entry is marked': opened.current.includes(opened.last),
       })
@@ -223,16 +213,29 @@ test.describe('with a touch screen', () => {
   })
 })
 
-// Fewer than three headings means no contents list, and back-to-top keeps the corner.
-test('a short article floats no contents and keeps back-to-top in the corner', async ({
-  page,
-  open,
-}) => {
+// Fewer than three headings means no contents list and no corner button.
+test('a short article floats no contents', async ({ page, open }) => {
   await open('/blog/lock-free-queue/')
   const short = await measure(page, () => scrollTo(0, document.documentElement.scrollHeight))
   expectAll('/blog/lock-free-queue/', short, {
     'no contents list': !short.rail && !short.panel,
     'no contents button': !short.button,
-    'back-to-top keeps the corner': short.height - short.backToTop.bottom <= 24,
   })
+})
+
+// Reduced motion keeps state fades and drops movement: the button still transitions opacity under
+// the global reduce rule, but its press transform snaps.
+test('reduced motion keeps opacity fades and drops transform transitions', async ({
+  page,
+  open,
+}) => {
+  await open('/blog/dockertest/')
+  const properties = () =>
+    page.evaluate(() => getComputedStyle(document.querySelector('.toc-button')).transitionProperty)
+  await expect
+    .poll(properties, { message: 'no-preference includes the press transform' })
+    .toContain('transform')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect.poll(properties).not.toContain('transform')
+  await expect.poll(properties).toContain('opacity')
 })

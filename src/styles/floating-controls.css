@@ -1,16 +1,12 @@
 /*
-  Article controls. Back-to-top and the contents button share one lane at the
-  bottom right: 44px plates in the page color, so text scrolling beneath never
-  shows through. The contents button holds the corner and back-to-top sits
-  above it, at every width, so neither moves.
+  The article's contents control: one 44px plate in the page color holds the
+  bottom right corner of the view, so text scrolling beneath never shows through.
 */
-.back-to-top,
 .toc-button,
 .toc {
     z-index: 1;
 }
 
-.back-to-top,
 .toc-button {
     position: fixed;
     right: var(--gutter);
@@ -26,36 +22,11 @@
     border-radius: 999px;
     box-shadow: var(--shadow-float);
     touch-action: manipulation;
-    transition:
-        opacity 160ms ease-out,
-        transform 120ms var(--ease-out);
-}
-
-.back-to-top {
-    visibility: hidden;
-    opacity: 0;
-}
-
-.back-to-top[data-visible] {
-    visibility: visible;
-    opacity: 1;
-}
-
-.back-to-top-icon {
-    transform: translateY(4px) scale(0.92);
-    transition: transform 200ms var(--ease-out);
-}
-
-.back-to-top[data-visible] .back-to-top-icon {
-    transform: none;
-}
-
-body:has(.toc-button) .back-to-top {
-    bottom: calc(var(--gutter) + 44px + var(--space-2));
+    transition: transform 120ms var(--ease-out);
 }
 
 /*
-  --fill-color is translucent, so floating plates layer it over --elevated-color with a gradient
+  --fill-color is translucent, so the floating plate layers it over --elevated-color with a gradient
   instead of replacing background-color; otherwise text scrolling beneath shows through the button.
 */
 body:has(#article-toc:popover-open) .toc-button {
@@ -63,18 +34,10 @@ body:has(#article-toc:popover-open) .toc-button {
     background-image: linear-gradient(var(--fill-color), var(--fill-color));
 }
 
-body:has(#article-toc:popover-open) .back-to-top {
-    visibility: hidden;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.back-to-top:focus-visible,
 .toc-button:focus-visible {
     border-radius: 999px;
 }
 
-.back-to-top:active,
 .toc-button:active {
     color: var(--heading-color);
     background-image: linear-gradient(var(--fill-color), var(--fill-color));
@@ -82,24 +45,19 @@ body:has(#article-toc:popover-open) .back-to-top {
 }
 
 @media (hover: hover) {
-    .back-to-top:hover,
     .toc-button:hover {
         color: var(--heading-color);
         background-image: linear-gradient(var(--fill-color), var(--fill-color));
     }
 }
 
-/* The page ends below the lane, so the footer never sits under a button. */
-body:has(> .back-to-top) {
+/* The page ends below the control, so the footer never sits under it. */
+body:has(.toc-button) {
     padding-bottom: calc(44px + var(--gutter) + var(--space-2));
 }
 
-body:has(.toc-button) {
-    padding-bottom: calc(2 * 44px + var(--gutter) + 2 * var(--space-2));
-}
-
-/* The popover anchors directly above the contents button and hides back-to-top while open.
-   It enters and exits as one plate, scaling from the corner button. */
+/* The popover anchors directly above the contents button. It enters and exits as one plate,
+   scaling from the corner button. */
 .toc {
     position: fixed;
     inset: auto var(--gutter) calc(var(--gutter) + 44px + var(--space-2)) auto;
@@ -179,7 +137,6 @@ body:has(.toc-button) {
 
 /* Scrolled at print time, the floating controls would stamp themselves on every page. */
 @media print {
-    .back-to-top,
     .toc-button,
     .toc {
         display: none;

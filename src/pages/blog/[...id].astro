@@ -2,7 +2,6 @@
 import '../../styles/floating-controls.css'
 import { render, type CollectionEntry } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import BackToTop from '../../components/BackToTop.astro'
 import FloatingToc from '../../components/FloatingToc.astro'
 import Comments from '../../components/Comments.astro'
 import CodeCopy from '../../components/CodeCopy.astro'
@@ -27,7 +26,7 @@ interface Props {
 }
 const { post, earlier, later } = Astro.props
 const { Content, headings, remarkPluginFrontmatter } = await render(post)
-const { wordCount, minutes } = remarkPluginFrontmatter.readingStats
+const { wordCount } = remarkPluginFrontmatter.readingStats
 const lastModified = post.data.updatedDate ?? post.data.pubDate
 const { creation } = post.data
 ---
@@ -43,8 +42,7 @@ const { creation } = post.data
       <p class="post-meta meta">
         <time datetime={post.data.pubDate.toISOString()}>{displayDate(post.data.pubDate)}</time>{' '}
         <span aria-hidden="true">·</span>{' '}
-        <span class="post-length">{readingLength(wordCount)}</span>{' '}
-        <span aria-hidden="true">·</span> <span class="post-reading-time">{minutes} 分钟</span>
+        <span class="post-length">{readingLength(wordCount)}</span>
         {creation && (
           <>
             {' '}
@@ -92,7 +90,6 @@ const { creation } = post.data
     )}
     {post.data.comments && <Comments />}
   </div>
-  <BackToTop />
 </BaseLayout>
 
 <script>

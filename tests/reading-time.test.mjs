@@ -4,8 +4,8 @@ import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import remarkMath from 'remark-math'
 import { readingLength, remarkReadingStats } from '../src/lib/reading-time.mjs'
 
-// Length and reading time come from the article text a reader reads: Chinese counts by character,
-// other scripts by word, and code and display math do not count.
+// The length comes from the article text a reader reads: Chinese counts by character, other
+// scripts by word, and code and display math do not count.
 const processor = createMarkdownProcessor({
   remarkPlugins: [remarkMath, remarkReadingStats],
   syntaxHighlight: false,
@@ -18,7 +18,6 @@ test('Chinese counts characters and skips punctuation', async () => {
     characters: 12,
     words: 0,
     wordCount: 12,
-    minutes: 1,
   })
 })
 
@@ -31,7 +30,6 @@ test('mixed text counts Chinese characters and the Latin words between them', as
     characters: 8,
     words: 3,
     wordCount: 11,
-    minutes: 1,
   })
 })
 
@@ -51,7 +49,7 @@ test('code blocks and display math do not count, inline code does', async () => 
     '',
     '<pre>raw HTML is not article text</pre>',
   ].join('\n')
-  assert.deepEqual(await stats(markdown), { characters: 4, words: 2, wordCount: 6, minutes: 1 })
+  assert.deepEqual(await stats(markdown), { characters: 4, words: 2, wordCount: 6 })
 })
 
 test('links, lists, quotes and footnotes count their text', async () => {
@@ -64,15 +62,7 @@ test('links, lists, quotes and footnotes count their text', async () => {
     '',
     '[^1]: 脚注 note',
   ].join('\n')
-  assert.deepEqual(await stats(markdown), { characters: 13, words: 1, wordCount: 14, minutes: 1 })
-})
-
-test('reading time adds 300 Chinese characters and 238 English words a minute', async () => {
-  const chinese = '字'.repeat(1500)
-  const english = Array.from({ length: 476 }, () => 'word').join(' ')
-  assert.equal((await stats(`${chinese}\n\n${english}`)).minutes, 7)
-  assert.equal((await stats('字')).minutes, 1)
-  assert.equal((await stats('```\ncode only\n```')).minutes, 0)
+  assert.deepEqual(await stats(markdown), { characters: 13, words: 1, wordCount: 14 })
 })
 
 test('the shown length rounds to hundreds from 100 on', () => {

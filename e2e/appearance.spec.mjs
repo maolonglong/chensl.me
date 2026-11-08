@@ -3,56 +3,27 @@ import { expect, test } from './site.mjs'
 // These specs assert behavior and capture 2x screenshots for human review; inspect the images in
 // test-results/screenshots (or the HTML report). A successful capture is not visual verification.
 
-const theme = (page) =>
+const appearance = (page) =>
   page.evaluate(() => ({
-    mode: document.querySelector('[data-theme-toggle]').dataset.themeMode,
     scheme: getComputedStyle(document.documentElement).colorScheme,
     background: getComputedStyle(document.body).backgroundColor,
   }))
 
-test('theme cycles, persists across navigation and follows the OS', async ({
-  page,
-  open,
-  settle,
-}) => {
+test('the page follows the OS color scheme', async ({ page, open, settle }) => {
   await page.emulateMedia({ colorScheme: 'light' })
   await open('/')
-  expect((await theme(page)).mode).toBe('auto')
-  await expect(page.locator('[data-theme-toggle]')).not.toHaveAttribute('data-theme-switched')
-  for (const [mode, scheme] of [
-    ['light', 'light'],
-    ['dark', 'dark'],
-    ['auto', 'light dark'],
-  ]) {
-    await page.locator('[data-theme-toggle]').click()
-    await expect(page.locator('[data-theme-toggle]')).toHaveAttribute('data-theme-switched', '')
-    // A click runs the theme change inside a view transition, so the mode lands a frame later.
-    await expect.poll(async () => (await theme(page)).mode).toBe(mode)
-    await expect.poll(async () => (await theme(page)).scheme).toBe(scheme)
-  }
-  const lightBackground = (await theme(page)).background
+  const light = await appearance(page)
+  expect(light.scheme).toBe('light dark')
   await page.emulateMedia({ colorScheme: 'dark' })
   await settle(page)
-  expect((await theme(page)).background, 'Auto follows the OS').not.toBe(lightBackground)
-  await page.locator('[data-theme-toggle]').click()
-  await expect
-    .poll(async () => (await theme(page)).background, {
-      message: 'Forced light overrides a dark OS',
-    })
-    .toBe(lightBackground)
-  await open('/')
-  expect((await theme(page)).mode, 'Forced theme persists across navigation').toBe('light')
-  await page.locator('[data-theme-toggle]').click()
-  await page.emulateMedia({ colorScheme: 'light' })
-  await settle(page)
-  await expect
-    .poll(async () => (await theme(page)).scheme, {
-      message: 'Forced dark overrides a light OS',
-    })
-    .toBe('dark')
+  const dark = await appearance(page)
+  expect(dark.background, 'Dark OS resolves to the dark background').not.toBe(light.background)
+  expect(dark.scheme).toBe('light dark')
+})
 
+test('prefers-contrast: more raises muted text to body contrast', async ({ page, open }) => {
   await page.emulateMedia({ contrast: 'more' })
-  await settle(page)
+  await open('/')
   const highContrast = await page.evaluate(() => ({
     muted: getComputedStyle(document.querySelector('.meta')).color,
     body: getComputedStyle(document.body).color,
@@ -102,15 +73,11 @@ test.describe('on a touch screen', () => {
       capture,
     }) => {
       await open('/blog/dockertest/')
-      await expect(page.locator('.theme-toggle'), 'No-script theme control is hidden').toHaveCSS(
-        'display',
-        'none',
-      )
       await expect(
         page.locator('[data-upvote] button'),
         'No-script upvote control is hidden',
       ).toHaveCSS('display', 'none')
-      await expect(page.locator('.code-copy, .back-to-top')).toHaveCount(0)
+      await expect(page.locator('.code-copy')).toHaveCount(0)
       await page.locator('.toc-button').click()
       expect(
         await page.evaluate(() => document.querySelector('#article-toc').matches(':popover-open')),
@@ -118,18 +85,5 @@ test.describe('on a touch screen', () => {
       await expect(page.locator('#article-toc')).toHaveCSS('opacity', '1')
       await capture(page, 'no-script-toc')
     })
-  })
-
-  test('theme still switches when storage throws', async ({ page, context, open }) => {
-    await context.addInitScript(() => {
-      Object.defineProperty(window, 'localStorage', {
-        get() {
-          throw new DOMException('blocked', 'SecurityError')
-        },
-      })
-    })
-    await open('/')
-    await page.locator('[data-theme-toggle]').click()
-    await expect.poll(async () => (await theme(page)).mode).toBe('light')
   })
 })

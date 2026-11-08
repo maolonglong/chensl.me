@@ -8,7 +8,7 @@ A wide article (`min-width: 76rem`) stacked the date, length, reading time, and 
 
 ## Decision
 
-At every width, the date, length, reading time, and creation label stay one sans line under the title, middots included. The contents list stays a corner button that opens one popover above the button. Back-to-top sits above that button, in the same view corner. Crossing 76rem moves neither control. The list still opens without JavaScript, through the native popover. `e2e/page-shell.spec.mjs` checks the metadata line. `e2e/contents.spec.mjs` checks the button, the popover, and that widening keeps the popover open. `e2e/back-to-top.spec.mjs` checks the corner.
+At every width, the date, length, and creation label stay one sans line under the title, middots included. The contents list stays a corner button that opens one popover above the button, and the button holds the view corner. Crossing 76rem moves no control. The list still opens without JavaScript, through the native popover. `e2e/page-shell.spec.mjs` checks the metadata line. `e2e/contents.spec.mjs` checks the button, the popover, and that widening keeps the popover open.
 
 ## Alternatives considered
 
@@ -22,4 +22,5 @@ At every width, the date, length, reading time, and creation label stay one sans
 
 - This note supersedes the margin half of [the frame signature](../feature/2026-10-29-frame-signature.md). The masthead cat stays in that note.
 - Metadata stays in the column under the title, and the contents list stays on the corner button. Putting either in the margin needs a new decision that answers this note.
+- [Reading time](2026-11-08-length-without-reading-time.md) later left the metadata line, and [back-to-top](2026-11-08-drop-back-to-top.md) later left the corner.
 - Popover entries keep the 44px target at every width (`e2e/contents.spec.mjs`). A plain list with tighter padding would miss it.
