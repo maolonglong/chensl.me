@@ -211,10 +211,10 @@ hr {
 }
 
 mark {
-    padding: 1px 4px;
+    padding: 0.05em 0;
     color: inherit;
     background-color: var(--mark-background-color);
-    border-radius: 4px;
+    border-radius: 2px;
 }
 
 code,
@@ -312,7 +312,6 @@ time {
     font-size: var(--size-caption);
     font-weight: 600;
     line-height: 1.4;
-    letter-spacing: 0.04em;
     color: var(--muted-color);
 }
 
@@ -534,7 +533,6 @@ blockquote cite {
     margin-bottom: 0.35em;
     font-size: var(--size-ui);
     font-weight: 600;
-    letter-spacing: 0.04em;
     color: var(--heading-color);
 }
 
@@ -733,7 +731,6 @@ td {
 th {
     font-size: var(--size-caption);
     font-weight: 600;
-    letter-spacing: 0.04em;
     color: var(--muted-color);
     border-bottom: 1px solid var(--rule-color);
 }

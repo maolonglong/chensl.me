@@ -47,9 +47,6 @@ const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(
     align-items: baseline;
     padding-top: var(--space-6);
   }
-  .year-group + .year-group {
-    margin-top: var(--space-6);
-  }
   .posts-year {
     margin: 0;
     font-size: var(--size-ui);
@@ -63,9 +60,6 @@ const years = Map.groupBy(posts, (post) => displayDate(post.data.pubDate).slice(
       grid-template-columns: minmax(0, 1fr);
       row-gap: var(--space-3);
       padding-top: var(--space-5);
-    }
-    .year-group + .year-group {
-      margin-top: var(--space-5);
     }
   }
 </style>

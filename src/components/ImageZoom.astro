@@ -64,11 +64,7 @@
       // interrupted open reverses from its current on-screen position instead of jumping to the end.
       const fromRect = target?.getBoundingClientRect()
       const dialogStyle = getComputedStyle(dialog)
-      const backdropStart = {
-        backgroundColor: dialogStyle.backgroundColor,
-        backdropFilter:
-          dialogStyle.backdropFilter === 'none' ? 'blur(0px)' : dialogStyle.backdropFilter,
-      }
+      const backdropStart = { backgroundColor: dialogStyle.backgroundColor }
       const startOpacity = dialogStyle.opacity
       animation?.cancel()
       backdropAnimation?.cancel()
@@ -112,7 +108,7 @@
               closing = false
             }
             backdropAnimation = dialog.animate(
-              [backdropStart, { backgroundColor: 'transparent', backdropFilter: 'blur(0px)' }],
+              [backdropStart, { backgroundColor: 'transparent' }],
               { duration: 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' },
             )
             return
@@ -230,11 +226,11 @@
             { duration: 220, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
           )
         }
-        // An empty end keyframe lands on the rule's own translucent fill and blur.
-        backdropAnimation = dialog!.animate(
-          [{ backgroundColor: 'transparent', backdropFilter: 'blur(0px)' }, {}],
-          { duration: 220, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
-        )
+        // An empty end keyframe lands on the rule's own translucent fill.
+        backdropAnimation = dialog!.animate([{ backgroundColor: 'transparent' }, {}], {
+          duration: 220,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        })
       } else {
         backdropAnimation = dialog!.animate([{ opacity: 0 }, { opacity: 1 }], {
           duration: 150,
@@ -315,7 +311,6 @@
     overscroll-behavior: contain;
     scrollbar-width: none;
     background-color: color-mix(in srgb, var(--background-color) 92%, transparent);
-    backdrop-filter: blur(6px);
     border: 0;
   }
   .image-zoom::backdrop {
@@ -324,7 +319,6 @@
   @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
     .image-zoom[open] {
       background-color: var(--background-color);
-      backdrop-filter: none;
     }
   }
   .image-zoom:focus-visible {
