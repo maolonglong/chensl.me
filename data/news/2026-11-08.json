@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-08",
+  "title": "Claude Code 点「Yes, and don't ask again」可能把密码写进项目文件",
+  "summary": "安全公司 Apiiro 在公开 GitHub 上找到 1122 份含真实密钥的 .claude/settings.local.json。Claude Code 负责人 Boris Cherny 说这个文件本不该进版本库，他们正在看怎么拦住这类泄漏。实验室今天没有发布新模型",
+  "items": [
+    {
+      "title": "Claude Code 点「Yes, and don't ask again」可能把密码写进项目文件",
+      "summary": "批准一条带密码或 API 密钥的命令后，整条命令会存进项目里的 .claude/settings.local.json。安全公司 Apiiro 在公开 GitHub 上找到 1122 份含真实密钥的副本。Claude Code 的 Boris Cherny 在 Hacker News 上说，这个文件本不该进版本库，他们正在看怎么拦住这类泄漏",
+      "url": "https://apiiro.com/blog/coding-agents-leaking-secrets-github-dont-ask-again",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Karpathy 用 Claude Code 三分钟做了 TristanTube",
+      "summary": "他按 Tristan 整理的优质 YouTube 频道清单，搭出一个收录约 4.7 万条视频、带电视模式的播放站，说是用 Claude Code 一次写成，花了约三分钟",
+      "url": "https://x.com/karpathy/status/2119114537442189652",
+      "tag": "工具"
+    },
+    {
+      "title": "yetone 把 Alma 的界面改成了原生",
+      "summary": "Alma 的界面层已经用 MyGo 重写成原生版本。服务端仍是 JavaScript",
+      "url": "https://x.com/yetone/status/2119334800066826625",
+      "tag": "工具"
+    },
+    {
+      "title": "有人从 Claude Code 转到 Pi",
+      "summary": "一篇 9 月写下的文章今天在 Hacker News 热起来。作者嫌 Claude Code 功能堆太多、系统提示词改得太勤，改用开源编程助手 Pi",
+      "url": "https://caleb.software/posts/claude-to-pi.html",
+      "tag": "开发实践"
+    },
+    {
+      "title": "Microsoft Research 的 AI Frontiers 小组结束",
+      "summary": "创办人 John Langford 发文说，这个约 50 人的小组在 9 月初并入 Microsoft AI 之后理念不合，他安顿好同事后离开。小组曾做出 Agent 编排框架 AutoGen，以及电脑操作 Agent Fara",
+      "url": "https://hunch.net/?p=13764006",
+      "tag": "Microsoft"
+    }
+  ]
+}
