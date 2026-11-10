@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-09",
+  "title": "OpenAI 的「Tomorrow.」预告指向 Codex 联名游戏掌机，不是新模型",
+  "summary": "今天没查到 OpenAI、Anthropic、Google 的新模型。OpenAI 开发者账号的预告片落在 ModRetro Chromatic 掌机上，Claude Opus 5.5 是不是变差有了一份第三方复测，Garry Tan 的 Agent 外壳评测给出阶段性结果",
+  "items": [
+    {
+      "title": "OpenAI 的「Tomorrow.」预告指向 Codex 联名掌机 Chromatic",
+      "summary": "更新：昨天报过 OpenAI 开发者账号只发了「Tomorrow.」，谜底是联名掌机，不是新模型。OpenAI 周边商店 Supply Co. 上架了 ModRetro Chromatic: Codex Edition，一款兼容 Game Boy 和 Game Boy Color 的复古掌机，售价 200 美元，附一张可写入的卡带。用法是在 Codex 里装 ModRetro Chromatic 插件，让它帮你做游戏、在模拟器里试玩，再写进卡带。目前页面显示缺货，预计 11 月 19 日补货",
+      "url": "https://openai.com/supply/co-lab/chromatic/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Claude Opus 5.5 是不是变差了，第三方复测说没有",
+      "summary": "有用户让 Gemini 4 Argon 分析了 1400 个 Claude Code 会话，称 11 月 3 日起 Opus 5.5 的思考写法明显变了，在 Hacker News 上引发讨论。LiveNerf 每天用固定版本的 Claude Code 跑同一批 78 道题，11 月 3 日到 8 日平均 59%，发布首周是 58%，并指出被对比的思考内容只是摘要，Anthropic 文档说由另一个模型写出。据 X 的新闻摘要，Anthropic 还没有回应",
+      "url": "https://x.com/token_budget/status/2119721358594609221",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Garry Tan 公布 Agent 外壳评测的阶段性结果",
+      "summary": "他用前沿模型对比不同的 Agent 外壳（harness，包住模型的那层工具和流程）。具体数字在原帖的图里。据 X 的新闻摘要，七个外壳在同样 20 道编程题上得分 71% 到 79%，其中 14 道题所有外壳结果一样，我没有逐项核对图片",
+      "url": "https://x.com/garrytan/status/2119492448200405110",
+      "tag": "开发实践"
+    },
+    {
+      "title": "Artificial Analysis 发布 Decision Index v2",
+      "summary": "第三方评测机构 Artificial Analysis 给决策类模型的指数做了第二版：私有数据集占比从 25% 提到 45%，总分改为同时奖励答对和置信度校准。决策专用模型里 Nace AI 的 Drex Max v1.1 得 73 分，领先不到 1 分。通用模型 Claude Haiku 5.5（Max）77 分、GPT-6 Luna（Max）76 分更高，但每百万次任务的成本为 1530 美元，Drex Max 是 102 美元",
+      "url": "https://x.com/ArtificialAnlys/status/2119578471559213411",
+      "tag": "评测"
+    },
+    {
+      "title": "Simon Willison：把 Agent 写的 PR 描述折叠起来",
+      "summary": "他的改动大多是 Claude Code 或 Codex 开的 PR。Agent 写的描述准确但太长，读起来像灌水。他的做法是自己写一段简短介绍放在外面，其余内容收进 HTML 的 details 和 summary 折叠标签里",
+      "url": "https://simonwillison.net/2026/Nov/9/details-summary/",
+      "tag": "开发实践"
+    },
+    {
+      "title": "Matt Pocock 为「Software Factory」这个词辩护",
+      "summary": "他承认这个词听起来比实际夸张，也有人拿它炒作。但他认为背后是真实的变化：年初前沿团队用 Agent 做产品，现在是搭自动化让 Agent 替他们做产品，工作上移了一层，叫 Software Factory 和叫别的没有本质区别，他会继续用",
+      "url": "https://x.com/mattpocockuk/status/2119748545691402733",
+      "tag": "开发实践"
+    },
+    {
+      "title": "poteto：用 pstack 里的两个 skill 给应用建状态机模型",
+      "summary": "接着昨天形式化方法的话题，他给出一条提示词：用 create-formal-verification-skill 为每个子系统建状态机模型，再用 statechart 画出最重要的用户流程。两个 skill 都在 Cursor 的 pstack 插件里",
+      "url": "https://x.com/poteto/status/2119521036660314339",
+      "tag": "工具"
+    },
+    {
+      "title": "yetone 开源 Rewind for X 浏览器插件",
+      "summary": "X 首页一刷新，刚看到一半的帖子就没了。这个插件会在本地记下首页刷过的每条推文，可以在侧栏回看和搜索，数据只存在自己电脑上，不上传",
+      "url": "https://x.com/yetone/status/2119752096421687336",
+      "tag": "工具"
+    }
+  ]
+}
