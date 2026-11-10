@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-10",
+  "title": "Anthropic 发布 Claude Fable 5.2，DeepMind 用 Agent 形式化验证 Signal 协议代码",
+  "summary": "Anthropic 升级 Fable 和 Mythos 到 5.2，更快也更便宜；Google DeepMind 的 AlphaProof Code 证明了 Signal 协议实际代码的安全性质；Meta 推出专做 Agent 杂活的小模型 Muse Ember；OpenAI 公开了研究集群里的紧急停机系统",
+  "items": [
+    {
+      "title": "Anthropic 发布 Claude Fable 5.2 和 Mythos 5.2",
+      "summary": "两者是同一个底层模型：Fable 带网络安全和生物方面的防护，对所有用户开放；Mythos 要通过验证项目申请。输出比 5.1 快最多 30%，价格降到每百万 token 输入 8 美元、输出 40 美元，另有最快 2.5 倍的 fast mode。官方自测的 FrontierCode 2.0 上 Fable 5.2 为 49.1%，Opus 5.5 为 45.5%。官方仍建议日常先用 Opus 5.5，难题再往上切。示例里 1000 个 Fable 5.2 Agent 用 30 小时把费马大定理的证明形式化到 Lean 里",
+      "url": "https://www.anthropic.com/claude-fable-and-mythos-5-2",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Fable 5.2 提示词指南：告诉它「This codebase is yours」",
+      "summary": "Anthropic 随新模型更新了提示词指南。Simon Willison 挑出一条：改老代码时告诉 Fable 5.2 这个代码库归它负责，它会少些畏手畏脚，更敢动手改",
+      "url": "https://x.com/simonw/status/2120029347948220500",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Cursor 上线 Fable 5.2，CursorBench 排第一",
+      "summary": "Cursor 在自家编程评测 CursorBench 上测了 Fable 5.2：最高推理强度下 60%，是榜上最高；默认强度 56.9%，Fable 5.1 是 49.2%",
+      "url": "https://x.com/cursor_ai/status/2119880829212172509",
+      "tag": "Cursor"
+    },
+    {
+      "title": "Google DeepMind 发布 AlphaProof Code，形式化验证 Signal 协议",
+      "summary": "形式化验证是用数学证明代码满足规格。研究人员和模型一起把 Signal 的安全目标写成形式化规格，再由 Gemini Carbon 驱动的一组 Agent 写出六百多万行 Lean 证明，覆盖到设备上实际运行的代码，用时四周，人只需复查约 1% 的部分。他们还把两个已修复的真实 bug 放回去，系统都证明了带 bug 的版本不安全。相关验证材料会开源",
+      "url": "https://deepmind.google/blog/introducing-alphaproof-code/",
+      "tag": "Google"
+    },
+    {
+      "title": "OpenAI 公开 Control Room：研究集群里的紧急停机系统",
+      "summary": "所有研究用的推理任务都要先向 Control Room 登记，推理引擎每次出结果前都会问一次它是否放行。监控模型或研究员决定叫停后，35 秒内模型停止输出。Control Room 自身挂掉时会拒绝所有推理请求，而不是放行",
+      "url": "https://openai.com/index/control-room/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 的 dot 可以连多台本地电脑",
+      "summary": "同一个 dot 现在能接多台本地电脑，每个任务可以选在哪台上跑，比如让另一台机器专门构建和测试，自己继续在笔记本上写代码",
+      "url": "https://x.com/OpenAIDevs/status/2119883176726409645",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Meta 发布小模型 Muse Ember",
+      "summary": "专门接 Agent 反复在做的杂活：工具调用、编程子任务、路由、信息抽取和长文档解析。每百万 token 输入 0.10 美元、输出 0.50 美元，上下文 100 万 token。Meta 称它在 Artificial Analysis 的指数上和 Claude Haiku 5.5 最高分持平，成本约三分之一。官方建议的搭法是 Muse Wonder 规划、Ember 干子任务，OpenRouter 已上线",
+      "url": "https://research.meta.ai/blog/muse-ember",
+      "tag": "Meta"
+    },
+    {
+      "title": "Amazon 用分类模型替掉了 Sonnet 4.6",
+      "summary": "两位 Amazon 工程师在内部一个超大的工单系统里给工单打标签，把 Claude Sonnet 4.6 换成只做选择题的决策模型 Strands Decider，成本降了 98%，每次调用从约 4.2 秒降到 0.9 秒，一年能省几百万美元。他们先让两个模型在真实流量上并行跑，对比每一处分歧再切换。也提醒了一个坑：JSON 键的顺序会改变模型给出的概率",
+      "url": "https://strandsagents.com/blog/amazon-saves-millions-replacing-sonnet-with-strands-decider/",
+      "tag": "开发实践"
+    },
+    {
+      "title": "Alex Albert：每换一个新模型就跑一遍的提示词",
+      "summary": "Anthropic 的 Alex Albert 每次有新模型，都会对所有项目跑同一条提示词：通读整个项目，找出坏掉、不一致、低效和不再需要的东西，有把握的直接修，其余列出来给他看",
+      "url": "https://x.com/alexalbert__/status/2119884951550386671",
+      "tag": "开发实践"
+    },
+    {
+      "title": "Matt Pocock：跟 Agent 讲「为什么」，别只讲「做什么」",
+      "summary": "让 Agent 反问需求时，先讲清问题，而不是直接给方案。比如别说「我要给管理员做个带图表和筛选的分析面板」，而说「管理员现在看不到应用里重要数据的概况」。先给方案，Agent 会默认大方向已定，只追问实现细节",
+      "url": "https://x.com/mattpocockuk/status/2119888414736859356",
+      "tag": "开发实践"
+    },
+    {
+      "title": "Quinn Slack 让 Agent 清理整台电脑",
+      "summary": "Amp 的 Quinn Slack 让 Agent 删掉电脑上用不到的应用、权限授权、登录项、后台进程、浏览器扩展和 Homebrew 包。他最后只留了 Chrome、Amp、Ghostty、1Password、Slack 等几款，并说自己已经不在本地开发了",
+      "url": "https://x.com/sqs/status/2120113139996086409",
+      "tag": "工具"
+    },
+    {
+      "title": "更新：Anthropic 启动 IPO 路演",
+      "summary": "10 月底报过 Anthropic 提交首次公开募股（IPO）的注册声明，现在进入路演阶段。注册声明还没生效",
+      "url": "https://www.anthropic.com/news/roadshow-launch",
+      "tag": "Anthropic"
+    }
+  ]
+}
