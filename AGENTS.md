@@ -36,7 +36,7 @@ A bot commits `data/news/<YYYY-MM-DD>.json` to `main`; each commit deploys. `con
 
 ## Deployment
 
-`build.sh` is the Workers Builds build command: it downloads the Hugo version from `mise.toml`. `wrangler.jsonc` serves `public/` as static assets; `static/_headers` sets the security headers.
+`build.sh` is the Workers Builds build command: it downloads the Hugo version from `mise.toml`. `wrangler.jsonc` serves `public/` as static assets and keeps an empty `previews` block so branch Preview deploys (`npx wrangler preview`) work; `static/_headers` sets the security headers.
 
 ## Writing content
 
