@@ -28,7 +28,7 @@ Hugo is pinned in `mise.toml`. Always run Hugo through mise.
 - `layouts/_partials/resolve-destination.html`: resolves Markdown link and image destinations for the render hooks. An unresolved internal destination logs a warning, and `--panicOnWarning` turns it into a build failure.
 - `layouts/_markup/render-image.html`: local processable images get `width`/`height`, responsive `srcset`/`sizes` (WebP widths), and the first image gets `loading=eager` plus `fetchpriority=high`.
 - `assets/css/main.css`: the only stylesheet. It is inlined into `<style>` by `css.Build`. Colors use `light-dark()` under `color-scheme: light dark`. Syntax highlighting uses Chroma classes (`markup.highlight.noClasses = false`) with colors from CSS variables. There is no Chroma stylesheet.
-- `static/_headers`: security headers (HSTS is apex-only: zone has DNS-only HTTP subdomains such as `la` / `la9`); image/icon/manifest responses get a long `Cache-Control`. HTML stays on the Workers default revalidate.
+- `static/_headers`: security headers (HSTS is apex-only: zone has DNS-only HTTP subdomains such as `la` / `la9`); image/icon/manifest responses get a 7-day `Cache-Control` (these URLs are not fingerprinted). HTML stays on the Workers default revalidate.
 
 ## AI News
 
