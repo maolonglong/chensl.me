@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-11",
+  "title": "Gemini 4 Carbon 正式开放，OpenRouter 并入 Stripe",
+  "summary": "Google 把 Gemini 4 Carbon 开放给开发者和 Ultra 订阅用户，同时发布 Gemini Robotics 2.5；OpenRouter 成为 Stripe 的一部分；Claude 推出白板、表格和数据功能；Amp 给 Agent 做的应用配了常开的虚拟机",
+  "items": [
+    {
+      "title": "更新：Gemini 4 Carbon 正式开放",
+      "summary": "10 月底 Google 先发布了 Carbon，但只开放给网络安全防御方，现在所有付费开发者都能在 Gemini API 和 AI Studio 里用，Google AI Ultra 订阅用户可以在 Gemini 应用、搜索的 AI Mode 和 Antigravity 里用。定位是比 Argon 更难的长时间多步骤任务，会花更多 token 去探索和验证。优惠期到 11 月 30 日，每百万 token 输入 2 美元、输出 10 美元，之后涨到 4 美元和 20 美元。Antigravity 同时预览 /swarm，一条提示词就能拉起一组协作的 Agent。Cursor 当天接入，高推理档在 CursorBench 上 60.4%，排第一",
+      "url": "https://deepmind.google/blog/gemini-4-carbon-is-now-available/",
+      "tag": "Google"
+    },
+    {
+      "title": "Google DeepMind 发布 Gemini Robotics 2.5",
+      "summary": "这是 Google 目前最强的视觉-语言-动作（VLA）机器人模型。在 200 多项任务上，成功率比之前的基线高 30% 到 100%，完成速度快 20% 到 30%。在梅赛德斯-奔驰产线的试点里，Apptronik 的 Apollo 2 人形机器人用它分拣汽车零件，成功率 96%。模型先向机器人合作伙伴推出",
+      "url": "https://deepmind.google/blog/gemini-robotics-2-5-accelerates-real-world-physical-intelligence/",
+      "tag": "Google"
+    },
+    {
+      "title": "Google DeepMind 和 Artificial Analysis 推出 MKA 基准",
+      "summary": "多模态知识 Agent（MKA）基准有 200 个来自 10 个行业的私有任务，要求 Agent 读懂建筑图纸、工程原理图、医学影像这类文件，再交出幻灯片、表格和报告。Artificial Analysis 的首批结果里，Claude Fable 5.2 得分 57%，排第一；Gemini 4 Carbon 54%，Claude Opus 5.5 53%。但每个任务的成本 Fable 5.2 约 32 美元，Carbon 约 6.3 美元",
+      "url": "https://x.com/ArtificialAnlys/status/2120220567038984212",
+      "tag": "Google"
+    },
+    {
+      "title": "Claude 推出 Whiteboards、Sheets 和 Data，还能直接跑完整应用",
+      "summary": "三个新功能开始推出：在白板上理思路，在表格里做跟踪表，用数据讲故事。同时新增交互式连接器，可以在 Claude 旁边打开 Adobe、Atlassian、Box 的完整工具。Claude 还支持了更多 MCP Apps 扩展的能力，比如应用自己的工具和内嵌网页，第三方应用可以整个跑在 Claude 里",
+      "url": "https://x.com/claudeai/status/2120206365759094857",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude 给付费用户一次免费的全额度重置",
+      "summary": "Pro、Max、Ultra 和 Team 用户都有一次重置，覆盖所有模型和限额，太平洋时间 12 月 10 日 14:00 前随时可用，在设置的用量页面里找。官方解释是最近修了几个多扣额度的问题，之前的 Fable 重置对已经用完每周额度的人帮助不大",
+      "url": "https://x.com/ClaudeDevs/status/2120275296637321476",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "OpenAI 推出 Businesses in ChatGPT 测试版",
+      "summary": "商家可以在 Business Hub 认领自己在 ChatGPT 里的主页，更新信息和带价格库存的商品列表，还能看到被提及次数、网站点击等汇总数据，但看不到用户的对话。美国符合条件的电商和在线服务商家可以搭自己的 Business Agent，回答顾客的问题，也能付费推广",
+      "url": "https://openai.com/index/introducing-businesses-chatgpt/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "ChatGPT Business 套餐能用在第三方编程工具里",
+      "summary": "用 Sign in with ChatGPT 登录后，ChatGPT Business 套餐可以直接在 Notion、v0、Amp、Kilo Code、Warp、opencode 等工具里用",
+      "url": "https://x.com/OpenAIDevs/status/2120212596850663712",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "ChatGPT 旧语音模式 12 月 11 日下线",
+      "summary": "Advanced 和 Standard 两种语音模式下线，统一换成 7 月推出的 GPT-Live。OpenAI 说之后语音使用量翻了近一倍，现在几乎所有人都在用 GPT-Live。实时视频和共享屏幕暂时还由 Advanced 语音支持",
+      "url": "https://x.com/OpenAINewsroom/status/2120277245713654201",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenRouter 并入 Stripe",
+      "summary": "OpenRouter 说有超过 1000 万开发者和公司在用它。Stripe 要拿它帮企业挑模型、优化 token 路由和用量。OpenRouter 表示会继续保持中立，各家模型和服务商照旧比质量、稳定性和价格",
+      "url": "https://x.com/OpenRouter/status/2120241577649909899",
+      "tag": "OpenRouter"
+    },
+    {
+      "title": "Amp 推出 Boxes：给 Agent 做的应用一台常开的电脑",
+      "summary": "一个 box 就是一台虚拟机，不套容器，可以部署多个应用，每个有自己的网址，也能设成私有或要求登录。每台机器上自带 Agent，可以直接让它改线上应用的数据，省得写管理后台。按分钟计费，最小一档常开 30 天 18 美元，也可以按时间表开关省钱",
+      "url": "https://ampcode.com/news/boxes",
+      "tag": "Amp"
+    },
+    {
+      "title": "Cursor Projects 支持多人协作",
+      "summary": "Projects 重做成多人版本，团队成员和各自的 Agent 在同一个工作区里干活，不同人的 Agent 之间也能互相配合",
+      "url": "https://x.com/cursor_ai/status/2120295553309565139",
+      "tag": "Cursor"
+    },
+    {
+      "title": "Matt Pocock：用一个 Home Repo 管多个仓库",
+      "summary": "他把所有技能、规则文件和笔记放进一个仓库，Agent 都从这里启动，AGENTS.md 里写明其他仓库要克隆到哪个目录。这样配置集中在一处，也方便一次改动多个仓库",
+      "url": "https://x.com/mattpocockuk/status/2120260969750540327",
+      "tag": "开发实践"
+    }
+  ]
+}
