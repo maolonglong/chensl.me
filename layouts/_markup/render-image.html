@@ -2,23 +2,41 @@
 {{- $src := .Destination -}}
 {{- $width := 0 -}}
 {{- $height := 0 -}}
+{{- $srcset := "" -}}
+{{- $sizes := "" -}}
 {{- with $r.target -}}
   {{- $src = print .RelPermalink $r.suffix -}}
   {{- if reflect.IsImageResourceProcessable . -}}
+    {{- $orig := . -}}
     {{- $width = .Width -}}
     {{- $height = .Height -}}
+    {{- /* Column is 720px; emit narrower WebP candidates plus the original. */ -}}
+    {{- $parts := slice -}}
+    {{- range $w := slice 480 720 1080 1440 1920 -}}
+      {{- if and (ge $orig.Width $w) (ne $orig.Width $w) -}}
+        {{- with $orig.Resize (printf "%dx webp" $w) -}}
+          {{- $parts = $parts | append (printf "%s %dw" .RelPermalink $w) -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $parts = $parts | append (printf "%s %dw" $orig.RelPermalink $orig.Width) -}}
+    {{- if gt (len $parts) 1 -}}
+      {{- $srcset = delimit $parts ", " -}}
+      {{- $sizes = "(max-width: 760px) calc(100vw - 40px), 720px" -}}
+    {{- end -}}
   {{- end -}}
 {{- end -}}
 {{- /* The first image is likely above the fold; lazy-loading it would delay rendering. */ -}}
 {{- $loading := cond (eq .Ordinal 0) "eager" "lazy" -}}
+{{- $fetchpriority := cond (eq .Ordinal 0) "high" "" -}}
 {{- if .IsBlock -}}
 <figure>
-  <img src="{{ $src }}" alt="{{ .PlainText }}"{{ with $width }} width="{{ . }}"{{ end }}{{ with $height }} height="{{ . }}"{{ end }} loading="{{ $loading }}" decoding="async">
+  <img src="{{ $src }}" alt="{{ .PlainText }}"{{ with $width }} width="{{ . }}"{{ end }}{{ with $height }} height="{{ . }}"{{ end }}{{ with $srcset }} srcset="{{ . }}"{{ end }}{{ with $sizes }} sizes="{{ . }}"{{ end }} loading="{{ $loading }}"{{ with $fetchpriority }} fetchpriority="{{ . }}"{{ end }} decoding="async">
   {{- with .Title }}
   <figcaption>{{ . }}</figcaption>
   {{- end }}
 </figure>
 {{- else -}}
-<img src="{{ $src }}" alt="{{ .PlainText }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ with $width }} width="{{ . }}"{{ end }}{{ with $height }} height="{{ . }}"{{ end }} loading="{{ $loading }}" decoding="async">
+<img src="{{ $src }}" alt="{{ .PlainText }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ with $width }} width="{{ . }}"{{ end }}{{ with $height }} height="{{ . }}"{{ end }}{{ with $srcset }} srcset="{{ . }}"{{ end }}{{ with $sizes }} sizes="{{ . }}"{{ end }} loading="{{ $loading }}"{{ with $fetchpriority }} fetchpriority="{{ . }}"{{ end }} decoding="async">
 {{- end -}}
 {{- /* chomp trailing newline */ -}}

@@ -9,33 +9,17 @@
   --width: 720px;
   --font-main: Verdana, "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  --background-color: #fff;
-  --heading-color: #222;
-  --text-color: #444;
-  --link-color: #3273dc;
-  --visited-color: #7048b8;
-  --code-background-color: #f2f2f2;
-  --code-color: #222;
-  --blockquote-color: #222;
-  --code-comment: #666;
-  --code-string: #2a5db0;
-  --code-number: #7048b8;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-color: #01242e;
-    --heading-color: #eee;
-    --text-color: #ddd;
-    --link-color: #8cc2dd;
-    --visited-color: #b39ddb;
-    --code-background-color: #000;
-    --code-color: #ddd;
-    --blockquote-color: #ccc;
-    --code-comment: #999;
-    --code-string: #8cc2dd;
-    --code-number: #c3b1e1;
-  }
+  --background-color: light-dark(#fff, #01242e);
+  --heading-color: light-dark(#222, #eee);
+  --text-color: light-dark(#444, #ddd);
+  --link-color: light-dark(#3273dc, #8cc2dd);
+  --visited-color: light-dark(#7048b8, #b39ddb);
+  --code-background-color: light-dark(#f2f2f2, #000);
+  --code-color: light-dark(#222, #ddd);
+  --blockquote-color: light-dark(#222, #ccc);
+  --code-comment: light-dark(#666, #999);
+  --code-string: light-dark(#2a5db0, #8cc2dd);
+  --code-number: light-dark(#7048b8, #c3b1e1);
 }
 
 html {

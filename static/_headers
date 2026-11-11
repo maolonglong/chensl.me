@@ -5,6 +5,16 @@
   Strict-Transport-Security: max-age=31536000
   X-Content-Type-Options: nosniff
 
+/*.webp
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.svg
+/*.ico
+/*.webmanifest
+  Cache-Control: public, max-age=604800
+
 /downloads/semantic-view-sql-traps.sql
   Content-Type: application/sql; charset=utf-8
 
