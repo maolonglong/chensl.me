@@ -6,12 +6,26 @@
   X-Content-Type-Options: nosniff
 
 /*.webp
+  Cache-Control: public, max-age=604800
+
 /*.png
+  Cache-Control: public, max-age=604800
+
 /*.jpg
+  Cache-Control: public, max-age=604800
+
 /*.jpeg
+  Cache-Control: public, max-age=604800
+
 /*.gif
+  Cache-Control: public, max-age=604800
+
 /*.svg
+  Cache-Control: public, max-age=604800
+
 /*.ico
+  Cache-Control: public, max-age=604800
+
 /*.webmanifest
   Cache-Control: public, max-age=604800
 
