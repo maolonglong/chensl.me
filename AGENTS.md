@@ -22,10 +22,13 @@ Hugo is pinned in `mise.toml`. Always run Hugo through mise.
 
 ## Layout
 
-- `layouts/baseof.html`: shared page shell. `home.html`: home page. `section.html`: `/blog/` list. `blog/page.html`: posts (with date). `page.html`: standalone pages such as `/now/` (no date, not in RSS).
-- `layouts/home.rss.xml`: the only feed (`/index.xml`). It contains blog posts only, with full content. Hugo makes RSS URLs absolute automatically.
+- `layouts/baseof.html`: shared page shell. `home.html`: home page. `section.html`: `/blog/` and `/news/` lists (each with an `<h1>`). `blog/page.html`: posts (with date). `page.html`: standalone pages such as `/now/` (no date, not in RSS).
+- `layouts/_partials/head.html`: meta, canonical, icons, manifest, light/dark `theme-color`, default `og:image` (`/android-chrome-512x512.png`), and RSS discovery. News pages use `Params.summary` (or `newsDescription` on the section) for description; news alternate titles use `newsTitle`.
+- `layouts/home.rss.xml`: the only article feed (`/index.xml`). It contains blog posts only, with full content. Hugo makes RSS URLs absolute automatically. `layouts/robots.txt` advertises `/sitemap.xml`.
 - `layouts/_partials/resolve-destination.html`: resolves Markdown link and image destinations for the render hooks. An unresolved internal destination logs a warning, and `--panicOnWarning` turns it into a build failure.
-- `assets/css/main.css`: the only stylesheet. It is inlined into `<style>` by `css.Build`. Syntax highlighting uses Chroma classes (`markup.highlight.noClasses = false`) with colors from CSS variables. There is no Chroma stylesheet.
+- `layouts/_markup/render-image.html`: local processable images get `width`/`height`, responsive `srcset`/`sizes` (WebP widths), and the first image gets `loading=eager` plus `fetchpriority=high`.
+- `assets/css/main.css`: the only stylesheet. It is inlined into `<style>` by `css.Build`. Colors use `light-dark()` under `color-scheme: light dark`. Syntax highlighting uses Chroma classes (`markup.highlight.noClasses = false`) with colors from CSS variables. There is no Chroma stylesheet.
+- `static/_headers`: security headers (HSTS includes subdomains); image/icon/manifest responses get a long `Cache-Control`. HTML stays on the Workers default revalidate.
 
 ## AI News
 

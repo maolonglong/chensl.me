@@ -62,9 +62,22 @@ check "URL-relative link resolved to page permalink" \
   "grep -q 'href=\"/blog/code-sample/\"' '$post'"
 check "standalone image becomes figure with caption" \
   "grep -q '<figcaption>图片说明文字</figcaption>' '$post'"
+check "first image is eager with fetchpriority high and responsive srcset" \
+  "grep -q 'loading=\"eager\" fetchpriority=\"high\"' '$post' && grep -q 'srcset=\"' '$post' && grep -q 'sizes=\"(max-width: 760px) calc(100vw - 40px), 720px\"' '$post'"
 
 missing_size=$(grep -ho '<img [^>]*>' $html_files | grep -v 'width=' || true)
 check "every local <img> has width and height" "[ -z \"\$missing_size\" ]"
+
+check "section list pages expose a visible h1" \
+  "grep -q '<h1>博客</h1>' '$out/blog/index.html' && grep -q '<h1>AI News</h1>' '$out/news/index.html'"
+check "home recent-posts heading is h2" \
+  "grep -q '<h2[^>]*>最近的文章</h2>' '$out/index.html'"
+check "robots.txt advertises the sitemap" \
+  "grep -q 'Sitemap: https://chensl.me/sitemap.xml' '$out/robots.txt'"
+check "head links icons, manifest, theme-color, and default og:image" \
+  "grep -q 'rel=\"icon\" href=\"/favicon.svg\"' '$out/index.html' && grep -q 'rel=\"manifest\" href=\"/site.webmanifest\"' '$out/index.html' && grep -q 'name=\"theme-color\" content=\"#01242e\"' '$out/index.html' && grep -q 'property=\"og:image\" content=\"https://chensl.me/android-chrome-512x512.png\"' '$out/index.html'"
+check "CSS uses light-dark tokens" \
+  "grep -q 'light-dark(' '$post'"
 
 check "code blocks use Chroma classes" \
   "grep -q 'class=\"chroma\"' '$code' && grep -q 'class=\"c1\"' '$code'"
@@ -93,6 +106,12 @@ for page in index.html blog/index.html blog/code-sample/index.html now/index.htm
     "grep -q '<link rel=\"alternate\" .*href=\"https://chensl.me$expected\"' '$out/$page' && grep -q '<a href=\"$expected\">RSS</a>' '$out/$page'"
 done
 check "news issue page exists at /news/<date>/" "[ -f '$news' ]"
+check "news issue description comes from summary" \
+  "grep -q '<meta name=\"description\" content=\"摘要 不是 HTML\">' '$news'"
+check "news section description uses newsDescription" \
+  "grep -q '<meta name=\"description\" content=\"每天 AI 圈发生了什么：模型、产品和工具的动态摘要\">' '$out/news/index.html'"
+check "news alternate feed title uses newsTitle" \
+  "grep -q 'href=\"https://chensl.me/news/index.xml\" title=\"~chensl AI News\"' '$out/news/index.html'"
 check "news items grouped by tag in first-appearance order" \
   "[ \$(grep -n '<h2>OpenAI</h2>' '$news' | cut -d: -f1) -lt \$(grep -n '<h2>DeepSeek</h2>' '$news' | cut -d: -f1) ] && [ \$(grep -c '<h2>OpenAI</h2>' '$news') -eq 1 ]"
 check "news text is escaped, not HTML" \
