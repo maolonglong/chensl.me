@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-12",
+  "title": "Google 推出只做判断的 Gemini Decision 1，Claude 地区限制生效",
+  "summary": "Google 发布 Gemini Decision 1 和 Decisions API，Antigravity 加上浏览器操作；Claude 支持地区政策今天生效，Anthropic 上线 IPO 页面；OpenAI 发布思维链可监控性研究",
+  "items": [
+    {
+      "title": "Google 发布 Gemini Decision 1 和 Decisions API",
+      "summary": "这个模型不生成文字，只做封闭式判断，比如是否、多选和打分，并给出每个答案的概率。一次请求最多 1000 个问题，支持文本、图片、音频、视频和 PDF，上下文 256K。输入每百万 token 0.1 美元，输出不收费，OpenRouter 当天上线。适合 Agent 里的工具选择、分类和评审这类小判断。Artificial Analysis 的独立评测给了 66 分",
+      "url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/",
+      "tag": "Google"
+    },
+    {
+      "title": "Gemini API 的 Managed Agents 支持自带沙箱",
+      "summary": "用 Managed Agents 的开发者现在可以接入自托管环境，让 Agent 在自己的沙箱里运行",
+      "url": "https://x.com/GoogleAIStudio/status/2120610219235660183",
+      "tag": "Google"
+    },
+    {
+      "title": "Google Antigravity 推出浏览器操作",
+      "summary": "Agent 可以用浏览器查资料、写代码再现场验证，也能同时跑多个任务。登录哪些网站由用户决定，下载要用户批准后才继续",
+      "url": "https://x.com/antigravity/status/2120556423474028576",
+      "tag": "Google"
+    },
+    {
+      "title": "Google DeepMind 发布 AlphaGenome 2",
+      "summary": "能按具体细胞类型预测 DNA 变异的影响，帮科学家在大量变异里找罕见病的遗传原因。学术研究可以通过 API 使用",
+      "url": "https://deepmind.google/blog/alphagenome-2-deciphering-how-cells-read-dna-to-better-understand-disease/",
+      "tag": "Google"
+    },
+    {
+      "title": "Claude 支持地区政策生效",
+      "summary": "Claude.ai、Claude Code、Cowork、API，以及经云平台和经销商提供的 Claude 模型，都只对名单内的地区开放，中国大陆、香港和澳门不在名单里。人在不支持的地区使用、公司注册地或总部在不支持的地区、被这些地区的主体控股，都算违规",
+      "url": "https://www.anthropic.com/supported-countries",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "更新：Anthropic 上线 IPO 页面",
+      "summary": "路演之后，Anthropic 发布首次公开募股（IPO）专页，附创始人信、路演视频和招股文件。页面写着 2026 年第三季度收入 170 亿美元，同比增长超过 12 倍；净亏损 233 亿美元，其中 219 亿美元是可转债等公允价值变动带来的非现金费用",
+      "url": "https://ipo.anthropic.com",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Artificial Analysis：Claude 升一档模型比拉满 effort 划算",
+      "summary": "按 Artificial Analysis 的测试，Opus 5.5 开 xhigh 比 Sonnet 5.5 开 max 分数更高，每个任务成本低 40%，耗时约一半。Fable 5.2 开 high 也胜过 Opus 5.5 开 max。只有最便宜的 Haiku 档不符合这个规律",
+      "url": "https://x.com/ArtificialAnlys/status/2120672485167497335",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Arena：Fable 5.2 在 Agent Arena 排第一",
+      "summary": "Arena 基于 4700 次真实 Agent 会话统计，Claude Fable 5.2（Max）净提升 30.4%，约是第二名 Opus 5.5 的 1.6 倍，在编程、工作和聊天三个分类里也都排第一。每个任务的中位成本 7.3 美元",
+      "url": "https://x.com/arena/status/2120568144687460434",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "OpenAI 研究：模型越来越难通过思维链监控",
+      "summary": "研究追踪思维链（CoT）可监控性在训练过程中的变化。结论是随着模型变强，通过思维链来监控它们越来越难",
+      "url": "https://x.com/jeffreygwang/status/2120581630196879460",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "HoneyBench v0.2：测到的前沿模型都会作弊",
+      "summary": "Goodhart Labs 的测试里，即使要求很明确，模型也会作弊，比如试图逃出评测容器、为达成指标牺牲模拟场景里的安全，还会隐瞒作弊。作弊比例从 Fable 5.2 的 12% 到 Muse Spark Open 的 86%",
+      "url": "https://x.com/goodhart_labs/status/2120570580743471284",
+      "tag": "评测"
+    },
+    {
+      "title": "OpenRouter 推出 Extractions API 测试版",
+      "summary": "描述需要哪些字段，比如邮件里的人名、收据上的总额，就能从文本、图片和 PDF 里抽成结构化数据。目前是 alpha 阶段",
+      "url": "https://openrouter.ai/blog/announcements/extractions-api/",
+      "tag": "OpenRouter"
+    },
+    {
+      "title": "Zed 的 Delta 推出 Cloud Runners",
+      "summary": "Agent 线程可以挪到云上继续跑，电脑关掉也不停，之后能在桌面、网页或手机上查看进度",
+      "url": "https://x.com/zeddotdev/status/2120565039203553343",
+      "tag": "工具"
+    }
+  ]
+}
