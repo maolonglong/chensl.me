@@ -15,6 +15,8 @@
   --link-color: #2563eb;
   --visited-color: #7048b8;
   --border-color: #767676;
+  --mark-background-color: #fef08a;
+  --alert-warning-color: #b45309;
   --code-background-color: #f2f2f2;
   --code-color: #222;
   --blockquote-color: #222;
@@ -31,6 +33,8 @@
     --link-color: #8cc2dd;
     --visited-color: #b39ddb;
     --border-color: #7b939b;
+    --mark-background-color: #423805;
+    --alert-warning-color: #fbbf24;
     --code-background-color: #000;
     --code-color: #ddd;
     --blockquote-color: #ccc;
@@ -87,6 +91,13 @@ strong, b {
   color: var(--heading-color);
 }
 
+mark {
+  padding-inline: 2px;
+  background-color: var(--mark-background-color);
+  color: var(--heading-color);
+  border-radius: 2px;
+}
+
 /* Avoid italicizing citation and address metadata by default. */
 cite, address {
   font-style: normal;
@@ -115,36 +126,27 @@ header .title:hover {
 nav p {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 0.5rem;
+  gap: 0.25rem 10px;
 }
 
 nav a {
   display: inline-flex;
   align-items: center;
   min-height: 24px;
-  padding: 0.25rem;
-}
-
-nav a[aria-current="page"] {
-  font-weight: bold;
-  color: var(--heading-color);
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
 }
 
 @media (pointer: coarse) {
+  nav p {
+    gap: 0.25rem 14px;
+  }
+
   nav a {
     min-height: 44px;
-    padding-inline: 0.5rem;
   }
 }
 
 main {
   line-height: 1.75;
-}
-
-main :is(p, li, blockquote) {
-  margin-block: 0.85em;
 }
 
 /* Links in prose need more than color: link and body text contrast is low. */
@@ -197,6 +199,31 @@ blockquote {
   padding-left: 20px;
   border-left: 2px solid var(--border-color);
   color: var(--blockquote-color);
+}
+
+blockquote > :first-child {
+  margin-top: 0;
+}
+
+blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+blockquote.alert {
+  border-left-color: var(--link-color);
+}
+
+blockquote.alert :is(.alert-title, .alert-title strong) {
+  margin-bottom: 0.25em;
+  color: var(--link-color);
+}
+
+blockquote.alert:is(.alert-warning, .alert-caution) {
+  border-left-color: var(--alert-warning-color);
+}
+
+blockquote.alert:is(.alert-warning, .alert-caution) :is(.alert-title, .alert-title strong) {
+  color: var(--alert-warning-color);
 }
 
 hr {

@@ -96,6 +96,12 @@ check "responsive WebP images prioritize LCP and lazy-load later images" \
   "grep -q 'type=\"image/webp\"' '$post' && grep -q '720w' '$post' && grep -q '1200w' '$post' && grep -q 'fetchpriority=\"high\"' '$post' && grep -q 'loading=\"eager\"' '$post' && grep -q 'loading=\"lazy\"' '$post'"
 check "tables use scroll wrapper, column scope, alignment classes, and no inline style" \
   "grep -q '<div class=\"table-wrapper\">' '$post' && grep -q '<th scope=\"col\" class=\"align-left\">' '$post' && grep -q '<td class=\"align-right\">' '$post' && ! grep -Eq '<(table|thead|tbody|tr|th|td)[^>]*style=' '$post'"
+check "GitHub-style blockquote alerts render semantic title instead of raw marker" \
+  "grep -q '<blockquote class=\"alert alert-note\">' '$post' && grep -q '<p class=\"alert-title\"><strong>Note</strong></p>' '$post' && ! grep -q '\[!NOTE\]' '$post'"
+check "nav keeps uniform Bear Blog link color, flush alignment, and section aria-current" \
+  "! grep -q 'nav a\[aria-current' '$post' && ! grep -Eq 'nav a\{[^}]*padding' '$post' && grep -q '<a href=\"/blog/\" aria-current=\"true\">博客</a>' '$post'"
+check "CSS preserves compact list spacing and themes mark highlights" \
+  "! grep -q 'is(p,li,blockquote)' '$post' && grep -q 'mark{' '$post'"
 check "home lists recent posts via shortcode" \
   "grep -q 'href=\"/blog/chinese-long/\"' '$out/index.html'"
 check "blog list is newest first" \

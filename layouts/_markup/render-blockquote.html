@@ -1,0 +1,17 @@
+{{- $labels := dict
+  "note" "Note"
+  "tip" "Tip"
+  "important" "Important"
+  "warning" "Warning"
+  "caution" "Caution"
+-}}
+{{- if eq .Type "alert" }}
+<blockquote class="alert alert-{{ .AlertType }}">
+  <p class="alert-title"><strong>{{ with .AlertTitle }}{{ . }}{{ else }}{{ or (index $labels .AlertType) (title .AlertType) }}{{ end }}</strong></p>
+  {{ .Text }}
+</blockquote>
+{{- else }}
+<blockquote>
+  {{ .Text }}
+</blockquote>
+{{- end }}
