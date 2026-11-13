@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-13",
+  "title": "Google 发布 Gemini 4 Hydrogen，Anthropic 推出 Claude Meetings",
+  "summary": "Google 发布面向日常编程和 Agent 任务的 Gemini 4 Hydrogen，价格统一为输入每百万 token 1.5 美元、输出 7.5 美元；Anthropic 让 Claude 能进团队视频会，并把自托管 Managed Agents 推进私有测试；OpenAI 推出 Daybreak 两款网络安全产品",
+  "items": [
+    {
+      "title": "Google 发布 Gemini 4 Hydrogen",
+      "summary": "定位日常编程和 Agent 任务。官方说默认 high 档完成任务比 Gemini 3.8 Flash 快 2.5 倍，Terminal-Bench 4.1 从 18.2% 提到 57%，编造减少 5 倍以上。价格在 100 万 token 上下文里统一为输入每百万 token 1.5 美元、输出 7.5 美元，有 low、medium、high、xhigh 四档思考深度。第三方评测机构 Artificial Analysis 测下来，默认 high 得 51 分，新的 xhigh 得 54 分，略低于 Claude Sonnet 5.5 和 GPT-6.1 Sol 的最高档；成本大约是 Sonnet 的三分之一，但大约是 Sol 的 2.5 倍。已在 Gemini API、AI Studio、Gemini 应用和搜索上线，免费用户走自动选模型时会用到它，付费的 Google AI Pro 和 Ultra 用户可在 Antigravity 里用。Cursor 默认档的 CursorBench 为 54.3%，高于 3.8 Flash 的 39.6%。Simon Willison 指出，Hydrogen 只比目前的 Carbon、Argon 便宜 25%，后两者的价格将在 12 月 1 日翻倍",
+      "url": "https://deepmind.google/blog/introducing-gemini-4-hydrogen/",
+      "tag": "Google"
+    },
+    {
+      "title": "Google Antigravity 推出 Orchestrator",
+      "summary": "可在同一会话里按任务阶段在 Carbon 和 Hydrogen 之间切换，比如先用 Carbon 做计划，再用 Hydrogen 改代码和跑测试，遇到问题再交回 Carbon。官方称接近 Carbon 的成功率，配额少 24%，快 19%。Google AI Ultra 用户可用 Orchestrator（Carbon）和 Orchestrator（Argon），Pro 用户可用 Orchestrator（Argon）",
+      "url": "https://antigravity.google/blog/gemini-4-hydrogen-in-google-antigravity/",
+      "tag": "Google"
+    },
+    {
+      "title": "Claude Meetings 开始公测",
+      "summary": "可以把 Claude 拉进团队视频会，一边开会一边写文档、白板和其他产物，也会记笔记、待办和转写。先从 Google Meet 开始，面向 Team 和 Enterprise 方案滚动开放。默认用文字回答，用已连接的工具前会先征求同意",
+      "url": "https://claude.com/resources/articles/claude-meetings",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "自托管 Claude Managed Agents 进入私有测试",
+      "summary": "可以把 Agent 运行框架、沙箱和会话历史放在自己的云或机房，并自行决定模型请求发到哪里，比如 Anthropic、Amazon Bedrock、Google Cloud 或 Microsoft Foundry。要向 Anthropic 客户团队申请",
+      "url": "https://x.com/ClaudeDevs/status/2120938988165091693",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "更新：OpenAI 推出 Daybreak 两款网络安全产品",
+      "summary": "新进展是产品正式推出。此前预告过这次网络安全发布。Defense Factory 让 Agent 顺着代码追查漏洞并起草补丁，等人审查；Red Team 用一组 Agent 测 Web 应用、核实漏洞、检查补丁是否挡住利用。Greg Brockman 在发布会上宣布",
+      "url": "https://openai.com/daybreak/defense-factory/",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "更新：Thinking Machines 开放 Inkling 2 Small 权重",
+      "summary": "新进展是 11 月 6 日发布的模型权重已放到 Hugging Face，许可证是 Apache 2.0。这是一个接受文本和图片、输出文本的多模态模型",
+      "url": "https://huggingface.co/thinkingmachines/Inkling-2-Small",
+      "tag": "Thinking Machines"
+    },
+    {
+      "title": "英伟达：黄仁勋辞任总裁、CEO 和董事",
+      "summary": "英伟达官方宣布黄仁勋已辞任总裁、CEO 和董事，现任首席财务官（CFO）Colette Kress 任临时 CEO，董事会同时任命 Harvey C. Jones 为首任董事长。Wired 报道，内部呼吁考虑员工意见的帖子收到 1600 多条评论，多数支持他回来",
+      "url": "https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition",
+      "tag": "NVIDIA"
+    },
+    {
+      "title": "GitHub 写了篇 Agent Skills 指南",
+      "summary": "讲怎么把可复用的工作写成 SKILL.md，一次写好后在不同 Agent 里用。工具、权限和项目配置仍由运行环境提供，不要写进 skill 本身",
+      "url": "https://github.blog/ai-and-ml/github-copilot/build-once-run-on-any-agent-a-practical-guide-to-agent-skills/",
+      "tag": "GitHub"
+    },
+    {
+      "title": "Edge0 开源可在个人电脑上跑的 1450 亿参数模型",
+      "summary": "官方称 Edge0-145B 峰值内存约 29GB，同时开源了 Edge0-120B 和配套推理框架。评测数字来自官方自测，尚未看到独立复核",
+      "url": "https://edge0.ai/blog/introducing-edge0-145b-frontier-ai-capabilities-on-your-own-computer",
+      "tag": "开源模型"
+    }
+  ]
+}
