@@ -3,7 +3,7 @@
 set -euo pipefail
 out="${1:?Usage: check-output.sh OUTPUT_DIRECTORY}"
 [ -s "$out/index.html" ] || { echo "FAIL  missing home page: $out"; exit 1; }
-if grep -ri '<script' "$out"; then
+if grep -ri --include='*.html' --include='*.xml' --include='*.svg' '<script' "$out"; then
   echo "FAIL  output contains a script"
   exit 1
 else

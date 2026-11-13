@@ -1,4 +1,6 @@
-{{- $issues := first 20 .RegularPages.ByDate.Reverse -}}
+{{- $issues := .RegularPages.ByDate.Reverse -}}
+{{- $limit := site.Config.Services.RSS.Limit -}}
+{{- if ge $limit 1 }}{{ $issues = first $limit $issues }}{{ end -}}
 {{- $rfc822 := "Mon, 02 Jan 2006 15:04:05 -0700" -}}
 {{- printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -7,6 +9,9 @@
     <link>{{ .Permalink }}</link>
     <description>{{ site.Params.newsDescription }}</description>
     <language>{{ site.Language.Locale }}</language>
+    {{- with $issues }}
+    <lastBuildDate>{{ (index . 0).Date.Format $rfc822 | safeHTML }}</lastBuildDate>
+    {{- end }}
     {{- with .OutputFormats.Get "rss" }}
     {{ printf "<atom:link href=%q rel=\"self\" type=%q />" .Permalink .MediaType.Type | safeHTML }}
     {{- end }}

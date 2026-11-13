@@ -12,8 +12,9 @@
   --background-color: #fff;
   --heading-color: #222;
   --text-color: #444;
-  --link-color: #3273dc;
+  --link-color: #2563eb;
   --visited-color: #7048b8;
+  --border-color: #767676;
   --code-background-color: #f2f2f2;
   --code-color: #222;
   --blockquote-color: #222;
@@ -29,6 +30,7 @@
     --text-color: #ddd;
     --link-color: #8cc2dd;
     --visited-color: #b39ddb;
+    --border-color: #7b939b;
     --code-background-color: #000;
     --code-color: #ddd;
     --blockquote-color: #ccc;
@@ -38,9 +40,17 @@
   }
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* CJK fonts have no italic glyphs; disable fake slanting while allowing genuine Latin italics. */
+  font-synthesis-style: none;
 }
 
 body {
@@ -68,13 +78,26 @@ a:hover {
   text-decoration: underline;
 }
 
+a:focus-visible, summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 strong, b {
   color: var(--heading-color);
 }
 
-/* CJK fonts have no italic glyphs; browsers would slant them artificially. */
-i, cite, address, dfn {
+/* Avoid italicizing citation and address metadata by default. */
+cite, address {
   font-style: normal;
+}
+
+sup, sub {
+  line-height: 0;
+}
+
+summary {
+  cursor: pointer;
 }
 
 header .title {
@@ -89,16 +112,39 @@ header .title:hover {
   text-decoration: none;
 }
 
+nav p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+}
+
 nav a {
-  margin-right: 8px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0.25rem;
+}
+
+nav a[aria-current="page"] {
+  font-weight: bold;
+  color: var(--heading-color);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+@media (pointer: coarse) {
+  nav a {
+    min-height: 44px;
+    padding-inline: 0.5rem;
+  }
 }
 
 main {
   line-height: 1.75;
 }
 
-main p {
-  text-wrap: pretty;
+main :is(p, li, blockquote) {
+  margin-block: 0.85em;
 }
 
 /* Links in prose need more than color: link and body text contrast is low. */
@@ -133,7 +179,7 @@ pre code {
 }
 
 .highlight, main > pre {
-  padding: 1px 15px;
+  padding: 0.75em 15px;
   margin-block: 1em;
   background-color: var(--code-background-color);
   color: var(--code-color);
@@ -141,16 +187,21 @@ pre code {
   overflow-x: auto;
 }
 
+.highlight pre {
+  margin: 0;
+  overflow-x: auto;
+}
+
 blockquote {
   margin-inline: 0;
   padding-left: 20px;
-  border-left: 1px solid #999;
+  border-left: 2px solid var(--border-color);
   color: var(--blockquote-color);
 }
 
 hr {
   border: 0;
-  border-top: 1px dashed;
+  border-top: 1px dashed var(--border-color);
 }
 
 img {
@@ -162,13 +213,47 @@ figure {
   margin: 1em 0;
 }
 
+figure img {
+  display: block;
+  margin-inline: auto;
+}
+
 figcaption {
-  font-size: small;
+  margin-top: 0.5em;
+  font-size: 0.875rem;
   text-align: center;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin-block: 1em;
 }
 
 table {
   width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+th {
+  color: var(--heading-color);
+}
+
+.align-left {
+  text-align: left;
+}
+
+.align-center {
+  text-align: center;
+}
+
+.align-right {
+  text-align: right;
 }
 
 footer {
@@ -183,6 +268,7 @@ ul.blog-posts {
 
 ul.blog-posts li {
   display: flex;
+  gap: 0.5rem;
 }
 
 ul.blog-posts li span {
@@ -190,7 +276,20 @@ ul.blog-posts li span {
 }
 
 ul.blog-posts a {
+  min-inline-size: 0;
   text-decoration: none;
+}
+
+@media (max-width: 480px) {
+  ul.blog-posts li {
+    flex-direction: column;
+    gap: 0.125rem;
+    margin-bottom: 0.5rem;
+  }
+
+  ul.blog-posts li span {
+    flex: auto;
+  }
 }
 
 ul.blog-posts a:hover {

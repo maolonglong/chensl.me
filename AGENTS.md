@@ -1,45 +1,45 @@
 # chensl.me
 
-Personal site, built with Hugo from scratch (no theme), served as static assets by a Cloudflare Worker. Visual design follows Bear Blog's default theme.
+Personal site, built with Hugo from scratch (no theme) and served as static assets by a Cloudflare Worker. Visual design follows Bear Blog's default theme.
 
 ## Approval
 
-A push to `main` deploys production through Cloudflare Workers Builds. Ask before every push to `main` and every Cloudflare change.
+A push to `main` deploys production via Cloudflare Workers Builds. Ask before pushing to `main` or changing Cloudflare settings (`wrangler.jsonc`, `static/_headers`).
 
 ## Hard rules
 
-- No JavaScript in generated pages. `mise run check` fails on any `<script`.
-- No tags or categories: `disableKinds = ['taxonomy', 'term']`. Do not add taxonomies.
-- No italic styling: CJK fonts have no italic glyphs.
+- Static HTML and inline CSS only, with zero client-side JavaScript (`scripts/check-output.sh` rejects `<script` in HTML, XML, and SVG output).
+- Chronological archives only, without taxonomies (`disableKinds = ['taxonomy', 'term']` in `hugo.toml`).
 
 ## Commands
 
-Hugo is pinned in `mise.toml`. Always run Hugo through mise.
+Hugo is pinned in `mise.toml`; always run Hugo via `mise`:
 
 - `mise run dev`: local preview with drafts.
 - `mise run build`: production build into `public/`.
-- `mise run check`: build `tests/fixtures/content` into `tmp/check/public` and assert on the output. Report: `tmp/check/report.txt`. Run it after every template, CSS, or config change.
+- `mise run check`: build `tests/fixtures/content` into `tmp/check/public`, verify layout/security invariants, and write `tmp/check/report.txt`. Run after every template, CSS, script, or config change.
 
-## Layout
+## Templates & CSS
 
-- `layouts/baseof.html`: shared page shell. `home.html`: home page. `section.html`: `/blog/` list. `blog/page.html`: posts (with date). `page.html`: standalone pages such as `/now/` (no date, not in RSS).
-- `layouts/home.rss.xml`: the only feed (`/index.xml`). It contains blog posts only, with full content. Hugo makes RSS URLs absolute automatically.
-- `layouts/_partials/resolve-destination.html`: resolves Markdown link and image destinations for the render hooks. An unresolved internal destination logs a warning, and `--panicOnWarning` turns it into a build failure.
-- `assets/css/main.css`: the only stylesheet. It is inlined into `<style>` by `css.Build`. Syntax highlighting uses Chroma classes (`markup.highlight.noClasses = false`) with colors from CSS variables. There is no Chroma stylesheet.
+- `layouts/baseof.html` wraps every page; standalone `content/<name>.md` pages have no date and stay out of RSS.
+- Two feeds exist, both bounded by `[services.rss] limit`: `layouts/home.rss.xml` (`/index.xml`, full-text blog posts only) and `layouts/news/section.rss.xml` (`/news/index.xml`, AI News issues). Hugo rewrites RSS URLs to absolute URLs.
+- `layouts/_partials/resolve-destination.html` validates Markdown link and image targets; `--panicOnWarning` turns unresolved internal links into build failures.
+- `assets/css/main.css` is the sole stylesheet, inlined into `<style>` by `css.Build`. It sets `font-synthesis-style: none` on `html` so genuine Latin italic fonts (`<em>`/`<i>`) work while CJK glyphs stay upright, and styles Chroma classes directly (`noClasses = false`).
 
 ## AI News
 
-A bot commits `data/news/<YYYY-MM-DD>.json` to `main`; each commit deploys. `content/news/_content.gotmpl` validates every issue and builds `/news/<date>/`; an invalid issue fails the build, and the previous deployment stays live. Issue text is plain text. `/news/index.xml` is the news feed; `/index.xml` holds articles only. Retract an issue by deleting its file.
+A bot commits `data/news/<YYYY-MM-DD>.json` to `main`, triggering deploy. `content/news/_content.gotmpl` validates every issue (plain text summary/items, `http`/`https` URLs with hostnames) and fails the build on invalid input so the previous deploy stays live. Retract an issue by deleting its JSON file.
 
 ## Deployment
 
-`build.sh` is the Workers Builds build command: it downloads the Hugo version from `mise.toml`. `wrangler.jsonc` serves `public/` as static assets; `static/_headers` sets the security headers.
+`build.sh` downloads the Hugo binary pinned in `mise.toml` for Workers Builds, then runs `scripts/check.sh`, `hugo build --panicOnWarning`, and `scripts/check-output.sh public`.
+
+- `wrangler.jsonc`: `workers_dev` is `false` so only `chensl.me` serves production; keep `preview_urls: true` and the empty `"previews": {}` block so branch previews (`npx wrangler preview`) work.
+- `static/_headers`: keep HSTS apex-only (never add `includeSubDomains` — the zone has DNS-only HTTP subdomains such as `la` and `la9`). Cloudflare `_headers` binds headers only to the single preceding URL pattern and accepts at most one `*` splat per pattern, so give each cached extension its own block (`Cache-Control: public, max-age=604800`, never `immutable` on unfingerprinted paths).
 
 ## Writing content
 
-- Post: `content/blog/<slug>/index.md`, with images in the same directory. The directory name is the URL slug.
-- Standalone page: `content/<name>.md`. Add it to `[[menus.main]]` in `hugo.toml` to show it in the nav.
-- Home recent-post list: `{{< recent-posts 5 >}}`.
-- Link to other posts with URL-relative paths (`../other-post/`) or site paths (`/blog/other-post/`).
-- An image on its own line with a title becomes `<figure>` with `<figcaption>`: `![alt](photo.jpg "caption")`.
-- Emphasis next to CJK punctuation needs escaped spaces: `一段\ **“强调”**\ 文字`.
+- Text-only post: `content/blog/<slug>.md`; post with local images: page bundle `content/blog/<slug>/index.md` alongside its images (prefers `.webp`).
+- Link between posts with URL-relative paths (`../other-post/`) or site-root paths (`/blog/other-post/`).
+- Standalone images on their own line render as `<figure>`, with optional `"caption"` text rendered in `<figcaption>`.
+- Emphasis next to CJK punctuation needs escaped spaces (`一段\ **“强调”**\ 文字`).

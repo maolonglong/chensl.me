@@ -13,7 +13,7 @@ newsDescription = '每天 AI 圈发生了什么：模型、产品和工具的动
 
 [frontmatter]
 date = ['pubDate', 'date', ':default']
-lastmod = ['updatedDate', 'lastmod', ':git', 'pubDate', 'date']
+lastmod = ['updatedDate', 'lastmod', 'pubDate', 'date']
 
 [outputs]
 home = ['html', 'rss']
@@ -56,3 +56,6 @@ unsafe = true
 
 [markup.highlight]
 noClasses = false
+
+[services.rss]
+limit = 20

@@ -21,7 +21,9 @@ an invalid issue fails the build and the previous deployment stays live.
     "kind" "page"
     "path" $key
     "title" $issue.title
+    "description" $issue.summary
     "dates" (dict "date" (time.AsTime $key))
+    "sitemap" (dict "priority" -1)
     "params" (dict "summary" $issue.summary "items" $issue.items)
     "content" (dict "mediaType" "text/markdown" "value" "")
   ) -}}

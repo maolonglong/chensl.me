@@ -1,12 +1,38 @@
 /*
-  Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; manifest-src 'self'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Cross-Origin-Opener-Policy: same-origin
   Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=31536000
   X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
 
 /downloads/semantic-view-sql-traps.sql
   Content-Type: application/sql; charset=utf-8
+
+/*.webp
+  Cache-Control: public, max-age=604800
+
+/*.png
+  Cache-Control: public, max-age=604800
+
+/*.jpg
+  Cache-Control: public, max-age=604800
+
+/*.jpeg
+  Cache-Control: public, max-age=604800
+
+/*.gif
+  Cache-Control: public, max-age=604800
+
+/*.svg
+  Cache-Control: public, max-age=604800
+
+/*.ico
+  Cache-Control: public, max-age=604800
+
+/*.webmanifest
+  Cache-Control: public, max-age=604800
 
 https://:version.:subdomain.workers.dev/*
   X-Robots-Tag: noindex

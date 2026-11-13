@@ -2,23 +2,53 @@
 {{- $src := .Destination -}}
 {{- $width := 0 -}}
 {{- $height := 0 -}}
+{{- $imgSrcset := "" -}}
+{{- $pictureSrcset := "" -}}
 {{- with $r.target -}}
   {{- $src = print .RelPermalink $r.suffix -}}
   {{- if reflect.IsImageResourceProcessable . -}}
     {{- $width = .Width -}}
     {{- $height = .Height -}}
+    {{- if eq .MediaType.SubType "webp" -}}
+      {{- if gt .Width 720 -}}
+        {{- $small := .Resize "720x webp" -}}
+        {{- $imgSrcset = printf "%s 720w, %s %dw" $small.RelPermalink $src .Width -}}
+      {{- end -}}
+    {{- else if ne .MediaType.SubType "gif" -}}
+      {{- $full := .Resize (printf "%dx webp" .Width) -}}
+      {{- if gt .Width 720 -}}
+        {{- $small := .Resize "720x webp" -}}
+        {{- $pictureSrcset = printf "%s 720w, %s %dw" $small.RelPermalink $full.RelPermalink .Width -}}
+      {{- else -}}
+        {{- $pictureSrcset = printf "%s %dw" $full.RelPermalink .Width -}}
+      {{- end -}}
+    {{- end -}}
+  {{- else if eq .MediaType.SubType "svg" -}}
+    {{- with index (findRESubmatch `viewBox=["'][\d.-]+\s+[\d.-]+\s+([\d.]+)\s+([\d.]+)["']` .Content 1) 0 -}}
+      {{- if ge (len .) 3 -}}
+        {{- $width = index . 1 -}}
+        {{- $height = index . 2 -}}
+      {{- end -}}
+    {{- end -}}
   {{- end -}}
 {{- end -}}
 {{- /* The first image is likely above the fold; lazy-loading it would delay rendering. */ -}}
-{{- $loading := cond (eq .Ordinal 0) "eager" "lazy" -}}
+{{- $isHero := eq .Ordinal 0 -}}
+{{- $loading := cond $isHero "eager" "lazy" -}}
+{{- $sizes := "(max-width: 760px) calc(100vw - 40px), 720px" -}}
+{{- $imgTag := printf `<img src="%s" alt="%s"%s%s%s%s loading="%s"%s decoding="async">` ($src | htmlEscape) (.PlainText | htmlEscape) (cond (ne $imgSrcset "") (printf ` srcset="%s" sizes="%s"` ($imgSrcset | htmlEscape) $sizes) "") (cond (and (not .IsBlock) (ne .Title "")) (printf ` title="%s"` (.Title | htmlEscape)) "") (cond (ne (print $width) "0") (printf ` width="%v"` $width) "") (cond (ne (print $height) "0") (printf ` height="%v"` $height) "") $loading (cond $isHero ` fetchpriority="high"` "") -}}
+{{- $media := $imgTag -}}
+{{- if $pictureSrcset -}}
+  {{- $media = printf `<picture><source type="image/webp" srcset="%s" sizes="%s">%s</picture>` ($pictureSrcset | htmlEscape) $sizes $imgTag -}}
+{{- end -}}
 {{- if .IsBlock -}}
 <figure>
-  <img src="{{ $src }}" alt="{{ .PlainText }}"{{ with $width }} width="{{ . }}"{{ end }}{{ with $height }} height="{{ . }}"{{ end }} loading="{{ $loading }}" decoding="async">
+  {{ $media | safeHTML }}
   {{- with .Title }}
   <figcaption>{{ . }}</figcaption>
   {{- end }}
 </figure>
 {{- else -}}
-<img src="{{ $src }}" alt="{{ .PlainText }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ with $width }} width="{{ . }}"{{ end }}{{ with $height }} height="{{ . }}"{{ end }} loading="{{ $loading }}" decoding="async">
+{{ $media | safeHTML }}
 {{- end -}}
 {{- /* chomp trailing newline */ -}}

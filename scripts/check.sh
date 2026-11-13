@@ -40,17 +40,29 @@ printf '<h1>Test</h1><script>alert(1)</script>' > "$bad_output/index.html"
 check "deployment rejects scripts in output" \
   "! bash scripts/check-output.sh '$bad_output' > '$root/tmp/check/script-output.log' 2>&1 && grep -q 'output contains a script' '$root/tmp/check/script-output.log'"
 printf '<h1>Test</h1>' > "$bad_output/index.html"
+mkdir -p "$bad_output/downloads"
+printf '%s\n' '-- <script>alert(1)</script>' > "$bad_output/downloads/test.sql"
+check "deployment allows .sql attachments containing script-like text" \
+  "bash scripts/check-output.sh '$bad_output' > /dev/null"
 mkdir -p "$bad_output/tags"
 check "deployment rejects taxonomy output" \
   "! bash scripts/check-output.sh '$bad_output' > '$root/tmp/check/taxonomy-output.log' 2>&1 && grep -q 'output contains taxonomy pages' '$root/tmp/check/taxonomy-output.log'"
 
+bad_h1=""
+heading_skip=""
 for f in $html_files; do
   n=$({ grep -o '<h1' "$f" || true; } | wc -l | tr -d ' ')
-  [ "$n" -le 1 ] || fail "at most one <h1> in ${f#$out/} (found $n)"
+  [ "$n" -eq 1 ] || bad_h1="${bad_h1} ${f#"$out"/}($n)"
+  prev=0
+  while IFS= read -r lvl; do
+    if [ "$prev" -gt 0 ] && [ "$lvl" -gt $((prev + 1)) ]; then
+      heading_skip="${heading_skip} ${f#"$out"/}(h$prev->h$lvl)"
+    fi
+    prev="$lvl"
+  done < <({ grep -oi '<h[1-6][ >]' "$f" || true; } | sed 's/<[hH]\([1-6]\).*/\1/')
 done
-pass "at most one <h1> per HTML page"
-check "post page has exactly one <h1>" \
-  "[ \$(grep -o '<h1' '$post' | wc -l) -eq 1 ]"
+check "every HTML page has exactly one <h1>" "[ -z \"\$bad_h1\" ]"
+check "heading hierarchy never skips a level" "[ -z \"\$heading_skip\" ]"
 
 check "date rendered at build time in site time zone" \
   "grep -q '<time datetime=\"2026-11-01T09:30:00&#43;08:00\">2026-11-01</time>' '$post'"
@@ -68,8 +80,22 @@ check "every local <img> has width and height" "[ -z \"\$missing_size\" ]"
 
 check "code blocks use Chroma classes" \
   "grep -q 'class=\"chroma\"' '$code' && grep -q 'class=\"c1\"' '$code'"
-check "CSS contains no italic" \
-  "! grep -q 'font-style:italic' '$post'"
+check "CSS disables synthetic italics while allowing genuine italics" \
+  "grep -q 'font-synthesis-style:none' '$post' && grep -q '<em>English italics</em>' '$post' && ! grep -Eq '(^|[},])(em|i)[,{][^}]*font-style:normal' '$post'"
+check "head includes icons, manifest, and text-scale meta" \
+  "grep -q '<meta name=\"text-scale\" content=\"scale\">' '$out/index.html' && grep -q 'href=\"/favicon.ico\"' '$out/index.html' && grep -q 'href=\"/favicon.svg\"' '$out/index.html' && grep -q 'href=\"/apple-touch-icon.png\"' '$out/index.html' && grep -q 'href=\"/site.webmanifest\"' '$out/index.html'"
+check "404 page has localized title, noindex, and no canonical" \
+  "grep -q '<title>页面不存在' '$out/404.html' && grep -q '<meta name=\"robots\" content=\"noindex\">' '$out/404.html' && ! grep -q 'rel=\"canonical\"' '$out/404.html'"
+check "robots.txt declares sitemap" \
+  "grep -q '^Sitemap: https://chensl.me/sitemap.xml$' '$out/robots.txt'"
+check "sitemap omits zero priority" \
+  "! grep -q '<priority>0</priority>' '$out/sitemap.xml'"
+check "post list preserves list semantics for Safari" \
+  "grep -q '<ul class=\"blog-posts\" role=\"list\">' '$out/blog/index.html'"
+check "responsive WebP images prioritize LCP and lazy-load later images" \
+  "grep -q 'type=\"image/webp\"' '$post' && grep -q '720w' '$post' && grep -q '1200w' '$post' && grep -q 'fetchpriority=\"high\"' '$post' && grep -q 'loading=\"eager\"' '$post' && grep -q 'loading=\"lazy\"' '$post'"
+check "tables use scroll wrapper, column scope, alignment classes, and no inline style" \
+  "grep -q '<div class=\"table-wrapper\">' '$post' && grep -q '<th scope=\"col\" class=\"align-left\">' '$post' && grep -q '<td class=\"align-right\">' '$post' && ! grep -Eq '<(table|thead|tbody|tr|th|td)[^>]*style=' '$post'"
 check "home lists recent posts via shortcode" \
   "grep -q 'href=\"/blog/chinese-long/\"' '$out/index.html'"
 check "blog list is newest first" \
@@ -88,15 +114,18 @@ news="$out/news/2026-11-07/index.html"
 news_feed="$out/news/index.xml"
 for page in index.html blog/index.html blog/code-sample/index.html now/index.html news/index.html news/2026-11-07/index.html; do
   expected=/index.xml
-  case "$page" in news/*) expected=/news/index.xml ;; esac
+  expected_title="~chensl"
+  case "$page" in news/*) expected=/news/index.xml; expected_title="~chensl AI News" ;; esac
   check "correct RSS discovery and subscription in $page" \
-    "grep -q '<link rel=\"alternate\" .*href=\"https://chensl.me$expected\"' '$out/$page' && grep -q '<a href=\"$expected\">RSS</a>' '$out/$page'"
+    "grep -q '<link rel=\"alternate\" .*href=\"https://chensl.me$expected\" title=\"$expected_title\"' '$out/$page' && grep -q '<a href=\"$expected\">RSS</a>' '$out/$page'"
 done
 check "news issue page exists at /news/<date>/" "[ -f '$news' ]"
 check "news items grouped by tag in first-appearance order" \
   "[ \$(grep -n '<h2>OpenAI</h2>' '$news' | cut -d: -f1) -lt \$(grep -n '<h2>DeepSeek</h2>' '$news' | cut -d: -f1) ] && [ \$(grep -c '<h2>OpenAI</h2>' '$news') -eq 1 ]"
 check "news text is escaped, not HTML" \
   "grep -q '摘要 &lt;b&gt;不是 HTML&lt;/b&gt;' '$news'"
+check "news issue sets meta description from summary" \
+  "grep -q '<meta name=\"description\" content=\"摘要 &lt;b&gt;不是 HTML&lt;/b&gt;\">' '$news'"
 check "news list is newest first" \
   "[ \$(grep -n '2026-11-08/' '$out/news/index.html' | head -1 | cut -d: -f1) -lt \$(grep -n '2026-11-07/' '$out/news/index.html' | head -1 | cut -d: -f1) ]"
 check "news feed has issues with tag categories, article feed has none" \

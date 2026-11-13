@@ -3,7 +3,9 @@
   "name": "blog",
   "compatibility_date": "2026-09-25",
   "preview_urls": true,
-  "workers_dev": true,
+  "workers_dev": false,
+  // Required by `npx wrangler preview` in Workers Builds branch previews.
+  "previews": {},
   "assets": {
     "directory": "public",
     "not_found_handling": "404-page",

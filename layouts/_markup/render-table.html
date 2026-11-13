@@ -1,0 +1,27 @@
+<div class="table-wrapper">
+  <table>
+    {{- if .THead }}
+    <thead>
+      {{- range .THead }}
+      <tr>
+        {{- range . }}
+        <th scope="col"{{ with .Alignment }} class="align-{{ . }}"{{ end }}>{{- .Text -}}</th>
+        {{- end }}
+      </tr>
+      {{- end }}
+    </thead>
+    {{- end }}
+    {{- if .TBody }}
+    <tbody>
+      {{- range .TBody }}
+      <tr>
+        {{- range . }}
+        <td{{ with .Alignment }} class="align-{{ . }}"{{ end }}>{{- .Text -}}</td>
+        {{- end }}
+      </tr>
+      {{- end }}
+    </tbody>
+    {{- end }}
+  </table>
+</div>
+{{- /* chomp trailing newline */ -}}
