@@ -6,6 +6,6 @@ title: 首页
 
 目前在 🌏 工作的软件工程师，为了 🏠 🚗 💰 而写代码。代码在 [GitHub](https://github.com/maolonglong)，偶尔在 [Twitter](https://x.com/chensl_) 说话。
 
-## 最近的文章
+### 最近的文章
 
 {{< recent-posts 5 >}}

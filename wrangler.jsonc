@@ -4,8 +4,6 @@
   "compatibility_date": "2026-09-25",
   "preview_urls": true,
   "workers_dev": true,
-  // Required by `npx wrangler preview` (Workers Builds Preview command).
-  "previews": {},
   "assets": {
     "directory": "public",
     "not_found_handling": "404-page",
