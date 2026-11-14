@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-14",
+  "title": "OpenAI 推出 ChatGPT Wallet，Claude Code 更新 Projects，Cursor 公布安全事件调查",
+  "summary": "OpenAI 推出 ChatGPT Wallet，Dot 代购时拿不到真实卡号，每笔都要过安全验证，先向美国的 ChatGPT Pro 用户开放；Claude Code 的 Projects 协调器更主动，还能分享只读线程；Cursor 公布 10 月底安全事件的调查结果，官方称绝大多数用户未受影响",
+  "items": [
+    {
+      "title": "OpenAI 推出 ChatGPT Wallet",
+      "summary": "Dot 可以代你下单，但拿不到真实卡号，每笔购买都要过一次安全验证，比如面容或指纹。和 American Express、Mastercard、Visa 合作，先向美国的 ChatGPT Pro 用户开放。支付网络会下发替代卡号，真实卡号不会给商家或 Agent。已有的卡片奖励和符合条件的争议保护仍然有效",
+      "url": "https://openai.com/index/introducing-chatgpt-wallet",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Google DeepMind 公开 WeatherNext 3 背后的两份数据集",
+      "summary": "SatWeave 把多颗地球同步卫星拼成全球云图，每小时更新，并提供十年以上的历史档案。PARDIG 是 AI 降水再分析数据，约 15 分钟、10 公里分辨率。官方称，在小到中雨上的小时降水检出能力比 NASA 的 IMERG-Final 高 30% 以上",
+      "url": "https://deepmind.google/blog/opening-the-datasets-behind-our-ai-weather-models/",
+      "tag": "Google"
+    },
+    {
+      "title": "Claude Code 的 Projects 有一轮大更新",
+      "summary": "协调器更主动，会在项目聊天里回答问题，并汇报各条并行线程的进度。项目里也能用 /btw 和 /fork，还可以给线程设提醒，或把单个线程以只读链接分享给已登录的用户。访问过本地电脑的线程不能分享。目前是 Pro 和 Max 的公开测试，还没有的可以加入等候名单",
+      "url": "https://x.com/ClaudeDevs/status/2121375309287301360",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Code 桌面端可以用 mods 做自定义主题",
+      "summary": "能改配色、加动态背景，也可以先用 theme-examples 插件上手",
+      "url": "https://x.com/ClaudeDevs/status/2121392666244186327",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Anthropic 写了 10 条安全评测建议",
+      "summary": "讲如何设计、运行和报告安全评测，包括先写清要测什么、校准评分器，以及完整报告统计和已知缺陷",
+      "url": "https://www.anthropic.com/research/building-strong-safety-evaluations",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Cursor 公布 10 月底安全事件的调查结果",
+      "summary": "攻击者利用 Fireworks 侧暴露的访问密钥，拿到非 Privacy Mode 下的部分编程 Agent 轨迹，进而进入内部系统，并在扩展市场缓存里放过约 11 小时的恶意 Claude Code 扩展。最多约 5000 名在 10 月 29 日请求过特定缓存版本的用户可能装到了恶意构建。官方称绝大多数用户未受影响，已直接通知受影响的人。Privacy Mode 下的提示和代码、生产系统、正式客户端更新都未被触及。如果当时从 Cursor 的 VS Code 扩展市场安装或更新过 Anthropic.claude-code 2.1.312 或 2.1.313，需按官方安全公告处理，只卸载扩展可能不够",
+      "url": "https://cursor.com/blog/security-incident-update",
+      "tag": "Cursor"
+    },
+    {
+      "title": "DeepSeek 把 App 里的能力开放到 API",
+      "summary": "搜索、文件、读链接、安全和语音这些 App 里的能力，现在可以通过 API 调用，也可以单独调用光学字符识别（OCR）、自动语音识别（ASR）和文本转语音（TTS）。面向公众的应用必须开启安全检查",
+      "url": "https://api-docs.deepseek.com/news/news261113/",
+      "tag": "DeepSeek"
+    },
+    {
+      "title": "更新：GitHub Copilot 已提供 Gemini 4 Hydrogen",
+      "summary": "新进展是这个模型已向 Copilot Pro、Pro+、Max、Business 和 Enterprise 用户开放，正在逐步推送。可在 VS Code、Visual Studio、Copilot CLI、Copilot 应用等处选择。企业和管理员可以用模型策略控制是否开放",
+      "url": "https://github.blog/changelog/2026-11-13-gemini-4-hydrogen-in-github-copilot/",
+      "tag": "GitHub"
+    },
+    {
+      "title": "llama.cpp 和 ggml 发布 v1.0.0",
+      "summary": "之后公开的 C API 或 ABI 若出现不兼容，才会升大版本。官方把它当作对下游开发者的稳定承诺",
+      "url": "https://huggingface.co/blog/ggml-org/llama-cpp-v1",
+      "tag": "开源工具"
+    },
+    {
+      "title": "Artificial Analysis 把 Coding Agent Index 升到 v2.1",
+      "summary": "第三方评测机构 Artificial Analysis 升级了 FrontierCode 和 Terminal-Bench。Claude Fable 5.2 和 Claude Opus 5.5 以 58 分并列第一。换新基准后，模型平均分下降 5 分",
+      "url": "https://x.com/ArtificialAnlys/status/2121393821955334328",
+      "tag": "评测"
+    },
+    {
+      "title": "LangChain 完成 3 亿美元 C 轮融资",
+      "summary": "估值 30 亿美元，由 CapitalG 领投。官方称已有超过 7000 家公司在用 LangSmith",
+      "url": "https://www.langchain.com/blog/series-c",
+      "tag": "LangChain"
+    }
+  ]
+}
