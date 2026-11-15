@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-15",
+  "title": "今天没什么大事",
+  "summary": "OpenAI、Anthropic 和 Google 今天没有新的模型或产品发布。第三方评测机构 Artificial Analysis 给 Perplexity 的 Decider v1.3 打了分，旗舰模型在 Decision Index v2.1 上仍是 70 分、第 6 名。",
+  "items": [
+    {
+      "title": "Artificial Analysis 给 Perplexity Decider v1.3 打了分",
+      "summary": "Perplexity 已在 11 月 12 日发布 Decider v1.3 和 Decider Flash v1.3。第三方评测机构 Artificial Analysis 测下来，v1.3 在 Decision Index v2.1 上是 70 分、第 6 名，和上一版名次相同；Flash 是 64 分、第 10 名，比 v1.2 高 4 分。",
+      "url": "https://x.com/ArtificialAnlys/status/2121595922090230033",
+      "tag": "Perplexity"
+    }
+  ]
+}
