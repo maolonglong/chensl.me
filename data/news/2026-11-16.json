@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-16",
+  "title": "OpenAI 新开科学博客，阿里发布 Qwen4-Max",
+  "summary": "OpenAI 新开科学博客，第一篇写物理学家和 GPT-6 Astra 一起给出标准模型的候选格点定义；阿里发布 Qwen4-Max，原生视觉、100 万 token 上下文，API 定价为输入每百万 token 1.5 美元、输出 4.5 美元；Google 的 Antigravity 把 Gemini 4 三个模型的上下文窗口加倍。",
+  "items": [
+    {
+      "title": "OpenAI 新开科学博客，第一篇是 GPT-6 Astra 做理论物理",
+      "summary": "加州大学圣巴巴拉分校（UCSB）物理学家 Nathaniel Craig 目前在 OpenAI 做访问科学家。他在首篇文章里写，自己原本有思路，但没能在所有需要覆盖的情形下证完；Astra 帮忙把这套策略做成构造，并主导了细节证明，给出标准模型的候选格点定义。文章也说，这还是一个候选方案，反射正定性和实际仿真等问题仍待解决。",
+      "url": "https://openai.com/index/step-toward-defining-the-standard-model",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "阿里发布 Qwen4-Max",
+      "summary": "采用新的混合专家（MoE）架构，总参数 2.4 万亿，每个 token 激活 710 亿，支持文本、图片和视频输入，上下文 100 万 token，面向编程、办公和长程 Agent。官方称内部评测里 token 用量最多减少约 50%，单任务平均成本下降超过 60%。API 定价为输入每百万 token 1.5 美元、输出 4.5 美元，已在 QwenCloud、Qwen Studio、QwenWork 和 Qoder 上线，随后也登陆了 OpenRouter、Vercel AI Gateway 和 OpenCode Go。官方还说，较小的 Qwen4 模型后续会开放权重。",
+      "url": "https://www.alibabacloud.com/blog/alibaba-unveils-qwen4-max-new-ai-teammate-for-work-creativity-and-discovery_603783",
+      "tag": "Qwen"
+    },
+    {
+      "title": "Antigravity 把 Gemini 4 Argon、Carbon、Hydrogen 的上下文窗口加倍",
+      "summary": "Antigravity 的 Varun Mohan 说，这三个模型在 Antigravity 里的上下文窗口加倍了，每轮对话需要做的压缩大约降到原来的 1/3.5。帖子没写加倍后的 token 数，也没说哪些套餐能用。",
+      "url": "https://x.com/_mohansolo/status/2122119826575646918",
+      "tag": "Google"
+    },
+    {
+      "title": "Artificial Analysis 测得 Qwen4 Max 的 Intelligence Index 为 43 分",
+      "summary": "第三方评测机构 Artificial Analysis 测下来，Qwen4 Max 开 xhigh 档在 Intelligence Index 上得 43 分，比 Qwen3.8 Max 高 9 分，比 Kimi K3.1 Pro 低 3 分，单任务成本约低 11%。",
+      "url": "https://x.com/ArtificialAnlys/status/2122161629592953032",
+      "tag": "Qwen"
+    }
+  ]
+}
