@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-18",
+  "title": "OpenAI 发布 GPT-6.2 Astra 和 Sol，Gemini Tasks 对六个国家免费开放",
+  "summary": "OpenAI 发布新旗舰 GPT-6.2 Astra 和更便宜的 GPT-6.2 Sol，已在 ChatGPT Work、Codex 和 API 上线；Gemini 的 Tasks 对美国、日本、韩国、加拿大、澳大利亚和印度免费开放；Anthropic 在 Claude Platform 上线 Linked billing 公测，在第三方工具里可以用自己的 Claude 组织付费，不必再交出 API 密钥。",
+  "items": [
+    {
+      "title": "OpenAI 发布 GPT-6.2 Astra 和 Sol",
+      "summary": "Astra 是新旗舰，官方称做幻灯片、表格、网站和 3D 更像样。在 Agents' Last Exam 上比 GPT-6 Astra 高 5.2 分，单次任务成本不到三分之一。API 输入和输出降价 20%，缓存输入再减 60%，每百万 token 的价格是输入 8 美元、缓存输入 0.40 美元、输出 40 美元。Sol 适合日常编码和 Agent 工作流，价格与 GPT-6.1 Sol 相同，每百万 token 为输入 2 美元、缓存输入 0.10 美元、输出 10 美元；在 Cognition 的 FrontierCode 2.0 上开最高推理时，距 Astra 只差 0.5 分，成本约五分之一。已向 ChatGPT Work 和 Codex 的 Plus、Pro、Enterprise 和 Edu 用户开放，也可通过 API 调用。Pro 500 订阅可用 Ultrafast；Pro 200 也首次能用 Ultrafast，先从 Sol 开始。",
+      "url": "https://openai.com/index/introducing-gpt-6-2-astra-sol",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Gemini 的 Tasks 对六个国家免费开放",
+      "summary": "美国、日本、韩国、加拿大、澳大利亚和印度的用户，可以把日常事务交给 Gemini 4 Hydrogen 处理，目前免费开放。美国先上更进一步的能力：代打电话、发消息，以及用 Google Pay 和 Agent Payments Protocol（AP2）在设定额度内结账。把邮件转到 gemini@google.com 写入日历，目前也是从美国开始。",
+      "url": "https://blog.google/innovation-and-ai/products/gemini-app/tasks-in-gemini-free-new-features/",
+      "tag": "Google"
+    },
+    {
+      "title": "Claude Code 出了实验性的 Code Mode",
+      "summary": "Claude 会写脚本把多个工具串在一起，长命令还在跑时也能继续回答。用环境变量 CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1 开启。",
+      "url": "https://x.com/ClaudeDevs/status/2122801681939234950",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude Platform 上线 Linked billing（公测）",
+      "summary": "在 Factory、Linear、Ramp 等第三方工具里用 Claude，可以授权自己的 Claude 组织付费，不用再把 API 密钥交给对方。平台能按客户看用量，客户可以设限额、随时取消授权。",
+      "url": "https://claude.com/resources/articles/linked-billing-on-claude-platform",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "OpenAI 更新了 API Analytics 面板",
+      "summary": "可以看用量、花销、速率限制，以及按模型、项目或密钥查看错误。",
+      "url": "https://x.com/OpenAIDevs/status/2122824859491205152",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Responses API 公测支持后台完成窗口",
+      "summary": "Responses API 公测可以选择 2 小时或 8 小时后台完成窗口，token 价分别比 Standard 低 30% 和 40%。",
+      "url": "https://developers.openai.com/changelog",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Claude Desktop 可改到 Latest 通道",
+      "summary": "在设置里改到 Latest 通道，可以更快拿到修复，但不如默认的 Stable 稳。Windows 和 Mac 都有。",
+      "url": "https://x.com/ClaudeDevs/status/2122821051910684824",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Google Antigravity 上线 Robotics 插件",
+      "summary": "用 Gemini 4 Hydrogen 和 MuJoCo 物理仿真，能用自然语言把机械臂从仿真做到真机。在 Antigravity 的 Customizations 里搜索 Robotics 即可安装。",
+      "url": "https://developers.googleblog.com/en/gemini-hydrogen-for-robotics/",
+      "tag": "Google"
+    },
+    {
+      "title": "Microsoft 发布 MAI Image 2.7",
+      "summary": "同时发布了更快的 Flash 版本，以及用 Flash 驱动的 Canvas 工作区。官方称，在第三方评测机构 Artificial Analysis 的图像编辑榜上排第一，成本约为 GPT Image 2.6 Sunburst（最高档）的五分之一。公测已在 Microsoft Foundry 上线，定价约为每千张 35 美元，Flash 约为每千张 10 美元。",
+      "url": "https://microsoft.ai/news/introducing-mai-image-2-7/",
+      "tag": "Microsoft"
+    },
+    {
+      "title": "Prime Radiant 和 Simon Willison 发布 external sandbox",
+      "summary": "Agent 留在本机，命令在独立的 Linux 沙箱里跑，已支持 Pi、Claude Code 和 Codex。可以控制挂载哪些文件夹，以及沙箱能访问哪些网站。",
+      "url": "https://blog.primeradiant.com/external-sandboxes-for-coding-agents/",
+      "tag": "工具"
+    }
+  ]
+}
