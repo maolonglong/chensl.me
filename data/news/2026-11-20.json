@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-20",
+  "title": "GPT-Live-1.1 上线 API，Genie 4 对开发者开放",
+  "summary": "OpenAI 把实时语音模型 GPT-Live-1.1 开放到 API，并介绍了用 Codex 自动排查性能回退的 Performance Factory。Google 在昨天向 Ultra 用户开放 Genie 4 之后，把它放到了 Gemini API 和 Google AI Studio，同时推出 Tool Retrieval 预览。Anthropic 完成了首次公开募股（IPO）交割。",
+  "items": [
+    {
+      "title": "GPT-Live-1.1 上线 API",
+      "summary": "OpenAI 把实时语音模型 GPT-Live-1.1 开放到 API。和 GPT-Live-1 相比，多语言口音更稳，转写也更准，也能听清字母和数字，并把复杂任务交给后端模型，不打断对话。它从 10 月 15 日起已经给 ChatGPT Plus 和 Pro 的语音用。新的 standby 可在 5 到 60 秒静音后暂停推理，网络实时通信（WebRTC）通话保持，空闲费率从每分钟 0.05 美元降到 0.02 美元。",
+      "url": "https://developers.openai.com/api/docs/models/gpt-live-1.1",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "更新：Genie 4 对开发者开放",
+      "summary": "继昨天向符合条件的 Ultra 用户开放之后，现在可以通过 Gemini API（Interactions API）和 Google AI Studio 来用。从文本或参考图生成连续的 720p、24 帧世界，并带同步原生音频，可用键盘和即时提示改天气、光照和物体。",
+      "url": "https://blog.google/innovation-and-ai/technology/developers-tools/genie-4-in-gemini-api/",
+      "tag": "Google"
+    },
+    {
+      "title": "Gemini API 推出 Tool Retrieval（预览）",
+      "summary": "工具一多，不必每次把全部参数结构塞进提示，模型按需加载，也支持远程模型上下文协议（MCP）。目前用在 Interactions API 上，generateContent 还不支持。",
+      "url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemini-api-tool-retrieval/",
+      "tag": "Google"
+    },
+    {
+      "title": "OpenAI 介绍 Performance Factory",
+      "summary": "用 Codex Agent 自动排查性能回退、提出修复（仍由工程师审），上线后再验证。三个多月里，Regression Workflow 跟了超过 1,700 次排查，定位了 600 多起根因。",
+      "url": "https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "更新：Anthropic 完成首次公开募股（IPO）交割",
+      "summary": "承销商全额行使了超额配售权，合计发行 11.27 亿股 A 类普通股，发行价每股 83 美元，其中 Anthropic 售出 1,103,351,354 股，公司获得约 916 亿美元（未扣除承销折扣和发行费用）。同时还向 AMD、Broadcom、Google、Micron、Microsoft、NVIDIA 和台积电（TSMC）私募出售 313,253,007 股 N 类普通股，约 260 亿美元。两项合计毛收入约 1195 亿美元。股票代码 ANT，已于 19 日在纳斯达克上市。首席执行官 Dario Amodei 在致辞中说，会按需要放慢训练和部署，直到有把握系统安全并处于人类控制之下，不会向商业或政治压力让步。",
+      "url": "https://www.anthropic.com/news/ipo-close",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "GPT-6.2 在 Responses API 里把推理项绑到此前的对话历史",
+      "summary": "改前面的消息会丢掉后面的推理项。官方建议只追加新轮次，并用 input_transformations 和用量面板里的 Reasoning removals 检查。",
+      "url": "https://x.com/OpenAIDevs/status/2123566018866151579",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "ChatGPT 的 Health 扩展到桌面、dots、Sites 和 Android",
+      "summary": "可查看睡眠和训练等数据。目前在美国上线，桌面和 Android 对 Free、Go、Plus、Pro 开放，Sites 要 Plus 或 Pro，dots 要 Pro。",
+      "url": "https://x.com/ChatGPT/status/2123545961381216325",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Andon Labs 的 Blueprint-Bench 2：GPT-6.2 Astra 排第一",
+      "summary": "这项评测让 Agent 根据约 20 张室内照片画出户型图。GPT-6.2 Astra 得 0.614 分排第一，超过人类基线 0.586（人类只在 12 套公寓上测过）；Gemini 4 Carbon 与人类基线并列第二，GPT-6.2 Sol 以 0.570 分排第四。",
+      "url": "https://andonlabs.com/evals/blueprint-bench-2",
+      "tag": "评测"
+    },
+    {
+      "title": "Pi v1.6.0 默认改用 GPT-6.2 Sol",
+      "summary": "openai、azure 和 openai-codex 这三个源的默认模型改为 GPT-6.2 Sol，也都可以选用 GPT-6.2 Astra。",
+      "url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md",
+      "tag": "工具"
+    }
+  ]
+}
