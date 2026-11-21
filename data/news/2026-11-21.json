@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-21",
+  "title": "Thinking Machines 发布 Inkling 2 Mini，ChatGPT Space 面向 Plus 开放",
+  "summary": "Thinking Machines Lab 发布循环 Transformer 模型 Inkling 2 Mini，总参数 26.4B，权重按 Apache 2.0 开放，可在 32GB 内存的 Mac 上本地运行。ChatGPT Space 现已对 Plus、Pro、Business 和 Enterprise 开放。OpenAI 还发布了药物化学评测集 MedChemBench。同日出现两份尚未核实的黎曼猜想证明声称。",
+  "items": [
+    {
+      "title": "Thinking Machines 发布 Inkling 2 Mini",
+      "summary": "这是一个 26.4B 参数的循环 Transformer，中间 12 层会对每个 token 跑 3 遍，激活约 3.4B（计入循环约 5.4B），权重约 20GB。官方模型卡写明，可在 32GB 及以上内存的苹果芯片设备上用 Ollama 等运行。在总参数不足 100B 的开放权重模型里，它在 DeepSWE v1.1（48.2%）和 Vals Index v2.2（46.5%）上领先；Artificial Analysis Index（AA Index）为 20.1，与 Qwen3.8-27B 并列该榜最高。权重按 Apache 2.0 开放，也可在 Tinker 上推理和微调。",
+      "url": "https://thinkingmachines.ai/news/inkling-2-mini/",
+      "tag": "Thinking Machines"
+    },
+    {
+      "title": "ChatGPT Space 面向 Plus 开放",
+      "summary": "可和同事一起用 ChatGPT 做可交互的页面、幻灯片和网站，并能从已连接的工具自动更新。官方页面写明 Plus、Pro、Business 和 Enterprise 都可用，现在也支持在手机上编辑。",
+      "url": "https://chatgpt.com/features/space",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 发布 MedChemBench",
+      "summary": "用 99 道来自已发表研究的药物化学推理题评测模型。在 xhigh 推理设置下，GPT-6.2 Astra 得到 84.5% 的分数，高于 GPT-6 Astra 的 83.3% 和 GPT-6.1 Sol 的 82.0%。官方写明，这并不能说明模型已经能发现新药。",
+      "url": "https://openai.com/index/introducing-medchembench",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 介绍如何应对对抗性蒸馏",
+      "summary": "加强了 GPT-6.2 Astra 和 Sol 对受保护推理过程的防护。在内部自适应黑盒测试里，GPT-6.2 Astra 针对每类攻击的平均成功率都低于 1%。",
+      "url": "https://openai.com/index/combatting-adversarial-distillation",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Gemini 应用可生成 GIF",
+      "summary": "由 Gemini Omni 1.2 Flash 驱动。Google AI 订阅用户都可用，美国、日本、韩国、澳大利亚、加拿大、英国、德国和法国对免费用户也开放。",
+      "url": "https://x.com/GeminiApp/status/2123813017855103449",
+      "tag": "Google"
+    },
+    {
+      "title": "美国以外的电商和在线服务商可在 ChatGPT 认领商家并发布 Agent",
+      "summary": "美国以外的电子商务和在线服务商，现在也可以在 ChatGPT 里认领自己的商家并发布 Agent。",
+      "url": "https://x.com/OpenAI/status/2123861461877588180",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Levent Alpöge 声称与 Claude 发现了黎曼猜想的证明",
+      "summary": "Anthropic 的数论学家 Levent Alpöge 在声明中说，与 Claude 一起发现了黎曼猜想及广义黎曼猜想的证明，并用 Lean 做了形式化。这仍是一份尚未核实的声称，不是已经确认的证明。",
+      "url": "https://alpo.ge/remark.pdf",
+      "tag": "研究"
+    },
+    {
+      "title": "另一份人工完成的广义黎曼猜想证明手稿待核查",
+      "summary": "Ravi Vakil 代为公开 Alessandro Masullo 一份完全由人工完成的广义黎曼猜想（GRH）证明手稿。约 8 小时后有人反馈其中存在问题。Vakil 写明，所有问题都要解决并得到学界认可后，证明才会被接受，他本人不对证明策略是否正确表态。",
+      "url": "https://math216.wordpress.com/2026/11/20/hurried-announcement-alessandro-masullo-grh/",
+      "tag": "研究"
+    }
+  ]
+}
