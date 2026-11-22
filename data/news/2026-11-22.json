@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-22",
+  "title": "Lean 与 Mathlib 社区核验 Alpöge 的黎曼猜想证明为正确",
+  "summary": "Lean 与 Mathlib 社区发表由 Lean FRO（Focused Research Organization）和 Mathlib Initiative 背书的联合声明，核验 Levent Alpöge 发布的 1700 万行 Lean 证明，并写明认定黎曼猜想的命题和证明都是正确的。第三方项目 LookAtMyQuant 把昨天发布的 Inkling 2 Mini 量化到数 GB，可在苹果芯片上运行。",
+  "items": [
+    {
+      "title": "更新：Lean 与 Mathlib 社区核验 Alpöge 的黎曼猜想证明为正确",
+      "summary": "昨日报过，Anthropic 的数论学家 Levent Alpöge 发布了一份尚未核实的 Lean 证明。Lean 与 Mathlib 社区随后发表由 Lean FRO（Focused Research Organization）和 Mathlib Initiative 背书的联合声明，核验这份 1700 万行、只直接依赖 Mathlib 的库，并写明认定黎曼猜想的命题和证明都是正确的。MIT 的核验页另外列出了 Dirichlet L 函数意义上的广义黎曼猜想（GRH），但截至 11 月 22 日 12:35（Asia/Shanghai）仍有部分检查没有结束。",
+      "url": "https://leanprover-community.github.io/blog/posts/riemann-hypothesis/",
+      "tag": "研究"
+    },
+    {
+      "title": "第三方项目 LookAtMyQuant 把 Inkling 2 Mini 压到数 GB",
+      "summary": "社区把该模型 18.89 GB 的 BF16（16 位脑浮点）文本权重量化成 3.9 到 12.8 GB 六档，可在苹果芯片上运行。按仓库自己的评测，GSM8K（Grade School Math 8K）200 题、HumanEval 164 题，用 greedy（贪心）解码，12.8 GB 档与原模型同为 193/200、152/164；5.4 GB 档则是 174/200 和 117/164。这不是 Thinking Machines 的官方权重。",
+      "url": "https://github.com/ShinMegamiBoson/lookatmyquant",
+      "tag": "工具"
+    },
+    {
+      "title": "Logan Kilpatrick 谈 Gemini 4 怎么选",
+      "summary": "Google Gemini API 负责人 Logan Kilpatrick 在回复里说，Carbon 偏大模型，Neon 综合最好，Hydrogen 快而省；并称现在没必要再用 Argon，它只是 Gemini 4 的第一个版本。这不是官方博文。",
+      "url": "https://x.com/OfficialLoganK/status/2124169455576154400",
+      "tag": "Google"
+    }
+  ]
+}
