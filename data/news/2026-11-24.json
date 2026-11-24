@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-24",
+  "title": "Anthropic 推出 Claude Ship，智谱发布 GLM-5.4",
+  "summary": "Anthropic 推出测试版 Claude Ship，可审阅、修复并按仓库策略批准拉取请求；智谱发布第一款旗舰 Loop Transformer 模型 GLM-5.4；OpenAI 与 Cisco 开源 Linux 运行时 Shirudo；DeepMind 用 Gemini 4 智能体改进量子算法，并用 Lean 做形式化验证。",
+  "items": [
+    {
+      "title": "Anthropic 推出 Claude Ship（测试版）",
+      "summary": "Claude 可以审阅拉取请求（PR）、修复失败的检查和评审意见，并按仓库里的审批策略决定能否批准。它由已正式可用的 Code Review，以及仍在测试的 PR Steward 和 Claude Approvals 组成。开发者在 Claude Code 里运行 /ship 即可试用；管理员也可以按仓库打开，让它自动处理团队的 PR。",
+      "url": "https://claude.com/resources/articles/introducing-claude-ship",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "OpenAI 和 Cisco 开源 Shirudo",
+      "summary": "这是一个 Linux 运行时，用 eBPF（extended Berkeley Packet Filter）在不停机的情况下给正在运行的系统加上临时防护，方便安全团队在补丁还没上线时先挡住漏洞。官方举了用 Codex 生成的防护挡住 Java4Shell、同时 Elasticsearch 继续服务的例子。",
+      "url": "https://openai.com/index/introducing-shirudo",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "DeepMind 用 Gemini 4 智能体团队改进量子算法，并用 Lean 做形式化验证",
+      "summary": "惯性约束聚变相关线路的计算成本降到约 1/11.8，纠错量子比特从 5,650 降到 4,338；一种光化学反应模拟便宜 8 倍。他们还开源了面向量子算法的 Lean 库、问题规格和已验证的解答。",
+      "url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/",
+      "tag": "Google"
+    },
+    {
+      "title": "智谱发布 GLM-5.4，第一款旗舰 Loop Transformer",
+      "summary": "在 750B 的 GLM-5 基座上，把 28 层循环跑两轮，用来加深推理而不增加参数。目前可在 Coding Plan、ZCode 和 Z.ai Chat 使用，API 即将开放，权重要等安全加固后再开源。",
+      "url": "https://z.ai/blog/glm-5.4",
+      "tag": "智谱"
+    },
+    {
+      "title": "ChatGPT 把针对日常对话优化的 GPT-6.2 Sol 推到 Chat 页",
+      "summary": "官方说它更擅长处理复杂要求，尤其是在指令比较细，或需要上网查找的时候。GPT-6.2 此前已在 Work、Codex 和 API 上线，这次是 Chat 页的日常对话版本开始推送。",
+      "url": "https://x.com/ChatGPT/status/2124942186425069836",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "ChatGPT 将于 12 月 23 日淘汰 GPT-5.6",
+      "summary": "Chat 中的 Sol，以及 Work 和 Codex 中的 Sol 与 Terra，将于当天停止提供。",
+      "url": "https://x.com/ChatGPT/status/2124981905380569283",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Claude 把 connectors 和 skills 收成 plugins",
+      "summary": "Free、Pro、Max 和 Ultra 已上线，可浏览 10,000 多个；Team 和 Enterprise 随后开放。",
+      "url": "https://x.com/claudeai/status/2124970294523945328",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "企业零数据保留（ZDR）可与 Enterprise Frontier Safeguards 一起公测",
+      "summary": "可在多次请求之间检测滥用，同时不由 Anthropic 或云厂商留存企业数据。输入和输出会写入客户自己控制的存储，并用客户自己的密钥加密。已在 Claude Platform、Amazon Bedrock 和 Google Cloud 上的 Claude 提供。",
+      "url": "https://claude.com/resources/articles/zero-data-retention-with-enterprise-frontier-safeguards",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Gemini API 上线文件切片",
+      "summary": "上传 PDF、Office、音视频后，可以只让模型查看需要的页、单元格或片段，并且只按实际查看的部分计费。已在 Google AI Studio 和 Gemini 平台的 API 上线，同时原生支持 Microsoft Office 和 OpenDocument 格式。",
+      "url": "https://blog.google/innovation-and-ai/technology/developers-tools/file-slicing-controls/",
+      "tag": "Google"
+    },
+    {
+      "title": "Gemini 4 Neon 已向 Google Workspace 客户在 Gemini 应用中推出",
+      "summary": "Google 的 Logan Kilpatrick 宣布，Workspace 客户可以在 Gemini 应用里使用 Gemini 4 Neon。",
+      "url": "https://x.com/OfficialLoganK/status/2125018427790344654",
+      "tag": "Google"
+    },
+    {
+      "title": "OpenAI 首席科学家 Jakub Pachocki 发表《Perplexity and Intelligence》",
+      "summary": "他公开了内部预训练 perplexity 曲线，主张用它比较各实验室进展，并作为共同安全标准的依据；还建议在理解与监控能力达到明确里程碑之前，业界约定基于该指标的共同上限。",
+      "url": "https://openai.com/index/perplexity-and-intelligence",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Claude Code 桌面端侧栏改版",
+      "summary": "文件、改动和终端改成标签页，仍可把标签拖出去并排查看，或弹出成独立窗口。先在 Mac 推送，Windows 和 Linux 随后。",
+      "url": "https://x.com/ClaudeDevs/status/2124978802006851961",
+      "tag": "Anthropic"
+    }
+  ]
+}
