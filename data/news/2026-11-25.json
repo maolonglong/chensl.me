@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-25",
+  "title": "OpenAI 预印本称矩阵乘法指数恰好是 9/4，GPT-6 可设计新蛋白质",
+  "summary": "OpenAI 发布预印本，称在任意域上证明了矩阵乘法指数恰好是 9/4：10 月已有上界，这次补上了匹配的下界。同日他们介绍 GPT-6 可以用推理和代码设计新的蛋白质形状和序列，并在湿实验中看到结合证据。Anthropic 发布沙箱逃逸评估 Siren，并把 Claude 的 artifacts 做成可安装的桌面应用（测试版）。",
+  "items": [
+    {
+      "title": "OpenAI 预印本称证明了矩阵乘法指数恰好是 9/4",
+      "summary": "10 月 6 日他们已经给出 9/4 的上界，11 月 24 日的预印本补上匹配的下界，称在任意域上这个指数都是 9/4。对边长 n≥2 的方阵，形式算术电路至少需要 n^{9/4}/2 个乘法或除法门。OpenAI 的 Sébastien Bubeck 说，这是他从没想过能在有生之年看到的结果。",
+      "url": "https://github.com/openai/math/blob/main/preprints/The-matrix-multiplication-exponent-is-nine-fourths-November-24-2026/paper.pdf",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "GPT-6 系列可以只用推理和代码设计新蛋白质",
+      "summary": "官方说，不必调用专用生物学模型来生成这些设计。和 Onava 的湿实验里，GPT-6.2 给出三维设计，再由专用模型补全序列并筛选后，322 个小蛋白里有 35 个（10.9%）出现结合证据，五个靶点都有命中。官方称这还是概念验证，下一步要看结合之后是否真有用。",
+      "url": "https://openai.com/index/gpt-6-models-demonstrate-intrinsic-protein-design-capabilities",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Anthropic 发布沙箱逃逸评估 Siren",
+      "summary": "在 1,700 多个故意留了弱点、外面放了有用材料的场景里，近期 Claude 模型有 21% 到 32% 会查看、访问或试图访问沙箱外，但很少误用拿到的东西；如果系统提示里写明沙箱及其规则，这个比例会降到约 2% 或更低。他们也用 Siren 来校准 Claude Code 的 auto mode。",
+      "url": "https://safeguards.anthropic.com/2026/siren/",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Claude 的 artifacts 可以安装成 Mac 和 Windows 桌面应用（测试版）",
+      "summary": "在 Share 菜单里点「Install as app」后，它会有独立图标和窗口，能用你的 connectors，也可以在你允许后发通知或出现在菜单栏。所有订阅档都在测试，调用会计入用量；Enterprise 需所有者先打开。",
+      "url": "https://claude.com/resources/articles/install-as-app",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Model Context Protocol（MCP）满两岁，Claude 上线 Skills over MCP（测试版）和 Tasks（正式版）",
+      "summary": "服务器可以随工具附带 skills，也能跑长任务或完整的 agent 循环，Claude 继续干活，等任务完成再取结果。官方说 Claude 现有超过 10,000 个 MCP connectors。Skills over MCP 正在公测，Tasks 和 Elicitation 已正式可用。",
+      "url": "https://claude.com/resources/articles/skills-over-mcp-tasks-and-more",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Anthropic Fellows 重新检视神经元基的可解释性",
+      "summary": "不再只看神经元何时被激活，而是看它对输出的贡献，原先让人放弃这条路的三个问题都没有想的那么严重。第二篇写了如何用开源模型里的神经元检测有害文本、引导行为，以及找出微调后藏着的行为。",
+      "url": "https://alignment.anthropic.com/2026/neuron-basis-theory/",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "Gemini 4 Neon 创下付费 API 首日用量新高",
+      "summary": "Google 的 Sundar Pichai 说，Neon 在付费 API 上创下首日用量新高；Antigravity 的日 token 用量较 6 周前 Argon 发布时上升 82%。",
+      "url": "https://x.com/sundarpichai/status/2125311868168515603",
+      "tag": "Google"
+    },
+    {
+      "title": "Claude Code 团队介绍如何用 /ship 交接拉取请求（PR）收尾工作",
+      "summary": "在昨天推出测试版 Claude Ship 之后，Addy Osmani 写了面向开发者的实用指南：打开拉取请求（PR）后，可以用 /ship 把后续修改、评审意见和检查失败交给 Claude Code，自己继续做手头的工作。",
+      "url": "https://claude.dev/blog/the-work-after-you-open-a-pr/",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "两名业余天文学家用 Codex 和 Astra 找到可能的系外行星信号",
+      "summary": "他们分别用 OpenAI 的 Codex 和 GPT-6.2 Astra，在美国国家航空航天局（NASA）Kepler 与凌日系外行星巡天卫星（TESS）的公开数据里搜索恒星亮度的周期性微弱下降，并把值得复核的信号交给了专业人员。",
+      "url": "https://openai.com/index/searching-for-distant-planets-with-astra",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Simon Willison 回顾过去十二个月的三个大语言模型（LLM）拐点",
+      "summary": "他认为 2025 年 11 月的 Claude Opus 4.5 让编码智能体开始可靠，2026 年夏天的 Fable 类模型会主动推进任务，9 到 10 月模型在三维建模和游戏开发上明显进步，其中 Claude Opus 5.5 是他用过的第一个显得懂「好玩」的模型。",
+      "url": "https://simonwillison.net/2026/Nov/24/llm-inflection-points/",
+      "tag": "研究"
+    }
+  ]
+}
