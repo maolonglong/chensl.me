@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-26",
+  "title": "OpenAI 小范围测试 Private Inference，并修好 GPT-6.2 计费错误",
+  "summary": "OpenAI 正在向一小部分客户测试 Private Inference，用机密计算保护模型处理中的提示词和回复，并修好了 GPT-6.2 上线时给 Astra 和 Sol 错误打折的问题。Anthropic 把 Messages API 从 Python 迁到了 Rust。SemiAnalysis 更新 GDPx 榜，GPT-6.2 Astra 总分领先，但软件工程明显弱于 Claude Fable 5.2。",
+  "items": [
+    {
+      "title": "OpenAI 正在小范围测试 Private Inference",
+      "summary": "这是 OpenAI Private Intelligence 的最新一项，用机密计算在模型处理提示词和回复时加以严格控制。官方还提到，零数据保留（ZDR）配上 Private Safety Processing 后，可以自动做安全审核，且 OpenAI 人员看不到底层内容。",
+      "url": "https://x.com/sama/status/2125638790593274259",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "OpenAI 修好了 GPT-6.2 上线时的计费错误",
+      "summary": "当时错误地给大多数用户打折了 GPT-6.2 Astra 和 Sol 的用量。修好后，同样的工作会占用更多套餐额度：和上周比，GPT-6.2 Astra 会快 40% 触顶，Sol 会快 25%。官方说仍比 GPT-6 Astra 和 GPT-6.1 Sol 更耐用；其他模型不受影响，也不会追收过去的差额。作为道歉，Go、Plus、Pro 和 Business 都会补一次已积存的用量重置（banked reset）。",
+      "url": "https://x.com/thsottiaux/status/2125784147889393806",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Anthropic 把 Messages API 从 Python 迁到了 Rust",
+      "summary": "这是客户以及 Claude Code、Cowork 访问 Claude 的主接口。从 2024 年初到 2026 年秋，流量大约增长了 1,800 倍。他们用仍在线上的 Python 服务来核对新版本，并让 Claude 智能体去找差异、修差异；迁移过程中服务没有停机，功能开发也没冻结。官方说每请求的 CPU 大约少 70%，中位首 token 时间（TTFT）大约缩短 20%。",
+      "url": "https://www.anthropic.com/research/migrating-api-to-rust",
+      "tag": "Anthropic"
+    },
+    {
+      "title": "SemiAnalysis 更新 GDPx：GPT-6.2 Astra 总分领先，但写代码明显偏弱",
+      "summary": "在 SemiAnalysis 的 GDPx 榜上，GPT-6.2 Astra 以 19.3% 排第一，Claude Fable 5.2 为 16.4%。评测方认为，Astra 在软件工程上只有 13.3%，明显低于 Fable 的 24.4%，这能解释它在 X 上风评不好的很大一部分原因。眼下很火的 Gemini 4 Neon 总分排第六，为 10.1%，软件工程只有 4.4%；Gemini 4 Carbon 以 10.9% 排第五，略高于 Neon。",
+      "url": "https://newsletter.semianalysis.com/p/evaluating-recent-model-releases",
+      "tag": "评测"
+    },
+    {
+      "title": "DeepMind 发布面向 Google Antigravity 的 Mass Spec Skills",
+      "summary": "科学家可以在 Antigravity 里解读串联质谱，并核对化学证据。官方在 100 条已有公开谱库记录的基准上测试：没有网络和这些技能时，准确率都低于 4%；加上技能后，轻量的 Gemini 3.8 Flash 和更强的 Gemini 4 Argon、Carbon，都能在大约 97% 的尝试中识别并核实到正确分子。技能已可在 Antigravity 中安装使用。",
+      "url": "https://deepmind.google/blog/interpreting-mass-spectra-with-google-antigravity/",
+      "tag": "Google"
+    },
+    {
+      "title": "Gemini Live 的 Guided Vision 现已在 iOS 上可用",
+      "summary": "打开 Live，把相机对准场景，就能在屏幕上得到实时指引。",
+      "url": "https://x.com/GeminiApp/status/2125685936344236471",
+      "tag": "Google"
+    },
+    {
+      "title": "Gemini 新增 60 多种带地方口音的表达性语音",
+      "summary": "覆盖美国、英国、印度、印尼、韩国和巴西，可在设置里选取。",
+      "url": "https://x.com/GeminiApp/status/2125629066006950339",
+      "tag": "Google"
+    },
+    {
+      "title": "Antigravity 再次提高 Gemini 4 Neon 的缓存命中率",
+      "summary": "Google DeepMind 的 Varun Mohan 说，Antigravity 里 Neon 的缓存命中率又提高了 4.5%，同样额度下大约可以多完成 28% 的任务。过去 5 天里，通过缓存和运行框架（harness）改进，订阅里的 Neon 有效用量提高了将近 75%。",
+      "url": "https://x.com/_mohansolo/status/2125641696377712968",
+      "tag": "Google"
+    }
+  ]
+}
