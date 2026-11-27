@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-27",
+  "title": "Gemini 4 Carbon 和 Argon 的付费价格将从 12 月 1 日起上调",
+  "summary": "官方价目页显示，Gemini 4 Carbon 和 Argon 的付费价格将从 12 月 1 日起调整：输入从每百万 token 2 美元调到 4 美元，输出（含 thinking tokens）从 10 美元调到 20 美元，上下文缓存从 0.10 美元调到 0.20 美元。同系列的 Neon 和 Hydrogen 价目页上暂未写同一天调价。月之暗面启动了面向科研人员的 Kimi for Science 计划，腾讯混元则开源了投机解码草稿模型 DFly2。",
+  "items": [
+    {
+      "title": "Gemini 4 Carbon 和 Argon 的付费价格将从 12 月 1 日起上调",
+      "summary": "官方价目页写明，输入从每百万 token 2 美元调到 4 美元，输出（含 thinking tokens）从 10 美元调到 20 美元，上下文缓存从 0.10 美元调到 0.20 美元。同系列的 Neon 现价是输入 3 美元、输出 15 美元，Hydrogen 是输入 1.50 美元、输出 7.50 美元，价目页上暂未写同一天调价。另外，从 12 月 1 日起，对 gemini-2.5-pro 的请求会改走 Gemini 3.8 Flash 并按该模型计费，对 gemini-2.5-flash 的请求会改走 Gemini 3.5 Flash-Lite。",
+      "url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "tag": "Google"
+    },
+    {
+      "title": "月之暗面启动 Kimi for Science，向科研人员提供免费 API 额度",
+      "summary": "入选项目最多可获得 2 万美元的 API 额度（约 70 亿 token，按研究需求和评审结果确定），并可能得到技术支持和后续模型的优先体验。面向自然科学、工程及相关交叉学科，第一轮截止日期是 12 月 8 日。",
+      "url": "https://www.kimi.ai/news/kimi-for-science-program",
+      "tag": "月之暗面"
+    },
+    {
+      "title": "腾讯混元开源投机解码草稿模型 DFly2",
+      "summary": "它复用目标模型的键值（KV）缓存和 top-k 位置选择，官方称草稿成本不随上下文变长，也不额外占用 KV 内存，长上下文和智能体（Agent）任务最高可加速约 4.2 倍。和同配方的 DSpark 比，官方称智能体任务大约快 30%；和开源 DSpark 比，接受的草稿 token 大约多 10.4%。代码、权重和技术报告都已放出。",
+      "url": "https://x.com/TencentHunyuan/status/2125928146113585468",
+      "tag": "腾讯"
+    },
+    {
+      "title": "蚂蚁百灵开源面向设计的文生图模型 Ming-Image-0.2-Design",
+      "summary": "6B 参数，MIT 许可，官方说改进了复杂构图、光照和文字渲染，可用于电商主图、界面（UI）稿和空间效果图。官方称在 Artificial Analysis 的 AA-Image-T2I v2.1 开放权重模型中以 1,095 Elo 排第一。分层版本 Ming-Image-0.2-Design-Layer 计划下周开源。",
+      "url": "https://huggingface.co/inclusionAI/Ming-Image-0.2-Design",
+      "tag": "蚂蚁"
+    },
+    {
+      "title": "腾讯混元发布 Hy3D 3.6",
+      "summary": "支持把文本或图片转成 3D 模型，最高约 200 万面，贴图可到 8K 基于物理的渲染（PBR），已在腾讯云上线。",
+      "url": "https://cloud.tencent.com/act/pro/hy3d-3.6",
+      "tag": "腾讯"
+    },
+    {
+      "title": "翻译模型 Hy-MT3-30B-A3B 放出官方 GGUF",
+      "summary": "可用 llama.cpp 在本地运行，覆盖 102 种语言，是混合专家（MoE）模型，激活参数 3B。模型本身已在 11 月 24 日开源，这次是官方放出 GGUF 量化权重。",
+      "url": "https://x.com/TencentHunyuan/status/2126261924803535020",
+      "tag": "腾讯"
+    },
+    {
+      "title": "DeepSeek 网页和 App 正在灰度测试显示本轮消耗额度",
+      "summary": "据 IT 之家报道，部分用户反馈，对话结束后会展示本轮消耗的 token 数量和按接口空闲时段价格估算的费用，并显示上下文占用。面向个人用户的对话目前仍标为免费，官方尚未说明后续是否收费。",
+      "url": "https://www.ithome.com/1/033/157.htm",
+      "tag": "DeepSeek"
+    }
+  ]
+}
