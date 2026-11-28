@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-28",
+  "title": "Liquid AI 发布决策模型 d1.3-ultra，OpenCode 放出桌面端 Rune 早期版",
+  "summary": "今天没有 OpenAI、Anthropic 或 Google 的新模型发布。Liquid AI 发布了决策模型 d1.3-ultra，官方写它在 Artificial Analysis Decision Index v2.1 上得 76.4 分、排第一，Artificial Analysis 的评测则写它得 76 分，与 Bison 31B 并列第一。OpenCode 则放出了用原生框架重写、不再用 Electron 的桌面应用 Rune 的早期开发版。",
+  "items": [
+    {
+      "title": "Liquid AI 发布决策模型 d1.3-ultra",
+      "summary": "官方称这是他们目前最强的决策模型，并写它在 Artificial Analysis Decision Index v2.1 上得 76.4 分、排第一。Artificial Analysis 的评测写它得 76 分，与 Bison 31B 并列第一，每百万任务成本约 133 美元，比并列的 Bison 低约 60%。输入每百万 token 0.042 美元，输出不收费，上下文窗口 64K。现已在 Liquid console 上线，官方说即将登陆 OpenRouter 和 Vercel。",
+      "url": "https://x.com/liquidai/status/2126374995399975380",
+      "tag": "Liquid AI"
+    },
+    {
+      "title": "OpenCode 放出桌面端下一代早期版 Rune",
+      "summary": "官方说这是用自家原生框架重写的桌面应用，不再用 Electron，已经可以下载开发构建试用。仓库介绍称它用 Rust 写在 Rune 上，macOS、Windows 和 Linux 都有安装包，同一套应用也能在浏览器里用 WebGPU 跑，并称比原来更快、也更轻，幅度约 10 到 100 倍。",
+      "url": "https://github.com/anomalyco/opencode-rune",
+      "tag": "工具"
+    },
+    {
+      "title": "OpenAI 演示了可语音下单的周边店",
+      "summary": "开发者账号把已上线的 GPT-Live-1.1、OpenAI 的 Decisions API 和 Web Model Context Protocol（WebMCP）串在一条购物流程里。语音会报加急费和送达时间，Decisions API 给破损退货打分，网页则把购物车工具直接注册给浏览器里的智能体（Agent）。这不是新模型，只是把已有能力串成一条完整的语音购物示例。",
+      "url": "https://x.com/OpenAIDevs/status/2126372238853112227",
+      "tag": "OpenAI"
+    },
+    {
+      "title": "Google Research 介绍 DeepCrossAttention，用可学习权重改进残差连接",
+      "summary": "这篇 11 月 23 日的博文介绍 DeepCrossAttention（DCA），用可学习权重和跨层注意力改进残差连接。官方称同等质量最多可快约 3 倍，额外参数不到总参数量的 0.2%。文中还写到，月之暗面提出的注意力残差（attention residuals）和 DCA 有相同的核心思路，Thinking Machines 最近的 Inkling 2 则同时采用了这种设计以及 DCA 的跨层注意力机制。此前公开新闻未收录，今天补报。",
+      "url": "https://research.google/blog/supercharging-transformer-residual-connections/",
+      "tag": "Google"
+    },
+    {
+      "title": "Pi 发布 v1.7.0，兼容终端可在重启后恢复当前会话",
+      "summary": "兼容终端可以在重启后恢复当前会话，并保留原来的 profile、工具限制和说明。codemode 支持用 Radius 生图，也可给 OpenRouter 的生图模型指定比例和尺寸。改思考强度时，GitHub Copilot 上受支持的 Claude 5.x 和 GPT-6 模型会保留提示缓存。新安装和更新不再上报遥测。",
+      "url": "https://github.com/earendil-works/pi/releases/tag/v1.7.0",
+      "tag": "工具"
+    },
+    {
+      "title": "Magpie 会把被采纳的用户反馈记为共同作者，并上线贡献墙",
+      "summary": "用户在 GitHub、X 或 Discord 里提出、后来被做成功能的反馈，发布后会被记为共同作者（co-author）。官网有贡献墙，随后又加了回顾贡献历史的动画。",
+      "url": "https://usemagpie.ai/docs/zh/contributors",
+      "tag": "工具"
+    }
+  ]
+}
